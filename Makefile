@@ -11,7 +11,7 @@ ARGS ?=
 
 .PHONY: help play test test-storage check fmt fmt-check build release benchmark \
 	validate editorial enrichment simulate export db-migrate db-import db-rebuild \
-	db-verify db-export db-backup db-restore db-test p34 audit
+	db-verify db-export db-backup db-restore db-test api api-test p34 p35 audit
 
 help: ## Show the common project commands
 	@awk 'BEGIN {FS = ":.*## "} /^[a-zA-Z0-9_-]+:.*## / {printf "  %-16s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -78,11 +78,18 @@ db-backup: ## Back up mutable MySQL player/career/case data
 db-restore: ## Restore mutable MySQL data from EXPORT_DIR backup
 	@$(TOOLS) restore-mysql $(EXPORT_DIR)/operational-backup.json
 
-db-test: ## Run live MySQL migration and state round-trip tests
-	@NAIJACHASE_MYSQL_TEST=1 $(CARGO) test --manifest-path $(MANIFEST) \
-		-p naijachase-storage live_mysql_migration_and_state_round_trip_when_enabled
+db-test: ## Run live MySQL migration, recovery, concurrency, and idempotency tests
+	@NAIJACHASE_MYSQL_TEST=1 $(CARGO) test --manifest-path $(MANIFEST) -p naijachase-storage
+
+api: ## Start the versioned HTTP API using .env configuration
+	@$(CARGO) run --manifest-path $(MANIFEST) -p naijachase-api
+
+api-test: ## Run API unit, contract, load, and security tests
+	@$(CARGO) test --manifest-path $(MANIFEST) -p naijachase-api
 
 p34: check db-rebuild db-test ## Run the complete P3.4 persistence gate
+
+p35: check db-test api-test ## Run the complete P3.5 service-safety gate
 
 audit: ## Reject legacy runtime artifacts and malformed patches
 	@test -z "$$(find . -type f \( -name '*.py' -o -name '*.pyc' -o -name '*.pyo' \) \

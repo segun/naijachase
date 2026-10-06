@@ -45,6 +45,19 @@ Run `make db-rebuild` to import and validate all canonical content, or
 data without mixing it into the replaceable content catalogue. See
 `docs/data-model.md` for ownership and recovery details.
 
+## Service API
+
+The Rust HTTP service is available with `make api`. It exposes versioned
+`/v1` case and command endpoints while keeping hidden routes, thief identities,
+answer keys, timing rules, and hideouts on the server. Configure
+`NAIJACHASE_API_TOKENS`, `NAIJACHASE_API_BIND`,
+`NAIJACHASE_RATE_LIMIT_PER_MINUTE`, and `NAIJACHASE_ENV` in the repository
+`.env`. Environment-specific examples live in `config/environments/`.
+
+Run `make p35` for the complete service-safety gate. API contracts, status
+codes, authentication, deployment requirements, health checks, metrics, and
+recovery behaviour are documented in `docs/api-v1.md`.
+
 ## Mission pilot
 
 `data/missions/pilot/` contains 30 playtest missions: ten easy, ten medium, and

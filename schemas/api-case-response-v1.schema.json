@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://naijachase.example/schemas/api-case-response-v1",
+  "title": "Naija Chase API case response v1",
+  "type": "object",
+  "required": ["api_version", "case_id", "state_version", "duplicate", "state", "events"],
+  "properties": {
+    "api_version": {"const": "v1"},
+    "case_id": {"type": "string"},
+    "state_version": {"type": "integer", "minimum": 1},
+    "duplicate": {"type": "boolean"},
+    "state": {"type": "object"},
+    "events": {"type": "array"}
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://naijachase.example/schemas/api-command-request-v1",
+  "title": "Naija Chase API command request v1",
+  "type": "object",
+  "required": ["command_id", "expected_version", "command"],
+  "properties": {
+    "command_id": {"type": "string", "minLength": 2, "maxLength": 64, "pattern": "^[A-Za-z0-9._-]+$"},
+    "expected_version": {"type": "integer", "minimum": 1},
+    "command": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": {"enum": ["visit_venue", "wait", "record_trait", "travel", "request_warrant", "search_hideout"]}
+      }
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,4 +1,5 @@
 use mysql::{OptsBuilder, Pool, TxOpts, params, prelude::Queryable};
+use naijachase_contracts::{Event, GameState};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::{
@@ -11,6 +12,27 @@ use thiserror::Error;
 const MIGRATION_1: &str = include_str!("../migrations/0001_initial.sql");
 const MIGRATION_2: &str = include_str!("../migrations/0002_content_and_terminal.sql");
 const MIGRATION_3: &str = include_str!("../migrations/0003_thief_alias_index.sql");
+const MIGRATION_4: &str = include_str!("../migrations/0004_api_audit.sql");
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum CaseCommandResult {
+    Applied {
+        version: u64,
+        state: GameState,
+        events: Vec<Event>,
+    },
+    Duplicate {
+        version: u64,
+        state: GameState,
+        events: Vec<Event>,
+    },
+}
+
+#[derive(Serialize, Deserialize)]
+struct PersistedCommandResult {
+    state: GameState,
+    events: Vec<Event>,
+}
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ContentImportSummary {
@@ -28,6 +50,8 @@ struct OperationalBackup {
     terminal_careers: Vec<(String, u64, Vec<u8>)>,
     active_cases: Vec<(String, Option<String>, Option<String>, u64, Vec<u8>)>,
     case_events: Vec<(String, String, u64, String)>,
+    #[serde(default)]
+    service_audit: Vec<(Option<String>, Option<String>, Option<String>, String)>,
 }
 
 pub trait StateStore {
@@ -94,6 +118,12 @@ pub enum StorageError {
     InvalidContent(String),
     #[error("stale state version for {0}")]
     VersionConflict(String),
+    #[error("case not found")]
+    CaseNotFound,
+    #[error("case is owned by another player")]
+    Forbidden,
+    #[error("command failed: {0}")]
+    Command(String),
 }
 
 pub fn repository_dotenv_path() -> Option<PathBuf> {
@@ -156,7 +186,147 @@ impl MysqlStore {
         if version < 3 {
             apply_migration(&mut connection, MIGRATION_3)?;
         }
+        let version: u32 = connection
+            .query_first("SELECT COALESCE(MAX(version), 0) FROM schema_migrations")?
+            .unwrap_or(0);
+        if version < 4 {
+            apply_migration(&mut connection, MIGRATION_4)?;
+        }
         Ok(())
+    }
+
+    pub fn ping(&self) -> Result<(), StorageError> {
+        let value: Option<u8> = self.pool.get_conn()?.query_first("SELECT 1")?;
+        if value == Some(1) {
+            Ok(())
+        } else {
+            Err(StorageError::InvalidContent(
+                "database health check failed".into(),
+            ))
+        }
+    }
+
+    pub fn create_case(
+        &self,
+        case_id: &str,
+        player_id: &str,
+        mission_id: &str,
+        state: &GameState,
+    ) -> Result<u64, StorageError> {
+        let data = serde_json::to_vec(state)?;
+        let mut connection = self.pool.get_conn()?;
+        let mut transaction = connection.start_transaction(TxOpts::default())?;
+        let existing: Option<String> = transaction.exec_first(
+            "SELECT player_id FROM active_cases WHERE case_id=:case_id FOR UPDATE",
+            params! { "case_id" => case_id },
+        )?;
+        match existing {
+            Some(owner) if owner == player_id => return Ok(1),
+            Some(_) => return Err(StorageError::Forbidden),
+            None => {}
+        }
+        transaction.exec_drop(
+            "INSERT INTO players(player_id,display_name) VALUES (:player,:player)
+             ON DUPLICATE KEY UPDATE player_id=VALUES(player_id)",
+            params! { "player" => player_id },
+        )?;
+        transaction.exec_drop(
+            "INSERT INTO active_cases(case_id,player_id,mission_id,version,state_json)
+             VALUES (:case_id,:player,:mission,1,:state)",
+            params! { "case_id"=>case_id,"player"=>player_id,"mission"=>mission_id,"state"=>data },
+        )?;
+        transaction.exec_drop(
+            "INSERT INTO service_audit(player_id,case_id,command_id,outcome)
+             VALUES (:player,:case_id,'case-created','created')",
+            params! { "player"=>player_id,"case_id"=>case_id },
+        )?;
+        transaction.commit()?;
+        Ok(1)
+    }
+
+    pub fn load_owned_case(
+        &self,
+        case_id: &str,
+        player_id: &str,
+    ) -> Result<(u64, GameState), StorageError> {
+        let row: Option<(Option<String>, u64, Vec<u8>)> = self.pool.get_conn()?.exec_first(
+            "SELECT player_id,version,state_json FROM active_cases WHERE case_id=:case_id",
+            params! { "case_id"=>case_id },
+        )?;
+        let Some((owner, version, data)) = row else {
+            return Err(StorageError::CaseNotFound);
+        };
+        if owner.as_deref() != Some(player_id) {
+            return Err(StorageError::Forbidden);
+        }
+        Ok((version, serde_json::from_slice(&data)?))
+    }
+
+    pub fn execute_case_command<F>(
+        &self,
+        case_id: &str,
+        player_id: &str,
+        command_id: &str,
+        expected_version: u64,
+        execute: F,
+    ) -> Result<CaseCommandResult, StorageError>
+    where
+        F: FnOnce(GameState) -> Result<(GameState, Vec<Event>), String>,
+    {
+        let mut connection = self.pool.get_conn()?;
+        let mut transaction = connection.start_transaction(TxOpts::default())?;
+        let row: Option<(Option<String>, u64, Vec<u8>)> = transaction.exec_first(
+            "SELECT player_id,version,state_json FROM active_cases WHERE case_id=:case_id FOR UPDATE",
+            params! { "case_id"=>case_id },
+        )?;
+        let Some((owner, version, data)) = row else {
+            return Err(StorageError::CaseNotFound);
+        };
+        if owner.as_deref() != Some(player_id) {
+            return Err(StorageError::Forbidden);
+        }
+        let duplicate: Option<(u64, String)> = transaction.exec_first(
+            "SELECT state_version,event_json FROM case_events WHERE case_id=:case_id AND command_id=:command_id",
+            params! { "case_id"=>case_id,"command_id"=>command_id },
+        )?;
+        if let Some((saved_version, event_json)) = duplicate {
+            let saved: PersistedCommandResult = serde_json::from_str(&event_json)?;
+            transaction.commit()?;
+            return Ok(CaseCommandResult::Duplicate {
+                version: saved_version,
+                state: saved.state,
+                events: saved.events,
+            });
+        }
+        if version != expected_version {
+            return Err(StorageError::VersionConflict(case_id.into()));
+        }
+        let state: GameState = serde_json::from_slice(&data)?;
+        let (next, events) = execute(state).map_err(StorageError::Command)?;
+        let next_version = version + 1;
+        transaction.exec_drop(
+            "UPDATE active_cases SET version=:version,state_json=:state WHERE case_id=:case_id AND version=:expected",
+            params! { "version"=>next_version,"state"=>serde_json::to_vec(&next)?,"case_id"=>case_id,"expected"=>version },
+        )?;
+        if transaction.affected_rows() != 1 {
+            return Err(StorageError::VersionConflict(case_id.into()));
+        }
+        transaction.exec_drop(
+            "INSERT INTO case_events(case_id,command_id,state_version,event_json)
+             VALUES (:case_id,:command_id,:version,:events)",
+            params! { "case_id"=>case_id,"command_id"=>command_id,"version"=>next_version,"events"=>serde_json::to_string(&PersistedCommandResult { state: next.clone(), events: events.clone() })? },
+        )?;
+        transaction.exec_drop(
+            "INSERT INTO service_audit(player_id,case_id,command_id,outcome)
+             VALUES (:player,:case_id,:command_id,'applied')",
+            params! { "player"=>player_id,"case_id"=>case_id,"command_id"=>command_id },
+        )?;
+        transaction.commit()?;
+        Ok(CaseCommandResult::Applied {
+            version: next_version,
+            state: next,
+            events,
+        })
     }
 
     pub fn schema_version(&self) -> Result<u32, StorageError> {
@@ -445,7 +615,7 @@ impl MysqlStore {
     pub fn backup_operational(&self, path: &Path) -> Result<(), StorageError> {
         let mut connection = self.pool.get_conn()?;
         let backup = OperationalBackup {
-            format_version: 1,
+            format_version: 2,
             players: connection.query("SELECT player_id, display_name FROM players")?,
             careers: connection
                 .query("SELECT player_id, points, solved_missions_json, version FROM careers")?,
@@ -456,6 +626,8 @@ impl MysqlStore {
             )?,
             case_events: connection
                 .query("SELECT case_id, command_id, state_version, event_json FROM case_events")?,
+            service_audit: connection
+                .query("SELECT player_id, case_id, command_id, outcome FROM service_audit")?,
         };
         if let Some(parent) = path.parent() {
             fs::create_dir_all(parent)?;
@@ -466,7 +638,7 @@ impl MysqlStore {
 
     pub fn restore_operational(&self, path: &Path) -> Result<(), StorageError> {
         let backup: OperationalBackup = serde_json::from_slice(&fs::read(path)?)?;
-        if backup.format_version != 1 {
+        if !matches!(backup.format_version, 1 | 2) {
             return Err(StorageError::InvalidContent(
                 "unsupported backup version".into(),
             ));
@@ -506,6 +678,13 @@ impl MysqlStore {
                 "INSERT INTO case_events(case_id,command_id,state_version,event_json) VALUES (:case_id,:command_id,:version,:event)
                  ON DUPLICATE KEY UPDATE state_version=VALUES(state_version),event_json=VALUES(event_json)",
                 params! { "case_id" => case_id, "command_id" => command_id, "version" => version, "event" => event },
+            )?;
+        }
+        for (player_id, case_id, command_id, outcome) in backup.service_audit {
+            transaction.exec_drop(
+                "INSERT INTO service_audit(player_id,case_id,command_id,outcome)
+                 VALUES (:player,:case_id,:command_id,:outcome)",
+                params! { "player"=>player_id,"case_id"=>case_id,"command_id"=>command_id,"outcome"=>outcome },
             )?;
         }
         transaction.commit()?;
@@ -684,6 +863,7 @@ pub fn sha256(bytes: &[u8]) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    static MYSQL_TEST_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
 
     #[test]
     fn environment_configuration_is_explicit() {
@@ -728,9 +908,13 @@ mod tests {
             serde_json::from_str(include_str!("../fixtures/terminal-career-v1.json")).unwrap();
         let upgrade: serde_json::Value =
             serde_json::from_str(include_str!("../fixtures/schema-upgrade-v2-to-v3.json")).unwrap();
+        let api_upgrade: serde_json::Value =
+            serde_json::from_str(include_str!("../fixtures/schema-upgrade-v3-to-v4.json")).unwrap();
         assert_eq!(career["name"], "Fixture Detective");
         assert_eq!(upgrade["from_version"], 2);
         assert_eq!(upgrade["to_version"], 3);
+        assert_eq!(api_upgrade["from_version"], 3);
+        assert_eq!(api_upgrade["to_version"], 4);
     }
 
     #[test]
@@ -738,9 +922,10 @@ mod tests {
         if env::var("NAIJACHASE_MYSQL_TEST").ok().as_deref() != Some("1") {
             return;
         }
+        let _guard = MYSQL_TEST_LOCK.lock().unwrap();
         let store = MysqlStore::connect_from_env().unwrap();
         store.migrate().unwrap();
-        assert_eq!(store.schema_version().unwrap(), 3);
+        assert_eq!(store.schema_version().unwrap(), 4);
         let id = "storage-integration-test";
         let next = store.state_version(id).unwrap().unwrap_or(0) + 1;
         store.save(id, next, b"test-state").unwrap();
@@ -766,5 +951,153 @@ mod tests {
             b"fixture-career"
         );
         let _ = fs::remove_file(backup);
+    }
+
+    #[test]
+    fn live_mysql_case_commands_are_owned_idempotent_and_concurrency_safe() {
+        if env::var("NAIJACHASE_MYSQL_TEST").ok().as_deref() != Some("1") {
+            return;
+        }
+        let _guard = MYSQL_TEST_LOCK.lock().unwrap();
+        use naijachase_contracts::Command;
+        use std::{
+            collections::BTreeMap,
+            sync::{Arc, Barrier},
+        };
+        let store = Arc::new(MysqlStore::connect_from_env().unwrap());
+        store.migrate().unwrap();
+        let case_id = "p35-storage-integration";
+        {
+            let mut connection = store.pool.get_conn().unwrap();
+            connection
+                .exec_drop(
+                    "DELETE FROM service_audit WHERE case_id=:id",
+                    params! {"id"=>case_id},
+                )
+                .unwrap();
+            connection
+                .exec_drop(
+                    "DELETE FROM case_events WHERE case_id=:id",
+                    params! {"id"=>case_id},
+                )
+                .unwrap();
+            connection
+                .exec_drop(
+                    "DELETE FROM active_cases WHERE case_id=:id",
+                    params! {"id"=>case_id},
+                )
+                .unwrap();
+        }
+        let state = GameState {
+            version: 1,
+            mission_id: "NG-M0001".into(),
+            thief_id: "TH-001".into(),
+            difficulty: 1,
+            stage: 0,
+            state: "Abia".into(),
+            route: vec!["Abia".into(), "Kano".into()],
+            elapsed: 0,
+            score: 500,
+            career_points: 0,
+            dossier: BTreeMap::new(),
+            observations: BTreeMap::new(),
+            visited_venues: vec![],
+            warrant_suspect: None,
+            hideout_venue: "market".into(),
+            replay: vec![],
+            outcome: None,
+        };
+        store
+            .create_case(case_id, "p35-owner", "NG-M0001", &state)
+            .unwrap();
+        assert!(matches!(
+            store.load_owned_case(case_id, "intruder"),
+            Err(StorageError::Forbidden)
+        ));
+        let applied = store
+            .execute_case_command(case_id, "p35-owner", "command-1", 1, |state| {
+                test_execute(state, Command::Wait { minutes: 10 })
+            })
+            .unwrap();
+        assert!(matches!(
+            applied,
+            CaseCommandResult::Applied { version: 2, .. }
+        ));
+        let duplicate = store
+            .execute_case_command(case_id, "p35-owner", "command-1", 1, |_| {
+                panic!("duplicate command executed twice")
+            })
+            .unwrap();
+        assert!(matches!(
+            duplicate,
+            CaseCommandResult::Duplicate { version: 2, .. }
+        ));
+        let failed = store.execute_case_command(case_id, "p35-owner", "invalid-command", 2, |_| {
+            Err("rejected".into())
+        });
+        assert!(matches!(failed, Err(StorageError::Command(_))));
+        assert_eq!(store.load_owned_case(case_id, "p35-owner").unwrap().0, 2);
+
+        let barrier = Arc::new(Barrier::new(3));
+        let mut workers = vec![];
+        for suffix in ["a", "b"] {
+            let store = store.clone();
+            let barrier = barrier.clone();
+            workers.push(std::thread::spawn(move || {
+                barrier.wait();
+                store.execute_case_command(
+                    case_id,
+                    "p35-owner",
+                    &format!("concurrent-{suffix}"),
+                    2,
+                    |state| test_execute(state, Command::Wait { minutes: 1 }),
+                )
+            }));
+        }
+        barrier.wait();
+        let results = workers
+            .into_iter()
+            .map(|worker| worker.join().unwrap())
+            .collect::<Vec<_>>();
+        assert_eq!(
+            results
+                .iter()
+                .filter(|result| matches!(result, Ok(CaseCommandResult::Applied { .. })))
+                .count(),
+            1,
+            "concurrent results: {results:?}"
+        );
+        assert_eq!(
+            results
+                .iter()
+                .filter(|result| matches!(result, Err(StorageError::VersionConflict(_))))
+                .count(),
+            1,
+            "concurrent results: {results:?}"
+        );
+        let restarted = MysqlStore::connect_from_env().unwrap();
+        assert_eq!(
+            restarted.load_owned_case(case_id, "p35-owner").unwrap().0,
+            3
+        );
+    }
+
+    fn test_execute(
+        state: GameState,
+        command: naijachase_contracts::Command,
+    ) -> Result<(GameState, Vec<Event>), String> {
+        let mut next = state;
+        if let naijachase_contracts::Command::Wait { minutes } = command {
+            next.elapsed += minutes;
+            Ok((
+                next,
+                vec![Event {
+                    event_type: "waited".into(),
+                    data: Default::default(),
+                }],
+            ))
+        } else {
+            Err("unsupported test command".into())
+        }
     }
 }

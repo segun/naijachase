@@ -346,29 +346,33 @@ local replay, or client-side prediction becomes a concrete product requirement.
 
 #### P3.5 — Service API and operational safety
 
-- [ ] Implement `naijachase-api` as an application layer around
+- [x] Implement `naijachase-api` as an application layer around
   `naijachase-core`, not
   as part of the core game engine.
-- [ ] Define versioned HTTP endpoints around engine commands and event responses;
+- [x] Define versioned HTTP endpoints around engine commands and event responses;
   add WebSockets only for features that genuinely require server push.
-- [ ] Convert validated API requests into typed core commands and convert core
+- [x] Convert validated API requests into typed core commands and convert core
   results into client-safe response DTOs without leaking hidden case answers.
-- [ ] Load the active case, enforce ownership, execute one core command, and
+- [x] Load the active case, enforce ownership, execute one core command, and
   persist new state plus events within a single transaction.
-- [ ] Keep database repositories and transaction handling behind
+- [x] Keep database repositories and transaction handling behind
   `naijachase-storage`; the core receives explicit inputs and returns state
   changes.
-- [ ] Add authentication, authorisation, validation, rate limiting, and secure
-  session handling before public access.
-- [ ] Make state-changing requests idempotent and protect concurrent updates.
-- [ ] Require a client-generated command ID and state version so retries are
+- [ ] Replace development bootstrap API tokens with production player
+  authentication and secure session handling before public access.
+  - [x] Development and internal staging requests can use environment-provided
+    bearer tokens while no public users exist.
+  - [ ] Remove `NAIJACHASE_API_TOKENS` as a player-identity mechanism.
+- [x] Make state-changing requests idempotent and protect concurrent updates.
+- [x] Require a client-generated command ID and state version so retries are
   safe and stale or duplicate commands cannot advance a case twice.
-- [ ] Add structured logs, error reporting, health checks, metrics, and audit
+- [x] Add structured logs, error reporting, health checks, metrics, and audit
   trails without recording private data or unrevealed answers.
-- [ ] Add unit, integration, contract, load, security, and recovery tests.
-- [ ] Establish separate development, staging, and production environments.
+- [x] Add unit, integration, contract, load, security, and recovery tests.
+- [x] Establish separate development, staging, and production environments.
 - [ ] Exit criterion: restarts, duplicate requests, invalid commands, and
-  concurrent updates cannot corrupt a case.
+  concurrent updates cannot corrupt a case, and public access uses revocable
+  player sessions rather than environment-provided player tokens.
 
 #### P3.6 — Web vertical slice
 
@@ -391,6 +395,20 @@ local replay, or client-side prediction becomes a concrete product requirement.
 
 #### P3.7 — Identity, progression, and home base
 
+- [ ] Implement proper player accounts and login; do not represent individual
+  players with tokens listed in an environment variable.
+- [ ] Choose and document the supported login methods before implementation:
+  verified email/password with Argon2id, passkeys, or a trusted OIDC provider.
+- [ ] Store only password hashes and hashed refresh/session tokens; never store
+  plaintext passwords, access tokens, or refresh tokens.
+- [ ] Issue short-lived access credentials backed by rotating, revocable
+  sessions with expiry, logout, logout-all-devices, and account-recovery flows.
+- [ ] For the web client, use Secure, HttpOnly, SameSite cookies and CSRF
+  protection rather than exposing long-lived credentials to browser storage.
+- [ ] Add login and recovery throttling, generic failure messages, session
+  fixation protection, security-event auditing, and optional MFA support.
+- [ ] Add authentication contract, integration, abuse, expiry, rotation,
+  revocation, account-recovery, and cross-account authorisation tests.
 - [ ] Add an optional profile with display name, pronouns or sex if the player
   chooses, avatar, uniform, and home state/FCT.
 - [ ] Use fictional vehicles and travel operators until advertising and legal
@@ -450,6 +468,9 @@ local replay, or client-side prediction becomes a concrete product requirement.
 
 #### P3.11 — Release readiness
 
+- [ ] Block staging-to-production promotion until bootstrap API tokens have
+  been removed from player authentication and the P3.7 account/session security
+  tests pass.
 - [ ] Complete trademark, company-name, domain, app-store, package-name, and
   social-handle clearance for Naija Chase before public branding or launch.
 - [ ] Complete outstanding source-line, sensitivity, Nigerian English, Pidgin,

@@ -1,0 +1,5 @@
+{
+  "from_version": 3,
+  "to_version": 4,
+  "reason": "Add privacy-safe service audit records for versioned API commands."
+}
