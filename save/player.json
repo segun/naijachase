@@ -1,0 +1,23 @@
+{
+  "name": "Don",
+  "points": 0,
+  "solved": [],
+  "active": {
+    "mission_id": "NG-M0754",
+    "elapsed": 0,
+    "stage": 0,
+    "current_state": "Rivers",
+    "current_location_id": "LOC-032",
+    "evidence": {},
+    "visited": [],
+    "case_score": 1250,
+    "candidate_sets": {},
+    "avoid_atoms": [],
+    "avoid_variants": [],
+    "travel_history": [
+      "Rivers"
+    ]
+  },
+  "recent_atoms": [],
+  "recent_variants": []
+}

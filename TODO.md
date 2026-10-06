@@ -31,7 +31,7 @@ completed.
 - [x] 9,324 dialogue variants across three difficulty levels and two registers
 - [x] All 1,000 missions connected to the contextual witness engine
 - [x] Career-level recent clue and dialogue tracking
-- [x] 37 automated tests passing
+- [x] 44 automated tests passing
 
 ## Completed game systems
 
@@ -114,8 +114,9 @@ completed.
 - [ ] Publication remains blocked on 280 exact source-line checks, 78 human
   sensitivity reviews, and native-speaker review of the Pidgin variants.
 - [x] Venue encounters now have an atmospheric terminal presentation.
-- [ ] The wider terminal presentation outside venue encounters remains
-  functional rather than atmospheric.
+- [x] The wider terminal presentation now includes structured dossiers,
+  notebooks, route analysis, warrant paperwork, scenes, help, and accessible
+  display controls.
 
 ## Next priorities
 
@@ -204,40 +205,169 @@ completed.
 
 ### P3 — Terminal experience
 
-- [ ] Add a clearer case dossier at the beginning of each mission.
-- [ ] Add a structured detective notebook.
-- [ ] Add a text-based travel map or route summary.
-- [ ] Show eliminated and still-possible destinations clearly.
-- [ ] Improve warrant paperwork and suspect comparison.
-- [ ] Add arrival, arrest, escape, promotion, and deadline scenes.
-- [ ] Add accessibility-friendly display settings.
-- [ ] Add an in-game help and rules screen.
+- [x] Add a clearer case dossier at the beginning of each mission.
+- [x] Add a structured detective notebook.
+- [x] Add a text-based travel map or route summary.
+- [x] Show eliminated and still-possible destinations clearly.
+- [x] Improve warrant paperwork and suspect comparison.
+- [x] Add arrival, arrest, escape, promotion, and deadline scenes.
+- [x] Add accessibility-friendly display settings.
+- [x] Add an in-game help and rules screen.
 
-### P3 - Production readiness
+### P3 — Production readiness roadmap
 
-- [ ] Use a relational database like mysql instead of csv files
-- [ ] Make sure DB is normalized
-- [ ] Build the engine in Rust
-- [ ] Start the web based UI project, create image artifacts, animations, 3D (of course), for instance when flying an airplane flying over a believable terrain animation or driving through the suburbs animation or obtaining the warrant animation, each thief should have a 3D representation that represents them.
-- [ ] User should be able to build a profile for themselves too, select avatar, uniform, sex, car brands (room for advertisement), preferred flight operator (room for advertisement) etc
-- [ ] User should have an achievements page to see all the criminals they've caught, we need to build some other achievements into the game like flying achievements, driving achievements, number of states visited achievements, leaderboards etc
-- [ ] User will select a location at the state of the game as home base, when they are in home base, witness questioning costs no time. 
-- [ ] User can ask another user for help...e.g if User A flew to Kano and another User B sets Kano as home base....if User B is online, they can ask User B for help. User B then questions witnesses on their behalf and send a recommendation to them (remember User B witness questioning costs nothing because of home base). The only caveat is User B must be at home...if User B is on a mission in Abia for instance, even though their home base is Kano, they can not render help to user A...they can get alert to fly to home and help user A, in which case they pay the time cost of flying to home and flying back to continue their mission. 
-- [ ] WHen user render help, they earn points, these points can be used on the app (I don't know what they can use it for yet...help!!!)
-- [ ] User can bribe witness to give them better clues. They can pay real cash (monetization) to buy some type of in game cash they can use to bribe witness...when a witness is bribed, he gives more accurate information...sometimes a witness can collect the cash and still not give better information. 
-- [ ] User can spend in game cash (or points...not sure yet) to speed up travel times, buy better cars, fly better airlines (e.g fly private jet).
-- [ ] User can bribe judges to get a warrant even if the profile is not fully completed. Sometimes the judges collect the bribe and give the warrant, sometimes the user gets thrown in jail for X number of time, they can pay in game cash to get out of jail immediately or stay in jail for the X number of time.
-- [ ] The lower the number of profile points completed, the more bribe is needed to get a warrant....
-- [ ] we don't automatically give the user the name of a thief, no after building the profile, we provide 3 thiefs and their characteristics and the user must using the built profile to select one of the 3...of course one of the three thieves provided must be correct
-- [ ] User must manually build the dosier too from the witness clues, we don't automatically build it for them....if a witness says something like "brown eyes" they must open their dosier and add brown eyes under say for excample eye color or "likes to whistle" under say feature.
+The production path is deliberately incremental. Keep the proven Python engine
+until measurements justify replacing a component, use SQLite for local work
+before introducing a hosted database, and build a usable 2D web vertical slice
+before committing to expensive 3D production.
 
-### P3 — Future interfaces
+#### P3.1 — Engine boundaries and contracts
 
-- [ ] Separate engine logic from terminal input/output completely.
-- [ ] Define a stable game-state and content API.
-- [ ] Create a graphical prototype only after the content and difficulty loops
-  are strong in the terminal version.
-- [ ] Consider map, desktop, web, and mobile interfaces after engine stability.
+- [x] Separate pure game rules and state transitions from terminal input/output.
+- [x] Define serialisable models for career, case, investigation, evidence,
+  dossier, warrant, travel, time, score, and outcome.
+- [x] Expose commands such as `start_case`, `visit_venue`, `record_trait`,
+  `travel`, `request_warrant`, and `arrest` through one engine interface.
+- [x] Make every command return structured events that any interface can render.
+- [x] Add deterministic seeds and replay logs so reported cases are reproducible.
+- [x] Add versioned save migration instead of deleting incompatible saves.
+- [x] Keep the terminal game as the reference client during the refactor.
+- [x] Exit criterion: all 1,000 missions pass through the new interface and the
+  terminal client contains no game-rule decisions.
+
+#### P3.2 — Player-controlled deduction
+
+- [ ] Stop automatically adding traits to the suspect dossier.
+- [ ] Let players translate witness statements into dossier fields themselves.
+- [ ] Allow dossier entries to be changed before requesting a warrant.
+- [ ] Once enough evidence exists, present three plausible suspects and require
+  the player to choose the warrant target.
+- [ ] Ensure one candidate is correct and the other two differ by subtle,
+  evidence-supported traits rather than random mismatches.
+- [ ] Explain contradictory or incomplete entries without revealing the answer.
+- [ ] Rebalance time, score, and difficulty for manual deduction.
+- [ ] Exit criterion: automated scenarios cover correct, incomplete,
+  contradictory, and wrong-suspect paths at every difficulty.
+
+#### P3.3 — Data model and persistence
+
+- [ ] Inventory CSV schemas, ownership, identifiers, and relationships.
+- [ ] Design a normalised relational schema with foreign keys and constraints.
+- [ ] Separate immutable content from player, career, and live-case data.
+- [ ] Use SQLite first for development, tests, offline play, and content imports.
+- [ ] Write an idempotent CSV importer with row-count and checksum validation;
+  retain CSV as an authoring/export format until editorial tools are migrated.
+- [ ] Add schema migrations, backups, restore tests, and seed fixtures.
+- [ ] Choose PostgreSQL or MySQL for hosting only after deployment requirements
+  are known; do not couple engine rules to one database vendor.
+- [ ] Exit criterion: the database rebuilds cleanly from source content and
+  produces the same 1,000 mission outcomes as the current dataset.
+
+#### P3.4 — Service API and operational safety
+
+- [ ] Define a versioned HTTP API around engine commands and event responses.
+- [ ] Add authentication, authorisation, validation, rate limiting, and secure
+  session handling before public access.
+- [ ] Make state-changing requests idempotent and protect concurrent updates.
+- [ ] Add structured logs, error reporting, health checks, metrics, and audit
+  trails without recording private data or unrevealed answers.
+- [ ] Add unit, integration, contract, load, security, and recovery tests.
+- [ ] Establish separate development, staging, and production environments.
+- [ ] Exit criterion: restarts, duplicate requests, invalid commands, and
+  concurrent updates cannot corrupt a case.
+
+#### P3.5 — Web vertical slice
+
+- [ ] Build one responsive, accessible 2D web case before expanding the scope.
+- [ ] Implement onboarding, case selection, interviews, notebook, manual dossier,
+  state travel, warrant selection, arrest, and results.
+- [ ] Add a usable Nigeria map with keyboard and screen-reader alternatives.
+- [ ] Create a reusable visual system for states, venues, witnesses, suspects,
+  evidence, travel, warrants, and ranks.
+- [ ] Start with lightweight route, arrival, dossier, warrant, and arrest motion.
+- [ ] Test on low-bandwidth connections and modest mobile devices.
+- [ ] Exit criterion: new players finish the case unaided and accessibility,
+  performance, and usability targets pass.
+
+#### P3.6 — Identity, progression, and home base
+
+- [ ] Add an optional profile with display name, pronouns or sex if the player
+  chooses, avatar, uniform, and home state/FCT.
+- [ ] Use fictional vehicles and travel operators until advertising and legal
+  policies exist; keep real brands out of the first release.
+- [ ] Prototype reduced local investigation cost at home rather than completely
+  free questioning, which could remove the time challenge.
+- [ ] Add a case archive of captured thieves and completed missions.
+- [ ] Add achievements for cases, ranks, states, deduction, efficient travel,
+  and helping other investigators.
+- [ ] Add leaderboards only after anti-cheat, privacy, moderation, seasons, and
+  fair ranking rules exist.
+- [ ] Exit criterion: progression remains understandable, balanced, and fully
+  playable without purchases.
+
+#### P3.7 — Cooperative investigations
+
+- [ ] Specify eligibility, online presence, home-base status, time costs,
+  response windows, and rewards before implementation.
+- [ ] Prototype asynchronous help first: an eligible helper questions one
+  witness and returns a recommendation; the case owner keeps all decisions.
+- [ ] Prevent hidden-answer exposure, duplicate accounts, and reward farming.
+- [ ] Reward help with reputation, cosmetics, or capped convenience—not an
+  advantage that makes solo play unfair.
+- [ ] Add blocking, reporting, moderation, notification preferences, and child
+  safety/privacy protections before public social features.
+- [ ] Exit criterion: help adds value without making a second account optimal
+  or enabling harassment and answer leakage.
+
+#### P3.8 — Economy and monetisation guardrails
+
+- [ ] Define currencies, earning rates, spending sinks, refunds, regional
+  pricing, parental controls, and spending limits before adding purchases.
+- [ ] Do not sell accurate clues, valid warrants, shorter penalties, faster case
+  clocks, or other pay-to-win advantages.
+- [ ] If corruption appears as a story mechanic, keep it fictional,
+  non-purchasable, consequence-driven, and separate from real money.
+- [ ] Prefer cosmetics, optional story packs, supporter editions, and clearly
+  labelled sponsorships that do not alter case truth or difficulty.
+- [ ] Review advertising, consumer protection, gambling-like mechanics, age
+  ratings, privacy, and platform payment requirements before launch.
+- [ ] Exit criterion: every case is equally solvable without spending money and
+  economy simulations show no coercive progression bottleneck.
+
+#### P3.9 — Visual expansion and 3D decision gate
+
+- [ ] Measure whether the 2D slice meets retention, comprehension, performance,
+  and cost goals before commissioning 3D work.
+- [ ] Prototype air travel, road travel, warrant approval, and one suspect
+  character on target devices.
+- [ ] Define art direction, Nigerian references, asset and animation pipelines,
+  download budget, production budget, and device performance floor.
+- [ ] Choose 2D, 2.5D, selective 3D, or full 3D from prototype evidence.
+- [ ] If 3D proceeds, create modular characters and environments rather than 100
+  bespoke thieves and nationwide terrain for the first release.
+- [ ] Exit criterion: the go/no-go decision documents performance, production
+  time, accessibility, and total asset cost.
+
+#### P3.10 — Release readiness
+
+- [ ] Complete outstanding source-line, sensitivity, Nigerian English, Pidgin,
+  spelling, name, and diacritic reviews from P2.
+- [ ] Define supported devices, performance budgets, uptime objectives, data
+  retention, privacy policy, terms, community rules, and support process.
+- [ ] Run closed playtests, accessibility and localisation reviews, security and
+  load tests, backup restoration, and incident-response exercises.
+- [ ] Add analytics only for documented product questions and minimise personal
+  data collection.
+- [ ] Run a staged rollout with rollback controls and monitored release gates.
+- [ ] Exit criterion: no release-blocking content, security, accessibility,
+  reliability, privacy, or legal findings remain.
+
+#### Deferred technical decisions
+
+- [ ] Reassess Rust only after profiling identifies a performance, portability,
+  or sandboxing problem Python cannot reasonably meet.
+- [ ] Reassess native desktop and mobile clients after the web client and engine
+  API are stable; do not maintain multiple interfaces prematurely.
 
 ## Verification checklist
 

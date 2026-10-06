@@ -76,8 +76,40 @@ Useful commands:
 ./play --mission NG-M0001
 ./play --difficulty hard
 ./play --seed 42
+./play --plain
+./play --width 100
+./play --no-wrap
 ./play --reset
 ```
+
+The P3 terminal experience opens each mission with a full case dossier and
+adds a structured detective notebook. The notebook shows the route discovered
+so far without exposing future stops, lists the states still supported by the
+current witness accounts, lists eliminated states, tracks the journey actually
+taken, compares the gathered traits against the suspect roster, and reports
+warrant readiness. Completed dossiers produce formal warrant paperwork before
+the player signs it. Arrival, arrest, escape, promotion, and expired-deadline
+scenes now give the major case transitions distinct presentation.
+
+Choose **Help and rules** from any investigation menu for an explanation of
+the game loop. For accessibility and terminal compatibility, `--plain`
+replaces typographic punctuation with ASCII, `--width N` sets wrapping from 50
+to 120 columns, and `--no-wrap` disables automatic wrapping.
+
+## Engine interface
+
+P3.1 introduces a UI-independent command boundary exported by `engine.py`.
+Clients start a case and submit `visit_venue`, `record_trait`, `travel`,
+`request_warrant`, and `arrest` commands through `GameEngine`. Each command
+returns a `CommandResult` containing structured `EngineEvent` records, so a web,
+mobile, or test client can render the same state transitions without copying
+terminal rules. The terminal edition now uses this interface as its reference
+client.
+
+Sessions retain their deterministic seed and a serialisable replay log. Career
+and active-case saves carry format version 2; older unversioned saves migrate
+when loaded. Automated coverage runs every one of the 1,000 missions through
+the public command interface as well as through the existing content checks.
 
 `scripts/build_gameplay_data.py` regenerates the state hubs, distance-based
 travel graph, venue catalogue, and unique thief profiles under `data/gameplay/`.

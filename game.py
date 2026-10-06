@@ -2,13 +2,15 @@
 """Carmen Sandiego: Nigeria — terminal investigation game."""
 from __future__ import annotations
 import argparse,csv,json,math,random,sys,textwrap
-from dataclasses import dataclass,field
+from dataclasses import dataclass,field,fields
 from pathlib import Path
 from clue_engine import ClueEngine,DIFFICULTY_RULES
 ROOT=Path(__file__).resolve().parent;DATA=ROOT/"data";SAVE=ROOT/"save/player.json"
+SAVE_VERSION=2
 FIELDS=["sex","height","skin_tone","hair","hobby","vehicle","accessory","feature"]
 RANKS=[(0,"Rookie"),(1500,"Investigator"),(4000,"Senior Investigator"),(8000,"Inspector"),(14000,"Senior Inspector"),(22000,"Chief Inspector"),(35000,"Master Detective")]
 CASE_BASE={"1":500,"2":650,"3":800,"4":1000,"5":1250}
+DIFFICULTY_NAMES={"1":"Easy","2":"Standard","3":"Medium","4":"Challenging","5":"Hard"}
 def rows(path):
  with path.open(encoding="utf-8-sig",newline="") as f:return list(csv.DictReader(f))
 def rank_for(points):return next(name for threshold,name in reversed(RANKS) if points>=threshold)
@@ -38,17 +40,22 @@ class Career:
  name:str;points:int=0;solved:list=field(default_factory=list);active:dict|None=None;recent_atoms:list=field(default_factory=list);recent_variants:list=field(default_factory=list)
  @property
  def rank(self):return rank_for(self.points)
- def dump(self,path=SAVE):path.parent.mkdir(parents=True,exist_ok=True);path.write_text(json.dumps(self.__dict__,indent=2))
+ def dump(self,path=SAVE):path.parent.mkdir(parents=True,exist_ok=True);path.write_text(json.dumps({"save_version":SAVE_VERSION,**self.__dict__},indent=2))
  @classmethod
- def load(cls,path=SAVE):return cls(**json.loads(path.read_text())) if path.exists() else None
+ def load(cls,path=SAVE):
+  if not path.exists():return None
+  payload=json.loads(path.read_text());payload.pop("save_version",None)
+  allowed={x.name for x in fields(cls)}
+  return cls(**{k:v for k,v in payload.items() if k in allowed})
 @dataclass
 class Session:
- data:GameData;mission:dict;elapsed:int=0;stage:int=0;current_state:str="";current_location_id:str="";evidence:dict=field(default_factory=dict);visited:list=field(default_factory=list);case_score:int=0;candidate_sets:dict=field(default_factory=dict);avoid_atoms:list=field(default_factory=list);avoid_variants:list=field(default_factory=list)
+ data:GameData;mission:dict;elapsed:int=0;stage:int=0;current_state:str="";current_location_id:str="";evidence:dict=field(default_factory=dict);visited:list=field(default_factory=list);case_score:int=0;candidate_sets:dict=field(default_factory=dict);avoid_atoms:list=field(default_factory=list);avoid_variants:list=field(default_factory=list);travel_history:list=field(default_factory=list);seed:int=0;replay_log:list=field(default_factory=list)
  @classmethod
- def new(cls,data,m,recent_atoms=None,recent_variants=None):return cls(data,m,current_state=data.route(m)[0],current_location_id=m["start_location_id"],case_score=CASE_BASE[m["difficulty"]],avoid_atoms=list(recent_atoms or []),avoid_variants=list(recent_variants or []))
+ def new(cls,data,m,recent_atoms=None,recent_variants=None,seed=0):
+  start=data.route(m)[0];return cls(data,m,current_state=start,current_location_id=m["start_location_id"],case_score=CASE_BASE[m["difficulty"]],avoid_atoms=list(recent_atoms or []),avoid_variants=list(recent_variants or []),travel_history=[start],seed=seed,replay_log=[{"command":"start_case","mission_id":m["mission_id"],"seed":seed}])
  @classmethod
- def restore(cls,data,s):return cls(data=data,mission=data.missions[s["mission_id"]],elapsed=s["elapsed"],stage=s["stage"],current_state=s["current_state"],current_location_id=s.get("current_location_id",data.missions[s["mission_id"]][("start_location_id","stop_2_location_id","stop_3_location_id","capture_location_id")[s["stage"]]]),evidence=s["evidence"],visited=s["visited"],case_score=s["case_score"],candidate_sets=s.get("candidate_sets",{}),avoid_atoms=s.get("avoid_atoms",[]),avoid_variants=s.get("avoid_variants",[]))
- def save_dict(self):return {"mission_id":self.mission["mission_id"],"elapsed":self.elapsed,"stage":self.stage,"current_state":self.current_state,"current_location_id":self.current_location_id,"evidence":self.evidence,"visited":self.visited,"case_score":self.case_score,"candidate_sets":self.candidate_sets,"avoid_atoms":self.avoid_atoms,"avoid_variants":self.avoid_variants}
+ def restore(cls,data,s):return cls(data=data,mission=data.missions[s["mission_id"]],elapsed=s["elapsed"],stage=s["stage"],current_state=s["current_state"],current_location_id=s.get("current_location_id",data.missions[s["mission_id"]][("start_location_id","stop_2_location_id","stop_3_location_id","capture_location_id")[s["stage"]]]),evidence=s["evidence"],visited=s["visited"],case_score=s["case_score"],candidate_sets=s.get("candidate_sets",{}),avoid_atoms=s.get("avoid_atoms",[]),avoid_variants=s.get("avoid_variants",[]),travel_history=s.get("travel_history",[s["current_state"]]),seed=s.get("seed",0),replay_log=s.get("replay_log",[]))
+ def save_dict(self):return {"state_version":SAVE_VERSION,"mission_id":self.mission["mission_id"],"elapsed":self.elapsed,"stage":self.stage,"current_state":self.current_state,"current_location_id":self.current_location_id,"evidence":self.evidence,"visited":self.visited,"case_score":self.case_score,"candidate_sets":self.candidate_sets,"avoid_atoms":self.avoid_atoms,"avoid_variants":self.avoid_variants,"travel_history":self.travel_history,"seed":self.seed,"replay_log":self.replay_log}
  @property
  def expired(self):return self.elapsed>=10080
  @property
@@ -57,6 +64,13 @@ class Session:
  def at_capture(self):return self.stage==3 and self.current_state==self.route[3]
  @property
  def profile_complete(self):return all(field in self.evidence for field in FIELDS)
+ def possible_destinations(self):
+  sets=self.candidate_sets.get(str(self.stage),[])
+  return sorted(set.intersection(*(set(x) for x in sets))) if sets else []
+ def eliminated_destinations(self):
+  possible=self.possible_destinations();return sorted(set(self.data.hubs)-set(possible)-{self.current_state}) if possible else []
+ def suspect_matches(self):return [tid for tid,p in self.data.profiles.items() if all(p.get(k)==v for k,v in self.evidence.items())]
+ def route_summary(self):return self.route[:self.stage+1]+["?"]*(3-self.stage)
  def clock(self):
   days=["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday","Next Monday"];total=420+self.elapsed;day=total//1440;minute=total%1440
   return f"{days[min(day,7)]} {minute//60:02d}:{minute%60:02d}"
@@ -111,7 +125,7 @@ class Session:
   rest=[x for x in self.data.hubs if x not in options+false and x!=self.current_state];rng.shuffle(rest);options+=(false+rest)[:count-1];rng.shuffle(options);return options
  def travel_to(self,state):
   row={"travel_minutes":"90","travel_mode":"local road transfer","distance_km":"within state"} if state==self.current_state else self.data.travel[(self.current_state,state)]
-  self.elapsed+=int(row["travel_minutes"]);self.current_state=state;correct=self.stage<3 and state==self.route[self.stage+1]
+  self.elapsed+=int(row["travel_minutes"]);self.current_state=state;self.travel_history.append(state);correct=self.stage<3 and state==self.route[self.stage+1]
   difficulty=int(self.mission['difficulty'])
   if correct:
    self.stage+=1;self.case_score+=50+10*difficulty;self.current_location_id=self.mission[("start_location_id","stop_2_location_id","stop_3_location_id","capture_location_id")[self.stage]]
@@ -119,10 +133,71 @@ class Session:
   return correct,row
  def warrant_match(self):
   if not self.profile_complete:return None
-  matches=[tid for tid,p in self.data.profiles.items() if all(p[k]==v for k,v in self.evidence.items())];return matches[0] if len(matches)==1 else None
+  matches=self.suspect_matches();return matches[0] if len(matches)==1 else None
+@dataclass(frozen=True)
+class EngineEvent:
+ type:str;data:dict=field(default_factory=dict)
+ def as_dict(self):return {"type":self.type,"data":self.data}
+@dataclass
+class CommandResult:
+ ok:bool;events:list=field(default_factory=list);data:dict=field(default_factory=dict)
+ def event(self,event_type):return next((x for x in self.events if x.type==event_type),None)
+class GameEngine:
+ """UI-independent command boundary for all gameplay state changes."""
+ def __init__(self,data,career,rng=None,seed=0):self.data=data;self.career=career;self.seed=seed;self.rng=rng or random.Random(seed)
+ def start_case(self,mission):
+  session=Session.new(self.data,mission,self.career.recent_atoms,self.career.recent_variants,self.seed)
+  return CommandResult(True,[EngineEvent("case_started",{"mission_id":mission["mission_id"],"state":session.current_state,"seed":self.seed})],{"session":session})
+ def venues(self,s):return s.venue_set()
+ def venue_status(self,s,v):
+  key=f"{s.stage}|{s.current_state}|{v['venue_id']}"
+  return "questioned" if key in s.visited else ("open" if s.is_open(v) else "closed")
+ def visit_venue(self,s,v,index,wait=False):
+  events=[];key=f"{s.stage}|{s.current_state}|{v['venue_id']}"
+  if key in s.visited:return CommandResult(False,[EngineEvent("already_questioned",{"venue_id":v["venue_id"]})])
+  local=s.travel_to_venue(v)
+  if local:events.append(EngineEvent("local_transfer",{"location":v.get("location_name",""),"minutes":local}))
+  if not s.is_open(v):
+   wait_minutes=(int(v["opens_hour"])*60-(420+s.elapsed)%1440)%1440 or 1440
+   if not wait:return CommandResult(False,events+[EngineEvent("venue_closed",{"wait_minutes":wait_minutes,"venue_id":v["venue_id"]})])
+   s.wait_to_open(v);events.append(EngineEvent("waited",{"minutes":wait_minutes,"description":v.get("wait_event","")}))
+  result=s.interview(v,index);s.replay_log.append({"command":"visit_venue","stage":s.stage,"state":s.current_state,"venue_id":v["venue_id"],"wait":wait})
+  events.append(EngineEvent("witness_interviewed",result))
+  if result.get("atom_id"):self.career.recent_atoms=(self.career.recent_atoms+[result["atom_id"]])[-60:]
+  if result.get("variant_id"):self.career.recent_variants=(self.career.recent_variants+[result["variant_id"]])[-120:]
+  return CommandResult(True,events,{"interview":result})
+ def travel_options(self,s):
+  count=DIFFICULTY_RULES[s.mission["difficulty"]]["options"];states=s.options(count,self.rng);options=[]
+  for state in states:
+   row={"travel_minutes":"90","travel_mode":"local road transfer","distance_km":"within state"} if state==s.current_state else self.data.travel[(s.current_state,state)]
+   options.append({"state":state,"hub_city":self.data.hubs[state]["hub_city"],**row})
+  return options
+ def travel(self,s,state):
+  correct,row=s.travel_to(state);s.replay_log.append({"command":"travel","state":state})
+  kind="arrived_on_trail" if correct else "false_destination"
+  return CommandResult(correct,[EngineEvent(kind,{"state":state,"stage":s.stage,"travel":row,"at_capture":s.at_capture})],{"correct":correct,"travel":row})
+ def record_trait(self,s,trait,value):
+  if trait not in FIELDS:return CommandResult(False,[EngineEvent("invalid_trait",{"trait":trait})])
+  s.evidence[trait]=value;s.replay_log.append({"command":"record_trait","trait":trait,"value":value})
+  return CommandResult(True,[EngineEvent("trait_recorded",{"trait":trait,"value":value})])
+ def request_warrant(self,s):
+  match=s.warrant_match();s.replay_log.append({"command":"request_warrant"})
+  if not s.at_capture:return CommandResult(False,[EngineEvent("warrant_wrong_jurisdiction",{})])
+  if not match:return CommandResult(False,[EngineEvent("warrant_incomplete",{"missing":len(FIELDS)-len(s.evidence)})])
+  return CommandResult(True,[EngineEvent("warrant_ready",{"suspect_id":match})],{"suspect_id":match})
+ def arrest(self,s,suspect_id):
+  s.elapsed+=30;s.replay_log.append({"command":"arrest","suspect_id":suspect_id})
+  if suspect_id!=s.mission["thief_id"]:return CommandResult(False,[EngineEvent("suspect_escaped",{"suspect_id":suspect_id})])
+  award=s.case_score+max(0,(10080-s.elapsed)//60)*(2+int(s.mission['difficulty']));old=self.career.rank;self.career.points+=award
+  if s.mission["mission_id"] not in self.career.solved:self.career.solved.append(s.mission["mission_id"])
+  return CommandResult(True,[EngineEvent("arrested",{"suspect_id":suspect_id,"award":award,"old_rank":old,"new_rank":self.career.rank})],{"award":award,"old_rank":old,"new_rank":self.career.rank})
 class Game:
- def __init__(self,data,career,rng=None,input_fn=input,out=sys.stdout):self.data=data;self.career=career;self.rng=rng or random.Random();self.input=input_fn;self.out=out
- def say(self,text=""):print(textwrap.fill(str(text),78) if text else "",file=self.out)
+ def __init__(self,data,career,rng=None,input_fn=input,out=sys.stdout,width=78,plain=False,wrap=True,seed=0):self.data=data;self.career=career;self.rng=rng or random.Random(seed);self.engine=GameEngine(data,career,self.rng,seed);self.input=input_fn;self.out=out;self.width=max(50,min(120,width));self.plain=plain;self.wrap=wrap
+ def say(self,text=""):
+  value=str(text)
+  if self.plain:
+   for old,new in (("—","-"),("–","-"),("→","->"),("“",'"'),("”",'"'),("’","'"),("•","*")):value=value.replace(old,new)
+  print(textwrap.fill(value,self.width,replace_whitespace=False) if value and self.wrap else value,file=self.out)
  def choose(self,prompt,options,quit=True):
   while True:
    self.say();[self.say(f"  {i}. {x}") for i,x in enumerate(options,1)];ans=self.input(f"\n{prompt}{' (Q to save and quit)' if quit else ''}: ").strip().lower()
@@ -132,29 +207,52 @@ class Game:
  def persist(self,s=None):self.career.active=s.save_dict() if s else None;self.career.dump()
  def status(self,s):
   self.say(f"\n{s.clock()} | {s.current_state} ({self.data.hubs[s.current_state]['hub_city']}) | Case score {s.case_score}");self.say(f"Deadline: next Monday 07:00 | Profile evidence: {len(s.evidence)}/{len(FIELDS)}")
- def profile(self,s):
-  self.say("\nSUSPECT DOSSIER");[self.say(f"  {k.replace('_',' ').title():12} {s.evidence.get(k,'Unknown')}") for k in FIELDS];match=s.warrant_match()
-  if match:self.say(f"Profile match: {self.data.thieves[match]['alias']} — {self.data.thieves[match]['name']}")
+ def case_dossier(self,s):
+  m=s.mission;start=self.data.locations[m['start_location_id']]
+  self.say("\n=== CASE DOSSIER ===");self.say(f"Case: {m['mission_id']} — {m['title']}");self.say(f"Investigator: {self.career.name} | Rank: {self.career.rank}");self.say(f"Theme: {m['case_theme']} | Difficulty: {DIFFICULTY_NAMES[m['difficulty']]}");self.say(f"Stolen item: {m['stolen_item']}");self.say(f"Opening location: {start['name']}, {s.current_state}");self.say("Deadline: Next Monday at 07:00");self.say("Objective: follow the state-to-state trail, collect all eight suspect traits, and obtain the correct warrant at the capture state.");self.say(m['premise']);self.say(m['opening_briefing'])
+ def notebook(self,s):
+  possible=s.possible_destinations();eliminated=s.eliminated_destinations();matches=s.suspect_matches()
+  self.say("\n=== DETECTIVE NOTEBOOK ===");self.say(f"Case: {s.mission['mission_id']} | Time: {s.clock()} | Score: {s.case_score}")
+  self.say("TRAVEL MAP");self.say("  "+" -> ".join(s.route_summary()));self.say("  Journey so far: "+" -> ".join(s.travel_history))
+  self.say("DESTINATION ANALYSIS")
+  if possible:
+   self.say(f"  Still possible ({len(possible)}): {', '.join(possible)}");self.say(f"  Eliminated ({len(eliminated)}): {', '.join(eliminated)}")
+  else:self.say("  No route evidence collected at this stop yet.")
+  self.say("SUSPECT DOSSIER");[self.say(f"  {k.replace('_',' ').title():18} {s.evidence.get(k,'Unknown')}") for k in FIELDS]
+  self.say(f"  Matching suspects: {len(matches)}")
+  if len(matches)<=5:
+   for tid in matches:self.say(f"    {self.data.thieves[tid]['alias']} — {self.data.thieves[tid]['name']}")
+  self.say("  Warrant status: "+("READY" if s.warrant_match() else f"LOCKED — {len(FIELDS)-len(s.evidence)} traits still required"))
+ def warrant_paperwork(self,s,match):
+  suspect=self.data.thieves[match]
+  self.say("\n=== WARRANT APPLICATION ===");self.say(f"Case number: {s.mission['mission_id']}");self.say(f"Applicant: Investigator {self.career.name}");self.say(f"Jurisdiction: {s.current_state}");self.say(f"Named suspect: {suspect['alias']} — {suspect['name']}")
+  for key in FIELDS:self.say(f"  {key.replace('_',' ').title()}: {s.evidence[key]}")
+  self.say("Identity comparison: UNIQUE MATCH");self.say("Application status: READY FOR SIGNATURE")
+ def help(self):
+  self.say("\n=== HELP AND RULES ===");self.say("Solve the case before next Monday at 07:00. Question witnesses at three local venues; each visit and journey costs time. Combine their accounts in the notebook to narrow the next state. Travel is between states or the FCT, while venue visits happen locally. Collect all eight identifying traits. At the final state, compare the completed dossier, request the warrant, and arrest the matching thief. Closed venues may require a wait. Wrong journeys cost time and points. The game saves automatically; choose Save and quit for a clean exit.");self.say("Display options: --plain uses ASCII punctuation, --width N changes line width (50–120), and --no-wrap preserves each printed line.")
  def play(self,s):
-  m=s.mission;self.say(f"\n=== {m['title']} ===");self.say(m["premise"]);self.say(m["opening_briefing"]);self.say(f"Investigator {self.career.name}, the case begins Monday 07:00. You have seven days.")
+  m=s.mission;self.case_dossier(s);self.say(f"\n=== ARRIVAL: {s.current_state.upper()} ===");self.say(f"You report to {self.data.hubs[s.current_state]['hub_city']} and open the investigation.")
   while not s.expired:
-   self.persist(s);self.status(s);venues=s.venue_set();menu=[]
+   self.persist(s);self.status(s);venues=self.engine.venues(s);menu=[]
    for v in venues:
-    key=f"{s.stage}|{s.current_state}|{v['venue_id']}";status="questioned" if key in s.visited else ("open" if s.is_open(v) else "closed")
+    status=self.engine.venue_status(s,v)
     menu.append(f"Visit {v['venue_name']} [{status}]")
-   menu+=["Review suspect profile","Request warrant" if s.at_capture else "Travel to another state","Save and quit"]
+   menu+=["Open detective notebook","Request warrant" if s.at_capture else "Travel to another state","Help and rules","Save and quit"]
    pick=self.choose("Choose an action",menu,False)
    if pick<3:
     v=venues[pick]
-    local_minutes=s.travel_to_venue(v)
-    if local_minutes:self.say(f"Local transfer to {v['location_name']}: {local_minutes//60}h {local_minutes%60}m.")
-    if not s.is_open(v):
-     wait=(int(v["opens_hour"])*60-(420+s.elapsed)%1440)%1440 or 1440;yes=self.choose(f"Closed. Wait {wait//60}h {wait%60}m",["Wait","Cancel"],False)
+    command=self.engine.visit_venue(s,v,pick)
+    transfer=command.event("local_transfer")
+    if transfer:
+     minutes=transfer.data["minutes"];self.say(f"Local transfer to {transfer.data['location']}: {minutes//60}h {minutes%60}m.")
+    closed=command.event("venue_closed")
+    if closed:
+     wait=closed.data["wait_minutes"];yes=self.choose(f"Closed. Wait {wait//60}h {wait%60}m",["Wait","Cancel"],False)
      if yes==1:continue
-     s.wait_to_open(v)
-     if v.get("wait_event"):self.say(f"While you wait: {v['wait_event']}")
-    result=s.interview(v,pick)
-    if result["repeat"]:self.say("You already questioned this witness.")
+     command=self.engine.visit_venue(s,v,pick,wait=True);waited=command.event("waited")
+     if waited and waited.data["description"]:self.say(f"While you wait: {waited.data['description']}")
+    interviewed=command.event("witness_interviewed");result=interviewed.data if interviewed else None
+    if command.event("already_questioned"):self.say("You already questioned this witness.")
     else:
      if result["location_context"]:self.say(result["location_context"])
      if result["arrival"]:self.say(result["arrival"])
@@ -168,46 +266,43 @@ class Game:
      if result["after"]:self.say(result["after"])
      if result["profile"]:self.say(f"Notebook updated: {result['profile'][0].title()}.")
      if result["possibilities"]:self.say(f"Possible destinations: {', '.join(result['possibilities'])}.")
-     if result["atom_id"]:
-      self.career.recent_atoms=(self.career.recent_atoms+[result["atom_id"]])[-60:]
-     if result["variant_id"]:
-      self.career.recent_variants=(self.career.recent_variants+[result["variant_id"]])[-120:]
-   elif pick==3:self.profile(s)
+   elif pick==3:self.notebook(s)
    elif pick==4 and s.at_capture:
-    match=s.warrant_match()
-    if not match:self.say("The dossier is incomplete. Eight identifying attributes are required.");continue
-    suspect=self.data.thieves[match];yes=self.choose(f"Issue warrant for {suspect['alias']} — {suspect['name']}",["Issue warrant","Cancel"],False)
+    warrant=self.engine.request_warrant(s);match=warrant.data.get("suspect_id")
+    if not warrant.ok:self.say("The dossier is incomplete. Eight identifying attributes are required.");continue
+    suspect=self.data.thieves[match];self.warrant_paperwork(s,match);yes=self.choose(f"Issue warrant for {suspect['alias']} — {suspect['name']}",["Sign and issue warrant","Cancel"],False)
     if yes:continue
-    s.elapsed+=30
-    if match==m["thief_id"]:
-     award=s.case_score+max(0,(10080-s.elapsed)//60)*(2+int(m['difficulty']));old=self.career.rank;self.career.points+=award
-     if m["mission_id"] not in self.career.solved:self.career.solved.append(m["mission_id"])
-     self.persist();self.say(m["success_conclusion"]);self.say(f"CASE CLOSED. Award: {award}. Total: {self.career.points}. Rank: {self.career.rank}.")
-     if old!=self.career.rank:self.say(f"PROMOTION: {old} → {self.career.rank}")
+    arrest=self.engine.arrest(s,match)
+    if arrest.ok:
+     award=arrest.data["award"];old=arrest.data["old_rank"]
+     self.persist();self.say("\n=== ARREST ===");self.say(m["capture_scene"]);self.say(f"The warrant is confirmed. {suspect['alias']} is taken into custody.");self.say(m["success_conclusion"]);self.say(f"CASE CLOSED. Award: {award}. Total: {self.career.points}. Rank: {self.career.rank}.")
+     if old!=self.career.rank:self.say(f"\n=== PROMOTION NOTICE ===\nCongratulations, Investigator {self.career.name}. Headquarters promotes you from {old} to {self.career.rank}.")
      return True
-    self.say("Wrong warrant. The thief escaped.");self.say(m["failure_conclusion"]);self.persist();return False
+    self.say("\n=== ESCAPE ===");self.say("The warrant names the wrong suspect. While officers correct the paperwork, the thief slips away.");self.say(m["failure_conclusion"]);self.persist();return False
    elif pick==4:
-    count=DIFFICULTY_RULES[m["difficulty"]]["options"];opts=s.options(count,self.rng);labels=[]
-    for st in opts:
-     row={"travel_minutes":"90","travel_mode":"local road transfer","distance_km":"within state"} if st==s.current_state else self.data.travel[(s.current_state,st)];mins=int(row["travel_minutes"]);labels.append(f"{st} — {self.data.hubs[st]['hub_city']} ({row['travel_mode']}, {row['distance_km']}{'' if row['distance_km']=='within state' else ' km'}, {mins//60}h {mins%60}m)")
+    options=self.engine.travel_options(s);labels=[]
+    for row in options:
+     mins=int(row["travel_minutes"]);labels.append(f"{row['state']} — {row['hub_city']} ({row['travel_mode']}, {row['distance_km']}{'' if row['distance_km']=='within state' else ' km'}, {mins//60}h {mins%60}m)")
     choice=self.choose("Choose destination",labels)
     if choice is None:self.persist(s);return False
-    correct,_=s.travel_to(opts[choice])
-    if correct:
-     self.say(m[f"transition_{s.stage}"]);self.say(m["capture_scene"] if s.at_capture else "The trail is warm.")
+    travel=self.engine.travel(s,options[choice]["state"])
+    if travel.ok:
+     self.say(m[f"transition_{s.stage}"]);self.say(f"\n=== ARRIVAL: {s.current_state.upper()} ===");self.say(f"You arrive through {self.data.hubs[s.current_state]['hub_city']}. "+("The suspect is close; finish the dossier and secure a warrant." if s.at_capture else "The trail is warm. Find three local witnesses."))
     else:self.say(m["false_lead_explanation"])
+   elif pick==5:self.help()
    else:self.persist(s);self.say("Game saved.");return False
-  self.say(m["failure_conclusion"]);self.say("The deadline passed. The thief escaped.");self.persist();return False
+  self.say("\n=== DEADLINE EXPIRED ===");self.say("Next Monday, 07:00. Headquarters closes the active pursuit as the seven-day window ends.");self.say(m["failure_conclusion"]);self.say("The thief escaped.");self.persist();return False
 def mission_menu(game,difficulty=None):
  pool=[m for m in game.data.missions.values() if game.data.engine_ready(m)]
  if difficulty:pool=[m for m in pool if m["difficulty"]=={"easy":"1","medium":"3","hard":"5"}[difficulty]]
  game.rng.shuffle(pool);pool=pool[:5];pick=game.choose("Choose a case",[f"{m['mission_id']} — {m['title']}" for m in pool]);return None if pick is None else pool[pick]
 def main(argv=None):
- p=argparse.ArgumentParser();p.add_argument("--reset",action="store_true");p.add_argument("--mission");p.add_argument("--difficulty",choices=["easy","medium","hard"]);p.add_argument("--seed",type=int);a=p.parse_args(argv);data=GameData.load()
+ p=argparse.ArgumentParser();p.add_argument("--reset",action="store_true");p.add_argument("--mission");p.add_argument("--difficulty",choices=["easy","medium","hard"]);p.add_argument("--seed",type=int);p.add_argument("--plain",action="store_true",help="use ASCII punctuation");p.add_argument("--width",type=int,default=78,metavar="N",help="terminal text width, 50 to 120");p.add_argument("--no-wrap",action="store_true",help="do not wrap printed lines");a=p.parse_args(argv);data=GameData.load()
+ if not 50<=a.width<=120:p.error("--width must be between 50 and 120")
  if a.reset and SAVE.exists():SAVE.unlink()
  career=Career.load()
  if not career:career=Career(input("Identify yourself, investigator: ").strip() or "Detective");career.dump()
- game=Game(data,career,random.Random(a.seed));game.say(f"Welcome, {career.name}. Rank: {career.rank}. Points: {career.points}.")
+ seed=a.seed if a.seed is not None else random.SystemRandom().randrange(2**32);game=Game(data,career,random.Random(seed),width=a.width,plain=a.plain,wrap=not a.no_wrap,seed=seed);game.say(f"Welcome, {career.name}. Rank: {career.rank}. Points: {career.points}.")
  if career.active:
   if career.active.get("mission_id") not in data.missions:
    game.say("Your saved pilot case belongs to the retired test set, so it has been archived.");career.active=None;career.dump()
@@ -218,5 +313,5 @@ def main(argv=None):
  mission=data.missions.get((a.mission or "").upper()) if a.mission else mission_menu(game,a.difficulty)
  if mission and not data.engine_ready(mission):
   game.say("That case is not yet available in the curated witness prototype.");return 2
- return 0 if not mission or game.play(Session.new(data,mission,career.recent_atoms,career.recent_variants)) else 1
+ return 0 if not mission or game.play(game.engine.start_case(mission).data["session"]) else 1
 if __name__=="__main__":raise SystemExit(main())

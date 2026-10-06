@@ -1,6 +1,7 @@
-import csv,random,tempfile,unittest
+import csv,io,random,tempfile,unittest
 from pathlib import Path
-from game import Career,GameData,Session,rank_for,DIFFICULTY_RULES,CASE_BASE
+from game import Career,Game,GameData,Session,rank_for,DIFFICULTY_RULES,CASE_BASE
+from engine import GameEngine,SAVE_VERSION
 ROOT=Path(__file__).resolve().parent.parent
 class GameTests(unittest.TestCase):
  @classmethod
@@ -202,9 +203,27 @@ class GameTests(unittest.TestCase):
   venues=s.venue_set();self.assertEqual(len(venues),3)
   self.assertTrue(all(v.get('location_id') and self.data.clue_engine.locations_by_id[v['location_id']]['state']==s.current_state for v in venues))
  def test_save_and_restore_session(self):
-  s=Session.new(self.data,self.ready);s.elapsed=315;s.evidence['hair']='test'
-  restored=Session.restore(self.data,s.save_dict());self.assertEqual(restored.elapsed,315);self.assertEqual(restored.evidence,{'hair':'test'})
+  s=Session.new(self.data,self.ready);s.elapsed=315;s.evidence['hair']='test';s.travel_history.append('Lagos')
+  restored=Session.restore(self.data,s.save_dict());self.assertEqual(restored.elapsed,315);self.assertEqual(restored.evidence,{'hair':'test'});self.assertEqual(restored.travel_history,[s.route[0],'Lagos'])
   legacy=s.save_dict();legacy.pop('current_location_id');restored=Session.restore(self.data,legacy);self.assertEqual(restored.current_location_id,s.mission['start_location_id'])
+ def test_notebook_destination_analysis_and_hidden_route(self):
+  s=Session.new(self.data,self.ready);self.assertEqual(s.route_summary(),[s.route[0],'?','?','?'])
+  venues=s.venue_set()
+  for i,v in enumerate(venues):s.interview(v,i)
+  self.assertEqual(s.possible_destinations(),[s.route[1]])
+  self.assertNotIn(s.route[1],s.eliminated_destinations());self.assertEqual(len(s.eliminated_destinations()),35)
+  s.travel_to(s.route[1]);self.assertEqual(s.route_summary()[:2],s.route[:2]);self.assertEqual(s.travel_history[-1],s.route[1])
+ def test_terminal_dossier_notebook_help_and_warrant_paperwork(self):
+  s=Session.new(self.data,self.ready);out=io.StringIO();game=Game(self.data,Career('Ada'),out=out)
+  game.case_dossier(s);game.notebook(s);game.help()
+  for field, value in self.data.profiles[s.mission['thief_id']].items():
+   if field in ('thief_id',):continue
+   if field in ('sex','height','skin_tone','hair','hobby','vehicle','accessory','feature'):s.evidence[field]=value
+  match=s.warrant_match();game.warrant_paperwork(s,match);rendered=out.getvalue()
+  for heading in ('CASE DOSSIER','DETECTIVE NOTEBOOK','TRAVEL MAP','DESTINATION ANALYSIS','SUSPECT DOSSIER','HELP AND RULES','WARRANT APPLICATION','UNIQUE MATCH'):self.assertIn(heading,rendered)
+ def test_plain_accessibility_mode_and_line_width(self):
+  out=io.StringIO();game=Game(self.data,Career('Ada'),out=out,width=50,plain=True);game.say('Alpha — Beta → “Gamma”')
+  self.assertEqual(out.getvalue().strip(),'Alpha - Beta -> "Gamma"');self.assertEqual(game.width,50)
  def test_ranks(self):
   self.assertEqual(rank_for(0),'Rookie');self.assertEqual(rank_for(5000),'Senior Investigator');self.assertEqual(rank_for(25000),'Chief Inspector');self.assertEqual(rank_for(35000),'Master Detective')
  def test_all_five_difficulty_levels_have_complete_rules(self):
@@ -230,4 +249,30 @@ class GameTests(unittest.TestCase):
   by_level={level:[x for x in rows if x['difficulty']==level] for level in ('1','3','5')}
   ambiguity={k:sum(float(x['average_clue_candidates']) for x in v)/len(v) for k,v in by_level.items()};two_clue={k:sum(float(x['two_clue_route_solve_probability']) for x in v)/len(v) for k,v in by_level.items()}
   self.assertLess(ambiguity['1'],ambiguity['5']);self.assertGreater(two_clue['1'],two_clue['5'])
+ def test_public_engine_returns_structured_events_and_replay_log(self):
+  career=Career('Ada');engine=GameEngine(self.data,career,seed=42);started=engine.start_case(self.ready);s=started.data['session']
+  self.assertEqual(started.events[0].as_dict()['type'],'case_started');self.assertEqual(s.seed,42)
+  venue=engine.venues(s)[0];result=engine.visit_venue(s,venue,0,wait=True)
+  self.assertTrue(result.ok);self.assertIsNotNone(result.event('witness_interviewed'));self.assertEqual(s.replay_log[-1]['command'],'visit_venue')
+  destination=s.route[1];travel=engine.travel(s,destination);self.assertTrue(travel.ok);self.assertIsNotNone(travel.event('arrived_on_trail'));self.assertEqual(s.replay_log[-1],{'command':'travel','state':destination})
+ def test_seeded_engine_travel_choices_are_reproducible(self):
+  first=GameEngine(self.data,Career('One'),seed=77);second=GameEngine(self.data,Career('Two'),seed=77)
+  a=first.start_case(self.ready).data['session'];b=second.start_case(self.ready).data['session']
+  self.assertEqual(first.travel_options(a),second.travel_options(b))
+ def test_versioned_career_save_migrates_legacy_payload(self):
+  with tempfile.TemporaryDirectory() as directory:
+   path=Path(directory)/'player.json';path.write_text('{"name":"Legacy","points":25,"solved":[],"active":null,"recent_atoms":[],"recent_variants":[]}')
+   loaded=Career.load(path);self.assertEqual((loaded.name,loaded.points),('Legacy',25));loaded.dump(path)
+   self.assertEqual(__import__('json').loads(path.read_text())['save_version'],SAVE_VERSION)
+ def test_all_missions_complete_through_public_command_interface(self):
+  career=Career('Interface Test');engine=GameEngine(self.data,career,seed=19)
+  for mission in self.data.missions.values():
+   s=engine.start_case(mission).data['session']
+   for stage in range(4):
+    for index,venue in enumerate(engine.venues(s)):
+     result=engine.visit_venue(s,venue,index,wait=True);self.assertTrue(result.ok,(mission['mission_id'],stage))
+    if stage<3:self.assertTrue(engine.travel(s,s.route[stage+1]).ok)
+   warrant=engine.request_warrant(s);self.assertTrue(warrant.ok,mission['mission_id'])
+   self.assertTrue(engine.arrest(s,warrant.data['suspect_id']).ok,mission['mission_id'])
+  self.assertEqual(len(career.solved),1000)
 if __name__=='__main__':unittest.main()
