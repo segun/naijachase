@@ -92,6 +92,18 @@ class GameTests(unittest.TestCase):
  def test_only_fully_curated_cases_are_offered(self):
   ready=[m['mission_id'] for m in self.data.missions.values() if self.data.engine_ready(m)]
   self.assertEqual(len(ready),1000);self.assertEqual(len({self.data.missions[x]['thief_id'] for x in ready}),100)
+ def test_every_mission_has_complete_unique_story_material(self):
+  missions=list(self.data.missions.values());self.assertEqual(len({m['title'] for m in missions}),1000)
+  required=('case_theme','stolen_item','premise','opening_briefing','preferred_venues','calling_card','thief_behaviour','transition_1','transition_2','transition_3','false_lead_explanation','capture_scene','success_conclusion','failure_conclusion')
+  self.assertTrue(all(all(m.get(key,'').strip() for key in required) for m in missions))
+  cards={}
+  for mission in missions:cards.setdefault(mission['thief_id'],set()).add(mission['calling_card'])
+  self.assertEqual(len(cards),100);self.assertTrue(all(len(values)==1 for values in cards.values()));self.assertEqual(len({next(iter(x)) for x in cards.values()}),100)
+ def test_false_destinations_share_evidence_before_full_intersection(self):
+  s=Session.new(self.data,self.ready)
+  for i,v in enumerate(s.venue_set()):s.interview(v,i)
+  target=s.route[1];options=s.options(5,random.Random(1));false=[x for x in options if x!=target]
+  self.assertTrue(false);self.assertTrue(all(any(x in clue for clue in s.candidate_sets['0']) for x in false[:2]))
  def test_same_state_leg_uses_local_transfer(self):
   mission=next(m for m in self.data.missions.values() if any(a==b for a,b in zip(self.data.route(m),self.data.route(m)[1:])))
   s=Session.new(self.data,mission);target=s.route[1]

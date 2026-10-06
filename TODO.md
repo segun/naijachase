@@ -20,11 +20,13 @@ completed.
 - [x] 35 venue experience profiles with time- and event-aware atmosphere
 - [x] Fictional local display names for every available state/venue pairing
 - [x] All 500 locations mapped through 2,946 suitable location-to-venue links
+- [x] 1,000 complete mission narrative profiles with unique titles
+- [x] 100 thief-specific calling cards
 - [x] 518 destination clue atoms: 14 for every jurisdiction
 - [x] 9,324 dialogue variants across three difficulty levels and two registers
 - [x] All 1,000 missions connected to the contextual witness engine
 - [x] Career-level recent clue and dialogue tracking
-- [x] 28 automated tests passing
+- [x] 30 automated tests passing
 
 ## Completed game systems
 
@@ -92,8 +94,10 @@ completed.
 - [x] Venue context is state-, city-, LGA-, landmark-, and institution-aware.
 - [ ] Local travel times are deterministic hub-based estimates until verified
   coordinates or road-routing data are added.
-- [ ] The 1,000 mission narratives are functional but often feel assembled
-  rather than individually authored.
+- [x] All 1,000 missions have coherent generated narrative profiles rather than
+  the former ten repeated premises.
+- [ ] The generated mission narratives still need a human line-editing pass to
+  achieve the nuance of 1,000 individually authored cases.
 - [ ] Difficulty affects clue selection but needs broader balancing across
   ambiguity, time, travel, false leads, and witness reliability.
 - [ ] Cultural, historical, and linguistic content needs a systematic editorial
@@ -149,14 +153,14 @@ completed.
 
 ### P1 — Mission quality
 
-- [ ] Coordinate each crime, stolen object, thief, route, venue, and final
+- [x] Coordinate each crime, stolen object, thief, route, venue, and final
   capture setting around a coherent theme.
-- [ ] Add crime-specific opening briefings.
-- [ ] Add route-specific transitions and arrival descriptions.
-- [ ] Create stronger false destinations that share one or two clue traits.
-- [ ] Add thief-specific behaviour and calling cards.
-- [ ] Add authored capture scenes and case conclusions.
-- [ ] Review all mission titles and premises for repetition.
+- [x] Add crime-specific opening briefings.
+- [x] Add route-specific transitions and arrival descriptions.
+- [x] Create stronger false destinations that share one or two clue traits.
+- [x] Add thief-specific behaviour and calling cards.
+- [x] Add authored capture scenes and case conclusions.
+- [x] Review all mission titles and premises for repetition.
 
 ### P2 — Difficulty and game balance
 
@@ -210,6 +214,7 @@ Run these checks after changing gameplay data or engine logic:
 python3 scripts/build_gameplay_data.py
 python3 scripts/build_state_clue_atoms.py
 python3 scripts/build_location_investigations.py
+python3 scripts/build_mission_narratives.py
 python3 -m unittest discover -s tests -v
 ```
 

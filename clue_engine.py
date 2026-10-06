@@ -82,12 +82,12 @@ class ClueEngine:
    sets=[set(x["candidate_states"].split("|")) for x in combo]
    if set.intersection(*sets)=={state}:valid.append(combo)
   return valid
- def encounters(self,state,mission_id,stage,profile,difficulty,recent_atoms=None,recent_variants=None,elapsed=0,investigation_state=None):
+ def encounters(self,state,mission_id,stage,profile,difficulty,recent_atoms=None,recent_variants=None,elapsed=0,investigation_state=None,preferred_venues=None):
   venue_state=investigation_state or state;combos=self.combinations(state,venue_state)
   if not combos:raise ValueError(f"No unique three-clue combination for {state}")
   recent_atoms=set(recent_atoms or []);recent_variants=set(recent_variants or [])
   ambiguity=lambda c:sum(len(x["candidate_states"].split("|")) for x in c)
-  suitability=lambda c:sum(self.venue_weight(venue_state,x["venue_id"]) for x in c)
+  preferred=set(preferred_venues or []);suitability=lambda c:sum(self.venue_weight(venue_state,x["venue_id"])+(3 if x["venue_id"] in preferred else 0) for x in c)
   repetition=lambda c:sum(x["atom_id"] in recent_atoms for x in c)
   scored=sorted(combos,key=lambda c:(repetition(c),ambiguity(c),-suitability(c)))
   if difficulty=="1":combo=scored[0]

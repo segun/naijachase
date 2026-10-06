@@ -20,6 +20,7 @@ class GameData:
  def load(cls,root=ROOT):
   d=root/"data";p=d/"missions";g=d/"gameplay"
   missions={x["mission_id"]:x for x in rows(p/"missions.csv")};clues={x:[] for x in missions}
+  for narrative in rows(g/"mission-narratives.csv"):missions[narrative["mission_id"]].update(narrative)
   for x in rows(p/"mission-clues.csv"):clues[x["mission_id"]].append(x)
   for x in clues.values():x.sort(key=lambda q:int(q["sequence"]))
   locations={x["location_id"]:x for x in rows(d/"locations/locations.csv")};thieves={x["thief_id"]:x for x in rows(d/"thieves/thieves.csv")}
@@ -61,7 +62,7 @@ class Session:
  def venue_set(self):
   target=self.route[min(self.stage+1,3)]
   if self.data.clue_engine.supported(target):
-   encounters=self.data.clue_engine.encounters(target,self.mission["mission_id"],self.stage,self.data.profiles[self.mission["thief_id"]],self.mission["difficulty"],self.avoid_atoms,self.avoid_variants,self.elapsed,self.current_state)
+   encounters=self.data.clue_engine.encounters(target,self.mission["mission_id"],self.stage,self.data.profiles[self.mission["thief_id"]],self.mission["difficulty"],self.avoid_atoms,self.avoid_variants,self.elapsed,self.current_state,self.mission.get("preferred_venues","").split("|"))
    return self.data.clue_engine.locate_encounters(encounters,self.current_state,self.mission["mission_id"],self.stage)
   seed=sum(map(ord,self.mission["mission_id"]))+self.stage*97+sum(map(ord,self.current_state));return random.Random(seed).sample(self.data.venues,3)
  def is_open(self,v):
@@ -89,11 +90,16 @@ class Session:
   possibilities=None
   if str(self.stage) in self.candidate_sets:
    possibilities=sorted(set.intersection(*(set(x) for x in self.candidate_sets[str(self.stage)])))
-  return {"repeat":False,"role":role,"route":route,"profile":new,"minutes":spent,"local_minutes":local_minutes,"possibilities":possibilities,"atom_id":v.get("atom_id",""),"variant_id":v.get("variant_id",""),"arrival":v.get("arrival_description",""),"introduction":v.get("witness_introduction",""),"before":v.get("before_behaviour",""),"after":v.get("after_behaviour",""),"event":v.get("investigation_event",""),"location_context":v.get("location_context",""),"witness_context":v.get("witness_context","")}
+  first_at_stage=sum(x.startswith(f"{self.stage}|{self.current_state}|") for x in self.visited)==1
+  story_detail=f"A small detail at the scene stands out: {self.mission['calling_card']}. {self.mission['thief_behaviour']}" if self.stage==0 and first_at_stage else ""
+  return {"repeat":False,"role":role,"route":route,"profile":new,"minutes":spent,"local_minutes":local_minutes,"possibilities":possibilities,"atom_id":v.get("atom_id",""),"variant_id":v.get("variant_id",""),"arrival":v.get("arrival_description",""),"introduction":v.get("witness_introduction",""),"before":v.get("before_behaviour",""),"after":v.get("after_behaviour",""),"event":v.get("investigation_event",""),"location_context":v.get("location_context",""),"witness_context":v.get("witness_context",""),"story_detail":story_detail}
  def location_offset(self):
   row=self.data.clue_engine.locations_by_id.get(self.current_location_id);return int(row['hub_travel_minutes']) if row else 0
  def options(self,count,rng):
-  target=self.route[min(self.stage+1,3)];options=[target];false=[]
+  target=self.route[min(self.stage+1,3)];options=[target];false=[];sets=self.candidate_sets.get(str(self.stage),[])
+  if sets:
+   scores={state:sum(state in choices for choices in sets) for state in self.data.hubs}
+   false=[state for state in sorted(scores,key=lambda x:(-scores[x],x)) if state not in (target,self.current_state) and scores[state]>0]
   for key in ("false_route_location_id_1","false_route_location_id_2"):
    st=state_of(self.data.locations[self.mission[key]])
    if st not in options+false and st!=self.current_state:false.append(st)
@@ -124,7 +130,7 @@ class Game:
   self.say("\nSUSPECT PROFILE");[self.say(f"  {k.title():10} {s.evidence.get(k,'Unknown')}") for k in FIELDS];match=s.warrant_match()
   if match:self.say(f"Profile match: {self.data.thieves[match]['alias']} — {self.data.thieves[match]['name']}")
  def play(self,s):
-  m=s.mission;self.say(f"\n=== {m['title']} ===");self.say(m["premise"]);self.say(f"Investigator {self.career.name}, the case begins Monday 07:00. You have seven days.")
+  m=s.mission;self.say(f"\n=== {m['title']} ===");self.say(m["premise"]);self.say(m["opening_briefing"]);self.say(f"Investigator {self.career.name}, the case begins Monday 07:00. You have seven days.")
   while not s.expired:
    self.persist(s);self.status(s);venues=s.venue_set();menu=[]
    for v in venues:
@@ -151,6 +157,7 @@ class Game:
      if result["before"]:self.say(result["before"])
      if result["witness_context"]:self.say(result["witness_context"])
      self.say(f"At the {v['venue_name'].lower()}, the {result['role']} says: “{result['route']}”")
+     if result["story_detail"]:self.say(result["story_detail"])
      if result["after"]:self.say(result["after"])
      if result["profile"]:self.say(f"Notebook updated: {result['profile'][0].title()}.")
      if result["possibilities"]:self.say(f"Possible destinations: {', '.join(result['possibilities'])}.")
@@ -168,19 +175,22 @@ class Game:
     if match==m["thief_id"]:
      award=s.case_score+max(0,(10080-s.elapsed)//60)*5;old=self.career.rank;self.career.points+=award
      if m["mission_id"] not in self.career.solved:self.career.solved.append(m["mission_id"])
-     self.persist();self.say(f"CASE CLOSED. Award: {award}. Total: {self.career.points}. Rank: {self.career.rank}.")
+     self.persist();self.say(m["success_conclusion"]);self.say(f"CASE CLOSED. Award: {award}. Total: {self.career.points}. Rank: {self.career.rank}.")
      if old!=self.career.rank:self.say(f"PROMOTION: {old} → {self.career.rank}")
      return True
-    self.say("Wrong warrant. The thief escaped.");self.persist();return False
+    self.say("Wrong warrant. The thief escaped.");self.say(m["failure_conclusion"]);self.persist();return False
    elif pick==4:
     count={"1":3,"3":4,"5":5}[m["difficulty"]];opts=s.options(count,self.rng);labels=[]
     for st in opts:
      row={"travel_minutes":"90","travel_mode":"local road transfer","distance_km":"within state"} if st==s.current_state else self.data.travel[(s.current_state,st)];mins=int(row["travel_minutes"]);labels.append(f"{st} — {self.data.hubs[st]['hub_city']} ({row['travel_mode']}, {row['distance_km']}{'' if row['distance_km']=='within state' else ' km'}, {mins//60}h {mins%60}m)")
     choice=self.choose("Choose destination",labels)
     if choice is None:self.persist(s);return False
-    correct,_=s.travel_to(opts[choice]);self.say("The trail is warm." if correct else "No confirmed sighting. This may be a false lead.")
+    correct,_=s.travel_to(opts[choice])
+    if correct:
+     self.say(m[f"transition_{s.stage}"]);self.say(m["capture_scene"] if s.at_capture else "The trail is warm.")
+    else:self.say(m["false_lead_explanation"])
    else:self.persist(s);self.say("Game saved.");return False
-  self.say("The deadline passed. The thief escaped.");self.persist();return False
+  self.say(m["failure_conclusion"]);self.say("The deadline passed. The thief escaped.");self.persist();return False
 def mission_menu(game,difficulty=None):
  pool=[m for m in game.data.missions.values() if game.data.engine_ready(m)]
  if difficulty:pool=[m for m in pool if m["difficulty"]=={"easy":"1","medium":"3","hard":"5"}[difficulty]]

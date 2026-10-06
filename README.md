@@ -113,6 +113,16 @@ location catalogue does not yet include coordinates, local journey times are
 deterministic hub-based estimates; verified geospatial routing is tracked as a
 later balancing task.
 
+The mission-quality layer adds 1,000 narrative profiles and replaces the old
+ten-premise cycle in play. Every case now has a unique title, a concrete stolen
+item, crime-specific briefing, three route transitions, a thematic venue
+preference, a thief-specific calling card, behavioural evidence, a capture
+scene, and separate success and failure conclusions. Travel choices use the
+active witness evidence to prioritise false destinations that share one or two
+clues with the correct state. The case remains solvable only by combining all
+three clues.
+
 Regenerate location placement data with
-`python3 scripts/build_location_investigations.py`, then run the automated
-checks with `python3 -m unittest discover -s tests -v`.
+`python3 scripts/build_location_investigations.py` and mission stories with
+`python3 scripts/build_mission_narratives.py`, then run the automated checks
+with `python3 -m unittest discover -s tests -v`.
