@@ -91,6 +91,21 @@ formulations: three variants for each clue,
 difficulty level, and speech register. Career saves retain the 60 most recent
 clue atoms and 120 most recent dialogue variants so later cases prefer unused
 material when alternatives exist.
+
+The editorial pipeline runs `scripts/editorial_review_clues.py` after clue
+generation. It preserves every clue ID and adds an internal knowledge link,
+source URL, source authority, reference-alignment status, temporal scope,
+sensitivity flags, Nigerian-English status, Pidgin-review status, and editorial
+notes. All 518 atoms have source URLs; 406 link to internal knowledge records;
+238 are reference-cross-checked. The remaining 280 are deliberately labelled
+for exact page-or-passage verification. The audit also separates historical,
+stable, and changeable claims, flags 78 sensitive clues for human review, and
+keeps all Pidgin variants pending regional native-speaker sign-off.
+
+The complete queue is stored in
+`data/gameplay/clue-editorial-review.csv`. Automated checks are publication
+guards, not a substitute for the outstanding source-line, sensitivity, name,
+diacritic, and native-speaker reviews.
 The venue layer contains 35 venue types and 1,295 explicit state-to-venue
 suitability rules. The engine excludes unavailable venues and favours locally
 characteristic ones: for example, mosque and emirate clues rank highly in

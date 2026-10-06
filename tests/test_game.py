@@ -26,6 +26,20 @@ class GameTests(unittest.TestCase):
    'ecology':{'ecology','wildlife','wetlands','birdlife'},'agriculture':{'agriculture'},'industry':{'industry','mining'},
    'institutions':{'institutions','education','government'},'monuments':{'heritage','fortification','earthworks'},'heritage':{'heritage','archaeology'} }
   for theme,aliases in themes.items():self.assertTrue(dimensions&aliases,theme)
+ def test_every_clue_has_editorial_provenance_and_release_metadata(self):
+  with (ROOT/'data/gameplay/clue-editorial-review.csv').open(encoding='utf-8-sig',newline='') as f:audit=list(csv.DictReader(f))
+  self.assertEqual(len(audit),518);self.assertEqual({x['atom_id'] for x in audit},{x['atom_id'] for values in self.data.clue_engine.by_state.values() for x in values})
+  self.assertTrue(all(x['source_attached']=='yes' and x['source_url'].startswith('http') for x in audit))
+  self.assertTrue(all(x['verification_status'] in {'reference_cross_checked','source_attached_line_check_required'} for x in audit))
+  self.assertTrue(all(x['pidgin_native_review']=='required' for x in audit));self.assertTrue(all(x['broad_term_flags']=='none' for x in audit))
+  for row in audit:
+   if row['temporal_scope']=='current_or_changeable':self.assertIn('Recheck before each content release',row['editorial_notes'])
+   if row['sensitivity_flags']!='none':self.assertIn('Human sensitivity review required',row['editorial_notes'])
+ def test_clue_catalogue_carries_editorial_metadata(self):
+  required=('original_source','source_url','source_authority','verification_status','reference_alignment_score','temporal_scope','sensitivity_flags','nigerian_english_review','pidgin_native_review','editorial_notes')
+  for values in self.data.clue_engine.by_state.values():
+   for atom in values:
+    self.assertTrue(all(key in atom and atom[key] for key in required));self.assertEqual(atom['source'],atom['source_url'])
  def test_all_clue_venues_are_available_in_their_state(self):
   for state,atoms in self.data.clue_engine.by_state.items():
    for atom in atoms:self.assertGreater(self.data.clue_engine.venue_weight(state,atom['venue_id']),0,(state,atom['venue_id']))

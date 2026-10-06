@@ -25,10 +25,13 @@ completed.
 - [x] Balance simulation report for all 1,000 missions
 - [x] Coordinate-backed local travel for 416 matched locations
 - [x] 518 destination clue atoms: 14 for every jurisdiction
+- [x] Source URLs attached to all 518 clue atoms
+- [x] 406 clue atoms linked directly to internal knowledge records
+- [x] 238 clues reference-cross-checked; 280 held for exact source-line review
 - [x] 9,324 dialogue variants across three difficulty levels and two registers
 - [x] All 1,000 missions connected to the contextual witness engine
 - [x] Career-level recent clue and dialogue tracking
-- [x] 35 automated tests passing
+- [x] 37 automated tests passing
 
 ## Completed game systems
 
@@ -106,8 +109,10 @@ completed.
   achieve the nuance of 1,000 individually authored cases.
 - [x] Difficulty is balanced across ambiguity, phrasing, travel choices, false
   leads, time, scoring, and explicitly labelled witness reliability.
-- [ ] Cultural, historical, and linguistic content needs a systematic editorial
-  and source-verification pass before publication.
+- [x] All cultural, historical, and linguistic clues have systematic editorial
+  metadata and source coverage.
+- [ ] Publication remains blocked on 280 exact source-line checks, 78 human
+  sensitivity reviews, and native-speaker review of the Pidgin variants.
 - [x] Venue encounters now have an atmospheric terminal presentation.
 - [ ] The wider terminal presentation outside venue encounters remains
   functional rather than atmospheric.
@@ -184,14 +189,18 @@ completed.
 
 ### P2 — Editorial review
 
-- [ ] Attach a reliable source or knowledge record to every clue atom.
-- [ ] Verify geographic, historical, cultural, and institutional claims.
+- [x] Attach a reliable source or knowledge record to every clue atom.
+- [ ] Verify geographic, historical, cultural, and institutional claims. Current
+  status: 238 reference-cross-checked; 280 require exact source-line checks.
 - [ ] Review Nigerian English and Pidgin with native speakers from multiple
   regions; avoid presenting one variety as universal.
-- [ ] Check names, spelling, diacritics, and capitalisation.
-- [ ] Distinguish historical facts from current institutions and conditions.
-- [ ] Remove stereotypes and overly broad ethnic or religious assumptions.
-- [ ] Mark sensitive civil-war, religious, and political material for review.
+- [ ] Check names, spelling, diacritics, and capitalisation. Automated Nigerian
+  English and capitalisation checks pass; human name and diacritic review remains.
+- [x] Distinguish historical facts from current institutions and conditions.
+- [x] Remove stereotypes and overly broad ethnic or religious assumptions.
+  Automated broad-term scan currently reports zero findings.
+- [x] Mark sensitive civil-war, religious, and political material for review.
+  Seventy-eight clues are flagged in the editorial queue.
 
 ### P3 — Terminal experience
 
@@ -237,6 +246,7 @@ Run these checks after changing gameplay data or engine logic:
 ```bash
 python3 scripts/build_gameplay_data.py
 python3 scripts/build_state_clue_atoms.py
+python3 scripts/editorial_review_clues.py
 python3 scripts/build_location_coordinates.py
 python3 scripts/build_location_investigations.py
 python3 scripts/build_mission_narratives.py
