@@ -1,0 +1,1296 @@
+state,venue_id,available,suitability_weight,display_name,review_status,reason
+Abia,market,yes,5,Umuahia Travellers' Market,reviewed_2026-10-06,state-specific priority
+Abia,library,yes,2,Abia Reading House,reviewed_2026-10-06,general investigative venue
+Abia,nightclub,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Abia,church,yes,4,Umuahia Unity Church,reviewed_2026-10-06,state-specific priority
+Abia,mosque,yes,1,Umuahia Unity Mosque,reviewed_2026-10-06,general investigative venue
+Abia,museum,yes,2,Abia Memory House,reviewed_2026-10-06,general investigative venue
+Abia,motor_park,yes,4,Umuahia Main Motor Park,reviewed_2026-10-06,general investigative venue
+Abia,hotel,yes,3,Crossroads Hotel,reviewed_2026-10-06,general investigative venue
+Abia,restaurant,yes,3,The Travellers' Pot,reviewed_2026-10-06,general investigative venue
+Abia,airport,yes,2,Umuahia Air Terminal,reviewed_2026-10-06,general investigative venue
+Abia,radio_station,yes,2,Abia Community Radio,reviewed_2026-10-06,general investigative venue
+Abia,hospital,yes,2,Umuahia General Hospital,reviewed_2026-10-06,general investigative venue
+Abia,beach,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Abia,carnival_workshop,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Abia,cattle_market,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Abia,community_hall,yes,2,Umuahia Community Hall,reviewed_2026-10-06,general investigative venue
+Abia,conservation_office,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Abia,craft_market,yes,4,Umuahia Makers' Market,reviewed_2026-10-06,state-specific priority
+Abia,emir_palace,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Abia,factory_gate,yes,5,Umuahia Industrial Gate,reviewed_2026-10-06,state-specific priority
+Abia,farm,yes,2,Green Acres Farm,reviewed_2026-10-06,general investigative venue
+Abia,festival_ground,yes,1,Umuahia Festival Ground,reviewed_2026-10-06,general investigative venue
+Abia,fishing_jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Abia,mining_site,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Abia,monument,yes,1,Abia Heritage Monument,reviewed_2026-10-06,general investigative venue
+Abia,palace,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Abia,police_station,yes,2,Umuahia Central Police Station,reviewed_2026-10-06,general investigative venue
+Abia,railway_station,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Abia,refinery,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Abia,sacred_grove,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Abia,seaport,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Abia,traditional_council,yes,2,Umuahia Traditional Council,reviewed_2026-10-06,general investigative venue
+Abia,university,yes,2,Abia Civic University,reviewed_2026-10-06,general investigative venue
+Abia,waterfront,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Abia,jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Adamawa,market,yes,4,Yola Travellers' Market,reviewed_2026-10-06,general investigative venue
+Adamawa,library,yes,2,Adamawa Reading House,reviewed_2026-10-06,general investigative venue
+Adamawa,nightclub,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Adamawa,church,yes,1,Yola Unity Church,reviewed_2026-10-06,general investigative venue
+Adamawa,mosque,yes,4,Yola Unity Mosque,reviewed_2026-10-06,state-specific priority
+Adamawa,museum,yes,2,Adamawa Memory House,reviewed_2026-10-06,general investigative venue
+Adamawa,motor_park,yes,4,Yola Main Motor Park,reviewed_2026-10-06,general investigative venue
+Adamawa,hotel,yes,3,Crossroads Hotel,reviewed_2026-10-06,general investigative venue
+Adamawa,restaurant,yes,3,The Travellers' Pot,reviewed_2026-10-06,general investigative venue
+Adamawa,airport,yes,2,Yola Air Terminal,reviewed_2026-10-06,general investigative venue
+Adamawa,radio_station,yes,2,Adamawa Community Radio,reviewed_2026-10-06,general investigative venue
+Adamawa,hospital,yes,2,Yola General Hospital,reviewed_2026-10-06,general investigative venue
+Adamawa,beach,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Adamawa,carnival_workshop,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Adamawa,cattle_market,yes,5,Yola Livestock Yard,reviewed_2026-10-06,state-specific priority
+Adamawa,community_hall,yes,2,Yola Community Hall,reviewed_2026-10-06,general investigative venue
+Adamawa,conservation_office,yes,5,Adamawa Field Office,reviewed_2026-10-06,state-specific priority
+Adamawa,craft_market,yes,2,Yola Makers' Market,reviewed_2026-10-06,general investigative venue
+Adamawa,emir_palace,yes,4,Emirate Visitor Court,reviewed_2026-10-06,state-specific priority
+Adamawa,factory_gate,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Adamawa,farm,yes,2,Green Acres Farm,reviewed_2026-10-06,general investigative venue
+Adamawa,festival_ground,yes,1,Yola Festival Ground,reviewed_2026-10-06,general investigative venue
+Adamawa,fishing_jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Adamawa,mining_site,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Adamawa,monument,yes,1,Adamawa Heritage Monument,reviewed_2026-10-06,general investigative venue
+Adamawa,palace,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Adamawa,police_station,yes,2,Yola Central Police Station,reviewed_2026-10-06,general investigative venue
+Adamawa,railway_station,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Adamawa,refinery,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Adamawa,sacred_grove,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Adamawa,seaport,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Adamawa,traditional_council,yes,2,Yola Traditional Council,reviewed_2026-10-06,general investigative venue
+Adamawa,university,yes,2,Adamawa Civic University,reviewed_2026-10-06,general investigative venue
+Adamawa,waterfront,yes,3,River Road Landing,reviewed_2026-10-06,state-specific priority
+Adamawa,jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Akwa Ibom,market,yes,4,Uyo Travellers' Market,reviewed_2026-10-06,state-specific priority
+Akwa Ibom,library,yes,2,Akwa Ibom Reading House,reviewed_2026-10-06,general investigative venue
+Akwa Ibom,nightclub,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Akwa Ibom,church,yes,4,Uyo Unity Church,reviewed_2026-10-06,state-specific priority
+Akwa Ibom,mosque,yes,1,Uyo Unity Mosque,reviewed_2026-10-06,general investigative venue
+Akwa Ibom,museum,yes,2,Akwa Ibom Memory House,reviewed_2026-10-06,general investigative venue
+Akwa Ibom,motor_park,yes,4,Uyo Main Motor Park,reviewed_2026-10-06,general investigative venue
+Akwa Ibom,hotel,yes,3,Crossroads Hotel,reviewed_2026-10-06,general investigative venue
+Akwa Ibom,restaurant,yes,3,The Travellers' Pot,reviewed_2026-10-06,general investigative venue
+Akwa Ibom,airport,yes,2,Uyo Air Terminal,reviewed_2026-10-06,general investigative venue
+Akwa Ibom,radio_station,yes,2,Akwa Ibom Community Radio,reviewed_2026-10-06,general investigative venue
+Akwa Ibom,hospital,yes,2,Uyo General Hospital,reviewed_2026-10-06,general investigative venue
+Akwa Ibom,beach,yes,4,Blue Horizon Beach,reviewed_2026-10-06,state-specific priority
+Akwa Ibom,carnival_workshop,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Akwa Ibom,cattle_market,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Akwa Ibom,community_hall,yes,2,Uyo Community Hall,reviewed_2026-10-06,general investigative venue
+Akwa Ibom,conservation_office,yes,3,Akwa Ibom Field Office,reviewed_2026-10-06,state-specific priority
+Akwa Ibom,craft_market,yes,2,Uyo Makers' Market,reviewed_2026-10-06,general investigative venue
+Akwa Ibom,emir_palace,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Akwa Ibom,factory_gate,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Akwa Ibom,farm,yes,2,Green Acres Farm,reviewed_2026-10-06,general investigative venue
+Akwa Ibom,festival_ground,yes,1,Uyo Festival Ground,reviewed_2026-10-06,general investigative venue
+Akwa Ibom,fishing_jetty,yes,5,Riverbend Fishing Jetty,reviewed_2026-10-06,state-specific priority
+Akwa Ibom,mining_site,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Akwa Ibom,monument,yes,1,Akwa Ibom Heritage Monument,reviewed_2026-10-06,general investigative venue
+Akwa Ibom,palace,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Akwa Ibom,police_station,yes,2,Uyo Central Police Station,reviewed_2026-10-06,general investigative venue
+Akwa Ibom,railway_station,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Akwa Ibom,refinery,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Akwa Ibom,sacred_grove,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Akwa Ibom,seaport,yes,3,Harbour Gate Terminal,reviewed_2026-10-06,state-specific priority
+Akwa Ibom,traditional_council,yes,2,Uyo Traditional Council,reviewed_2026-10-06,general investigative venue
+Akwa Ibom,university,yes,2,Akwa Ibom Civic University,reviewed_2026-10-06,general investigative venue
+Akwa Ibom,waterfront,yes,5,River Road Landing,reviewed_2026-10-06,state-specific priority
+Akwa Ibom,jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Anambra,market,yes,5,Awka Travellers' Market,reviewed_2026-10-06,state-specific priority
+Anambra,library,yes,2,Anambra Reading House,reviewed_2026-10-06,general investigative venue
+Anambra,nightclub,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Anambra,church,yes,4,Awka Unity Church,reviewed_2026-10-06,state-specific priority
+Anambra,mosque,yes,1,Awka Unity Mosque,reviewed_2026-10-06,general investigative venue
+Anambra,museum,yes,2,Anambra Memory House,reviewed_2026-10-06,general investigative venue
+Anambra,motor_park,yes,5,Awka Main Motor Park,reviewed_2026-10-06,state-specific priority
+Anambra,hotel,yes,3,Crossroads Hotel,reviewed_2026-10-06,general investigative venue
+Anambra,restaurant,yes,3,The Travellers' Pot,reviewed_2026-10-06,general investigative venue
+Anambra,airport,yes,2,Awka Air Terminal,reviewed_2026-10-06,general investigative venue
+Anambra,radio_station,yes,2,Anambra Community Radio,reviewed_2026-10-06,general investigative venue
+Anambra,hospital,yes,2,Awka General Hospital,reviewed_2026-10-06,general investigative venue
+Anambra,beach,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Anambra,carnival_workshop,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Anambra,cattle_market,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Anambra,community_hall,yes,2,Awka Community Hall,reviewed_2026-10-06,general investigative venue
+Anambra,conservation_office,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Anambra,craft_market,yes,2,Awka Makers' Market,reviewed_2026-10-06,general investigative venue
+Anambra,emir_palace,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Anambra,factory_gate,yes,4,Awka Industrial Gate,reviewed_2026-10-06,state-specific priority
+Anambra,farm,yes,2,Green Acres Farm,reviewed_2026-10-06,general investigative venue
+Anambra,festival_ground,yes,1,Awka Festival Ground,reviewed_2026-10-06,general investigative venue
+Anambra,fishing_jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Anambra,mining_site,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Anambra,monument,yes,1,Anambra Heritage Monument,reviewed_2026-10-06,general investigative venue
+Anambra,palace,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Anambra,police_station,yes,2,Awka Central Police Station,reviewed_2026-10-06,general investigative venue
+Anambra,railway_station,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Anambra,refinery,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Anambra,sacred_grove,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Anambra,seaport,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Anambra,traditional_council,yes,2,Awka Traditional Council,reviewed_2026-10-06,general investigative venue
+Anambra,university,yes,2,Anambra Civic University,reviewed_2026-10-06,general investigative venue
+Anambra,waterfront,yes,3,River Road Landing,reviewed_2026-10-06,state-specific priority
+Anambra,jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Bauchi,market,yes,4,Bauchi Travellers' Market,reviewed_2026-10-06,general investigative venue
+Bauchi,library,yes,2,Bauchi Reading House,reviewed_2026-10-06,general investigative venue
+Bauchi,nightclub,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Bauchi,church,yes,1,Bauchi Unity Church,reviewed_2026-10-06,general investigative venue
+Bauchi,mosque,yes,4,Bauchi Unity Mosque,reviewed_2026-10-06,state-specific priority
+Bauchi,museum,yes,2,Bauchi Memory House,reviewed_2026-10-06,general investigative venue
+Bauchi,motor_park,yes,4,Bauchi Main Motor Park,reviewed_2026-10-06,general investigative venue
+Bauchi,hotel,yes,3,Crossroads Hotel,reviewed_2026-10-06,general investigative venue
+Bauchi,restaurant,yes,3,The Travellers' Pot,reviewed_2026-10-06,general investigative venue
+Bauchi,airport,yes,2,Bauchi Air Terminal,reviewed_2026-10-06,general investigative venue
+Bauchi,radio_station,yes,2,Bauchi Community Radio,reviewed_2026-10-06,general investigative venue
+Bauchi,hospital,yes,2,Bauchi General Hospital,reviewed_2026-10-06,general investigative venue
+Bauchi,beach,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Bauchi,carnival_workshop,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Bauchi,cattle_market,yes,4,Bauchi Livestock Yard,reviewed_2026-10-06,state-specific priority
+Bauchi,community_hall,yes,2,Bauchi Community Hall,reviewed_2026-10-06,general investigative venue
+Bauchi,conservation_office,yes,5,Bauchi Field Office,reviewed_2026-10-06,state-specific priority
+Bauchi,craft_market,yes,2,Bauchi Makers' Market,reviewed_2026-10-06,general investigative venue
+Bauchi,emir_palace,yes,4,Emirate Visitor Court,reviewed_2026-10-06,state-specific priority
+Bauchi,factory_gate,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Bauchi,farm,yes,2,Green Acres Farm,reviewed_2026-10-06,general investigative venue
+Bauchi,festival_ground,yes,1,Bauchi Festival Ground,reviewed_2026-10-06,general investigative venue
+Bauchi,fishing_jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Bauchi,mining_site,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Bauchi,monument,yes,1,Bauchi Heritage Monument,reviewed_2026-10-06,general investigative venue
+Bauchi,palace,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Bauchi,police_station,yes,2,Bauchi Central Police Station,reviewed_2026-10-06,general investigative venue
+Bauchi,railway_station,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Bauchi,refinery,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Bauchi,sacred_grove,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Bauchi,seaport,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Bauchi,traditional_council,yes,2,Bauchi Traditional Council,reviewed_2026-10-06,general investigative venue
+Bauchi,university,yes,2,Bauchi Civic University,reviewed_2026-10-06,general investigative venue
+Bauchi,waterfront,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Bauchi,jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Bayelsa,market,yes,4,Yenagoa Travellers' Market,reviewed_2026-10-06,state-specific priority
+Bayelsa,library,yes,2,Bayelsa Reading House,reviewed_2026-10-06,general investigative venue
+Bayelsa,nightclub,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Bayelsa,church,yes,1,Yenagoa Unity Church,reviewed_2026-10-06,general investigative venue
+Bayelsa,mosque,yes,1,Yenagoa Unity Mosque,reviewed_2026-10-06,general investigative venue
+Bayelsa,museum,yes,2,Bayelsa Memory House,reviewed_2026-10-06,general investigative venue
+Bayelsa,motor_park,yes,4,Yenagoa Main Motor Park,reviewed_2026-10-06,general investigative venue
+Bayelsa,hotel,yes,3,Crossroads Hotel,reviewed_2026-10-06,general investigative venue
+Bayelsa,restaurant,yes,3,The Travellers' Pot,reviewed_2026-10-06,general investigative venue
+Bayelsa,airport,yes,2,Yenagoa Air Terminal,reviewed_2026-10-06,general investigative venue
+Bayelsa,radio_station,yes,2,Bayelsa Community Radio,reviewed_2026-10-06,general investigative venue
+Bayelsa,hospital,yes,2,Yenagoa General Hospital,reviewed_2026-10-06,general investigative venue
+Bayelsa,beach,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Bayelsa,carnival_workshop,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Bayelsa,cattle_market,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Bayelsa,community_hall,yes,2,Yenagoa Community Hall,reviewed_2026-10-06,general investigative venue
+Bayelsa,conservation_office,yes,4,Bayelsa Field Office,reviewed_2026-10-06,state-specific priority
+Bayelsa,craft_market,yes,2,Yenagoa Makers' Market,reviewed_2026-10-06,general investigative venue
+Bayelsa,emir_palace,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Bayelsa,factory_gate,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Bayelsa,farm,yes,2,Green Acres Farm,reviewed_2026-10-06,general investigative venue
+Bayelsa,festival_ground,yes,1,Yenagoa Festival Ground,reviewed_2026-10-06,general investigative venue
+Bayelsa,fishing_jetty,yes,5,Riverbend Fishing Jetty,reviewed_2026-10-06,state-specific priority
+Bayelsa,mining_site,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Bayelsa,monument,yes,1,Bayelsa Heritage Monument,reviewed_2026-10-06,general investigative venue
+Bayelsa,palace,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Bayelsa,police_station,yes,2,Yenagoa Central Police Station,reviewed_2026-10-06,general investigative venue
+Bayelsa,railway_station,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Bayelsa,refinery,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Bayelsa,sacred_grove,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Bayelsa,seaport,yes,2,Harbour Gate Terminal,reviewed_2026-10-06,state-specific priority
+Bayelsa,traditional_council,yes,2,Yenagoa Traditional Council,reviewed_2026-10-06,general investigative venue
+Bayelsa,university,yes,2,Bayelsa Civic University,reviewed_2026-10-06,general investigative venue
+Bayelsa,waterfront,yes,5,River Road Landing,reviewed_2026-10-06,state-specific priority
+Bayelsa,jetty,yes,5,Crossing Point Jetty,reviewed_2026-10-06,state-specific priority
+Benue,market,yes,5,Makurdi Travellers' Market,reviewed_2026-10-06,state-specific priority
+Benue,library,yes,2,Benue Reading House,reviewed_2026-10-06,general investigative venue
+Benue,nightclub,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Benue,church,yes,1,Makurdi Unity Church,reviewed_2026-10-06,general investigative venue
+Benue,mosque,yes,1,Makurdi Unity Mosque,reviewed_2026-10-06,general investigative venue
+Benue,museum,yes,2,Benue Memory House,reviewed_2026-10-06,general investigative venue
+Benue,motor_park,yes,4,Makurdi Main Motor Park,reviewed_2026-10-06,general investigative venue
+Benue,hotel,yes,3,Crossroads Hotel,reviewed_2026-10-06,general investigative venue
+Benue,restaurant,yes,3,The Travellers' Pot,reviewed_2026-10-06,general investigative venue
+Benue,airport,yes,2,Makurdi Air Terminal,reviewed_2026-10-06,general investigative venue
+Benue,radio_station,yes,2,Benue Community Radio,reviewed_2026-10-06,general investigative venue
+Benue,hospital,yes,2,Makurdi General Hospital,reviewed_2026-10-06,general investigative venue
+Benue,beach,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Benue,carnival_workshop,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Benue,cattle_market,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Benue,community_hall,yes,2,Makurdi Community Hall,reviewed_2026-10-06,general investigative venue
+Benue,conservation_office,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Benue,craft_market,yes,2,Makurdi Makers' Market,reviewed_2026-10-06,general investigative venue
+Benue,emir_palace,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Benue,factory_gate,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Benue,farm,yes,5,Green Acres Farm,reviewed_2026-10-06,state-specific priority
+Benue,festival_ground,yes,4,Makurdi Festival Ground,reviewed_2026-10-06,state-specific priority
+Benue,fishing_jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Benue,mining_site,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Benue,monument,yes,1,Benue Heritage Monument,reviewed_2026-10-06,general investigative venue
+Benue,palace,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Benue,police_station,yes,2,Makurdi Central Police Station,reviewed_2026-10-06,general investigative venue
+Benue,railway_station,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Benue,refinery,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Benue,sacred_grove,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Benue,seaport,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Benue,traditional_council,yes,2,Makurdi Traditional Council,reviewed_2026-10-06,general investigative venue
+Benue,university,yes,2,Benue Civic University,reviewed_2026-10-06,general investigative venue
+Benue,waterfront,yes,3,River Road Landing,reviewed_2026-10-06,state-specific priority
+Benue,jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Borno,market,yes,4,Maiduguri Travellers' Market,reviewed_2026-10-06,general investigative venue
+Borno,library,yes,2,Borno Reading House,reviewed_2026-10-06,general investigative venue
+Borno,nightclub,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Borno,church,yes,1,Maiduguri Unity Church,reviewed_2026-10-06,general investigative venue
+Borno,mosque,yes,5,Maiduguri Unity Mosque,reviewed_2026-10-06,state-specific priority
+Borno,museum,yes,2,Borno Memory House,reviewed_2026-10-06,general investigative venue
+Borno,motor_park,yes,4,Maiduguri Main Motor Park,reviewed_2026-10-06,general investigative venue
+Borno,hotel,yes,3,Crossroads Hotel,reviewed_2026-10-06,general investigative venue
+Borno,restaurant,yes,3,The Travellers' Pot,reviewed_2026-10-06,general investigative venue
+Borno,airport,yes,2,Maiduguri Air Terminal,reviewed_2026-10-06,general investigative venue
+Borno,radio_station,yes,2,Borno Community Radio,reviewed_2026-10-06,general investigative venue
+Borno,hospital,yes,2,Maiduguri General Hospital,reviewed_2026-10-06,general investigative venue
+Borno,beach,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Borno,carnival_workshop,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Borno,cattle_market,yes,4,Maiduguri Livestock Yard,reviewed_2026-10-06,state-specific priority
+Borno,community_hall,yes,2,Maiduguri Community Hall,reviewed_2026-10-06,general investigative venue
+Borno,conservation_office,yes,4,Borno Field Office,reviewed_2026-10-06,state-specific priority
+Borno,craft_market,yes,2,Maiduguri Makers' Market,reviewed_2026-10-06,general investigative venue
+Borno,emir_palace,yes,5,Emirate Visitor Court,reviewed_2026-10-06,state-specific priority
+Borno,factory_gate,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Borno,farm,yes,2,Green Acres Farm,reviewed_2026-10-06,general investigative venue
+Borno,festival_ground,yes,1,Maiduguri Festival Ground,reviewed_2026-10-06,general investigative venue
+Borno,fishing_jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Borno,mining_site,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Borno,monument,yes,1,Borno Heritage Monument,reviewed_2026-10-06,general investigative venue
+Borno,palace,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Borno,police_station,yes,2,Maiduguri Central Police Station,reviewed_2026-10-06,general investigative venue
+Borno,railway_station,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Borno,refinery,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Borno,sacred_grove,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Borno,seaport,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Borno,traditional_council,yes,2,Maiduguri Traditional Council,reviewed_2026-10-06,general investigative venue
+Borno,university,yes,2,Borno Civic University,reviewed_2026-10-06,general investigative venue
+Borno,waterfront,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Borno,jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Cross River,market,yes,4,Calabar Travellers' Market,reviewed_2026-10-06,state-specific priority
+Cross River,library,yes,2,Cross River Reading House,reviewed_2026-10-06,general investigative venue
+Cross River,nightclub,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Cross River,church,yes,3,Calabar Unity Church,reviewed_2026-10-06,state-specific priority
+Cross River,mosque,yes,1,Calabar Unity Mosque,reviewed_2026-10-06,general investigative venue
+Cross River,museum,yes,2,Cross River Memory House,reviewed_2026-10-06,general investigative venue
+Cross River,motor_park,yes,4,Calabar Main Motor Park,reviewed_2026-10-06,general investigative venue
+Cross River,hotel,yes,3,Crossroads Hotel,reviewed_2026-10-06,general investigative venue
+Cross River,restaurant,yes,3,The Travellers' Pot,reviewed_2026-10-06,general investigative venue
+Cross River,airport,yes,2,Calabar Air Terminal,reviewed_2026-10-06,general investigative venue
+Cross River,radio_station,yes,2,Cross River Community Radio,reviewed_2026-10-06,general investigative venue
+Cross River,hospital,yes,2,Calabar General Hospital,reviewed_2026-10-06,general investigative venue
+Cross River,beach,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Cross River,carnival_workshop,yes,5,Unity Carnival Workshop,reviewed_2026-10-06,state-specific priority
+Cross River,cattle_market,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Cross River,community_hall,yes,2,Calabar Community Hall,reviewed_2026-10-06,general investigative venue
+Cross River,conservation_office,yes,5,Cross River Field Office,reviewed_2026-10-06,state-specific priority
+Cross River,craft_market,yes,2,Calabar Makers' Market,reviewed_2026-10-06,general investigative venue
+Cross River,emir_palace,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Cross River,factory_gate,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Cross River,farm,yes,2,Green Acres Farm,reviewed_2026-10-06,general investigative venue
+Cross River,festival_ground,yes,1,Calabar Festival Ground,reviewed_2026-10-06,general investigative venue
+Cross River,fishing_jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Cross River,mining_site,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Cross River,monument,yes,1,Cross River Heritage Monument,reviewed_2026-10-06,general investigative venue
+Cross River,palace,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Cross River,police_station,yes,2,Calabar Central Police Station,reviewed_2026-10-06,general investigative venue
+Cross River,railway_station,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Cross River,refinery,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Cross River,sacred_grove,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Cross River,seaport,yes,5,Harbour Gate Terminal,reviewed_2026-10-06,state-specific priority
+Cross River,traditional_council,yes,2,Calabar Traditional Council,reviewed_2026-10-06,general investigative venue
+Cross River,university,yes,2,Cross River Civic University,reviewed_2026-10-06,general investigative venue
+Cross River,waterfront,yes,4,River Road Landing,reviewed_2026-10-06,state-specific priority
+Cross River,jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Delta,market,yes,4,Asaba Travellers' Market,reviewed_2026-10-06,state-specific priority
+Delta,library,yes,2,Delta Reading House,reviewed_2026-10-06,general investigative venue
+Delta,nightclub,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Delta,church,yes,1,Asaba Unity Church,reviewed_2026-10-06,general investigative venue
+Delta,mosque,yes,1,Asaba Unity Mosque,reviewed_2026-10-06,general investigative venue
+Delta,museum,yes,2,Delta Memory House,reviewed_2026-10-06,general investigative venue
+Delta,motor_park,yes,4,Asaba Main Motor Park,reviewed_2026-10-06,general investigative venue
+Delta,hotel,yes,3,Crossroads Hotel,reviewed_2026-10-06,general investigative venue
+Delta,restaurant,yes,3,The Travellers' Pot,reviewed_2026-10-06,general investigative venue
+Delta,airport,yes,2,Asaba Air Terminal,reviewed_2026-10-06,general investigative venue
+Delta,radio_station,yes,2,Delta Community Radio,reviewed_2026-10-06,general investigative venue
+Delta,hospital,yes,2,Asaba General Hospital,reviewed_2026-10-06,general investigative venue
+Delta,beach,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Delta,carnival_workshop,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Delta,cattle_market,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Delta,community_hall,yes,2,Asaba Community Hall,reviewed_2026-10-06,general investigative venue
+Delta,conservation_office,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Delta,craft_market,yes,2,Asaba Makers' Market,reviewed_2026-10-06,general investigative venue
+Delta,emir_palace,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Delta,factory_gate,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Delta,farm,yes,2,Green Acres Farm,reviewed_2026-10-06,general investigative venue
+Delta,festival_ground,yes,1,Asaba Festival Ground,reviewed_2026-10-06,general investigative venue
+Delta,fishing_jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Delta,mining_site,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Delta,monument,yes,1,Delta Heritage Monument,reviewed_2026-10-06,general investigative venue
+Delta,palace,yes,3,Royal Visitor Court,reviewed_2026-10-06,state-specific priority
+Delta,police_station,yes,2,Asaba Central Police Station,reviewed_2026-10-06,general investigative venue
+Delta,railway_station,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Delta,refinery,yes,5,Eastern Process Gate,reviewed_2026-10-06,state-specific priority
+Delta,sacred_grove,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Delta,seaport,yes,4,Harbour Gate Terminal,reviewed_2026-10-06,state-specific priority
+Delta,traditional_council,yes,2,Asaba Traditional Council,reviewed_2026-10-06,general investigative venue
+Delta,university,yes,2,Delta Civic University,reviewed_2026-10-06,general investigative venue
+Delta,waterfront,yes,5,River Road Landing,reviewed_2026-10-06,state-specific priority
+Delta,jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Ebonyi,market,yes,5,Abakaliki Travellers' Market,reviewed_2026-10-06,state-specific priority
+Ebonyi,library,yes,2,Ebonyi Reading House,reviewed_2026-10-06,general investigative venue
+Ebonyi,nightclub,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Ebonyi,church,yes,4,Abakaliki Unity Church,reviewed_2026-10-06,state-specific priority
+Ebonyi,mosque,yes,1,Abakaliki Unity Mosque,reviewed_2026-10-06,general investigative venue
+Ebonyi,museum,yes,2,Ebonyi Memory House,reviewed_2026-10-06,general investigative venue
+Ebonyi,motor_park,yes,4,Abakaliki Main Motor Park,reviewed_2026-10-06,general investigative venue
+Ebonyi,hotel,yes,3,Crossroads Hotel,reviewed_2026-10-06,general investigative venue
+Ebonyi,restaurant,yes,3,The Travellers' Pot,reviewed_2026-10-06,general investigative venue
+Ebonyi,airport,yes,2,Abakaliki Air Terminal,reviewed_2026-10-06,general investigative venue
+Ebonyi,radio_station,yes,2,Ebonyi Community Radio,reviewed_2026-10-06,general investigative venue
+Ebonyi,hospital,yes,2,Abakaliki General Hospital,reviewed_2026-10-06,general investigative venue
+Ebonyi,beach,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Ebonyi,carnival_workshop,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Ebonyi,cattle_market,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Ebonyi,community_hall,yes,2,Abakaliki Community Hall,reviewed_2026-10-06,general investigative venue
+Ebonyi,conservation_office,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Ebonyi,craft_market,yes,2,Abakaliki Makers' Market,reviewed_2026-10-06,general investigative venue
+Ebonyi,emir_palace,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Ebonyi,factory_gate,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Ebonyi,farm,yes,5,Green Acres Farm,reviewed_2026-10-06,state-specific priority
+Ebonyi,festival_ground,yes,1,Abakaliki Festival Ground,reviewed_2026-10-06,general investigative venue
+Ebonyi,fishing_jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Ebonyi,mining_site,yes,4,Red Earth Workings,reviewed_2026-10-06,state-specific priority
+Ebonyi,monument,yes,1,Ebonyi Heritage Monument,reviewed_2026-10-06,general investigative venue
+Ebonyi,palace,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Ebonyi,police_station,yes,2,Abakaliki Central Police Station,reviewed_2026-10-06,general investigative venue
+Ebonyi,railway_station,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Ebonyi,refinery,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Ebonyi,sacred_grove,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Ebonyi,seaport,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Ebonyi,traditional_council,yes,2,Abakaliki Traditional Council,reviewed_2026-10-06,general investigative venue
+Ebonyi,university,yes,2,Ebonyi Civic University,reviewed_2026-10-06,general investigative venue
+Ebonyi,waterfront,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Ebonyi,jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Edo,market,yes,4,Benin City Travellers' Market,reviewed_2026-10-06,general investigative venue
+Edo,library,yes,2,Edo Reading House,reviewed_2026-10-06,general investigative venue
+Edo,nightclub,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Edo,church,yes,1,Benin City Unity Church,reviewed_2026-10-06,general investigative venue
+Edo,mosque,yes,1,Benin City Unity Mosque,reviewed_2026-10-06,general investigative venue
+Edo,museum,yes,5,Edo Memory House,reviewed_2026-10-06,state-specific priority
+Edo,motor_park,yes,4,Benin City Main Motor Park,reviewed_2026-10-06,general investigative venue
+Edo,hotel,yes,3,Crossroads Hotel,reviewed_2026-10-06,general investigative venue
+Edo,restaurant,yes,3,The Travellers' Pot,reviewed_2026-10-06,general investigative venue
+Edo,airport,yes,2,Benin City Air Terminal,reviewed_2026-10-06,general investigative venue
+Edo,radio_station,yes,2,Edo Community Radio,reviewed_2026-10-06,general investigative venue
+Edo,hospital,yes,2,Benin City General Hospital,reviewed_2026-10-06,general investigative venue
+Edo,beach,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Edo,carnival_workshop,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Edo,cattle_market,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Edo,community_hall,yes,2,Benin City Community Hall,reviewed_2026-10-06,general investigative venue
+Edo,conservation_office,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Edo,craft_market,yes,5,Benin City Makers' Market,reviewed_2026-10-06,state-specific priority
+Edo,emir_palace,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Edo,factory_gate,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Edo,farm,yes,2,Green Acres Farm,reviewed_2026-10-06,general investigative venue
+Edo,festival_ground,yes,4,Benin City Festival Ground,reviewed_2026-10-06,state-specific priority
+Edo,fishing_jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Edo,mining_site,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Edo,monument,yes,1,Edo Heritage Monument,reviewed_2026-10-06,general investigative venue
+Edo,palace,yes,5,Royal Visitor Court,reviewed_2026-10-06,state-specific priority
+Edo,police_station,yes,2,Benin City Central Police Station,reviewed_2026-10-06,general investigative venue
+Edo,railway_station,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Edo,refinery,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Edo,sacred_grove,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Edo,seaport,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Edo,traditional_council,yes,2,Benin City Traditional Council,reviewed_2026-10-06,general investigative venue
+Edo,university,yes,2,Edo Civic University,reviewed_2026-10-06,general investigative venue
+Edo,waterfront,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Edo,jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Ekiti,market,yes,4,Ado-Ekiti Travellers' Market,reviewed_2026-10-06,general investigative venue
+Ekiti,library,yes,4,Ekiti Reading House,reviewed_2026-10-06,state-specific priority
+Ekiti,nightclub,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Ekiti,church,yes,1,Ado-Ekiti Unity Church,reviewed_2026-10-06,general investigative venue
+Ekiti,mosque,yes,1,Ado-Ekiti Unity Mosque,reviewed_2026-10-06,general investigative venue
+Ekiti,museum,yes,2,Ekiti Memory House,reviewed_2026-10-06,general investigative venue
+Ekiti,motor_park,yes,4,Ado-Ekiti Main Motor Park,reviewed_2026-10-06,general investigative venue
+Ekiti,hotel,yes,3,Crossroads Hotel,reviewed_2026-10-06,general investigative venue
+Ekiti,restaurant,yes,3,The Travellers' Pot,reviewed_2026-10-06,general investigative venue
+Ekiti,airport,yes,2,Ado-Ekiti Air Terminal,reviewed_2026-10-06,general investigative venue
+Ekiti,radio_station,yes,2,Ekiti Community Radio,reviewed_2026-10-06,general investigative venue
+Ekiti,hospital,yes,2,Ado-Ekiti General Hospital,reviewed_2026-10-06,general investigative venue
+Ekiti,beach,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Ekiti,carnival_workshop,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Ekiti,cattle_market,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Ekiti,community_hall,yes,2,Ado-Ekiti Community Hall,reviewed_2026-10-06,general investigative venue
+Ekiti,conservation_office,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Ekiti,craft_market,yes,2,Ado-Ekiti Makers' Market,reviewed_2026-10-06,general investigative venue
+Ekiti,emir_palace,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Ekiti,factory_gate,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Ekiti,farm,yes,4,Green Acres Farm,reviewed_2026-10-06,state-specific priority
+Ekiti,festival_ground,yes,1,Ado-Ekiti Festival Ground,reviewed_2026-10-06,general investigative venue
+Ekiti,fishing_jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Ekiti,mining_site,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Ekiti,monument,yes,1,Ekiti Heritage Monument,reviewed_2026-10-06,general investigative venue
+Ekiti,palace,yes,3,Royal Visitor Court,reviewed_2026-10-06,state-specific priority
+Ekiti,police_station,yes,2,Ado-Ekiti Central Police Station,reviewed_2026-10-06,general investigative venue
+Ekiti,railway_station,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Ekiti,refinery,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Ekiti,sacred_grove,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Ekiti,seaport,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Ekiti,traditional_council,yes,2,Ado-Ekiti Traditional Council,reviewed_2026-10-06,general investigative venue
+Ekiti,university,yes,5,Ekiti Civic University,reviewed_2026-10-06,state-specific priority
+Ekiti,waterfront,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Ekiti,jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Enugu,market,yes,4,Enugu Travellers' Market,reviewed_2026-10-06,general investigative venue
+Enugu,library,yes,2,Enugu Reading House,reviewed_2026-10-06,general investigative venue
+Enugu,nightclub,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Enugu,church,yes,4,Enugu Unity Church,reviewed_2026-10-06,state-specific priority
+Enugu,mosque,yes,1,Enugu Unity Mosque,reviewed_2026-10-06,general investigative venue
+Enugu,museum,yes,5,Enugu Memory House,reviewed_2026-10-06,state-specific priority
+Enugu,motor_park,yes,4,Enugu Main Motor Park,reviewed_2026-10-06,general investigative venue
+Enugu,hotel,yes,3,Crossroads Hotel,reviewed_2026-10-06,general investigative venue
+Enugu,restaurant,yes,3,The Travellers' Pot,reviewed_2026-10-06,general investigative venue
+Enugu,airport,yes,2,Enugu Air Terminal,reviewed_2026-10-06,general investigative venue
+Enugu,radio_station,yes,4,Enugu Community Radio,reviewed_2026-10-06,state-specific priority
+Enugu,hospital,yes,2,Enugu General Hospital,reviewed_2026-10-06,general investigative venue
+Enugu,beach,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Enugu,carnival_workshop,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Enugu,cattle_market,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Enugu,community_hall,yes,2,Enugu Community Hall,reviewed_2026-10-06,general investigative venue
+Enugu,conservation_office,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Enugu,craft_market,yes,2,Enugu Makers' Market,reviewed_2026-10-06,general investigative venue
+Enugu,emir_palace,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Enugu,factory_gate,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Enugu,farm,yes,2,Green Acres Farm,reviewed_2026-10-06,general investigative venue
+Enugu,festival_ground,yes,1,Enugu Festival Ground,reviewed_2026-10-06,general investigative venue
+Enugu,fishing_jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Enugu,mining_site,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Enugu,monument,yes,1,Enugu Heritage Monument,reviewed_2026-10-06,general investigative venue
+Enugu,palace,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Enugu,police_station,yes,2,Enugu Central Police Station,reviewed_2026-10-06,general investigative venue
+Enugu,railway_station,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Enugu,refinery,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Enugu,sacred_grove,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Enugu,seaport,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Enugu,traditional_council,yes,2,Enugu Traditional Council,reviewed_2026-10-06,general investigative venue
+Enugu,university,yes,4,Enugu Civic University,reviewed_2026-10-06,state-specific priority
+Enugu,waterfront,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Enugu,jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Gombe,market,yes,4,Gombe Travellers' Market,reviewed_2026-10-06,general investigative venue
+Gombe,library,yes,2,Gombe Reading House,reviewed_2026-10-06,general investigative venue
+Gombe,nightclub,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Gombe,church,yes,1,Gombe Unity Church,reviewed_2026-10-06,general investigative venue
+Gombe,mosque,yes,4,Gombe Unity Mosque,reviewed_2026-10-06,state-specific priority
+Gombe,museum,yes,2,Gombe Memory House,reviewed_2026-10-06,general investigative venue
+Gombe,motor_park,yes,4,Gombe Main Motor Park,reviewed_2026-10-06,state-specific priority
+Gombe,hotel,yes,3,Crossroads Hotel,reviewed_2026-10-06,general investigative venue
+Gombe,restaurant,yes,3,The Travellers' Pot,reviewed_2026-10-06,general investigative venue
+Gombe,airport,yes,2,Gombe Air Terminal,reviewed_2026-10-06,general investigative venue
+Gombe,radio_station,yes,4,Gombe Community Radio,reviewed_2026-10-06,state-specific priority
+Gombe,hospital,yes,2,Gombe General Hospital,reviewed_2026-10-06,general investigative venue
+Gombe,beach,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Gombe,carnival_workshop,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Gombe,cattle_market,yes,4,Gombe Livestock Yard,reviewed_2026-10-06,state-specific priority
+Gombe,community_hall,yes,2,Gombe Community Hall,reviewed_2026-10-06,general investigative venue
+Gombe,conservation_office,yes,3,Gombe Field Office,reviewed_2026-10-06,state-specific priority
+Gombe,craft_market,yes,2,Gombe Makers' Market,reviewed_2026-10-06,general investigative venue
+Gombe,emir_palace,yes,3,Emirate Visitor Court,reviewed_2026-10-06,state-specific priority
+Gombe,factory_gate,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Gombe,farm,yes,2,Green Acres Farm,reviewed_2026-10-06,general investigative venue
+Gombe,festival_ground,yes,1,Gombe Festival Ground,reviewed_2026-10-06,general investigative venue
+Gombe,fishing_jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Gombe,mining_site,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Gombe,monument,yes,1,Gombe Heritage Monument,reviewed_2026-10-06,general investigative venue
+Gombe,palace,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Gombe,police_station,yes,2,Gombe Central Police Station,reviewed_2026-10-06,general investigative venue
+Gombe,railway_station,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Gombe,refinery,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Gombe,sacred_grove,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Gombe,seaport,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Gombe,traditional_council,yes,2,Gombe Traditional Council,reviewed_2026-10-06,general investigative venue
+Gombe,university,yes,2,Gombe Civic University,reviewed_2026-10-06,general investigative venue
+Gombe,waterfront,yes,3,River Road Landing,reviewed_2026-10-06,state-specific priority
+Gombe,jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Imo,market,yes,4,Owerri Travellers' Market,reviewed_2026-10-06,general investigative venue
+Imo,library,yes,2,Imo Reading House,reviewed_2026-10-06,general investigative venue
+Imo,nightclub,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Imo,church,yes,4,Owerri Unity Church,reviewed_2026-10-06,state-specific priority
+Imo,mosque,yes,1,Owerri Unity Mosque,reviewed_2026-10-06,general investigative venue
+Imo,museum,yes,2,Imo Memory House,reviewed_2026-10-06,general investigative venue
+Imo,motor_park,yes,4,Owerri Main Motor Park,reviewed_2026-10-06,general investigative venue
+Imo,hotel,yes,3,Crossroads Hotel,reviewed_2026-10-06,general investigative venue
+Imo,restaurant,yes,3,The Travellers' Pot,reviewed_2026-10-06,general investigative venue
+Imo,airport,yes,2,Owerri Air Terminal,reviewed_2026-10-06,general investigative venue
+Imo,radio_station,yes,2,Imo Community Radio,reviewed_2026-10-06,general investigative venue
+Imo,hospital,yes,2,Owerri General Hospital,reviewed_2026-10-06,general investigative venue
+Imo,beach,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Imo,carnival_workshop,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Imo,cattle_market,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Imo,community_hall,yes,4,Owerri Community Hall,reviewed_2026-10-06,state-specific priority
+Imo,conservation_office,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Imo,craft_market,yes,2,Owerri Makers' Market,reviewed_2026-10-06,general investigative venue
+Imo,emir_palace,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Imo,factory_gate,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Imo,farm,yes,4,Green Acres Farm,reviewed_2026-10-06,state-specific priority
+Imo,festival_ground,yes,1,Owerri Festival Ground,reviewed_2026-10-06,general investigative venue
+Imo,fishing_jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Imo,mining_site,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Imo,monument,yes,1,Imo Heritage Monument,reviewed_2026-10-06,general investigative venue
+Imo,palace,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Imo,police_station,yes,2,Owerri Central Police Station,reviewed_2026-10-06,general investigative venue
+Imo,railway_station,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Imo,refinery,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Imo,sacred_grove,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Imo,seaport,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Imo,traditional_council,yes,2,Owerri Traditional Council,reviewed_2026-10-06,general investigative venue
+Imo,university,yes,3,Imo Civic University,reviewed_2026-10-06,state-specific priority
+Imo,waterfront,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Imo,jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Jigawa,market,yes,4,Dutse Travellers' Market,reviewed_2026-10-06,general investigative venue
+Jigawa,library,yes,2,Jigawa Reading House,reviewed_2026-10-06,general investigative venue
+Jigawa,nightclub,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Jigawa,church,yes,1,Dutse Unity Church,reviewed_2026-10-06,general investigative venue
+Jigawa,mosque,yes,4,Dutse Unity Mosque,reviewed_2026-10-06,state-specific priority
+Jigawa,museum,yes,2,Jigawa Memory House,reviewed_2026-10-06,general investigative venue
+Jigawa,motor_park,yes,4,Dutse Main Motor Park,reviewed_2026-10-06,general investigative venue
+Jigawa,hotel,yes,3,Crossroads Hotel,reviewed_2026-10-06,general investigative venue
+Jigawa,restaurant,yes,3,The Travellers' Pot,reviewed_2026-10-06,general investigative venue
+Jigawa,airport,yes,2,Dutse Air Terminal,reviewed_2026-10-06,general investigative venue
+Jigawa,radio_station,yes,2,Jigawa Community Radio,reviewed_2026-10-06,general investigative venue
+Jigawa,hospital,yes,2,Dutse General Hospital,reviewed_2026-10-06,general investigative venue
+Jigawa,beach,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Jigawa,carnival_workshop,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Jigawa,cattle_market,yes,4,Dutse Livestock Yard,reviewed_2026-10-06,state-specific priority
+Jigawa,community_hall,yes,2,Dutse Community Hall,reviewed_2026-10-06,general investigative venue
+Jigawa,conservation_office,yes,5,Jigawa Field Office,reviewed_2026-10-06,state-specific priority
+Jigawa,craft_market,yes,2,Dutse Makers' Market,reviewed_2026-10-06,general investigative venue
+Jigawa,emir_palace,yes,3,Emirate Visitor Court,reviewed_2026-10-06,state-specific priority
+Jigawa,factory_gate,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Jigawa,farm,yes,2,Green Acres Farm,reviewed_2026-10-06,general investigative venue
+Jigawa,festival_ground,yes,1,Dutse Festival Ground,reviewed_2026-10-06,general investigative venue
+Jigawa,fishing_jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Jigawa,mining_site,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Jigawa,monument,yes,3,Jigawa Heritage Monument,reviewed_2026-10-06,state-specific priority
+Jigawa,palace,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Jigawa,police_station,yes,2,Dutse Central Police Station,reviewed_2026-10-06,general investigative venue
+Jigawa,railway_station,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Jigawa,refinery,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Jigawa,sacred_grove,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Jigawa,seaport,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Jigawa,traditional_council,yes,2,Dutse Traditional Council,reviewed_2026-10-06,general investigative venue
+Jigawa,university,yes,2,Jigawa Civic University,reviewed_2026-10-06,general investigative venue
+Jigawa,waterfront,yes,3,River Road Landing,reviewed_2026-10-06,state-specific priority
+Jigawa,jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kaduna,market,yes,4,Kaduna Travellers' Market,reviewed_2026-10-06,general investigative venue
+Kaduna,library,yes,2,Kaduna Reading House,reviewed_2026-10-06,general investigative venue
+Kaduna,nightclub,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kaduna,church,yes,3,Kaduna Unity Church,reviewed_2026-10-06,state-specific priority
+Kaduna,mosque,yes,4,Kaduna Unity Mosque,reviewed_2026-10-06,state-specific priority
+Kaduna,museum,yes,2,Kaduna Memory House,reviewed_2026-10-06,general investigative venue
+Kaduna,motor_park,yes,4,Kaduna Main Motor Park,reviewed_2026-10-06,general investigative venue
+Kaduna,hotel,yes,3,Crossroads Hotel,reviewed_2026-10-06,general investigative venue
+Kaduna,restaurant,yes,3,The Travellers' Pot,reviewed_2026-10-06,general investigative venue
+Kaduna,airport,yes,2,Kaduna Air Terminal,reviewed_2026-10-06,general investigative venue
+Kaduna,radio_station,yes,2,Kaduna Community Radio,reviewed_2026-10-06,general investigative venue
+Kaduna,hospital,yes,2,Kaduna General Hospital,reviewed_2026-10-06,general investigative venue
+Kaduna,beach,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kaduna,carnival_workshop,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kaduna,cattle_market,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kaduna,community_hall,yes,2,Kaduna Community Hall,reviewed_2026-10-06,general investigative venue
+Kaduna,conservation_office,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kaduna,craft_market,yes,2,Kaduna Makers' Market,reviewed_2026-10-06,general investigative venue
+Kaduna,emir_palace,yes,4,Emirate Visitor Court,reviewed_2026-10-06,state-specific priority
+Kaduna,factory_gate,yes,5,Kaduna Industrial Gate,reviewed_2026-10-06,state-specific priority
+Kaduna,farm,yes,2,Green Acres Farm,reviewed_2026-10-06,general investigative venue
+Kaduna,festival_ground,yes,1,Kaduna Festival Ground,reviewed_2026-10-06,general investigative venue
+Kaduna,fishing_jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kaduna,mining_site,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kaduna,monument,yes,1,Kaduna Heritage Monument,reviewed_2026-10-06,general investigative venue
+Kaduna,palace,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kaduna,police_station,yes,2,Kaduna Central Police Station,reviewed_2026-10-06,general investigative venue
+Kaduna,railway_station,yes,5,Kaduna Railway Station,reviewed_2026-10-06,state-specific priority
+Kaduna,refinery,yes,4,Eastern Process Gate,reviewed_2026-10-06,state-specific priority
+Kaduna,sacred_grove,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kaduna,seaport,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kaduna,traditional_council,yes,2,Kaduna Traditional Council,reviewed_2026-10-06,general investigative venue
+Kaduna,university,yes,2,Kaduna Civic University,reviewed_2026-10-06,general investigative venue
+Kaduna,waterfront,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kaduna,jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kano,market,yes,5,Kano Travellers' Market,reviewed_2026-10-06,state-specific priority
+Kano,library,yes,2,Kano Reading House,reviewed_2026-10-06,general investigative venue
+Kano,nightclub,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kano,church,yes,1,Kano Unity Church,reviewed_2026-10-06,general investigative venue
+Kano,mosque,yes,5,Kano Unity Mosque,reviewed_2026-10-06,state-specific priority
+Kano,museum,yes,2,Kano Memory House,reviewed_2026-10-06,general investigative venue
+Kano,motor_park,yes,4,Kano Main Motor Park,reviewed_2026-10-06,general investigative venue
+Kano,hotel,yes,3,Crossroads Hotel,reviewed_2026-10-06,general investigative venue
+Kano,restaurant,yes,3,The Travellers' Pot,reviewed_2026-10-06,general investigative venue
+Kano,airport,yes,2,Kano Air Terminal,reviewed_2026-10-06,general investigative venue
+Kano,radio_station,yes,2,Kano Community Radio,reviewed_2026-10-06,general investigative venue
+Kano,hospital,yes,2,Kano General Hospital,reviewed_2026-10-06,general investigative venue
+Kano,beach,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kano,carnival_workshop,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kano,cattle_market,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kano,community_hall,yes,2,Kano Community Hall,reviewed_2026-10-06,general investigative venue
+Kano,conservation_office,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kano,craft_market,yes,5,Kano Makers' Market,reviewed_2026-10-06,state-specific priority
+Kano,emir_palace,yes,5,Emirate Visitor Court,reviewed_2026-10-06,state-specific priority
+Kano,factory_gate,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kano,farm,yes,2,Green Acres Farm,reviewed_2026-10-06,general investigative venue
+Kano,festival_ground,yes,1,Kano Festival Ground,reviewed_2026-10-06,general investigative venue
+Kano,fishing_jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kano,mining_site,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kano,monument,yes,1,Kano Heritage Monument,reviewed_2026-10-06,general investigative venue
+Kano,palace,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kano,police_station,yes,2,Kano Central Police Station,reviewed_2026-10-06,general investigative venue
+Kano,railway_station,yes,4,Kano Railway Station,reviewed_2026-10-06,state-specific priority
+Kano,refinery,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kano,sacred_grove,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kano,seaport,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kano,traditional_council,yes,2,Kano Traditional Council,reviewed_2026-10-06,general investigative venue
+Kano,university,yes,2,Kano Civic University,reviewed_2026-10-06,general investigative venue
+Kano,waterfront,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kano,jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Katsina,market,yes,4,Katsina Travellers' Market,reviewed_2026-10-06,general investigative venue
+Katsina,library,yes,2,Katsina Reading House,reviewed_2026-10-06,general investigative venue
+Katsina,nightclub,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Katsina,church,yes,1,Katsina Unity Church,reviewed_2026-10-06,general investigative venue
+Katsina,mosque,yes,5,Katsina Unity Mosque,reviewed_2026-10-06,state-specific priority
+Katsina,museum,yes,2,Katsina Memory House,reviewed_2026-10-06,general investigative venue
+Katsina,motor_park,yes,4,Katsina Main Motor Park,reviewed_2026-10-06,general investigative venue
+Katsina,hotel,yes,3,Crossroads Hotel,reviewed_2026-10-06,general investigative venue
+Katsina,restaurant,yes,3,The Travellers' Pot,reviewed_2026-10-06,general investigative venue
+Katsina,airport,yes,2,Katsina Air Terminal,reviewed_2026-10-06,general investigative venue
+Katsina,radio_station,yes,2,Katsina Community Radio,reviewed_2026-10-06,general investigative venue
+Katsina,hospital,yes,2,Katsina General Hospital,reviewed_2026-10-06,general investigative venue
+Katsina,beach,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Katsina,carnival_workshop,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Katsina,cattle_market,yes,4,Katsina Livestock Yard,reviewed_2026-10-06,state-specific priority
+Katsina,community_hall,yes,2,Katsina Community Hall,reviewed_2026-10-06,general investigative venue
+Katsina,conservation_office,yes,3,Katsina Field Office,reviewed_2026-10-06,state-specific priority
+Katsina,craft_market,yes,4,Katsina Makers' Market,reviewed_2026-10-06,state-specific priority
+Katsina,emir_palace,yes,5,Emirate Visitor Court,reviewed_2026-10-06,state-specific priority
+Katsina,factory_gate,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Katsina,farm,yes,2,Green Acres Farm,reviewed_2026-10-06,general investigative venue
+Katsina,festival_ground,yes,1,Katsina Festival Ground,reviewed_2026-10-06,general investigative venue
+Katsina,fishing_jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Katsina,mining_site,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Katsina,monument,yes,1,Katsina Heritage Monument,reviewed_2026-10-06,general investigative venue
+Katsina,palace,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Katsina,police_station,yes,2,Katsina Central Police Station,reviewed_2026-10-06,general investigative venue
+Katsina,railway_station,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Katsina,refinery,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Katsina,sacred_grove,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Katsina,seaport,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Katsina,traditional_council,yes,2,Katsina Traditional Council,reviewed_2026-10-06,general investigative venue
+Katsina,university,yes,2,Katsina Civic University,reviewed_2026-10-06,general investigative venue
+Katsina,waterfront,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Katsina,jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kebbi,market,yes,4,Birnin Kebbi Travellers' Market,reviewed_2026-10-06,general investigative venue
+Kebbi,library,yes,2,Kebbi Reading House,reviewed_2026-10-06,general investigative venue
+Kebbi,nightclub,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kebbi,church,yes,1,Birnin Kebbi Unity Church,reviewed_2026-10-06,general investigative venue
+Kebbi,mosque,yes,4,Birnin Kebbi Unity Mosque,reviewed_2026-10-06,state-specific priority
+Kebbi,museum,yes,4,Kebbi Memory House,reviewed_2026-10-06,state-specific priority
+Kebbi,motor_park,yes,4,Birnin Kebbi Main Motor Park,reviewed_2026-10-06,general investigative venue
+Kebbi,hotel,yes,3,Crossroads Hotel,reviewed_2026-10-06,general investigative venue
+Kebbi,restaurant,yes,3,The Travellers' Pot,reviewed_2026-10-06,general investigative venue
+Kebbi,airport,yes,2,Birnin Kebbi Air Terminal,reviewed_2026-10-06,general investigative venue
+Kebbi,radio_station,yes,2,Kebbi Community Radio,reviewed_2026-10-06,general investigative venue
+Kebbi,hospital,yes,2,Birnin Kebbi General Hospital,reviewed_2026-10-06,general investigative venue
+Kebbi,beach,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kebbi,carnival_workshop,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kebbi,cattle_market,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kebbi,community_hall,yes,2,Birnin Kebbi Community Hall,reviewed_2026-10-06,general investigative venue
+Kebbi,conservation_office,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kebbi,craft_market,yes,2,Birnin Kebbi Makers' Market,reviewed_2026-10-06,general investigative venue
+Kebbi,emir_palace,yes,4,Emirate Visitor Court,reviewed_2026-10-06,state-specific priority
+Kebbi,factory_gate,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kebbi,farm,yes,4,Green Acres Farm,reviewed_2026-10-06,state-specific priority
+Kebbi,festival_ground,yes,5,Birnin Kebbi Festival Ground,reviewed_2026-10-06,state-specific priority
+Kebbi,fishing_jetty,yes,5,Riverbend Fishing Jetty,reviewed_2026-10-06,state-specific priority
+Kebbi,mining_site,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kebbi,monument,yes,1,Kebbi Heritage Monument,reviewed_2026-10-06,general investigative venue
+Kebbi,palace,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kebbi,police_station,yes,2,Birnin Kebbi Central Police Station,reviewed_2026-10-06,general investigative venue
+Kebbi,railway_station,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kebbi,refinery,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kebbi,sacred_grove,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kebbi,seaport,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kebbi,traditional_council,yes,2,Birnin Kebbi Traditional Council,reviewed_2026-10-06,general investigative venue
+Kebbi,university,yes,2,Kebbi Civic University,reviewed_2026-10-06,general investigative venue
+Kebbi,waterfront,yes,4,River Road Landing,reviewed_2026-10-06,state-specific priority
+Kebbi,jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kogi,market,yes,4,Lokoja Travellers' Market,reviewed_2026-10-06,general investigative venue
+Kogi,library,yes,2,Kogi Reading House,reviewed_2026-10-06,general investigative venue
+Kogi,nightclub,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kogi,church,yes,1,Lokoja Unity Church,reviewed_2026-10-06,general investigative venue
+Kogi,mosque,yes,1,Lokoja Unity Mosque,reviewed_2026-10-06,general investigative venue
+Kogi,museum,yes,2,Kogi Memory House,reviewed_2026-10-06,general investigative venue
+Kogi,motor_park,yes,4,Lokoja Main Motor Park,reviewed_2026-10-06,state-specific priority
+Kogi,hotel,yes,3,Crossroads Hotel,reviewed_2026-10-06,general investigative venue
+Kogi,restaurant,yes,3,The Travellers' Pot,reviewed_2026-10-06,general investigative venue
+Kogi,airport,yes,2,Lokoja Air Terminal,reviewed_2026-10-06,general investigative venue
+Kogi,radio_station,yes,2,Kogi Community Radio,reviewed_2026-10-06,general investigative venue
+Kogi,hospital,yes,2,Lokoja General Hospital,reviewed_2026-10-06,general investigative venue
+Kogi,beach,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kogi,carnival_workshop,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kogi,cattle_market,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kogi,community_hall,yes,2,Lokoja Community Hall,reviewed_2026-10-06,general investigative venue
+Kogi,conservation_office,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kogi,craft_market,yes,2,Lokoja Makers' Market,reviewed_2026-10-06,general investigative venue
+Kogi,emir_palace,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kogi,factory_gate,yes,3,Lokoja Industrial Gate,reviewed_2026-10-06,state-specific priority
+Kogi,farm,yes,2,Green Acres Farm,reviewed_2026-10-06,general investigative venue
+Kogi,festival_ground,yes,1,Lokoja Festival Ground,reviewed_2026-10-06,general investigative venue
+Kogi,fishing_jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kogi,mining_site,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kogi,monument,yes,4,Kogi Heritage Monument,reviewed_2026-10-06,state-specific priority
+Kogi,palace,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kogi,police_station,yes,2,Lokoja Central Police Station,reviewed_2026-10-06,general investigative venue
+Kogi,railway_station,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kogi,refinery,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kogi,sacred_grove,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kogi,seaport,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kogi,traditional_council,yes,4,Lokoja Traditional Council,reviewed_2026-10-06,state-specific priority
+Kogi,university,yes,2,Kogi Civic University,reviewed_2026-10-06,general investigative venue
+Kogi,waterfront,yes,5,River Road Landing,reviewed_2026-10-06,state-specific priority
+Kogi,jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kwara,market,yes,4,Ilorin Travellers' Market,reviewed_2026-10-06,general investigative venue
+Kwara,library,yes,2,Kwara Reading House,reviewed_2026-10-06,general investigative venue
+Kwara,nightclub,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kwara,church,yes,1,Ilorin Unity Church,reviewed_2026-10-06,general investigative venue
+Kwara,mosque,yes,4,Ilorin Unity Mosque,reviewed_2026-10-06,state-specific priority
+Kwara,museum,yes,2,Kwara Memory House,reviewed_2026-10-06,general investigative venue
+Kwara,motor_park,yes,4,Ilorin Main Motor Park,reviewed_2026-10-06,general investigative venue
+Kwara,hotel,yes,3,Crossroads Hotel,reviewed_2026-10-06,general investigative venue
+Kwara,restaurant,yes,3,The Travellers' Pot,reviewed_2026-10-06,general investigative venue
+Kwara,airport,yes,2,Ilorin Air Terminal,reviewed_2026-10-06,general investigative venue
+Kwara,radio_station,yes,2,Kwara Community Radio,reviewed_2026-10-06,general investigative venue
+Kwara,hospital,yes,2,Ilorin General Hospital,reviewed_2026-10-06,general investigative venue
+Kwara,beach,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kwara,carnival_workshop,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kwara,cattle_market,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kwara,community_hall,yes,2,Ilorin Community Hall,reviewed_2026-10-06,general investigative venue
+Kwara,conservation_office,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kwara,craft_market,yes,4,Ilorin Makers' Market,reviewed_2026-10-06,state-specific priority
+Kwara,emir_palace,yes,4,Emirate Visitor Court,reviewed_2026-10-06,state-specific priority
+Kwara,factory_gate,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kwara,farm,yes,2,Green Acres Farm,reviewed_2026-10-06,general investigative venue
+Kwara,festival_ground,yes,1,Ilorin Festival Ground,reviewed_2026-10-06,general investigative venue
+Kwara,fishing_jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kwara,mining_site,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kwara,monument,yes,1,Kwara Heritage Monument,reviewed_2026-10-06,general investigative venue
+Kwara,palace,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kwara,police_station,yes,2,Ilorin Central Police Station,reviewed_2026-10-06,general investigative venue
+Kwara,railway_station,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kwara,refinery,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kwara,sacred_grove,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kwara,seaport,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Kwara,traditional_council,yes,2,Ilorin Traditional Council,reviewed_2026-10-06,general investigative venue
+Kwara,university,yes,4,Kwara Civic University,reviewed_2026-10-06,state-specific priority
+Kwara,waterfront,yes,3,River Road Landing,reviewed_2026-10-06,state-specific priority
+Kwara,jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Lagos,market,yes,5,Ikeja Travellers' Market,reviewed_2026-10-06,state-specific priority
+Lagos,library,yes,2,Lagos Reading House,reviewed_2026-10-06,general investigative venue
+Lagos,nightclub,yes,5,Lagoon Lights Club,reviewed_2026-10-06,state-specific priority
+Lagos,church,yes,1,Ikeja Unity Church,reviewed_2026-10-06,general investigative venue
+Lagos,mosque,yes,1,Ikeja Unity Mosque,reviewed_2026-10-06,general investigative venue
+Lagos,museum,yes,2,Lagos Memory House,reviewed_2026-10-06,general investigative venue
+Lagos,motor_park,yes,4,Ikeja Main Motor Park,reviewed_2026-10-06,general investigative venue
+Lagos,hotel,yes,3,Crossroads Hotel,reviewed_2026-10-06,general investigative venue
+Lagos,restaurant,yes,3,The Travellers' Pot,reviewed_2026-10-06,general investigative venue
+Lagos,airport,yes,5,Ikeja Air Terminal,reviewed_2026-10-06,state-specific priority
+Lagos,radio_station,yes,2,Lagos Community Radio,reviewed_2026-10-06,general investigative venue
+Lagos,hospital,yes,2,Ikeja General Hospital,reviewed_2026-10-06,general investigative venue
+Lagos,beach,yes,5,Blue Horizon Beach,reviewed_2026-10-06,state-specific priority
+Lagos,carnival_workshop,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Lagos,cattle_market,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Lagos,community_hall,yes,2,Ikeja Community Hall,reviewed_2026-10-06,general investigative venue
+Lagos,conservation_office,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Lagos,craft_market,yes,2,Ikeja Makers' Market,reviewed_2026-10-06,general investigative venue
+Lagos,emir_palace,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Lagos,factory_gate,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Lagos,farm,yes,2,Green Acres Farm,reviewed_2026-10-06,general investigative venue
+Lagos,festival_ground,yes,1,Ikeja Festival Ground,reviewed_2026-10-06,general investigative venue
+Lagos,fishing_jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Lagos,mining_site,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Lagos,monument,yes,1,Lagos Heritage Monument,reviewed_2026-10-06,general investigative venue
+Lagos,palace,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Lagos,police_station,yes,2,Ikeja Central Police Station,reviewed_2026-10-06,general investigative venue
+Lagos,railway_station,yes,4,Ikeja Railway Station,reviewed_2026-10-06,state-specific priority
+Lagos,refinery,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Lagos,sacred_grove,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Lagos,seaport,yes,5,Harbour Gate Terminal,reviewed_2026-10-06,state-specific priority
+Lagos,traditional_council,yes,2,Ikeja Traditional Council,reviewed_2026-10-06,general investigative venue
+Lagos,university,yes,2,Lagos Civic University,reviewed_2026-10-06,general investigative venue
+Lagos,waterfront,yes,5,River Road Landing,reviewed_2026-10-06,state-specific priority
+Lagos,jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Nasarawa,market,yes,4,Lafia Travellers' Market,reviewed_2026-10-06,general investigative venue
+Nasarawa,library,yes,2,Nasarawa Reading House,reviewed_2026-10-06,general investigative venue
+Nasarawa,nightclub,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Nasarawa,church,yes,1,Lafia Unity Church,reviewed_2026-10-06,general investigative venue
+Nasarawa,mosque,yes,1,Lafia Unity Mosque,reviewed_2026-10-06,general investigative venue
+Nasarawa,museum,yes,2,Nasarawa Memory House,reviewed_2026-10-06,general investigative venue
+Nasarawa,motor_park,yes,4,Lafia Main Motor Park,reviewed_2026-10-06,state-specific priority
+Nasarawa,hotel,yes,3,Crossroads Hotel,reviewed_2026-10-06,general investigative venue
+Nasarawa,restaurant,yes,3,The Travellers' Pot,reviewed_2026-10-06,general investigative venue
+Nasarawa,airport,yes,2,Lafia Air Terminal,reviewed_2026-10-06,general investigative venue
+Nasarawa,radio_station,yes,2,Nasarawa Community Radio,reviewed_2026-10-06,general investigative venue
+Nasarawa,hospital,yes,2,Lafia General Hospital,reviewed_2026-10-06,general investigative venue
+Nasarawa,beach,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Nasarawa,carnival_workshop,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Nasarawa,cattle_market,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Nasarawa,community_hall,yes,2,Lafia Community Hall,reviewed_2026-10-06,general investigative venue
+Nasarawa,conservation_office,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Nasarawa,craft_market,yes,2,Lafia Makers' Market,reviewed_2026-10-06,general investigative venue
+Nasarawa,emir_palace,yes,3,Emirate Visitor Court,reviewed_2026-10-06,state-specific priority
+Nasarawa,factory_gate,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Nasarawa,farm,yes,4,Green Acres Farm,reviewed_2026-10-06,state-specific priority
+Nasarawa,festival_ground,yes,1,Lafia Festival Ground,reviewed_2026-10-06,general investigative venue
+Nasarawa,fishing_jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Nasarawa,mining_site,yes,5,Red Earth Workings,reviewed_2026-10-06,state-specific priority
+Nasarawa,monument,yes,1,Nasarawa Heritage Monument,reviewed_2026-10-06,general investigative venue
+Nasarawa,palace,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Nasarawa,police_station,yes,2,Lafia Central Police Station,reviewed_2026-10-06,general investigative venue
+Nasarawa,railway_station,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Nasarawa,refinery,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Nasarawa,sacred_grove,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Nasarawa,seaport,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Nasarawa,traditional_council,yes,3,Lafia Traditional Council,reviewed_2026-10-06,state-specific priority
+Nasarawa,university,yes,2,Nasarawa Civic University,reviewed_2026-10-06,general investigative venue
+Nasarawa,waterfront,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Nasarawa,jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Niger,market,yes,4,Minna Travellers' Market,reviewed_2026-10-06,general investigative venue
+Niger,library,yes,2,Niger Reading House,reviewed_2026-10-06,general investigative venue
+Niger,nightclub,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Niger,church,yes,1,Minna Unity Church,reviewed_2026-10-06,general investigative venue
+Niger,mosque,yes,1,Minna Unity Mosque,reviewed_2026-10-06,general investigative venue
+Niger,museum,yes,2,Niger Memory House,reviewed_2026-10-06,general investigative venue
+Niger,motor_park,yes,4,Minna Main Motor Park,reviewed_2026-10-06,general investigative venue
+Niger,hotel,yes,3,Crossroads Hotel,reviewed_2026-10-06,general investigative venue
+Niger,restaurant,yes,3,The Travellers' Pot,reviewed_2026-10-06,general investigative venue
+Niger,airport,yes,2,Minna Air Terminal,reviewed_2026-10-06,general investigative venue
+Niger,radio_station,yes,2,Niger Community Radio,reviewed_2026-10-06,general investigative venue
+Niger,hospital,yes,2,Minna General Hospital,reviewed_2026-10-06,general investigative venue
+Niger,beach,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Niger,carnival_workshop,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Niger,cattle_market,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Niger,community_hall,yes,2,Minna Community Hall,reviewed_2026-10-06,general investigative venue
+Niger,conservation_office,yes,3,Niger Field Office,reviewed_2026-10-06,state-specific priority
+Niger,craft_market,yes,4,Minna Makers' Market,reviewed_2026-10-06,state-specific priority
+Niger,emir_palace,yes,4,Emirate Visitor Court,reviewed_2026-10-06,state-specific priority
+Niger,factory_gate,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Niger,farm,yes,2,Green Acres Farm,reviewed_2026-10-06,general investigative venue
+Niger,festival_ground,yes,1,Minna Festival Ground,reviewed_2026-10-06,general investigative venue
+Niger,fishing_jetty,yes,4,Riverbend Fishing Jetty,reviewed_2026-10-06,state-specific priority
+Niger,mining_site,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Niger,monument,yes,1,Niger Heritage Monument,reviewed_2026-10-06,general investigative venue
+Niger,palace,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Niger,police_station,yes,2,Minna Central Police Station,reviewed_2026-10-06,general investigative venue
+Niger,railway_station,yes,3,Minna Railway Station,reviewed_2026-10-06,state-specific priority
+Niger,refinery,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Niger,sacred_grove,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Niger,seaport,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Niger,traditional_council,yes,2,Minna Traditional Council,reviewed_2026-10-06,general investigative venue
+Niger,university,yes,2,Niger Civic University,reviewed_2026-10-06,general investigative venue
+Niger,waterfront,yes,4,River Road Landing,reviewed_2026-10-06,state-specific priority
+Niger,jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Ogun,market,yes,4,Abeokuta Travellers' Market,reviewed_2026-10-06,state-specific priority
+Ogun,library,yes,2,Ogun Reading House,reviewed_2026-10-06,general investigative venue
+Ogun,nightclub,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Ogun,church,yes,1,Abeokuta Unity Church,reviewed_2026-10-06,general investigative venue
+Ogun,mosque,yes,1,Abeokuta Unity Mosque,reviewed_2026-10-06,general investigative venue
+Ogun,museum,yes,2,Ogun Memory House,reviewed_2026-10-06,general investigative venue
+Ogun,motor_park,yes,4,Abeokuta Main Motor Park,reviewed_2026-10-06,general investigative venue
+Ogun,hotel,yes,3,Crossroads Hotel,reviewed_2026-10-06,general investigative venue
+Ogun,restaurant,yes,3,The Travellers' Pot,reviewed_2026-10-06,general investigative venue
+Ogun,airport,yes,2,Abeokuta Air Terminal,reviewed_2026-10-06,general investigative venue
+Ogun,radio_station,yes,2,Ogun Community Radio,reviewed_2026-10-06,general investigative venue
+Ogun,hospital,yes,2,Abeokuta General Hospital,reviewed_2026-10-06,general investigative venue
+Ogun,beach,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Ogun,carnival_workshop,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Ogun,cattle_market,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Ogun,community_hall,yes,2,Abeokuta Community Hall,reviewed_2026-10-06,general investigative venue
+Ogun,conservation_office,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Ogun,craft_market,yes,5,Abeokuta Makers' Market,reviewed_2026-10-06,state-specific priority
+Ogun,emir_palace,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Ogun,factory_gate,yes,5,Abeokuta Industrial Gate,reviewed_2026-10-06,state-specific priority
+Ogun,farm,yes,2,Green Acres Farm,reviewed_2026-10-06,general investigative venue
+Ogun,festival_ground,yes,1,Abeokuta Festival Ground,reviewed_2026-10-06,general investigative venue
+Ogun,fishing_jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Ogun,mining_site,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Ogun,monument,yes,1,Ogun Heritage Monument,reviewed_2026-10-06,general investigative venue
+Ogun,palace,yes,3,Royal Visitor Court,reviewed_2026-10-06,state-specific priority
+Ogun,police_station,yes,2,Abeokuta Central Police Station,reviewed_2026-10-06,general investigative venue
+Ogun,railway_station,yes,4,Abeokuta Railway Station,reviewed_2026-10-06,state-specific priority
+Ogun,refinery,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Ogun,sacred_grove,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Ogun,seaport,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Ogun,traditional_council,yes,2,Abeokuta Traditional Council,reviewed_2026-10-06,general investigative venue
+Ogun,university,yes,2,Ogun Civic University,reviewed_2026-10-06,general investigative venue
+Ogun,waterfront,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Ogun,jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Ondo,market,yes,4,Akure Travellers' Market,reviewed_2026-10-06,general investigative venue
+Ondo,library,yes,2,Ondo Reading House,reviewed_2026-10-06,general investigative venue
+Ondo,nightclub,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Ondo,church,yes,1,Akure Unity Church,reviewed_2026-10-06,general investigative venue
+Ondo,mosque,yes,1,Akure Unity Mosque,reviewed_2026-10-06,general investigative venue
+Ondo,museum,yes,2,Ondo Memory House,reviewed_2026-10-06,general investigative venue
+Ondo,motor_park,yes,4,Akure Main Motor Park,reviewed_2026-10-06,general investigative venue
+Ondo,hotel,yes,3,Crossroads Hotel,reviewed_2026-10-06,general investigative venue
+Ondo,restaurant,yes,3,The Travellers' Pot,reviewed_2026-10-06,general investigative venue
+Ondo,airport,yes,2,Akure Air Terminal,reviewed_2026-10-06,general investigative venue
+Ondo,radio_station,yes,2,Ondo Community Radio,reviewed_2026-10-06,general investigative venue
+Ondo,hospital,yes,2,Akure General Hospital,reviewed_2026-10-06,general investigative venue
+Ondo,beach,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Ondo,carnival_workshop,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Ondo,cattle_market,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Ondo,community_hall,yes,2,Akure Community Hall,reviewed_2026-10-06,general investigative venue
+Ondo,conservation_office,yes,3,Ondo Field Office,reviewed_2026-10-06,state-specific priority
+Ondo,craft_market,yes,2,Akure Makers' Market,reviewed_2026-10-06,general investigative venue
+Ondo,emir_palace,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Ondo,factory_gate,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Ondo,farm,yes,5,Green Acres Farm,reviewed_2026-10-06,state-specific priority
+Ondo,festival_ground,yes,1,Akure Festival Ground,reviewed_2026-10-06,general investigative venue
+Ondo,fishing_jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Ondo,mining_site,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Ondo,monument,yes,1,Ondo Heritage Monument,reviewed_2026-10-06,general investigative venue
+Ondo,palace,yes,4,Royal Visitor Court,reviewed_2026-10-06,state-specific priority
+Ondo,police_station,yes,2,Akure Central Police Station,reviewed_2026-10-06,general investigative venue
+Ondo,railway_station,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Ondo,refinery,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Ondo,sacred_grove,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Ondo,seaport,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Ondo,traditional_council,yes,2,Akure Traditional Council,reviewed_2026-10-06,general investigative venue
+Ondo,university,yes,2,Ondo Civic University,reviewed_2026-10-06,general investigative venue
+Ondo,waterfront,yes,4,River Road Landing,reviewed_2026-10-06,state-specific priority
+Ondo,jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Osun,market,yes,4,Osogbo Travellers' Market,reviewed_2026-10-06,general investigative venue
+Osun,library,yes,2,Osun Reading House,reviewed_2026-10-06,general investigative venue
+Osun,nightclub,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Osun,church,yes,1,Osogbo Unity Church,reviewed_2026-10-06,general investigative venue
+Osun,mosque,yes,1,Osogbo Unity Mosque,reviewed_2026-10-06,general investigative venue
+Osun,museum,yes,2,Osun Memory House,reviewed_2026-10-06,general investigative venue
+Osun,motor_park,yes,4,Osogbo Main Motor Park,reviewed_2026-10-06,general investigative venue
+Osun,hotel,yes,3,Crossroads Hotel,reviewed_2026-10-06,general investigative venue
+Osun,restaurant,yes,3,The Travellers' Pot,reviewed_2026-10-06,general investigative venue
+Osun,airport,yes,2,Osogbo Air Terminal,reviewed_2026-10-06,general investigative venue
+Osun,radio_station,yes,2,Osun Community Radio,reviewed_2026-10-06,general investigative venue
+Osun,hospital,yes,2,Osogbo General Hospital,reviewed_2026-10-06,general investigative venue
+Osun,beach,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Osun,carnival_workshop,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Osun,cattle_market,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Osun,community_hall,yes,2,Osogbo Community Hall,reviewed_2026-10-06,general investigative venue
+Osun,conservation_office,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Osun,craft_market,yes,2,Osogbo Makers' Market,reviewed_2026-10-06,general investigative venue
+Osun,emir_palace,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Osun,factory_gate,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Osun,farm,yes,4,Green Acres Farm,reviewed_2026-10-06,state-specific priority
+Osun,festival_ground,yes,5,Osogbo Festival Ground,reviewed_2026-10-06,state-specific priority
+Osun,fishing_jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Osun,mining_site,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Osun,monument,yes,1,Osun Heritage Monument,reviewed_2026-10-06,general investigative venue
+Osun,palace,yes,4,Royal Visitor Court,reviewed_2026-10-06,state-specific priority
+Osun,police_station,yes,2,Osogbo Central Police Station,reviewed_2026-10-06,general investigative venue
+Osun,railway_station,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Osun,refinery,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Osun,sacred_grove,yes,5,Quiet River Grove,reviewed_2026-10-06,state-specific priority
+Osun,seaport,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Osun,traditional_council,yes,2,Osogbo Traditional Council,reviewed_2026-10-06,general investigative venue
+Osun,university,yes,2,Osun Civic University,reviewed_2026-10-06,general investigative venue
+Osun,waterfront,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Osun,jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Oyo,market,yes,5,Ibadan Travellers' Market,reviewed_2026-10-06,state-specific priority
+Oyo,library,yes,2,Oyo Reading House,reviewed_2026-10-06,general investigative venue
+Oyo,nightclub,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Oyo,church,yes,1,Ibadan Unity Church,reviewed_2026-10-06,general investigative venue
+Oyo,mosque,yes,1,Ibadan Unity Mosque,reviewed_2026-10-06,general investigative venue
+Oyo,museum,yes,2,Oyo Memory House,reviewed_2026-10-06,general investigative venue
+Oyo,motor_park,yes,4,Ibadan Main Motor Park,reviewed_2026-10-06,general investigative venue
+Oyo,hotel,yes,3,Crossroads Hotel,reviewed_2026-10-06,general investigative venue
+Oyo,restaurant,yes,3,The Travellers' Pot,reviewed_2026-10-06,general investigative venue
+Oyo,airport,yes,2,Ibadan Air Terminal,reviewed_2026-10-06,general investigative venue
+Oyo,radio_station,yes,2,Oyo Community Radio,reviewed_2026-10-06,general investigative venue
+Oyo,hospital,yes,2,Ibadan General Hospital,reviewed_2026-10-06,general investigative venue
+Oyo,beach,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Oyo,carnival_workshop,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Oyo,cattle_market,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Oyo,community_hall,yes,2,Ibadan Community Hall,reviewed_2026-10-06,general investigative venue
+Oyo,conservation_office,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Oyo,craft_market,yes,2,Ibadan Makers' Market,reviewed_2026-10-06,general investigative venue
+Oyo,emir_palace,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Oyo,factory_gate,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Oyo,farm,yes,2,Green Acres Farm,reviewed_2026-10-06,general investigative venue
+Oyo,festival_ground,yes,4,Ibadan Festival Ground,reviewed_2026-10-06,state-specific priority
+Oyo,fishing_jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Oyo,mining_site,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Oyo,monument,yes,1,Oyo Heritage Monument,reviewed_2026-10-06,general investigative venue
+Oyo,palace,yes,5,Royal Visitor Court,reviewed_2026-10-06,state-specific priority
+Oyo,police_station,yes,2,Ibadan Central Police Station,reviewed_2026-10-06,general investigative venue
+Oyo,railway_station,yes,4,Ibadan Railway Station,reviewed_2026-10-06,state-specific priority
+Oyo,refinery,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Oyo,sacred_grove,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Oyo,seaport,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Oyo,traditional_council,yes,2,Ibadan Traditional Council,reviewed_2026-10-06,general investigative venue
+Oyo,university,yes,5,Oyo Civic University,reviewed_2026-10-06,state-specific priority
+Oyo,waterfront,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Oyo,jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Plateau,market,yes,4,Jos Travellers' Market,reviewed_2026-10-06,general investigative venue
+Plateau,library,yes,2,Plateau Reading House,reviewed_2026-10-06,general investigative venue
+Plateau,nightclub,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Plateau,church,yes,1,Jos Unity Church,reviewed_2026-10-06,general investigative venue
+Plateau,mosque,yes,1,Jos Unity Mosque,reviewed_2026-10-06,general investigative venue
+Plateau,museum,yes,4,Plateau Memory House,reviewed_2026-10-06,state-specific priority
+Plateau,motor_park,yes,4,Jos Main Motor Park,reviewed_2026-10-06,general investigative venue
+Plateau,hotel,yes,4,Crossroads Hotel,reviewed_2026-10-06,state-specific priority
+Plateau,restaurant,yes,3,The Travellers' Pot,reviewed_2026-10-06,general investigative venue
+Plateau,airport,yes,2,Jos Air Terminal,reviewed_2026-10-06,general investigative venue
+Plateau,radio_station,yes,2,Plateau Community Radio,reviewed_2026-10-06,general investigative venue
+Plateau,hospital,yes,2,Jos General Hospital,reviewed_2026-10-06,general investigative venue
+Plateau,beach,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Plateau,carnival_workshop,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Plateau,cattle_market,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Plateau,community_hall,yes,2,Jos Community Hall,reviewed_2026-10-06,general investigative venue
+Plateau,conservation_office,yes,3,Plateau Field Office,reviewed_2026-10-06,state-specific priority
+Plateau,craft_market,yes,4,Jos Makers' Market,reviewed_2026-10-06,state-specific priority
+Plateau,emir_palace,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Plateau,factory_gate,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Plateau,farm,yes,2,Green Acres Farm,reviewed_2026-10-06,general investigative venue
+Plateau,festival_ground,yes,1,Jos Festival Ground,reviewed_2026-10-06,general investigative venue
+Plateau,fishing_jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Plateau,mining_site,yes,5,Red Earth Workings,reviewed_2026-10-06,state-specific priority
+Plateau,monument,yes,1,Plateau Heritage Monument,reviewed_2026-10-06,general investigative venue
+Plateau,palace,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Plateau,police_station,yes,2,Jos Central Police Station,reviewed_2026-10-06,general investigative venue
+Plateau,railway_station,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Plateau,refinery,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Plateau,sacred_grove,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Plateau,seaport,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Plateau,traditional_council,yes,2,Jos Traditional Council,reviewed_2026-10-06,general investigative venue
+Plateau,university,yes,2,Plateau Civic University,reviewed_2026-10-06,general investigative venue
+Plateau,waterfront,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Plateau,jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Rivers,market,yes,4,Port Harcourt Travellers' Market,reviewed_2026-10-06,state-specific priority
+Rivers,library,yes,2,Rivers Reading House,reviewed_2026-10-06,general investigative venue
+Rivers,nightclub,yes,4,Lagoon Lights Club,reviewed_2026-10-06,state-specific priority
+Rivers,church,yes,1,Port Harcourt Unity Church,reviewed_2026-10-06,general investigative venue
+Rivers,mosque,yes,1,Port Harcourt Unity Mosque,reviewed_2026-10-06,general investigative venue
+Rivers,museum,yes,2,Rivers Memory House,reviewed_2026-10-06,general investigative venue
+Rivers,motor_park,yes,4,Port Harcourt Main Motor Park,reviewed_2026-10-06,general investigative venue
+Rivers,hotel,yes,3,Crossroads Hotel,reviewed_2026-10-06,general investigative venue
+Rivers,restaurant,yes,3,The Travellers' Pot,reviewed_2026-10-06,general investigative venue
+Rivers,airport,yes,2,Port Harcourt Air Terminal,reviewed_2026-10-06,general investigative venue
+Rivers,radio_station,yes,2,Rivers Community Radio,reviewed_2026-10-06,general investigative venue
+Rivers,hospital,yes,2,Port Harcourt General Hospital,reviewed_2026-10-06,general investigative venue
+Rivers,beach,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Rivers,carnival_workshop,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Rivers,cattle_market,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Rivers,community_hall,yes,2,Port Harcourt Community Hall,reviewed_2026-10-06,general investigative venue
+Rivers,conservation_office,yes,3,Rivers Field Office,reviewed_2026-10-06,state-specific priority
+Rivers,craft_market,yes,2,Port Harcourt Makers' Market,reviewed_2026-10-06,general investigative venue
+Rivers,emir_palace,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Rivers,factory_gate,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Rivers,farm,yes,2,Green Acres Farm,reviewed_2026-10-06,general investigative venue
+Rivers,festival_ground,yes,1,Port Harcourt Festival Ground,reviewed_2026-10-06,general investigative venue
+Rivers,fishing_jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Rivers,mining_site,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Rivers,monument,yes,1,Rivers Heritage Monument,reviewed_2026-10-06,general investigative venue
+Rivers,palace,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Rivers,police_station,yes,2,Port Harcourt Central Police Station,reviewed_2026-10-06,general investigative venue
+Rivers,railway_station,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Rivers,refinery,yes,5,Eastern Process Gate,reviewed_2026-10-06,state-specific priority
+Rivers,sacred_grove,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Rivers,seaport,yes,5,Harbour Gate Terminal,reviewed_2026-10-06,state-specific priority
+Rivers,traditional_council,yes,2,Port Harcourt Traditional Council,reviewed_2026-10-06,general investigative venue
+Rivers,university,yes,2,Rivers Civic University,reviewed_2026-10-06,general investigative venue
+Rivers,waterfront,yes,5,River Road Landing,reviewed_2026-10-06,state-specific priority
+Rivers,jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Sokoto,market,yes,4,Sokoto Travellers' Market,reviewed_2026-10-06,state-specific priority
+Sokoto,library,yes,2,Sokoto Reading House,reviewed_2026-10-06,general investigative venue
+Sokoto,nightclub,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Sokoto,church,yes,1,Sokoto Unity Church,reviewed_2026-10-06,state-specific priority
+Sokoto,mosque,yes,5,Sokoto Unity Mosque,reviewed_2026-10-06,state-specific priority
+Sokoto,museum,yes,4,Sokoto Memory House,reviewed_2026-10-06,state-specific priority
+Sokoto,motor_park,yes,4,Sokoto Main Motor Park,reviewed_2026-10-06,general investigative venue
+Sokoto,hotel,yes,3,Crossroads Hotel,reviewed_2026-10-06,general investigative venue
+Sokoto,restaurant,yes,3,The Travellers' Pot,reviewed_2026-10-06,general investigative venue
+Sokoto,airport,yes,2,Sokoto Air Terminal,reviewed_2026-10-06,general investigative venue
+Sokoto,radio_station,yes,2,Sokoto Community Radio,reviewed_2026-10-06,general investigative venue
+Sokoto,hospital,yes,2,Sokoto General Hospital,reviewed_2026-10-06,general investigative venue
+Sokoto,beach,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Sokoto,carnival_workshop,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Sokoto,cattle_market,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Sokoto,community_hall,yes,2,Sokoto Community Hall,reviewed_2026-10-06,general investigative venue
+Sokoto,conservation_office,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Sokoto,craft_market,yes,4,Sokoto Makers' Market,reviewed_2026-10-06,state-specific priority
+Sokoto,emir_palace,yes,5,Emirate Visitor Court,reviewed_2026-10-06,state-specific priority
+Sokoto,factory_gate,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Sokoto,farm,yes,2,Green Acres Farm,reviewed_2026-10-06,general investigative venue
+Sokoto,festival_ground,yes,1,Sokoto Festival Ground,reviewed_2026-10-06,general investigative venue
+Sokoto,fishing_jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Sokoto,mining_site,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Sokoto,monument,yes,1,Sokoto Heritage Monument,reviewed_2026-10-06,general investigative venue
+Sokoto,palace,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Sokoto,police_station,yes,2,Sokoto Central Police Station,reviewed_2026-10-06,general investigative venue
+Sokoto,railway_station,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Sokoto,refinery,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Sokoto,sacred_grove,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Sokoto,seaport,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Sokoto,traditional_council,yes,2,Sokoto Traditional Council,reviewed_2026-10-06,general investigative venue
+Sokoto,university,yes,3,Sokoto Civic University,reviewed_2026-10-06,state-specific priority
+Sokoto,waterfront,yes,3,River Road Landing,reviewed_2026-10-06,state-specific priority
+Sokoto,jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Taraba,market,yes,4,Jalingo Travellers' Market,reviewed_2026-10-06,general investigative venue
+Taraba,library,yes,2,Taraba Reading House,reviewed_2026-10-06,general investigative venue
+Taraba,nightclub,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Taraba,church,yes,1,Jalingo Unity Church,reviewed_2026-10-06,general investigative venue
+Taraba,mosque,yes,1,Jalingo Unity Mosque,reviewed_2026-10-06,general investigative venue
+Taraba,museum,yes,2,Taraba Memory House,reviewed_2026-10-06,general investigative venue
+Taraba,motor_park,yes,4,Jalingo Main Motor Park,reviewed_2026-10-06,general investigative venue
+Taraba,hotel,yes,4,Crossroads Hotel,reviewed_2026-10-06,state-specific priority
+Taraba,restaurant,yes,3,The Travellers' Pot,reviewed_2026-10-06,general investigative venue
+Taraba,airport,yes,2,Jalingo Air Terminal,reviewed_2026-10-06,general investigative venue
+Taraba,radio_station,yes,2,Taraba Community Radio,reviewed_2026-10-06,general investigative venue
+Taraba,hospital,yes,2,Jalingo General Hospital,reviewed_2026-10-06,general investigative venue
+Taraba,beach,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Taraba,carnival_workshop,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Taraba,cattle_market,yes,4,Jalingo Livestock Yard,reviewed_2026-10-06,state-specific priority
+Taraba,community_hall,yes,2,Jalingo Community Hall,reviewed_2026-10-06,general investigative venue
+Taraba,conservation_office,yes,5,Taraba Field Office,reviewed_2026-10-06,state-specific priority
+Taraba,craft_market,yes,2,Jalingo Makers' Market,reviewed_2026-10-06,general investigative venue
+Taraba,emir_palace,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Taraba,factory_gate,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Taraba,farm,yes,4,Green Acres Farm,reviewed_2026-10-06,state-specific priority
+Taraba,festival_ground,yes,1,Jalingo Festival Ground,reviewed_2026-10-06,general investigative venue
+Taraba,fishing_jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Taraba,mining_site,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Taraba,monument,yes,1,Taraba Heritage Monument,reviewed_2026-10-06,general investigative venue
+Taraba,palace,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Taraba,police_station,yes,2,Jalingo Central Police Station,reviewed_2026-10-06,general investigative venue
+Taraba,railway_station,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Taraba,refinery,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Taraba,sacred_grove,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Taraba,seaport,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Taraba,traditional_council,yes,2,Jalingo Traditional Council,reviewed_2026-10-06,general investigative venue
+Taraba,university,yes,2,Taraba Civic University,reviewed_2026-10-06,general investigative venue
+Taraba,waterfront,yes,3,River Road Landing,reviewed_2026-10-06,state-specific priority
+Taraba,jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Yobe,market,yes,4,Damaturu Travellers' Market,reviewed_2026-10-06,general investigative venue
+Yobe,library,yes,2,Yobe Reading House,reviewed_2026-10-06,general investigative venue
+Yobe,nightclub,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Yobe,church,yes,1,Damaturu Unity Church,reviewed_2026-10-06,general investigative venue
+Yobe,mosque,yes,4,Damaturu Unity Mosque,reviewed_2026-10-06,state-specific priority
+Yobe,museum,yes,2,Yobe Memory House,reviewed_2026-10-06,general investigative venue
+Yobe,motor_park,yes,4,Damaturu Main Motor Park,reviewed_2026-10-06,state-specific priority
+Yobe,hotel,yes,3,Crossroads Hotel,reviewed_2026-10-06,general investigative venue
+Yobe,restaurant,yes,3,The Travellers' Pot,reviewed_2026-10-06,general investigative venue
+Yobe,airport,yes,2,Damaturu Air Terminal,reviewed_2026-10-06,general investigative venue
+Yobe,radio_station,yes,2,Yobe Community Radio,reviewed_2026-10-06,general investigative venue
+Yobe,hospital,yes,2,Damaturu General Hospital,reviewed_2026-10-06,general investigative venue
+Yobe,beach,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Yobe,carnival_workshop,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Yobe,cattle_market,yes,5,Damaturu Livestock Yard,reviewed_2026-10-06,state-specific priority
+Yobe,community_hall,yes,2,Damaturu Community Hall,reviewed_2026-10-06,general investigative venue
+Yobe,conservation_office,yes,4,Yobe Field Office,reviewed_2026-10-06,state-specific priority
+Yobe,craft_market,yes,2,Damaturu Makers' Market,reviewed_2026-10-06,general investigative venue
+Yobe,emir_palace,yes,3,Emirate Visitor Court,reviewed_2026-10-06,state-specific priority
+Yobe,factory_gate,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Yobe,farm,yes,2,Green Acres Farm,reviewed_2026-10-06,general investigative venue
+Yobe,festival_ground,yes,1,Damaturu Festival Ground,reviewed_2026-10-06,general investigative venue
+Yobe,fishing_jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Yobe,mining_site,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Yobe,monument,yes,1,Yobe Heritage Monument,reviewed_2026-10-06,general investigative venue
+Yobe,palace,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Yobe,police_station,yes,2,Damaturu Central Police Station,reviewed_2026-10-06,general investigative venue
+Yobe,railway_station,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Yobe,refinery,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Yobe,sacred_grove,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Yobe,seaport,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Yobe,traditional_council,yes,2,Damaturu Traditional Council,reviewed_2026-10-06,general investigative venue
+Yobe,university,yes,2,Yobe Civic University,reviewed_2026-10-06,general investigative venue
+Yobe,waterfront,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Yobe,jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Zamfara,market,yes,4,Gusau Travellers' Market,reviewed_2026-10-06,general investigative venue
+Zamfara,library,yes,2,Zamfara Reading House,reviewed_2026-10-06,general investigative venue
+Zamfara,nightclub,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Zamfara,church,yes,1,Gusau Unity Church,reviewed_2026-10-06,general investigative venue
+Zamfara,mosque,yes,4,Gusau Unity Mosque,reviewed_2026-10-06,state-specific priority
+Zamfara,museum,yes,2,Zamfara Memory House,reviewed_2026-10-06,general investigative venue
+Zamfara,motor_park,yes,4,Gusau Main Motor Park,reviewed_2026-10-06,general investigative venue
+Zamfara,hotel,yes,3,Crossroads Hotel,reviewed_2026-10-06,general investigative venue
+Zamfara,restaurant,yes,3,The Travellers' Pot,reviewed_2026-10-06,general investigative venue
+Zamfara,airport,yes,2,Gusau Air Terminal,reviewed_2026-10-06,general investigative venue
+Zamfara,radio_station,yes,2,Zamfara Community Radio,reviewed_2026-10-06,general investigative venue
+Zamfara,hospital,yes,2,Gusau General Hospital,reviewed_2026-10-06,general investigative venue
+Zamfara,beach,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Zamfara,carnival_workshop,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Zamfara,cattle_market,yes,4,Gusau Livestock Yard,reviewed_2026-10-06,state-specific priority
+Zamfara,community_hall,yes,2,Gusau Community Hall,reviewed_2026-10-06,general investigative venue
+Zamfara,conservation_office,yes,3,Zamfara Field Office,reviewed_2026-10-06,state-specific priority
+Zamfara,craft_market,yes,2,Gusau Makers' Market,reviewed_2026-10-06,general investigative venue
+Zamfara,emir_palace,yes,4,Emirate Visitor Court,reviewed_2026-10-06,state-specific priority
+Zamfara,factory_gate,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Zamfara,farm,yes,2,Green Acres Farm,reviewed_2026-10-06,general investigative venue
+Zamfara,festival_ground,yes,1,Gusau Festival Ground,reviewed_2026-10-06,general investigative venue
+Zamfara,fishing_jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Zamfara,mining_site,yes,5,Red Earth Workings,reviewed_2026-10-06,state-specific priority
+Zamfara,monument,yes,3,Zamfara Heritage Monument,reviewed_2026-10-06,state-specific priority
+Zamfara,palace,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Zamfara,police_station,yes,2,Gusau Central Police Station,reviewed_2026-10-06,general investigative venue
+Zamfara,railway_station,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Zamfara,refinery,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Zamfara,sacred_grove,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Zamfara,seaport,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Zamfara,traditional_council,yes,2,Gusau Traditional Council,reviewed_2026-10-06,general investigative venue
+Zamfara,university,yes,2,Zamfara Civic University,reviewed_2026-10-06,general investigative venue
+Zamfara,waterfront,yes,3,River Road Landing,reviewed_2026-10-06,state-specific priority
+Zamfara,jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Federal Capital Territory,market,yes,4,Abuja Travellers' Market,reviewed_2026-10-06,general investigative venue
+Federal Capital Territory,library,yes,2,Federal Capital Territory Reading House,reviewed_2026-10-06,general investigative venue
+Federal Capital Territory,nightclub,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Federal Capital Territory,church,yes,4,Abuja Unity Church,reviewed_2026-10-06,state-specific priority
+Federal Capital Territory,mosque,yes,4,Abuja Unity Mosque,reviewed_2026-10-06,state-specific priority
+Federal Capital Territory,museum,yes,2,Federal Capital Territory Memory House,reviewed_2026-10-06,general investigative venue
+Federal Capital Territory,motor_park,yes,4,Abuja Main Motor Park,reviewed_2026-10-06,general investigative venue
+Federal Capital Territory,hotel,yes,5,Crossroads Hotel,reviewed_2026-10-06,state-specific priority
+Federal Capital Territory,restaurant,yes,3,The Travellers' Pot,reviewed_2026-10-06,general investigative venue
+Federal Capital Territory,airport,yes,5,Abuja Air Terminal,reviewed_2026-10-06,state-specific priority
+Federal Capital Territory,radio_station,yes,2,Federal Capital Territory Community Radio,reviewed_2026-10-06,general investigative venue
+Federal Capital Territory,hospital,yes,2,Abuja General Hospital,reviewed_2026-10-06,general investigative venue
+Federal Capital Territory,beach,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Federal Capital Territory,carnival_workshop,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Federal Capital Territory,cattle_market,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Federal Capital Territory,community_hall,yes,2,Abuja Community Hall,reviewed_2026-10-06,general investigative venue
+Federal Capital Territory,conservation_office,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Federal Capital Territory,craft_market,yes,2,Abuja Makers' Market,reviewed_2026-10-06,general investigative venue
+Federal Capital Territory,emir_palace,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Federal Capital Territory,factory_gate,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Federal Capital Territory,farm,yes,2,Green Acres Farm,reviewed_2026-10-06,general investigative venue
+Federal Capital Territory,festival_ground,yes,1,Abuja Festival Ground,reviewed_2026-10-06,general investigative venue
+Federal Capital Territory,fishing_jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Federal Capital Territory,mining_site,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Federal Capital Territory,monument,yes,5,Federal Capital Territory Heritage Monument,reviewed_2026-10-06,state-specific priority
+Federal Capital Territory,palace,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Federal Capital Territory,police_station,yes,2,Abuja Central Police Station,reviewed_2026-10-06,general investigative venue
+Federal Capital Territory,railway_station,yes,4,Abuja Railway Station,reviewed_2026-10-06,state-specific priority
+Federal Capital Territory,refinery,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Federal Capital Territory,sacred_grove,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Federal Capital Territory,seaport,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Federal Capital Territory,traditional_council,yes,2,Abuja Traditional Council,reviewed_2026-10-06,general investigative venue
+Federal Capital Territory,university,yes,2,Federal Capital Territory Civic University,reviewed_2026-10-06,general investigative venue
+Federal Capital Territory,waterfront,no,0,,reviewed_2026-10-06,not a normal clue venue for this state
+Federal Capital Territory,jetty,no,0,,reviewed_2026-10-06,not a normal clue venue for this state

@@ -1,0 +1,1333 @@
+origin_state,destination_state,distance_km,travel_mode,travel_minutes
+Abia,Adamawa,685,air,210
+Abia,Akwa Ibom,72,road,105
+Abia,Anambra,89,road,120
+Abia,Bauchi,591,air,210
+Abia,Bayelsa,152,road,180
+Abia,Benue,270,air,180
+Abia,Borno,937,air,240
+Abia,Cross River,112,road,150
+Abia,Delta,112,road,150
+Abia,Ebonyi,111,road,150
+Abia,Edo,225,air,165
+Abia,Ekiti,342,air,180
+Abia,Enugu,102,road,135
+Abia,Gombe,667,air,210
+Abia,Imo,50,road,90
+Abia,Jigawa,722,air,210
+Abia,Kaduna,555,air,195
+Abia,Kano,728,air,210
+Abia,Katsina,830,air,225
+Abia,Kebbi,850,air,225
+Abia,Kogi,266,air,180
+Abia,Kwara,463,air,195
+Abia,Lagos,473,air,195
+Abia,Nasarawa,348,air,180
+Abia,Niger,466,air,195
+Abia,Ogun,492,air,195
+Abia,Ondo,318,air,180
+Abia,Osun,408,air,195
+Abia,Oyo,442,air,195
+Abia,Plateau,509,air,195
+Abia,Rivers,93,road,135
+Abia,Sokoto,873,air,225
+Abia,Taraba,567,air,195
+Abia,Yobe,848,air,225
+Abia,Zamfara,744,air,225
+Abia,Federal Capital Territory,395,air,180
+Adamawa,Abia,685,air,210
+Adamawa,Akwa Ibom,684,air,210
+Adamawa,Anambra,683,air,210
+Adamawa,Bauchi,315,air,180
+Adamawa,Bayelsa,835,air,225
+Adamawa,Benue,465,air,195
+Adamawa,Borno,301,air,180
+Adamawa,Cross River,659,air,210
+Adamawa,Delta,716,air,210
+Adamawa,Ebonyi,578,air,210
+Adamawa,Edo,819,air,225
+Adamawa,Ekiti,818,air,225
+Adamawa,Enugu,627,air,210
+Adamawa,Gombe,188,road,225
+Adamawa,Imo,728,air,210
+Adamawa,Jigawa,446,air,195
+Adamawa,Kaduna,571,air,210
+Adamawa,Kano,533,air,195
+Adamawa,Katsina,679,air,210
+Adamawa,Kebbi,974,air,240
+Adamawa,Kogi,650,air,210
+Adamawa,Kwara,875,air,225
+Adamawa,Lagos,1046,air,240
+Adamawa,Nasarawa,442,air,195
+Adamawa,Niger,652,air,210
+Adamawa,Ogun,1030,air,240
+Adamawa,Ondo,831,air,225
+Adamawa,Osun,885,air,225
+Adamawa,Oyo,960,air,240
+Adamawa,Plateau,405,air,180
+Adamawa,Rivers,772,air,225
+Adamawa,Sokoto,899,air,240
+Adamawa,Taraba,128,road,165
+Adamawa,Yobe,289,air,180
+Adamawa,Zamfara,716,air,210
+Adamawa,Federal Capital Territory,558,air,195
+Akwa Ibom,Abia,72,road,105
+Akwa Ibom,Adamawa,684,air,210
+Akwa Ibom,Anambra,160,road,195
+Akwa Ibom,Bauchi,623,air,210
+Akwa Ibom,Bayelsa,183,road,210
+Akwa Ibom,Benue,307,air,180
+Akwa Ibom,Borno,950,air,240
+Akwa Ibom,Cross River,47,road,90
+Akwa Ibom,Delta,184,road,210
+Akwa Ibom,Ebonyi,144,road,180
+Akwa Ibom,Edo,291,air,180
+Akwa Ibom,Ekiti,413,air,195
+Akwa Ibom,Enugu,163,road,195
+Akwa Ibom,Gombe,685,air,210
+Akwa Ibom,Imo,109,road,150
+Akwa Ibom,Jigawa,764,air,225
+Akwa Ibom,Kaduna,612,air,210
+Akwa Ibom,Kano,777,air,225
+Akwa Ibom,Katsina,885,air,225
+Akwa Ibom,Kebbi,919,air,240
+Akwa Ibom,Kogi,333,air,180
+Akwa Ibom,Kwara,534,air,195
+Akwa Ibom,Lagos,533,air,195
+Akwa Ibom,Nasarawa,389,air,180
+Akwa Ibom,Niger,531,air,195
+Akwa Ibom,Ogun,556,air,195
+Akwa Ibom,Ondo,388,air,180
+Akwa Ibom,Osun,479,air,195
+Akwa Ibom,Oyo,509,air,195
+Akwa Ibom,Plateau,550,air,195
+Akwa Ibom,Rivers,98,road,135
+Akwa Ibom,Sokoto,939,air,240
+Akwa Ibom,Taraba,573,air,210
+Akwa Ibom,Yobe,869,air,225
+Akwa Ibom,Zamfara,805,air,225
+Akwa Ibom,Federal Capital Territory,453,air,195
+Anambra,Abia,89,road,120
+Anambra,Adamawa,683,air,210
+Anambra,Akwa Ibom,160,road,195
+Anambra,Bauchi,548,air,195
+Anambra,Bayelsa,169,road,195
+Anambra,Benue,233,air,165
+Anambra,Borno,914,air,240
+Anambra,Cross River,197,road,225
+Anambra,Delta,38,road,75
+Anambra,Ebonyi,116,road,150
+Anambra,Edo,160,road,195
+Anambra,Ekiti,257,air,180
+Anambra,Enugu,55,road,90
+Anambra,Gombe,640,air,210
+Anambra,Imo,80,road,120
+Anambra,Jigawa,666,air,210
+Anambra,Kaduna,481,air,195
+Anambra,Kano,663,air,210
+Anambra,Katsina,756,air,225
+Anambra,Kebbi,762,air,225
+Anambra,Kogi,181,road,210
+Anambra,Kwara,377,air,180
+Anambra,Lagos,413,air,195
+Anambra,Nasarawa,300,air,180
+Anambra,Niger,383,air,180
+Anambra,Ogun,424,air,195
+Anambra,Ondo,238,air,165
+Anambra,Osun,327,air,180
+Anambra,Oyo,368,air,180
+Anambra,Plateau,455,air,195
+Anambra,Rivers,155,road,195
+Anambra,Sokoto,788,air,225
+Anambra,Taraba,559,air,195
+Anambra,Yobe,817,air,225
+Anambra,Zamfara,664,air,210
+Anambra,Federal Capital Territory,321,air,180
+Bauchi,Abia,591,air,210
+Bauchi,Adamawa,315,air,180
+Bauchi,Akwa Ibom,623,air,210
+Bauchi,Anambra,548,air,195
+Bauchi,Bayelsa,717,air,210
+Bauchi,Benue,321,air,180
+Bauchi,Borno,399,air,180
+Bauchi,Cross River,619,air,210
+Bauchi,Delta,571,air,210
+Bauchi,Ebonyi,483,air,195
+Bauchi,Edo,640,air,210
+Bauchi,Ekiti,589,air,210
+Bauchi,Enugu,500,air,195
+Bauchi,Gombe,146,road,180
+Bauchi,Imo,618,air,210
+Bauchi,Jigawa,170,road,195
+Bauchi,Kaduna,264,air,180
+Bauchi,Kano,237,air,165
+Bauchi,Katsina,385,air,180
+Bauchi,Kebbi,659,air,210
+Bauchi,Kogi,440,air,195
+Bauchi,Kwara,614,air,210
+Bauchi,Lagos,824,air,225
+Bauchi,Nasarawa,249,air,180
+Bauchi,Niger,368,air,180
+Bauchi,Ogun,795,air,225
+Bauchi,Ondo,614,air,210
+Bauchi,Osun,645,air,210
+Bauchi,Oyo,724,air,210
+Bauchi,Plateau,117,road,150
+Bauchi,Rivers,683,air,210
+Bauchi,Sokoto,587,air,210
+Bauchi,Taraba,230,air,165
+Bauchi,Yobe,281,air,180
+Bauchi,Zamfara,404,air,180
+Bauchi,Federal Capital Territory,300,air,180
+Bayelsa,Abia,152,road,180
+Bayelsa,Adamawa,835,air,225
+Bayelsa,Akwa Ibom,183,road,210
+Bayelsa,Anambra,169,road,195
+Bayelsa,Bauchi,717,air,210
+Bayelsa,Benue,400,air,180
+Bayelsa,Borno,1079,air,255
+Bayelsa,Cross River,228,air,165
+Bayelsa,Delta,152,road,180
+Bayelsa,Ebonyi,257,air,180
+Bayelsa,Edo,173,road,210
+Bayelsa,Ekiti,321,air,180
+Bayelsa,Enugu,219,road,240
+Bayelsa,Gombe,806,air,225
+Bayelsa,Imo,107,road,150
+Bayelsa,Jigawa,833,air,225
+Bayelsa,Kaduna,636,air,210
+Bayelsa,Kano,826,air,225
+Bayelsa,Katsina,909,air,240
+Bayelsa,Kebbi,867,air,225
+Bayelsa,Kogi,325,air,180
+Bayelsa,Kwara,441,air,195
+Bayelsa,Lagos,372,air,180
+Bayelsa,Nasarawa,469,air,195
+Bayelsa,Niger,524,air,195
+Bayelsa,Ogun,406,air,180
+Bayelsa,Ondo,285,air,180
+Bayelsa,Osun,368,air,180
+Bayelsa,Oyo,374,air,180
+Bayelsa,Plateau,624,air,210
+Bayelsa,Rivers,88,road,120
+Bayelsa,Sokoto,912,air,240
+Bayelsa,Taraba,715,air,210
+Bayelsa,Yobe,985,air,240
+Bayelsa,Zamfara,807,air,225
+Bayelsa,Federal Capital Territory,479,air,195
+Benue,Abia,270,air,180
+Benue,Adamawa,465,air,195
+Benue,Akwa Ibom,307,air,180
+Benue,Anambra,233,air,165
+Benue,Bauchi,321,air,180
+Benue,Bayelsa,400,air,180
+Benue,Borno,682,air,210
+Benue,Cross River,310,air,180
+Benue,Delta,261,air,180
+Benue,Ebonyi,163,road,195
+Benue,Edo,354,air,180
+Benue,Ekiti,364,air,180
+Benue,Enugu,181,road,210
+Benue,Gombe,407,air,195
+Benue,Imo,298,air,180
+Benue,Jigawa,457,air,195
+Benue,Kaduna,332,air,180
+Benue,Kano,475,air,195
+Benue,Katsina,593,air,210
+Benue,Kebbi,706,air,210
+Benue,Kogi,196,road,225
+Benue,Kwara,445,air,195
+Benue,Lagos,584,air,210
+Benue,Nasarawa,85,road,120
+Benue,Niger,302,air,180
+Benue,Ogun,574,air,210
+Benue,Ondo,371,air,180
+Benue,Osun,436,air,195
+Benue,Oyo,505,air,195
+Benue,Plateau,244,air,180
+Benue,Rivers,362,air,180
+Benue,Sokoto,693,air,210
+Benue,Taraba,338,air,180
+Benue,Yobe,585,air,210
+Benue,Zamfara,534,air,195
+Benue,Federal Capital Territory,194,road,225
+Borno,Abia,937,air,240
+Borno,Adamawa,301,air,180
+Borno,Akwa Ibom,950,air,240
+Borno,Anambra,914,air,240
+Borno,Bauchi,399,air,180
+Borno,Bayelsa,1079,air,255
+Borno,Benue,682,air,210
+Borno,Cross River,931,air,240
+Borno,Delta,943,air,240
+Borno,Ebonyi,825,air,225
+Borno,Edo,1027,air,240
+Borno,Ekiti,987,air,240
+Borno,Enugu,861,air,225
+Borno,Gombe,276,air,180
+Borno,Imo,973,air,240
+Borno,Jigawa,415,air,195
+Borno,Kaduna,640,air,210
+Borno,Kano,504,air,195
+Borno,Katsina,616,air,210
+Borno,Kebbi,975,air,240
+Borno,Kogi,833,air,225
+Borno,Kwara,1011,air,240
+Borno,Lagos,1222,air,270
+Borno,Nasarawa,628,air,210
+Borno,Niger,762,air,225
+Borno,Ogun,1194,air,255
+Borno,Ondo,1010,air,240
+Borno,Osun,1044,air,240
+Borno,Oyo,1123,air,255
+Borno,Plateau,515,air,195
+Borno,Rivers,1028,air,240
+Borno,Sokoto,870,air,225
+Borno,Taraba,381,air,180
+Borno,Yobe,130,road,165
+Borno,Zamfara,707,air,210
+Borno,Federal Capital Territory,699,air,210
+Cross River,Abia,112,road,150
+Cross River,Adamawa,659,air,210
+Cross River,Akwa Ibom,47,road,90
+Cross River,Anambra,197,road,225
+Cross River,Bauchi,619,air,210
+Cross River,Bayelsa,228,air,165
+Cross River,Benue,310,air,180
+Cross River,Borno,931,air,240
+Cross River,Delta,224,air,165
+Cross River,Ebonyi,154,road,180
+Cross River,Edo,335,air,180
+Cross River,Ekiti,453,air,195
+Cross River,Enugu,189,road,225
+Cross River,Gombe,672,air,210
+Cross River,Imo,154,road,180
+Cross River,Jigawa,765,air,225
+Cross River,Kaduna,627,air,210
+Cross River,Kano,784,air,225
+Cross River,Katsina,897,air,240
+Cross River,Kebbi,949,air,240
+Cross River,Kogi,362,air,180
+Cross River,Kwara,574,air,210
+Cross River,Lagos,580,air,210
+Cross River,Nasarawa,394,air,180
+Cross River,Niger,555,air,195
+Cross River,Ogun,602,air,210
+Cross River,Ondo,430,air,195
+Cross River,Osun,521,air,195
+Cross River,Oyo,554,air,195
+Cross River,Plateau,554,air,195
+Cross River,Rivers,141,road,180
+Cross River,Sokoto,963,air,240
+Cross River,Taraba,552,air,195
+Cross River,Yobe,856,air,225
+Cross River,Zamfara,823,air,225
+Cross River,Federal Capital Territory,470,air,195
+Delta,Abia,112,road,150
+Delta,Adamawa,716,air,210
+Delta,Akwa Ibom,184,road,210
+Delta,Anambra,38,road,75
+Delta,Bauchi,571,air,210
+Delta,Bayelsa,152,road,180
+Delta,Benue,261,air,180
+Delta,Borno,943,air,240
+Delta,Cross River,224,air,165
+Delta,Ebonyi,153,road,180
+Delta,Edo,123,road,165
+Delta,Ekiti,230,air,165
+Delta,Enugu,91,road,135
+Delta,Gombe,667,air,210
+Delta,Imo,86,road,120
+Delta,Jigawa,681,air,210
+Delta,Kaduna,487,air,195
+Delta,Kano,674,air,210
+Delta,Katsina,761,air,225
+Delta,Kebbi,748,air,225
+Delta,Kogi,178,road,210
+Delta,Kwara,351,air,180
+Delta,Lagos,376,air,180
+Delta,Nasarawa,322,air,180
+Delta,Niger,381,air,180
+Delta,Ogun,388,air,180
+Delta,Ondo,206,road,240
+Delta,Osun,296,air,180
+Delta,Oyo,334,air,180
+Delta,Plateau,474,air,195
+Delta,Rivers,157,road,195
+Delta,Sokoto,780,air,225
+Delta,Taraba,592,air,210
+Delta,Yobe,843,air,225
+Delta,Zamfara,664,air,210
+Delta,Federal Capital Territory,329,air,180
+Ebonyi,Abia,111,road,150
+Ebonyi,Adamawa,578,air,210
+Ebonyi,Akwa Ibom,144,road,180
+Ebonyi,Anambra,116,road,150
+Ebonyi,Bauchi,483,air,195
+Ebonyi,Bayelsa,257,air,180
+Ebonyi,Benue,163,road,195
+Ebonyi,Borno,825,air,225
+Ebonyi,Cross River,154,road,180
+Ebonyi,Delta,153,road,180
+Ebonyi,Edo,274,air,180
+Ebonyi,Ekiti,350,air,180
+Ebonyi,Enugu,68,road,105
+Ebonyi,Gombe,555,air,195
+Ebonyi,Imo,150,road,180
+Ebonyi,Jigawa,620,air,210
+Ebonyi,Kaduna,473,air,195
+Ebonyi,Kano,633,air,210
+Ebonyi,Katsina,744,air,225
+Ebonyi,Kebbi,805,air,225
+Ebonyi,Kogi,223,air,165
+Ebonyi,Kwara,461,air,195
+Ebonyi,Lagos,527,air,195
+Ebonyi,Nasarawa,245,air,180
+Ebonyi,Niger,405,air,180
+Ebonyi,Ogun,534,air,195
+Ebonyi,Ondo,339,air,180
+Ebonyi,Osun,424,air,195
+Ebonyi,Oyo,474,air,195
+Ebonyi,Plateau,407,air,195
+Ebonyi,Rivers,204,road,240
+Ebonyi,Sokoto,813,air,225
+Ebonyi,Taraba,458,air,195
+Ebonyi,Yobe,737,air,225
+Ebonyi,Zamfara,670,air,210
+Ebonyi,Federal Capital Territory,317,air,180
+Edo,Abia,225,air,165
+Edo,Adamawa,819,air,225
+Edo,Akwa Ibom,291,air,180
+Edo,Anambra,160,road,195
+Edo,Bauchi,640,air,210
+Edo,Bayelsa,173,road,210
+Edo,Benue,354,air,180
+Edo,Borno,1027,air,240
+Edo,Cross River,335,air,180
+Edo,Delta,123,road,165
+Edo,Ebonyi,274,air,180
+Edo,Ekiti,149,road,180
+Edo,Enugu,208,road,240
+Edo,Gombe,751,air,225
+Edo,Imo,182,road,210
+Edo,Jigawa,727,air,210
+Edo,Kaduna,506,air,195
+Edo,Kano,705,air,210
+Edo,Katsina,770,air,225
+Edo,Kebbi,697,air,210
+Edo,Kogi,203,road,225
+Edo,Kwara,268,air,180
+Edo,Lagos,254,air,180
+Edo,Nasarawa,398,air,180
+Edo,Niger,379,air,180
+Edo,Ogun,267,air,180
+Edo,Ondo,112,road,150
+Edo,Osun,198,road,225
+Edo,Oyo,219,road,240
+Edo,Plateau,532,air,195
+Edo,Rivers,231,air,165
+Edo,Sokoto,748,air,225
+Edo,Taraba,692,air,210
+Edo,Yobe,919,air,240
+Edo,Zamfara,658,air,210
+Edo,Federal Capital Territory,362,air,180
+Ekiti,Abia,342,air,180
+Ekiti,Adamawa,818,air,225
+Ekiti,Akwa Ibom,413,air,195
+Ekiti,Anambra,257,air,180
+Ekiti,Bauchi,589,air,210
+Ekiti,Bayelsa,321,air,180
+Ekiti,Benue,364,air,180
+Ekiti,Borno,987,air,240
+Ekiti,Cross River,453,air,195
+Ekiti,Delta,230,air,165
+Ekiti,Ebonyi,350,air,180
+Ekiti,Edo,149,road,180
+Ekiti,Enugu,284,air,180
+Ekiti,Gombe,718,air,210
+Ekiti,Imo,311,air,180
+Ekiti,Jigawa,645,air,210
+Ekiti,Kaduna,404,air,180
+Ekiti,Kano,607,air,210
+Ekiti,Katsina,651,air,210
+Ekiti,Kebbi,549,air,195
+Ekiti,Kogi,169,road,195
+Ekiti,Kwara,123,road,165
+Ekiti,Lagos,235,air,165
+Ekiti,Nasarawa,376,air,180
+Ekiti,Niger,266,air,180
+Ekiti,Ogun,213,road,240
+Ekiti,Ondo,41,road,90
+Ekiti,Osun,75,road,120
+Ekiti,Oyo,143,road,180
+Ekiti,Plateau,474,air,195
+Ekiti,Rivers,371,air,180
+Ekiti,Sokoto,605,air,210
+Ekiti,Taraba,690,air,210
+Ekiti,Yobe,870,air,225
+Ekiti,Zamfara,530,air,195
+Ekiti,Federal Capital Territory,290,air,180
+Enugu,Abia,102,road,135
+Enugu,Adamawa,627,air,210
+Enugu,Akwa Ibom,163,road,195
+Enugu,Anambra,55,road,90
+Enugu,Bauchi,500,air,195
+Enugu,Bayelsa,219,road,240
+Enugu,Benue,181,road,210
+Enugu,Borno,861,air,225
+Enugu,Cross River,189,road,225
+Enugu,Delta,91,road,135
+Enugu,Ebonyi,68,road,105
+Enugu,Edo,208,road,240
+Enugu,Ekiti,284,air,180
+Enugu,Gombe,587,air,210
+Enugu,Imo,119,road,150
+Enugu,Jigawa,624,air,210
+Enugu,Kaduna,453,air,195
+Enugu,Kano,627,air,210
+Enugu,Katsina,727,air,210
+Enugu,Kebbi,759,air,225
+Enugu,Kogi,172,road,210
+Enugu,Kwara,398,air,180
+Enugu,Lagos,460,air,195
+Enugu,Nasarawa,253,air,180
+Enugu,Niger,368,air,180
+Enugu,Ogun,466,air,195
+Enugu,Ondo,271,air,180
+Enugu,Osun,357,air,180
+Enugu,Oyo,406,air,180
+Enugu,Plateau,411,air,195
+Enugu,Rivers,188,road,225
+Enugu,Sokoto,776,air,225
+Enugu,Taraba,504,air,195
+Enugu,Yobe,765,air,225
+Enugu,Zamfara,643,air,210
+Enugu,Federal Capital Territory,293,air,180
+Gombe,Abia,667,air,210
+Gombe,Adamawa,188,road,225
+Gombe,Akwa Ibom,685,air,210
+Gombe,Anambra,640,air,210
+Gombe,Bauchi,146,road,180
+Gombe,Bayelsa,806,air,225
+Gombe,Benue,407,air,195
+Gombe,Borno,276,air,180
+Gombe,Cross River,672,air,210
+Gombe,Delta,667,air,210
+Gombe,Ebonyi,555,air,195
+Gombe,Edo,751,air,225
+Gombe,Ekiti,718,air,210
+Gombe,Enugu,587,air,210
+Gombe,Imo,701,air,210
+Gombe,Jigawa,258,air,180
+Gombe,Kaduna,409,air,195
+Gombe,Kano,346,air,180
+Gombe,Katsina,491,air,195
+Gombe,Kebbi,797,air,225
+Gombe,Kogi,560,air,195
+Gombe,Kwara,753,air,225
+Gombe,Lagos,953,air,240
+Gombe,Nasarawa,353,air,180
+Gombe,Niger,511,air,195
+Gombe,Ogun,928,air,240
+Gombe,Ondo,739,air,225
+Gombe,Osun,778,air,225
+Gombe,Oyo,857,air,225
+Gombe,Plateau,257,air,180
+Gombe,Rivers,759,air,225
+Gombe,Sokoto,715,air,210
+Gombe,Taraba,157,road,195
+Gombe,Yobe,184,road,210
+Gombe,Zamfara,534,air,195
+Gombe,Federal Capital Territory,435,air,195
+Imo,Abia,50,road,90
+Imo,Adamawa,728,air,210
+Imo,Akwa Ibom,109,road,150
+Imo,Anambra,80,road,120
+Imo,Bauchi,618,air,210
+Imo,Bayelsa,107,road,150
+Imo,Benue,298,air,180
+Imo,Borno,973,air,240
+Imo,Cross River,154,road,180
+Imo,Delta,86,road,120
+Imo,Ebonyi,150,road,180
+Imo,Edo,182,road,210
+Imo,Ekiti,311,air,180
+Imo,Enugu,119,road,150
+Imo,Gombe,701,air,210
+Imo,Jigawa,742,air,225
+Imo,Kaduna,561,air,195
+Imo,Kano,742,air,225
+Imo,Katsina,836,air,225
+Imo,Kebbi,834,air,225
+Imo,Kogi,259,air,180
+Imo,Kwara,433,air,195
+Imo,Lagos,426,air,195
+Imo,Nasarawa,371,air,180
+Imo,Niger,462,air,195
+Imo,Ogun,448,air,195
+Imo,Ondo,283,air,180
+Imo,Osun,373,air,180
+Imo,Oyo,401,air,180
+Imo,Plateau,530,air,195
+Imo,Rivers,75,road,120
+Imo,Sokoto,865,air,225
+Imo,Taraba,608,air,210
+Imo,Yobe,881,air,225
+Imo,Zamfara,744,air,225
+Imo,Federal Capital Territory,401,air,180
+Jigawa,Abia,722,air,210
+Jigawa,Adamawa,446,air,195
+Jigawa,Akwa Ibom,764,air,225
+Jigawa,Anambra,666,air,210
+Jigawa,Bauchi,170,road,195
+Jigawa,Bayelsa,833,air,225
+Jigawa,Benue,457,air,195
+Jigawa,Borno,415,air,195
+Jigawa,Cross River,765,air,225
+Jigawa,Delta,681,air,210
+Jigawa,Ebonyi,620,air,210
+Jigawa,Edo,727,air,210
+Jigawa,Ekiti,645,air,210
+Jigawa,Enugu,624,air,210
+Jigawa,Gombe,258,air,180
+Jigawa,Imo,742,air,225
+Jigawa,Kaduna,249,air,180
+Jigawa,Kano,93,road,135
+Jigawa,Katsina,233,air,165
+Jigawa,Kebbi,564,air,195
+Jigawa,Kogi,524,air,195
+Jigawa,Kwara,637,air,210
+Jigawa,Lagos,872,air,225
+Jigawa,Nasarawa,375,air,180
+Jigawa,Niger,387,air,180
+Jigawa,Ogun,833,air,225
+Jigawa,Ondo,677,air,210
+Jigawa,Osun,686,air,210
+Jigawa,Oyo,766,air,225
+Jigawa,Plateau,213,road,240
+Jigawa,Rivers,812,air,225
+Jigawa,Sokoto,468,air,195
+Jigawa,Taraba,388,air,180
+Jigawa,Yobe,285,air,180
+Jigawa,Zamfara,295,air,180
+Jigawa,Federal Capital Territory,366,air,180
+Kaduna,Abia,555,air,195
+Kaduna,Adamawa,571,air,210
+Kaduna,Akwa Ibom,612,air,210
+Kaduna,Anambra,481,air,195
+Kaduna,Bauchi,264,air,180
+Kaduna,Bayelsa,636,air,210
+Kaduna,Benue,332,air,180
+Kaduna,Borno,640,air,210
+Kaduna,Cross River,627,air,210
+Kaduna,Delta,487,air,195
+Kaduna,Ebonyi,473,air,195
+Kaduna,Edo,506,air,195
+Kaduna,Ekiti,404,air,180
+Kaduna,Enugu,453,air,195
+Kaduna,Gombe,409,air,195
+Kaduna,Imo,561,air,195
+Kaduna,Jigawa,249,air,180
+Kaduna,Kano,202,road,225
+Kaduna,Katsina,275,air,180
+Kaduna,Kebbi,413,air,195
+Kaduna,Kogi,312,air,180
+Kaduna,Kwara,388,air,180
+Kaduna,Lagos,626,air,210
+Kaduna,Nasarawa,255,air,180
+Kaduna,Niger,140,road,180
+Kaduna,Ogun,585,air,210
+Kaduna,Ondo,440,air,195
+Kaduna,Osun,440,air,195
+Kaduna,Oyo,518,air,195
+Kaduna,Plateau,170,road,195
+Kaduna,Rivers,635,air,210
+Kaduna,Sokoto,370,air,180
+Kaduna,Taraba,466,air,195
+Kaduna,Yobe,512,air,195
+Kaduna,Zamfara,202,road,225
+Kaduna,Federal Capital Territory,160,road,195
+Kano,Abia,728,air,210
+Kano,Adamawa,533,air,195
+Kano,Akwa Ibom,777,air,225
+Kano,Anambra,663,air,210
+Kano,Bauchi,237,air,165
+Kano,Bayelsa,826,air,225
+Kano,Benue,475,air,195
+Kano,Borno,504,air,195
+Kano,Cross River,784,air,225
+Kano,Delta,674,air,210
+Kano,Ebonyi,633,air,210
+Kano,Edo,705,air,210
+Kano,Ekiti,607,air,210
+Kano,Enugu,627,air,210
+Kano,Gombe,346,air,180
+Kano,Imo,742,air,225
+Kano,Jigawa,93,road,135
+Kano,Kaduna,202,road,225
+Kano,Katsina,149,road,180
+Kano,Kebbi,472,air,195
+Kano,Kogi,506,air,195
+Kano,Kwara,583,air,210
+Kano,Lagos,826,air,225
+Kano,Nasarawa,390,air,180
+Kano,Niger,341,air,180
+Kano,Ogun,782,air,225
+Kano,Ondo,642,air,210
+Kano,Osun,640,air,210
+Kano,Oyo,717,air,210
+Kano,Plateau,236,air,165
+Kano,Rivers,815,air,225
+Kano,Sokoto,375,air,180
+Kano,Taraba,465,air,195
+Kano,Yobe,375,air,180
+Kano,Zamfara,203,road,225
+Kano,Federal Capital Territory,347,air,180
+Katsina,Abia,830,air,225
+Katsina,Adamawa,679,air,210
+Katsina,Akwa Ibom,885,air,225
+Katsina,Anambra,756,air,225
+Katsina,Bauchi,385,air,180
+Katsina,Bayelsa,909,air,240
+Katsina,Benue,593,air,210
+Katsina,Borno,616,air,210
+Katsina,Cross River,897,air,240
+Katsina,Delta,761,air,225
+Katsina,Ebonyi,744,air,225
+Katsina,Edo,770,air,225
+Katsina,Ekiti,651,air,210
+Katsina,Enugu,727,air,210
+Katsina,Gombe,491,air,195
+Katsina,Imo,836,air,225
+Katsina,Jigawa,233,air,165
+Katsina,Kaduna,275,air,180
+Katsina,Kano,149,road,180
+Katsina,Kebbi,374,air,180
+Katsina,Kogi,585,air,210
+Katsina,Kwara,600,air,210
+Katsina,Lagos,849,air,225
+Katsina,Nasarawa,510,air,195
+Katsina,Niger,392,air,180
+Katsina,Ogun,799,air,225
+Katsina,Ondo,691,air,210
+Katsina,Osun,669,air,210
+Katsina,Oyo,741,air,225
+Katsina,Plateau,370,air,180
+Katsina,Rivers,910,air,240
+Katsina,Sokoto,256,air,180
+Katsina,Taraba,613,air,210
+Katsina,Yobe,493,air,195
+Katsina,Zamfara,137,road,165
+Katsina,Federal Capital Territory,435,air,195
+Kebbi,Abia,850,air,225
+Kebbi,Adamawa,974,air,240
+Kebbi,Akwa Ibom,919,air,240
+Kebbi,Anambra,762,air,225
+Kebbi,Bauchi,659,air,210
+Kebbi,Bayelsa,867,air,225
+Kebbi,Benue,706,air,210
+Kebbi,Borno,975,air,240
+Kebbi,Cross River,949,air,240
+Kebbi,Delta,748,air,225
+Kebbi,Ebonyi,805,air,225
+Kebbi,Edo,697,air,210
+Kebbi,Ekiti,549,air,195
+Kebbi,Enugu,759,air,225
+Kebbi,Gombe,797,air,225
+Kebbi,Imo,834,air,225
+Kebbi,Jigawa,564,air,195
+Kebbi,Kaduna,413,air,195
+Kebbi,Kano,472,air,195
+Kebbi,Katsina,374,air,180
+Kebbi,Kogi,587,air,210
+Kebbi,Kwara,441,air,195
+Kebbi,Lagos,657,air,210
+Kebbi,Nasarawa,646,air,210
+Kebbi,Niger,406,air,180
+Kebbi,Ogun,597,air,210
+Kebbi,Ondo,588,air,210
+Kebbi,Osun,522,air,195
+Kebbi,Oyo,564,air,195
+Kebbi,Plateau,582,air,210
+Kebbi,Rivers,904,air,240
+Kebbi,Sokoto,132,road,165
+Kebbi,Taraba,877,air,225
+Kebbi,Yobe,847,air,225
+Kebbi,Zamfara,269,air,180
+Kebbi,Federal Capital Territory,512,air,195
+Kogi,Abia,266,air,180
+Kogi,Adamawa,650,air,210
+Kogi,Akwa Ibom,333,air,180
+Kogi,Anambra,181,road,210
+Kogi,Bauchi,440,air,195
+Kogi,Bayelsa,325,air,180
+Kogi,Benue,196,road,225
+Kogi,Borno,833,air,225
+Kogi,Cross River,362,air,180
+Kogi,Delta,178,road,210
+Kogi,Ebonyi,223,air,165
+Kogi,Edo,203,road,225
+Kogi,Ekiti,169,road,195
+Kogi,Enugu,172,road,210
+Kogi,Gombe,560,air,195
+Kogi,Imo,259,air,180
+Kogi,Jigawa,524,air,195
+Kogi,Kaduna,312,air,180
+Kogi,Kano,506,air,195
+Kogi,Katsina,585,air,210
+Kogi,Kebbi,587,air,210
+Kogi,Kwara,253,air,180
+Kogi,Lagos,397,air,180
+Kogi,Nasarawa,210,road,240
+Kogi,Niger,203,road,225
+Kogi,Ogun,381,air,180
+Kogi,Ondo,181,road,210
+Kogi,Osun,240,air,165
+Kogi,Oyo,311,air,180
+Kogi,Plateau,330,air,180
+Kogi,Rivers,333,air,180
+Kogi,Sokoto,607,air,210
+Kogi,Taraba,523,air,195
+Kogi,Yobe,721,air,210
+Kogi,Zamfara,486,air,195
+Kogi,Federal Capital Territory,160,road,195
+Kwara,Abia,463,air,195
+Kwara,Adamawa,875,air,225
+Kwara,Akwa Ibom,534,air,195
+Kwara,Anambra,377,air,180
+Kwara,Bauchi,614,air,210
+Kwara,Bayelsa,441,air,195
+Kwara,Benue,445,air,195
+Kwara,Borno,1011,air,240
+Kwara,Cross River,574,air,210
+Kwara,Delta,351,air,180
+Kwara,Ebonyi,461,air,195
+Kwara,Edo,268,air,180
+Kwara,Ekiti,123,road,165
+Kwara,Enugu,398,air,180
+Kwara,Gombe,753,air,225
+Kwara,Imo,433,air,195
+Kwara,Jigawa,637,air,210
+Kwara,Kaduna,388,air,180
+Kwara,Kano,583,air,210
+Kwara,Katsina,600,air,210
+Kwara,Kebbi,441,air,195
+Kwara,Kogi,253,air,180
+Kwara,Lagos,249,air,180
+Kwara,Nasarawa,437,air,195
+Kwara,Niger,252,air,180
+Kwara,Ogun,200,road,225
+Kwara,Ondo,156,road,195
+Kwara,Osun,81,road,120
+Kwara,Oyo,141,road,180
+Kwara,Plateau,498,air,195
+Kwara,Rivers,494,air,195
+Kwara,Sokoto,513,air,195
+Kwara,Taraba,750,air,225
+Kwara,Yobe,888,air,225
+Kwara,Zamfara,469,air,195
+Kwara,Federal Capital Territory,320,air,180
+Lagos,Abia,473,air,195
+Lagos,Adamawa,1046,air,240
+Lagos,Akwa Ibom,533,air,195
+Lagos,Anambra,413,air,195
+Lagos,Bauchi,824,air,225
+Lagos,Bayelsa,372,air,180
+Lagos,Benue,584,air,210
+Lagos,Borno,1222,air,270
+Lagos,Cross River,580,air,210
+Lagos,Delta,376,air,180
+Lagos,Ebonyi,527,air,195
+Lagos,Edo,254,air,180
+Lagos,Ekiti,235,air,165
+Lagos,Enugu,460,air,195
+Lagos,Gombe,953,air,240
+Lagos,Imo,426,air,195
+Lagos,Jigawa,872,air,225
+Lagos,Kaduna,626,air,210
+Lagos,Kano,826,air,225
+Lagos,Katsina,849,air,225
+Lagos,Kebbi,657,air,210
+Lagos,Kogi,397,air,180
+Lagos,Kwara,249,air,180
+Lagos,Nasarawa,607,air,210
+Lagos,Niger,487,air,195
+Lagos,Ogun,61,road,105
+Lagos,Ondo,216,road,240
+Lagos,Osun,186,road,210
+Lagos,Oyo,109,road,150
+Lagos,Plateau,709,air,210
+Lagos,Rivers,455,air,195
+Lagos,Sokoto,748,air,225
+Lagos,Taraba,918,air,240
+Lagos,Yobe,1105,air,255
+Lagos,Zamfara,718,air,210
+Lagos,Federal Capital Territory,524,air,195
+Nasarawa,Abia,348,air,180
+Nasarawa,Adamawa,442,air,195
+Nasarawa,Akwa Ibom,389,air,180
+Nasarawa,Anambra,300,air,180
+Nasarawa,Bauchi,249,air,180
+Nasarawa,Bayelsa,469,air,195
+Nasarawa,Benue,85,road,120
+Nasarawa,Borno,628,air,210
+Nasarawa,Cross River,394,air,180
+Nasarawa,Delta,322,air,180
+Nasarawa,Ebonyi,245,air,180
+Nasarawa,Edo,398,air,180
+Nasarawa,Ekiti,376,air,180
+Nasarawa,Enugu,253,air,180
+Nasarawa,Gombe,353,air,180
+Nasarawa,Imo,371,air,180
+Nasarawa,Jigawa,375,air,180
+Nasarawa,Kaduna,255,air,180
+Nasarawa,Kano,390,air,180
+Nasarawa,Katsina,510,air,195
+Nasarawa,Kebbi,646,air,210
+Nasarawa,Kogi,210,road,240
+Nasarawa,Kwara,437,air,195
+Nasarawa,Lagos,607,air,210
+Nasarawa,Niger,250,air,180
+Nasarawa,Ogun,589,air,210
+Nasarawa,Ondo,392,air,180
+Nasarawa,Osun,443,air,195
+Nasarawa,Oyo,518,air,195
+Nasarawa,Plateau,161,road,195
+Nasarawa,Rivers,439,air,195
+Nasarawa,Sokoto,622,air,210
+Nasarawa,Taraba,315,air,180
+Nasarawa,Yobe,523,air,195
+Nasarawa,Zamfara,457,air,195
+Nasarawa,Federal Capital Territory,139,road,180
+Niger,Abia,466,air,195
+Niger,Adamawa,652,air,210
+Niger,Akwa Ibom,531,air,195
+Niger,Anambra,383,air,180
+Niger,Bauchi,368,air,180
+Niger,Bayelsa,524,air,195
+Niger,Benue,302,air,180
+Niger,Borno,762,air,225
+Niger,Cross River,555,air,195
+Niger,Delta,381,air,180
+Niger,Ebonyi,405,air,180
+Niger,Edo,379,air,180
+Niger,Ekiti,266,air,180
+Niger,Enugu,368,air,180
+Niger,Gombe,511,air,195
+Niger,Imo,462,air,195
+Niger,Jigawa,387,air,180
+Niger,Kaduna,140,road,180
+Niger,Kano,341,air,180
+Niger,Katsina,392,air,180
+Niger,Kebbi,406,air,180
+Niger,Kogi,203,road,225
+Niger,Kwara,252,air,180
+Niger,Lagos,487,air,195
+Niger,Nasarawa,250,air,180
+Niger,Ogun,446,air,195
+Niger,Ondo,303,air,180
+Niger,Osun,300,air,180
+Niger,Oyo,379,air,180
+Niger,Plateau,255,air,180
+Niger,Rivers,537,air,195
+Niger,Sokoto,408,air,195
+Niger,Taraba,534,air,195
+Niger,Yobe,637,air,210
+Niger,Zamfara,284,air,180
+Niger,Federal Capital Territory,111,road,150
+Ogun,Abia,492,air,195
+Ogun,Adamawa,1030,air,240
+Ogun,Akwa Ibom,556,air,195
+Ogun,Anambra,424,air,195
+Ogun,Bauchi,795,air,225
+Ogun,Bayelsa,406,air,180
+Ogun,Benue,574,air,210
+Ogun,Borno,1194,air,255
+Ogun,Cross River,602,air,210
+Ogun,Delta,388,air,180
+Ogun,Ebonyi,534,air,195
+Ogun,Edo,267,air,180
+Ogun,Ekiti,213,road,240
+Ogun,Enugu,466,air,195
+Ogun,Gombe,928,air,240
+Ogun,Imo,448,air,195
+Ogun,Jigawa,833,air,225
+Ogun,Kaduna,585,air,210
+Ogun,Kano,782,air,225
+Ogun,Katsina,799,air,225
+Ogun,Kebbi,597,air,210
+Ogun,Kogi,381,air,180
+Ogun,Kwara,200,road,225
+Ogun,Lagos,61,road,105
+Ogun,Nasarawa,589,air,210
+Ogun,Niger,446,air,195
+Ogun,Ondo,203,road,225
+Ogun,Osun,150,road,180
+Ogun,Oyo,71,road,105
+Ogun,Plateau,679,air,210
+Ogun,Rivers,484,air,195
+Ogun,Sokoto,689,air,210
+Ogun,Taraba,903,air,240
+Ogun,Yobe,1074,air,255
+Ogun,Zamfara,666,air,210
+Ogun,Federal Capital Territory,495,air,195
+Ondo,Abia,318,air,180
+Ondo,Adamawa,831,air,225
+Ondo,Akwa Ibom,388,air,180
+Ondo,Anambra,238,air,165
+Ondo,Bauchi,614,air,210
+Ondo,Bayelsa,285,air,180
+Ondo,Benue,371,air,180
+Ondo,Borno,1010,air,240
+Ondo,Cross River,430,air,195
+Ondo,Delta,206,road,240
+Ondo,Ebonyi,339,air,180
+Ondo,Edo,112,road,150
+Ondo,Ekiti,41,road,90
+Ondo,Enugu,271,air,180
+Ondo,Gombe,739,air,225
+Ondo,Imo,283,air,180
+Ondo,Jigawa,677,air,210
+Ondo,Kaduna,440,air,195
+Ondo,Kano,642,air,210
+Ondo,Katsina,691,air,210
+Ondo,Kebbi,588,air,210
+Ondo,Kogi,181,road,210
+Ondo,Kwara,156,road,195
+Ondo,Lagos,216,road,240
+Ondo,Nasarawa,392,air,180
+Ondo,Niger,303,air,180
+Ondo,Ogun,203,road,225
+Ondo,Osun,90,road,135
+Ondo,Oyo,138,road,165
+Ondo,Plateau,500,air,195
+Ondo,Rivers,340,air,180
+Ondo,Sokoto,646,air,210
+Ondo,Taraba,703,air,210
+Ondo,Yobe,895,air,240
+Ondo,Zamfara,570,air,210
+Ondo,Federal Capital Territory,317,air,180
+Osun,Abia,408,air,195
+Osun,Adamawa,885,air,225
+Osun,Akwa Ibom,479,air,195
+Osun,Anambra,327,air,180
+Osun,Bauchi,645,air,210
+Osun,Bayelsa,368,air,180
+Osun,Benue,436,air,195
+Osun,Borno,1044,air,240
+Osun,Cross River,521,air,195
+Osun,Delta,296,air,180
+Osun,Ebonyi,424,air,195
+Osun,Edo,198,road,225
+Osun,Ekiti,75,road,120
+Osun,Enugu,357,air,180
+Osun,Gombe,778,air,225
+Osun,Imo,373,air,180
+Osun,Jigawa,686,air,210
+Osun,Kaduna,440,air,195
+Osun,Kano,640,air,210
+Osun,Katsina,669,air,210
+Osun,Kebbi,522,air,195
+Osun,Kogi,240,air,165
+Osun,Kwara,81,road,120
+Osun,Lagos,186,road,210
+Osun,Nasarawa,443,air,195
+Osun,Niger,300,air,180
+Osun,Ogun,150,road,180
+Osun,Ondo,90,road,135
+Osun,Oyo,80,road,120
+Osun,Plateau,528,air,195
+Osun,Rivers,428,air,195
+Osun,Sokoto,593,air,210
+Osun,Taraba,758,air,225
+Osun,Yobe,924,air,240
+Osun,Zamfara,541,air,195
+Osun,Federal Capital Territory,345,air,180
+Oyo,Abia,442,air,195
+Oyo,Adamawa,960,air,240
+Oyo,Akwa Ibom,509,air,195
+Oyo,Anambra,368,air,180
+Oyo,Bauchi,724,air,210
+Oyo,Bayelsa,374,air,180
+Oyo,Benue,505,air,195
+Oyo,Borno,1123,air,255
+Oyo,Cross River,554,air,195
+Oyo,Delta,334,air,180
+Oyo,Ebonyi,474,air,195
+Oyo,Edo,219,road,240
+Oyo,Ekiti,143,road,180
+Oyo,Enugu,406,air,180
+Oyo,Gombe,857,air,225
+Oyo,Imo,401,air,180
+Oyo,Jigawa,766,air,225
+Oyo,Kaduna,518,air,195
+Oyo,Kano,717,air,210
+Oyo,Katsina,741,air,225
+Oyo,Kebbi,564,air,195
+Oyo,Kogi,311,air,180
+Oyo,Kwara,141,road,180
+Oyo,Lagos,109,road,150
+Oyo,Nasarawa,518,air,195
+Oyo,Niger,379,air,180
+Oyo,Ogun,71,road,105
+Oyo,Ondo,138,road,165
+Oyo,Osun,80,road,120
+Oyo,Plateau,608,air,210
+Oyo,Rivers,446,air,195
+Oyo,Sokoto,647,air,210
+Oyo,Taraba,833,air,225
+Oyo,Yobe,1004,air,240
+Oyo,Zamfara,610,air,210
+Oyo,Federal Capital Territory,424,air,195
+Plateau,Abia,509,air,195
+Plateau,Adamawa,405,air,180
+Plateau,Akwa Ibom,550,air,195
+Plateau,Anambra,455,air,195
+Plateau,Bauchi,117,road,150
+Plateau,Bayelsa,624,air,210
+Plateau,Benue,244,air,180
+Plateau,Borno,515,air,195
+Plateau,Cross River,554,air,195
+Plateau,Delta,474,air,195
+Plateau,Ebonyi,407,air,195
+Plateau,Edo,532,air,195
+Plateau,Ekiti,474,air,195
+Plateau,Enugu,411,air,195
+Plateau,Gombe,257,air,180
+Plateau,Imo,530,air,195
+Plateau,Jigawa,213,road,240
+Plateau,Kaduna,170,road,195
+Plateau,Kano,236,air,165
+Plateau,Katsina,370,air,180
+Plateau,Kebbi,582,air,210
+Plateau,Kogi,330,air,180
+Plateau,Kwara,498,air,195
+Plateau,Lagos,709,air,210
+Plateau,Nasarawa,161,road,195
+Plateau,Niger,255,air,180
+Plateau,Ogun,679,air,210
+Plateau,Ondo,500,air,195
+Plateau,Osun,528,air,195
+Plateau,Oyo,608,air,210
+Plateau,Rivers,599,air,210
+Plateau,Sokoto,528,air,195
+Plateau,Taraba,296,air,180
+Plateau,Yobe,396,air,180
+Plateau,Zamfara,348,air,180
+Plateau,Federal Capital Territory,184,road,210
+Rivers,Abia,93,road,135
+Rivers,Adamawa,772,air,225
+Rivers,Akwa Ibom,98,road,135
+Rivers,Anambra,155,road,195
+Rivers,Bauchi,683,air,210
+Rivers,Bayelsa,88,road,120
+Rivers,Benue,362,air,180
+Rivers,Borno,1028,air,240
+Rivers,Cross River,141,road,180
+Rivers,Delta,157,road,195
+Rivers,Ebonyi,204,road,240
+Rivers,Edo,231,air,165
+Rivers,Ekiti,371,air,180
+Rivers,Enugu,188,road,225
+Rivers,Gombe,759,air,225
+Rivers,Imo,75,road,120
+Rivers,Jigawa,812,air,225
+Rivers,Kaduna,635,air,210
+Rivers,Kano,815,air,225
+Rivers,Katsina,910,air,240
+Rivers,Kebbi,904,air,240
+Rivers,Kogi,333,air,180
+Rivers,Kwara,494,air,195
+Rivers,Lagos,455,air,195
+Rivers,Nasarawa,439,air,195
+Rivers,Niger,537,air,195
+Rivers,Ogun,484,air,195
+Rivers,Ondo,340,air,180
+Rivers,Osun,428,air,195
+Rivers,Oyo,446,air,195
+Rivers,Plateau,599,air,210
+Rivers,Sokoto,938,air,240
+Rivers,Taraba,657,air,210
+Rivers,Yobe,941,air,240
+Rivers,Zamfara,818,air,225
+Rivers,Federal Capital Territory,475,air,195
+Sokoto,Abia,873,air,225
+Sokoto,Adamawa,899,air,240
+Sokoto,Akwa Ibom,939,air,240
+Sokoto,Anambra,788,air,225
+Sokoto,Bauchi,587,air,210
+Sokoto,Bayelsa,912,air,240
+Sokoto,Benue,693,air,210
+Sokoto,Borno,870,air,225
+Sokoto,Cross River,963,air,240
+Sokoto,Delta,780,air,225
+Sokoto,Ebonyi,813,air,225
+Sokoto,Edo,748,air,225
+Sokoto,Ekiti,605,air,210
+Sokoto,Enugu,776,air,225
+Sokoto,Gombe,715,air,210
+Sokoto,Imo,865,air,225
+Sokoto,Jigawa,468,air,195
+Sokoto,Kaduna,370,air,180
+Sokoto,Kano,375,air,180
+Sokoto,Katsina,256,air,180
+Sokoto,Kebbi,132,road,165
+Sokoto,Kogi,607,air,210
+Sokoto,Kwara,513,air,195
+Sokoto,Lagos,748,air,225
+Sokoto,Nasarawa,622,air,210
+Sokoto,Niger,408,air,195
+Sokoto,Ogun,689,air,210
+Sokoto,Ondo,646,air,210
+Sokoto,Osun,593,air,210
+Sokoto,Oyo,647,air,210
+Sokoto,Plateau,528,air,195
+Sokoto,Rivers,938,air,240
+Sokoto,Taraba,813,air,225
+Sokoto,Yobe,744,air,225
+Sokoto,Zamfara,183,road,210
+Sokoto,Federal Capital Territory,501,air,195
+Taraba,Abia,567,air,195
+Taraba,Adamawa,128,road,165
+Taraba,Akwa Ibom,573,air,210
+Taraba,Anambra,559,air,195
+Taraba,Bauchi,230,air,165
+Taraba,Bayelsa,715,air,210
+Taraba,Benue,338,air,180
+Taraba,Borno,381,air,180
+Taraba,Cross River,552,air,195
+Taraba,Delta,592,air,210
+Taraba,Ebonyi,458,air,195
+Taraba,Edo,692,air,210
+Taraba,Ekiti,690,air,210
+Taraba,Enugu,504,air,195
+Taraba,Gombe,157,road,195
+Taraba,Imo,608,air,210
+Taraba,Jigawa,388,air,180
+Taraba,Kaduna,466,air,195
+Taraba,Kano,465,air,195
+Taraba,Katsina,613,air,210
+Taraba,Kebbi,877,air,225
+Taraba,Kogi,523,air,195
+Taraba,Kwara,750,air,225
+Taraba,Lagos,918,air,240
+Taraba,Nasarawa,315,air,180
+Taraba,Niger,534,air,195
+Taraba,Ogun,903,air,240
+Taraba,Ondo,703,air,210
+Taraba,Osun,758,air,225
+Taraba,Oyo,833,air,225
+Taraba,Plateau,296,air,180
+Taraba,Rivers,657,air,210
+Taraba,Sokoto,813,air,225
+Taraba,Yobe,325,air,180
+Taraba,Zamfara,630,air,210
+Taraba,Federal Capital Territory,435,air,195
+Yobe,Abia,848,air,225
+Yobe,Adamawa,289,air,180
+Yobe,Akwa Ibom,869,air,225
+Yobe,Anambra,817,air,225
+Yobe,Bauchi,281,air,180
+Yobe,Bayelsa,985,air,240
+Yobe,Benue,585,air,210
+Yobe,Borno,130,road,165
+Yobe,Cross River,856,air,225
+Yobe,Delta,843,air,225
+Yobe,Ebonyi,737,air,225
+Yobe,Edo,919,air,240
+Yobe,Ekiti,870,air,225
+Yobe,Enugu,765,air,225
+Yobe,Gombe,184,road,210
+Yobe,Imo,881,air,225
+Yobe,Jigawa,285,air,180
+Yobe,Kaduna,512,air,195
+Yobe,Kano,375,air,180
+Yobe,Katsina,493,air,195
+Yobe,Kebbi,847,air,225
+Yobe,Kogi,721,air,210
+Yobe,Kwara,888,air,225
+Yobe,Lagos,1105,air,255
+Yobe,Nasarawa,523,air,195
+Yobe,Niger,637,air,210
+Yobe,Ogun,1074,air,255
+Yobe,Ondo,895,air,240
+Yobe,Osun,924,air,240
+Yobe,Oyo,1004,air,240
+Yobe,Plateau,396,air,180
+Yobe,Rivers,941,air,240
+Yobe,Sokoto,744,air,225
+Yobe,Taraba,325,air,180
+Yobe,Zamfara,578,air,210
+Yobe,Federal Capital Territory,580,air,210
+Zamfara,Abia,744,air,225
+Zamfara,Adamawa,716,air,210
+Zamfara,Akwa Ibom,805,air,225
+Zamfara,Anambra,664,air,210
+Zamfara,Bauchi,404,air,180
+Zamfara,Bayelsa,807,air,225
+Zamfara,Benue,534,air,195
+Zamfara,Borno,707,air,210
+Zamfara,Cross River,823,air,225
+Zamfara,Delta,664,air,210
+Zamfara,Ebonyi,670,air,210
+Zamfara,Edo,658,air,210
+Zamfara,Ekiti,530,air,195
+Zamfara,Enugu,643,air,210
+Zamfara,Gombe,534,air,195
+Zamfara,Imo,744,air,225
+Zamfara,Jigawa,295,air,180
+Zamfara,Kaduna,202,road,225
+Zamfara,Kano,203,road,225
+Zamfara,Katsina,137,road,165
+Zamfara,Kebbi,269,air,180
+Zamfara,Kogi,486,air,195
+Zamfara,Kwara,469,air,195
+Zamfara,Lagos,718,air,210
+Zamfara,Nasarawa,457,air,195
+Zamfara,Niger,284,air,180
+Zamfara,Ogun,666,air,210
+Zamfara,Ondo,570,air,210
+Zamfara,Osun,541,air,195
+Zamfara,Oyo,610,air,210
+Zamfara,Plateau,348,air,180
+Zamfara,Rivers,818,air,225
+Zamfara,Sokoto,183,road,210
+Zamfara,Taraba,630,air,210
+Zamfara,Yobe,578,air,210
+Zamfara,Federal Capital Territory,353,air,180
+Federal Capital Territory,Abia,395,air,180
+Federal Capital Territory,Adamawa,558,air,195
+Federal Capital Territory,Akwa Ibom,453,air,195
+Federal Capital Territory,Anambra,321,air,180
+Federal Capital Territory,Bauchi,300,air,180
+Federal Capital Territory,Bayelsa,479,air,195
+Federal Capital Territory,Benue,194,road,225
+Federal Capital Territory,Borno,699,air,210
+Federal Capital Territory,Cross River,470,air,195
+Federal Capital Territory,Delta,329,air,180
+Federal Capital Territory,Ebonyi,317,air,180
+Federal Capital Territory,Edo,362,air,180
+Federal Capital Territory,Ekiti,290,air,180
+Federal Capital Territory,Enugu,293,air,180
+Federal Capital Territory,Gombe,435,air,195
+Federal Capital Territory,Imo,401,air,180
+Federal Capital Territory,Jigawa,366,air,180
+Federal Capital Territory,Kaduna,160,road,195
+Federal Capital Territory,Kano,347,air,180
+Federal Capital Territory,Katsina,435,air,195
+Federal Capital Territory,Kebbi,512,air,195
+Federal Capital Territory,Kogi,160,road,195
+Federal Capital Territory,Kwara,320,air,180
+Federal Capital Territory,Lagos,524,air,195
+Federal Capital Territory,Nasarawa,139,road,180
+Federal Capital Territory,Niger,111,road,150
+Federal Capital Territory,Ogun,495,air,195
+Federal Capital Territory,Ondo,317,air,180
+Federal Capital Territory,Osun,345,air,180
+Federal Capital Territory,Oyo,424,air,195
+Federal Capital Territory,Plateau,184,road,210
+Federal Capital Territory,Rivers,475,air,195
+Federal Capital Territory,Sokoto,501,air,195
+Federal Capital Territory,Taraba,435,air,195
+Federal Capital Territory,Yobe,580,air,210
+Federal Capital Territory,Zamfara,353,air,180

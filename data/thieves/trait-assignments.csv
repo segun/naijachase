@@ -1,0 +1,501 @@
+trait_instance_id,thief_id,trait_slot,trait_key,trait_description
+TR-001-1,NG-T001,1,meticulous,Checks details repeatedly and rarely leaves careless evidence.
+TR-001-2,NG-T001,2,arrogant,Believes they are intellectually superior to investigators.
+TR-001-3,NG-T001,3,historian,Knows historical facts and enjoys using them as clues.
+TR-001-4,NG-T001,4,superstitious,Avoids actions or places associated with personal omens.
+TR-001-5,NG-T001,5,impatient,Makes mistakes when forced to wait or improvise slowly.
+TR-002-1,NG-T002,1,calculating,Considers several outcomes before making a move.
+TR-002-2,NG-T002,2,charismatic,Naturally wins trust and attention from strangers.
+TR-002-3,NG-T002,3,paranoid,Assumes others are watching and constantly changes plans.
+TR-002-4,NG-T002,4,resourceful,Can improvise useful solutions from limited resources.
+TR-002-5,NG-T002,5,vengeful,Remembers perceived slights and seeks payback.
+TR-003-1,NG-T003,1,observant,Notices small environmental and behavioral details.
+TR-003-2,NG-T003,2,quiet,Speaks little and reveals very little voluntarily.
+TR-003-3,NG-T003,3,geography_nerd,Has unusually strong knowledge of Nigerian geography.
+TR-003-4,NG-T003,4,cautious,Avoids unnecessary exposure and prefers safer routes.
+TR-003-5,NG-T003,5,competitive,Treats the investigation as a contest to win.
+TR-004-1,NG-T004,1,elegant,Maintains a polished appearance even while committing crimes.
+TR-004-2,NG-T004,2,patient,Will wait as long as necessary for the right opportunity.
+TR-004-3,NG-T004,3,secretive,Reveals information only when absolutely necessary.
+TR-004-4,NG-T004,4,perfectionist,Will delay an operation rather than accept imperfect execution.
+TR-004-5,NG-T004,5,risk_taker,Accepts substantial danger when the reward is attractive.
+TR-005-1,NG-T005,1,technical,"Comfortable with locks, electronics, machinery, or systems."
+TR-005-2,NG-T005,2,methodical,Follows repeatable procedures and checklists.
+TR-005-3,NG-T005,3,introverted,Prefers working alone and avoids unnecessary social contact.
+TR-005-4,NG-T005,4,curious,"Investigates interesting objects, people, and places even when risky."
+TR-005-5,NG-T005,5,stubborn,Refuses to abandon a plan once committed to it.
+TR-006-1,NG-T006,1,disciplined,Maintains strict routines and self-control.
+TR-006-2,NG-T006,2,alert,Constantly monitors surroundings for threats.
+TR-006-3,NG-T006,3,patriotic,Has a strong attachment to Nigeria that influences choices.
+TR-006-4,NG-T006,4,deceptive,Comfortable lying convincingly when necessary.
+TR-006-5,NG-T006,5,adaptable,Changes tactics quickly when circumstances shift.
+TR-007-1,NG-T007,1,persuasive,Can influence people through argument or emotional appeal.
+TR-007-2,NG-T007,2,educated,Has broad formal knowledge and uses it strategically.
+TR-007-3,NG-T007,3,vain,"Cares deeply about appearance, reputation, or recognition."
+TR-007-4,NG-T007,4,improviser,Performs well without a prepared plan.
+TR-007-5,NG-T007,5,empathetic,Reads emotional states unusually well.
+TR-008-1,NG-T008,1,connected,Has a wide network of useful contacts.
+TR-008-2,NG-T008,2,calculating,Considers several outcomes before making a move.
+TR-008-3,NG-T008,3,patient,Will wait as long as necessary for the right opportunity.
+TR-008-4,NG-T008,4,discreet,Avoids drawing attention and keeps transactions quiet.
+TR-008-5,NG-T008,5,ambitious,"Wants increasing wealth, influence, or status."
+TR-009-1,NG-T009,1,polished,Presents a credible professional image.
+TR-009-2,NG-T009,2,tech_savvy,Comfortable using modern digital tools.
+TR-009-3,NG-T009,3,cocky,Underestimates opponents because of overconfidence.
+TR-009-4,NG-T009,4,restless,Struggles to stay in one place for long.
+TR-009-5,NG-T009,5,opportunistic,Quickly exploits unexpected openings.
+TR-010-1,NG-T010,1,cultured,"Knows art, heritage, etiquette, and cultural history."
+TR-010-2,NG-T010,2,obsessive,Becomes intensely focused on a particular goal or object.
+TR-010-3,NG-T010,3,wealthy,Has legitimate resources that make unusual movements less suspicious.
+TR-010-4,NG-T010,4,secretive,Reveals information only when absolutely necessary.
+TR-010-5,NG-T010,5,superstitious,Avoids actions or places associated with personal omens.
+TR-011-1,NG-T011,1,nomadic,Comfortable moving frequently between locations.
+TR-011-2,NG-T011,2,resourceful,Can improvise useful solutions from limited resources.
+TR-011-3,NG-T011,3,calm,Behavioral trait used by the game engine.
+TR-011-4,NG-T011,4,unpredictable,Does not consistently follow recognizable patterns.
+TR-011-5,NG-T011,5,streetwise,"Understands informal networks, local habits, and urban survival."
+TR-012-1,NG-T012,1,refined,Has sophisticated tastes and social manners.
+TR-012-2,NG-T012,2,knowledgeable,Has broad factual knowledge beyond a single specialty.
+TR-012-3,NG-T012,3,deceptive,Comfortable lying convincingly when necessary.
+TR-012-4,NG-T012,4,patient,Will wait as long as necessary for the right opportunity.
+TR-012-5,NG-T012,5,controlling,Wants other people and circumstances to follow their plan.
+TR-013-1,NG-T013,1,commanding,Naturally assumes leadership in groups.
+TR-013-2,NG-T013,2,loyal,Protects trusted associates even when costly.
+TR-013-3,NG-T013,3,volatile,Can react suddenly and intensely under pressure.
+TR-013-4,NG-T013,4,strategic,Plans several moves ahead rather than acting impulsively.
+TR-013-5,NG-T013,5,proud,Strongly protects personal reputation and dignity.
+TR-014-1,NG-T014,1,soft_spoken,"Uses a calm, quiet voice that encourages people to listen."
+TR-014-2,NG-T014,2,observant,Notices small environmental and behavioral details.
+TR-014-3,NG-T014,3,patient,Will wait as long as necessary for the right opportunity.
+TR-014-4,NG-T014,4,manipulative,Steers people toward decisions that benefit them.
+TR-014-5,NG-T014,5,fearless,Shows little hesitation in dangerous situations.
+TR-015-1,NG-T015,1,showman,"Enjoys spectacle, performance, and theatrical reveals."
+TR-015-2,NG-T015,2,quick_witted,Generates clever responses rapidly under pressure.
+TR-015-3,NG-T015,3,charming,Behavioral trait used by the game engine.
+TR-015-4,NG-T015,4,superstitious,Avoids actions or places associated with personal omens.
+TR-015-5,NG-T015,5,improviser,Performs well without a prepared plan.
+TR-016-1,NG-T016,1,bookish,Spends substantial time reading and researching.
+TR-016-2,NG-T016,2,meticulous,Checks details repeatedly and rarely leaves careless evidence.
+TR-016-3,NG-T016,3,reserved,Keeps emotional reactions private.
+TR-016-4,NG-T016,4,nostalgic,Has a strong attachment to the past.
+TR-016-5,NG-T016,5,possessive,"Treats selected objects, places, or people as personal property."
+TR-017-1,NG-T017,1,adaptable,Changes tactics quickly when circumstances shift.
+TR-017-2,NG-T017,2,tech_savvy,Comfortable using modern digital tools.
+TR-017-3,NG-T017,3,deceptive,Comfortable lying convincingly when necessary.
+TR-017-4,NG-T017,4,restless,Struggles to stay in one place for long.
+TR-017-5,NG-T017,5,playful,Treats serious situations like games.
+TR-018-1,NG-T018,1,grim,Has a bleak outlook and little concern for appearances.
+TR-018-2,NG-T018,2,patient,Will wait as long as necessary for the right opportunity.
+TR-018-3,NG-T018,3,methodical,Follows repeatable procedures and checklists.
+TR-018-4,NG-T018,4,cold,"Keeps emotional distance, especially during stressful events."
+TR-018-5,NG-T018,5,observant,Notices small environmental and behavioral details.
+TR-019-1,NG-T019,1,clever,Finds unconventional solutions to difficult problems.
+TR-019-2,NG-T019,2,patient,Will wait as long as necessary for the right opportunity.
+TR-019-3,NG-T019,3,elegant,Maintains a polished appearance even while committing crimes.
+TR-019-4,NG-T019,4,skeptical,Questions claims until evidence supports them.
+TR-019-5,NG-T019,5,risk_taker,Accepts substantial danger when the reward is attractive.
+TR-020-1,NG-T020,1,hands_on,Prefers physical tools and practical work.
+TR-020-2,NG-T020,2,inventive,Creates new methods rather than relying on standard ones.
+TR-020-3,NG-T020,3,loyal,Protects trusted associates even when costly.
+TR-020-4,NG-T020,4,impatient,Makes mistakes when forced to wait or improvise slowly.
+TR-020-5,NG-T020,5,pragmatic,Chooses what works rather than what sounds ideal.
+TR-021-1,NG-T021,1,diplomatic,Behavioral trait used by the game engine.
+TR-021-2,NG-T021,2,calculated,Behavioral trait used by the game engine.
+TR-021-3,NG-T021,3,charming,Behavioral trait used by the game engine.
+TR-021-4,NG-T021,4,ambitious,"Wants increasing wealth, influence, or status."
+TR-021-5,NG-T021,5,secretive,Reveals information only when absolutely necessary.
+TR-022-1,NG-T022,1,resilient,Behavioral trait used by the game engine.
+TR-022-2,NG-T022,2,cautious,Avoids unnecessary exposure and prefers safer routes.
+TR-022-3,NG-T022,3,quiet,Speaks little and reveals very little voluntarily.
+TR-022-4,NG-T022,4,resourceful,Can improvise useful solutions from limited resources.
+TR-022-5,NG-T022,5,protective,Behavioral trait used by the game engine.
+TR-023-1,NG-T023,1,stylish,Behavioral trait used by the game engine.
+TR-023-2,NG-T023,2,patient,Will wait as long as necessary for the right opportunity.
+TR-023-3,NG-T023,3,romantic,Behavioral trait used by the game engine.
+TR-023-4,NG-T023,4,deceptive,Comfortable lying convincingly when necessary.
+TR-023-5,NG-T023,5,perfectionist,Will delay an operation rather than accept imperfect execution.
+TR-024-1,NG-T024,1,risk_taker,Accepts substantial danger when the reward is attractive.
+TR-024-2,NG-T024,2,mathematical,Naturally spots numerical relationships and patterns.
+TR-024-3,NG-T024,3,charming,Behavioral trait used by the game engine.
+TR-024-4,NG-T024,4,impulsive,Behavioral trait used by the game engine.
+TR-024-5,NG-T024,5,competitive,Treats the investigation as a contest to win.
+TR-025-1,NG-T025,1,strategic,Plans several moves ahead rather than acting impulsively.
+TR-025-2,NG-T025,2,disciplined,Maintains strict routines and self-control.
+TR-025-3,NG-T025,3,patient,Will wait as long as necessary for the right opportunity.
+TR-025-4,NG-T025,4,analytical,Behavioral trait used by the game engine.
+TR-025-5,NG-T025,5,proud,Strongly protects personal reputation and dignity.
+TR-026-1,NG-T026,1,inquisitive,Behavioral trait used by the game engine.
+TR-026-2,NG-T026,2,persistent,Behavioral trait used by the game engine.
+TR-026-3,NG-T026,3,sociable,Behavioral trait used by the game engine.
+TR-026-4,NG-T026,4,cynical,Behavioral trait used by the game engine.
+TR-026-5,NG-T026,5,resourceful,Can improvise useful solutions from limited resources.
+TR-027-1,NG-T027,1,precise,Behavioral trait used by the game engine.
+TR-027-2,NG-T027,2,cold,"Keeps emotional distance, especially during stressful events."
+TR-027-3,NG-T027,3,educated,Has broad formal knowledge and uses it strategically.
+TR-027-4,NG-T027,4,perfectionist,Will delay an operation rather than accept imperfect execution.
+TR-027-5,NG-T027,5,detached,Separates personal feelings from decisions.
+TR-028-1,NG-T028,1,privileged,Has social or financial advantages that open doors.
+TR-028-2,NG-T028,2,cultured,"Knows art, heritage, etiquette, and cultural history."
+TR-028-3,NG-T028,3,manipulative,Steers people toward decisions that benefit them.
+TR-028-4,NG-T028,4,restless,Struggles to stay in one place for long.
+TR-028-5,NG-T028,5,fearless,Shows little hesitation in dangerous situations.
+TR-029-1,NG-T029,1,social,Comfortable meeting and talking to strangers.
+TR-029-2,NG-T029,2,musical,Uses music and performance as part of identity or cover.
+TR-029-3,NG-T029,3,restless,Struggles to stay in one place for long.
+TR-029-4,NG-T029,4,observant,Notices small environmental and behavioral details.
+TR-029-5,NG-T029,5,opportunistic,Quickly exploits unexpected openings.
+TR-030-1,NG-T030,1,scientific,"Prefers evidence, experiments, and measurable explanations."
+TR-030-2,NG-T030,2,patient,Will wait as long as necessary for the right opportunity.
+TR-030-3,NG-T030,3,quiet,Speaks little and reveals very little voluntarily.
+TR-030-4,NG-T030,4,curious,"Investigates interesting objects, people, and places even when risky."
+TR-030-5,NG-T030,5,vengeful,Remembers perceived slights and seeks payback.
+TR-031-1,NG-T031,1,spatial,"Strong at understanding buildings, routes, layouts, and distances."
+TR-031-2,NG-T031,2,meticulous,Checks details repeatedly and rarely leaves careless evidence.
+TR-031-3,NG-T031,3,creative,Behavioral trait used by the game engine.
+TR-031-4,NG-T031,4,introverted,Prefers working alone and avoids unnecessary social contact.
+TR-031-5,NG-T031,5,stubborn,Refuses to abandon a plan once committed to it.
+TR-032-1,NG-T032,1,glamorous,Behavioral trait used by the game engine.
+TR-032-2,NG-T032,2,connected,Has a wide network of useful contacts.
+TR-032-3,NG-T032,3,persuasive,Can influence people through argument or emotional appeal.
+TR-032-4,NG-T032,4,vain,"Cares deeply about appearance, reputation, or recognition."
+TR-032-5,NG-T032,5,calculating,Considers several outcomes before making a move.
+TR-033-1,NG-T033,1,adaptable,Changes tactics quickly when circumstances shift.
+TR-033-2,NG-T033,2,resilient,Behavioral trait used by the game engine.
+TR-033-3,NG-T033,3,cautious,Avoids unnecessary exposure and prefers safer routes.
+TR-033-4,NG-T033,4,independent,Dislikes relying on others and prefers self-sufficiency.
+TR-033-5,NG-T033,5,streetwise,"Understands informal networks, local habits, and urban survival."
+TR-034-1,NG-T034,1,academic,Approaches problems like research questions.
+TR-034-2,NG-T034,2,idealistic,Believes strongly in a personal cause or principle.
+TR-034-3,NG-T034,3,obsessive,Becomes intensely focused on a particular goal or object.
+TR-034-4,NG-T034,4,patient,Will wait as long as necessary for the right opportunity.
+TR-034-5,NG-T034,5,proud,Strongly protects personal reputation and dignity.
+TR-035-1,NG-T035,1,technical,"Comfortable with locks, electronics, machinery, or systems."
+TR-035-2,NG-T035,2,quiet,Speaks little and reveals very little voluntarily.
+TR-035-3,NG-T035,3,patient,Will wait as long as necessary for the right opportunity.
+TR-035-4,NG-T035,4,inventive,Creates new methods rather than relying on standard ones.
+TR-035-5,NG-T035,5,cautious,Avoids unnecessary exposure and prefers safer routes.
+TR-036-1,NG-T036,1,calm,Behavioral trait used by the game engine.
+TR-036-2,NG-T036,2,persuasive,Can influence people through argument or emotional appeal.
+TR-036-3,NG-T036,3,strategic,Plans several moves ahead rather than acting impulsively.
+TR-036-4,NG-T036,4,empathetic,Reads emotional states unusually well.
+TR-036-5,NG-T036,5,controlling,Wants other people and circumstances to follow their plan.
+TR-037-1,NG-T037,1,fast,Moves quickly and dislikes slow plans.
+TR-037-2,NG-T037,2,restless,Struggles to stay in one place for long.
+TR-037-3,NG-T037,3,streetwise,"Understands informal networks, local habits, and urban survival."
+TR-037-4,NG-T037,4,loyal,Protects trusted associates even when costly.
+TR-037-5,NG-T037,5,impulsive,Behavioral trait used by the game engine.
+TR-038-1,NG-T038,1,dramatic,Uses emotion and theatrical behavior to influence others.
+TR-038-2,NG-T038,2,charismatic,Naturally wins trust and attention from strangers.
+TR-038-3,NG-T038,3,adaptable,Changes tactics quickly when circumstances shift.
+TR-038-4,NG-T038,4,vain,"Cares deeply about appearance, reputation, or recognition."
+TR-038-5,NG-T038,5,observant,Notices small environmental and behavioral details.
+TR-039-1,NG-T039,1,patient,Will wait as long as necessary for the right opportunity.
+TR-039-2,NG-T039,2,traditionalist,Values customs and established practices.
+TR-039-3,NG-T039,3,observant,Notices small environmental and behavioral details.
+TR-039-4,NG-T039,4,resilient,Behavioral trait used by the game engine.
+TR-039-5,NG-T039,5,secretive,Reveals information only when absolutely necessary.
+TR-040-1,NG-T040,1,numerate,Highly comfortable with numbers and financial calculations.
+TR-040-2,NG-T040,2,polished,Presents a credible professional image.
+TR-040-3,NG-T040,3,ambitious,"Wants increasing wealth, influence, or status."
+TR-040-4,NG-T040,4,paranoid,Assumes others are watching and constantly changes plans.
+TR-040-5,NG-T040,5,greedy,Will accept additional risk for more money.
+TR-041-1,NG-T041,1,empathetic,Reads emotional states unusually well.
+TR-041-2,NG-T041,2,precise,Behavioral trait used by the game engine.
+TR-041-3,NG-T041,3,secretive,Reveals information only when absolutely necessary.
+TR-041-4,NG-T041,4,patient,Will wait as long as necessary for the right opportunity.
+TR-041-5,NG-T041,5,resentful,Behavioral trait used by the game engine.
+TR-042-1,NG-T042,1,connected,Has a wide network of useful contacts.
+TR-042-2,NG-T042,2,pragmatic,Chooses what works rather than what sounds ideal.
+TR-042-3,NG-T042,3,discreet,Avoids drawing attention and keeps transactions quiet.
+TR-042-4,NG-T042,4,resourceful,Can improvise useful solutions from limited resources.
+TR-042-5,NG-T042,5,cynical,Behavioral trait used by the game engine.
+TR-043-1,NG-T043,1,observant,Notices small environmental and behavioral details.
+TR-043-2,NG-T043,2,artistic,Behavioral trait used by the game engine.
+TR-043-3,NG-T043,3,patient,Will wait as long as necessary for the right opportunity.
+TR-043-4,NG-T043,4,curious,"Investigates interesting objects, people, and places even when risky."
+TR-043-5,NG-T043,5,opportunistic,Quickly exploits unexpected openings.
+TR-044-1,NG-T044,1,precise,Behavioral trait used by the game engine.
+TR-044-2,NG-T044,2,creative,Behavioral trait used by the game engine.
+TR-044-3,NG-T044,3,patient,Will wait as long as necessary for the right opportunity.
+TR-044-4,NG-T044,4,frugal,Avoids unnecessary spending and wastes little.
+TR-044-5,NG-T044,5,secretive,Reveals information only when absolutely necessary.
+TR-045-1,NG-T045,1,intellectual,Behavioral trait used by the game engine.
+TR-045-2,NG-T045,2,arrogant,Believes they are intellectually superior to investigators.
+TR-045-3,NG-T045,3,meticulous,Checks details repeatedly and rarely leaves careless evidence.
+TR-045-4,NG-T045,4,competitive,Treats the investigation as a contest to win.
+TR-045-5,NG-T045,5,absent_minded,Behavioral trait used by the game engine.
+TR-046-1,NG-T046,1,elegant,Maintains a polished appearance even while committing crimes.
+TR-046-2,NG-T046,2,calculating,Considers several outcomes before making a move.
+TR-046-3,NG-T046,3,patient,Will wait as long as necessary for the right opportunity.
+TR-046-4,NG-T046,4,resentful,Behavioral trait used by the game engine.
+TR-046-5,NG-T046,5,persuasive,Can influence people through argument or emotional appeal.
+TR-047-1,NG-T047,1,adventurous,Behavioral trait used by the game engine.
+TR-047-2,NG-T047,2,calm,Behavioral trait used by the game engine.
+TR-047-3,NG-T047,3,technical,"Comfortable with locks, electronics, machinery, or systems."
+TR-047-4,NG-T047,4,confident,Behavioral trait used by the game engine.
+TR-047-5,NG-T047,5,restless,Struggles to stay in one place for long.
+TR-048-1,NG-T048,1,fearless,Shows little hesitation in dangerous situations.
+TR-048-2,NG-T048,2,patient,Will wait as long as necessary for the right opportunity.
+TR-048-3,NG-T048,3,physical,"Relies on stamina, strength, or athletic ability."
+TR-048-4,NG-T048,4,curious,"Investigates interesting objects, people, and places even when risky."
+TR-048-5,NG-T048,5,secretive,Reveals information only when absolutely necessary.
+TR-049-1,NG-T049,1,funny,Behavioral trait used by the game engine.
+TR-049-2,NG-T049,2,charming,Behavioral trait used by the game engine.
+TR-049-3,NG-T049,3,improviser,Performs well without a prepared plan.
+TR-049-4,NG-T049,4,observant,Notices small environmental and behavioral details.
+TR-049-5,NG-T049,5,reckless,Acts quickly without fully considering consequences.
+TR-050-1,NG-T050,1,quiet,Speaks little and reveals very little voluntarily.
+TR-050-2,NG-T050,2,bookish,Spends substantial time reading and researching.
+TR-050-3,NG-T050,3,meticulous,Checks details repeatedly and rarely leaves careless evidence.
+TR-050-4,NG-T050,4,patient,Will wait as long as necessary for the right opportunity.
+TR-050-5,NG-T050,5,suspicious,Behavioral trait used by the game engine.
+TR-051-1,NG-T051,1,proud,Strongly protects personal reputation and dignity.
+TR-051-2,NG-T051,2,cultured,"Knows art, heritage, etiquette, and cultural history."
+TR-051-3,NG-T051,3,entitled,Behavioral trait used by the game engine.
+TR-051-4,NG-T051,4,strategic,Plans several moves ahead rather than acting impulsively.
+TR-051-5,NG-T051,5,superstitious,Avoids actions or places associated with personal omens.
+TR-052-1,NG-T052,1,gentle,Appears harmless and non-threatening to strangers.
+TR-052-2,NG-T052,2,scientific,"Prefers evidence, experiments, and measurable explanations."
+TR-052-3,NG-T052,3,secretive,Reveals information only when absolutely necessary.
+TR-052-4,NG-T052,4,patient,Will wait as long as necessary for the right opportunity.
+TR-052-5,NG-T052,5,vengeful,Remembers perceived slights and seeks payback.
+TR-053-1,NG-T053,1,commercial,"Thinks naturally in terms of markets, prices, and trade."
+TR-053-2,NG-T053,2,calculating,Considers several outcomes before making a move.
+TR-053-3,NG-T053,3,sociable,Behavioral trait used by the game engine.
+TR-053-4,NG-T053,4,risk_taker,Accepts substantial danger when the reward is attractive.
+TR-053-5,NG-T053,5,resourceful,Can improvise useful solutions from limited resources.
+TR-054-1,NG-T054,1,patient,Will wait as long as necessary for the right opportunity.
+TR-054-2,NG-T054,2,practical,Behavioral trait used by the game engine.
+TR-054-3,NG-T054,3,quiet,Speaks little and reveals very little voluntarily.
+TR-054-4,NG-T054,4,resilient,Behavioral trait used by the game engine.
+TR-054-5,NG-T054,5,superstitious,Avoids actions or places associated with personal omens.
+TR-055-1,NG-T055,1,fashionable,Behavioral trait used by the game engine.
+TR-055-2,NG-T055,2,social,Comfortable meeting and talking to strangers.
+TR-055-3,NG-T055,3,observant,Notices small environmental and behavioral details.
+TR-055-4,NG-T055,4,manipulative,Steers people toward decisions that benefit them.
+TR-055-5,NG-T055,5,perfectionist,Will delay an operation rather than accept imperfect execution.
+TR-056-1,NG-T056,1,observant,Notices small environmental and behavioral details.
+TR-056-2,NG-T056,2,patient,Will wait as long as necessary for the right opportunity.
+TR-056-3,NG-T056,3,physical,"Relies on stamina, strength, or athletic ability."
+TR-056-4,NG-T056,4,quiet,Speaks little and reveals very little voluntarily.
+TR-056-5,NG-T056,5,methodical,Follows repeatable procedures and checklists.
+TR-057-1,NG-T057,1,technical,"Comfortable with locks, electronics, machinery, or systems."
+TR-057-2,NG-T057,2,introverted,Prefers working alone and avoids unnecessary social contact.
+TR-057-3,NG-T057,3,curious,"Investigates interesting objects, people, and places even when risky."
+TR-057-4,NG-T057,4,cocky,Underestimates opponents because of overconfidence.
+TR-057-5,NG-T057,5,restless,Struggles to stay in one place for long.
+TR-058-1,NG-T058,1,mysterious,Cultivates ambiguity around identity and motives.
+TR-058-2,NG-T058,2,cultured,"Knows art, heritage, etiquette, and cultural history."
+TR-058-3,NG-T058,3,patient,Will wait as long as necessary for the right opportunity.
+TR-058-4,NG-T058,4,superstitious,Avoids actions or places associated with personal omens.
+TR-058-5,NG-T058,5,persuasive,Can influence people through argument or emotional appeal.
+TR-059-1,NG-T059,1,analytical,Behavioral trait used by the game engine.
+TR-059-2,NG-T059,2,patient,Will wait as long as necessary for the right opportunity.
+TR-059-3,NG-T059,3,precise,Behavioral trait used by the game engine.
+TR-059-4,NG-T059,4,quiet,Speaks little and reveals very little voluntarily.
+TR-059-5,NG-T059,5,competitive,Treats the investigation as a contest to win.
+TR-060-1,NG-T060,1,connected,Has a wide network of useful contacts.
+TR-060-2,NG-T060,2,charming,Behavioral trait used by the game engine.
+TR-060-3,NG-T060,3,calculating,Considers several outcomes before making a move.
+TR-060-4,NG-T060,4,paranoid,Assumes others are watching and constantly changes plans.
+TR-060-5,NG-T060,5,ambitious,"Wants increasing wealth, influence, or status."
+TR-061-1,NG-T061,1,academic,Approaches problems like research questions.
+TR-061-2,NG-T061,2,curious,"Investigates interesting objects, people, and places even when risky."
+TR-061-3,NG-T061,3,patient,Will wait as long as necessary for the right opportunity.
+TR-061-4,NG-T061,4,idealistic,Believes strongly in a personal cause or principle.
+TR-061-5,NG-T061,5,secretive,Reveals information only when absolutely necessary.
+TR-062-1,NG-T062,1,fast,Moves quickly and dislikes slow plans.
+TR-062-2,NG-T062,2,disciplined,Maintains strict routines and self-control.
+TR-062-3,NG-T062,3,loyal,Protects trusted associates even when costly.
+TR-062-4,NG-T062,4,cautious,Avoids unnecessary exposure and prefers safer routes.
+TR-062-5,NG-T062,5,restless,Struggles to stay in one place for long.
+TR-063-1,NG-T063,1,strategic,Plans several moves ahead rather than acting impulsively.
+TR-063-2,NG-T063,2,patient,Will wait as long as necessary for the right opportunity.
+TR-063-3,NG-T063,3,competitive,Treats the investigation as a contest to win.
+TR-063-4,NG-T063,4,logical,Behavioral trait used by the game engine.
+TR-063-5,NG-T063,5,proud,Strongly protects personal reputation and dignity.
+TR-064-1,NG-T064,1,charismatic,Naturally wins trust and attention from strangers.
+TR-064-2,NG-T064,2,persuasive,Can influence people through argument or emotional appeal.
+TR-064-3,NG-T064,3,dramatic,Uses emotion and theatrical behavior to influence others.
+TR-064-4,NG-T064,4,observant,Notices small environmental and behavioral details.
+TR-064-5,NG-T064,5,manipulative,Steers people toward decisions that benefit them.
+TR-065-1,NG-T065,1,obsessive,Becomes intensely focused on a particular goal or object.
+TR-065-2,NG-T065,2,cultured,"Knows art, heritage, etiquette, and cultural history."
+TR-065-3,NG-T065,3,patient,Will wait as long as necessary for the right opportunity.
+TR-065-4,NG-T065,4,wealthy,Has legitimate resources that make unusual movements less suspicious.
+TR-065-5,NG-T065,5,secretive,Reveals information only when absolutely necessary.
+TR-066-1,NG-T066,1,hands_on,Prefers physical tools and practical work.
+TR-066-2,NG-T066,2,patient,Will wait as long as necessary for the right opportunity.
+TR-066-3,NG-T066,3,inventive,Creates new methods rather than relying on standard ones.
+TR-066-4,NG-T066,4,quiet,Speaks little and reveals very little voluntarily.
+TR-066-5,NG-T066,5,practical,Behavioral trait used by the game engine.
+TR-067-1,NG-T067,1,numerate,Highly comfortable with numbers and financial calculations.
+TR-067-2,NG-T067,2,polished,Presents a credible professional image.
+TR-067-3,NG-T067,3,ambitious,"Wants increasing wealth, influence, or status."
+TR-067-4,NG-T067,4,cautious,Avoids unnecessary exposure and prefers safer routes.
+TR-067-5,NG-T067,5,deceptive,Comfortable lying convincingly when necessary.
+TR-068-1,NG-T068,1,knowledgeable,Has broad factual knowledge beyond a single specialty.
+TR-068-2,NG-T068,2,friendly,Builds rapport quickly and appears approachable.
+TR-068-3,NG-T068,3,observant,Notices small environmental and behavioral details.
+TR-068-4,NG-T068,4,resourceful,Can improvise useful solutions from limited resources.
+TR-068-5,NG-T068,5,cautious,Avoids unnecessary exposure and prefers safer routes.
+TR-069-1,NG-T069,1,privileged,Has social or financial advantages that open doors.
+TR-069-2,NG-T069,2,vain,"Cares deeply about appearance, reputation, or recognition."
+TR-069-3,NG-T069,3,intelligent,Behavioral trait used by the game engine.
+TR-069-4,NG-T069,4,reckless,Acts quickly without fully considering consequences.
+TR-069-5,NG-T069,5,persuasive,Can influence people through argument or emotional appeal.
+TR-070-1,NG-T070,1,fearless,Shows little hesitation in dangerous situations.
+TR-070-2,NG-T070,2,patient,Will wait as long as necessary for the right opportunity.
+TR-070-3,NG-T070,3,physical,"Relies on stamina, strength, or athletic ability."
+TR-070-4,NG-T070,4,quiet,Speaks little and reveals very little voluntarily.
+TR-070-5,NG-T070,5,curious,"Investigates interesting objects, people, and places even when risky."
+TR-071-1,NG-T071,1,precise,Behavioral trait used by the game engine.
+TR-071-2,NG-T071,2,creative,Behavioral trait used by the game engine.
+TR-071-3,NG-T071,3,secretive,Reveals information only when absolutely necessary.
+TR-071-4,NG-T071,4,patient,Will wait as long as necessary for the right opportunity.
+TR-071-5,NG-T071,5,observant,Notices small environmental and behavioral details.
+TR-072-1,NG-T072,1,bookish,Spends substantial time reading and researching.
+TR-072-2,NG-T072,2,arrogant,Believes they are intellectually superior to investigators.
+TR-072-3,NG-T072,3,nostalgic,Has a strong attachment to the past.
+TR-072-4,NG-T072,4,meticulous,Checks details repeatedly and rarely leaves careless evidence.
+TR-072-5,NG-T072,5,competitive,Treats the investigation as a contest to win.
+TR-073-1,NG-T073,1,persuasive,Can influence people through argument or emotional appeal.
+TR-073-2,NG-T073,2,calm,Behavioral trait used by the game engine.
+TR-073-3,NG-T073,3,strategic,Plans several moves ahead rather than acting impulsively.
+TR-073-4,NG-T073,4,empathetic,Reads emotional states unusually well.
+TR-073-5,NG-T073,5,controlling,Wants other people and circumstances to follow their plan.
+TR-074-1,NG-T074,1,streetwise,"Understands informal networks, local habits, and urban survival."
+TR-074-2,NG-T074,2,cautious,Avoids unnecessary exposure and prefers safer routes.
+TR-074-3,NG-T074,3,resourceful,Can improvise useful solutions from limited resources.
+TR-074-4,NG-T074,4,patient,Will wait as long as necessary for the right opportunity.
+TR-074-5,NG-T074,5,greedy,Will accept additional risk for more money.
+TR-075-1,NG-T075,1,social,Comfortable meeting and talking to strangers.
+TR-075-2,NG-T075,2,vain,"Cares deeply about appearance, reputation, or recognition."
+TR-075-3,NG-T075,3,persuasive,Can influence people through argument or emotional appeal.
+TR-075-4,NG-T075,4,restless,Struggles to stay in one place for long.
+TR-075-5,NG-T075,5,opportunistic,Quickly exploits unexpected openings.
+TR-076-1,NG-T076,1,technical,"Comfortable with locks, electronics, machinery, or systems."
+TR-076-2,NG-T076,2,logical,Behavioral trait used by the game engine.
+TR-076-3,NG-T076,3,meticulous,Checks details repeatedly and rarely leaves careless evidence.
+TR-076-4,NG-T076,4,introverted,Prefers working alone and avoids unnecessary social contact.
+TR-076-5,NG-T076,5,stubborn,Refuses to abandon a plan once committed to it.
+TR-077-1,NG-T077,1,bookish,Spends substantial time reading and researching.
+TR-077-2,NG-T077,2,patient,Will wait as long as necessary for the right opportunity.
+TR-077-3,NG-T077,3,secretive,Reveals information only when absolutely necessary.
+TR-077-4,NG-T077,4,nostalgic,Has a strong attachment to the past.
+TR-077-5,NG-T077,5,possessive,"Treats selected objects, places, or people as personal property."
+TR-078-1,NG-T078,1,alert,Constantly monitors surroundings for threats.
+TR-078-2,NG-T078,2,disciplined,Maintains strict routines and self-control.
+TR-078-3,NG-T078,3,quiet,Speaks little and reveals very little voluntarily.
+TR-078-4,NG-T078,4,deceptive,Comfortable lying convincingly when necessary.
+TR-078-5,NG-T078,5,fearless,Shows little hesitation in dangerous situations.
+TR-079-1,NG-T079,1,musical,Uses music and performance as part of identity or cover.
+TR-079-2,NG-T079,2,charismatic,Naturally wins trust and attention from strangers.
+TR-079-3,NG-T079,3,observant,Notices small environmental and behavioral details.
+TR-079-4,NG-T079,4,social,Comfortable meeting and talking to strangers.
+TR-079-5,NG-T079,5,vengeful,Remembers perceived slights and seeks payback.
+TR-080-1,NG-T080,1,commanding,Naturally assumes leadership in groups.
+TR-080-2,NG-T080,2,ambitious,"Wants increasing wealth, influence, or status."
+TR-080-3,NG-T080,3,connected,Has a wide network of useful contacts.
+TR-080-4,NG-T080,4,calculating,Considers several outcomes before making a move.
+TR-080-5,NG-T080,5,proud,Strongly protects personal reputation and dignity.
+TR-081-1,NG-T081,1,streetwise,"Understands informal networks, local habits, and urban survival."
+TR-081-2,NG-T081,2,observant,Notices small environmental and behavioral details.
+TR-081-3,NG-T081,3,calm,Behavioral trait used by the game engine.
+TR-081-4,NG-T081,4,loyal,Protects trusted associates even when costly.
+TR-081-5,NG-T081,5,impatient,Makes mistakes when forced to wait or improvise slowly.
+TR-082-1,NG-T082,1,analytical,Behavioral trait used by the game engine.
+TR-082-2,NG-T082,2,precise,Behavioral trait used by the game engine.
+TR-082-3,NG-T082,3,curious,"Investigates interesting objects, people, and places even when risky."
+TR-082-4,NG-T082,4,secretive,Reveals information only when absolutely necessary.
+TR-082-5,NG-T082,5,perfectionist,Will delay an operation rather than accept imperfect execution.
+TR-083-1,NG-T083,1,obsessive,Becomes intensely focused on a particular goal or object.
+TR-083-2,NG-T083,2,commercial,"Thinks naturally in terms of markets, prices, and trade."
+TR-083-3,NG-T083,3,cultured,"Knows art, heritage, etiquette, and cultural history."
+TR-083-4,NG-T083,4,greedy,Will accept additional risk for more money.
+TR-083-5,NG-T083,5,patient,Will wait as long as necessary for the right opportunity.
+TR-084-1,NG-T084,1,dramatic,Uses emotion and theatrical behavior to influence others.
+TR-084-2,NG-T084,2,adaptable,Changes tactics quickly when circumstances shift.
+TR-084-3,NG-T084,3,charming,Behavioral trait used by the game engine.
+TR-084-4,NG-T084,4,observant,Notices small environmental and behavioral details.
+TR-084-5,NG-T084,5,deceptive,Comfortable lying convincingly when necessary.
+TR-085-1,NG-T085,1,disciplined,Maintains strict routines and self-control.
+TR-085-2,NG-T085,2,strategic,Plans several moves ahead rather than acting impulsively.
+TR-085-3,NG-T085,3,patient,Will wait as long as necessary for the right opportunity.
+TR-085-4,NG-T085,4,resilient,Behavioral trait used by the game engine.
+TR-085-5,NG-T085,5,proud,Strongly protects personal reputation and dignity.
+TR-086-1,NG-T086,1,scientific,"Prefers evidence, experiments, and measurable explanations."
+TR-086-2,NG-T086,2,quiet,Speaks little and reveals very little voluntarily.
+TR-086-3,NG-T086,3,curious,"Investigates interesting objects, people, and places even when risky."
+TR-086-4,NG-T086,4,patient,Will wait as long as necessary for the right opportunity.
+TR-086-5,NG-T086,5,resentful,Behavioral trait used by the game engine.
+TR-087-1,NG-T087,1,commercial,"Thinks naturally in terms of markets, prices, and trade."
+TR-087-2,NG-T087,2,calculating,Considers several outcomes before making a move.
+TR-087-3,NG-T087,3,social,Comfortable meeting and talking to strangers.
+TR-087-4,NG-T087,4,risk_taker,Accepts substantial danger when the reward is attractive.
+TR-087-5,NG-T087,5,resourceful,Can improvise useful solutions from limited resources.
+TR-088-1,NG-T088,1,showman,"Enjoys spectacle, performance, and theatrical reveals."
+TR-088-2,NG-T088,2,quick_witted,Generates clever responses rapidly under pressure.
+TR-088-3,NG-T088,3,charming,Behavioral trait used by the game engine.
+TR-088-4,NG-T088,4,reckless,Acts quickly without fully considering consequences.
+TR-088-5,NG-T088,5,improviser,Performs well without a prepared plan.
+TR-089-1,NG-T089,1,inquisitive,Behavioral trait used by the game engine.
+TR-089-2,NG-T089,2,persistent,Behavioral trait used by the game engine.
+TR-089-3,NG-T089,3,sociable,Behavioral trait used by the game engine.
+TR-089-4,NG-T089,4,cynical,Behavioral trait used by the game engine.
+TR-089-5,NG-T089,5,brave,Willing to face danger rather than retreat.
+TR-090-1,NG-T090,1,technical,"Comfortable with locks, electronics, machinery, or systems."
+TR-090-2,NG-T090,2,methodical,Follows repeatable procedures and checklists.
+TR-090-3,NG-T090,3,quiet,Speaks little and reveals very little voluntarily.
+TR-090-4,NG-T090,4,patient,Will wait as long as necessary for the right opportunity.
+TR-090-5,NG-T090,5,cautious,Avoids unnecessary exposure and prefers safer routes.
+TR-091-1,NG-T091,1,glamorous,Behavioral trait used by the game engine.
+TR-091-2,NG-T091,2,connected,Has a wide network of useful contacts.
+TR-091-3,NG-T091,3,persuasive,Can influence people through argument or emotional appeal.
+TR-091-4,NG-T091,4,competitive,Treats the investigation as a contest to win.
+TR-091-5,NG-T091,5,calculating,Considers several outcomes before making a move.
+TR-092-1,NG-T092,1,grim,Has a bleak outlook and little concern for appearances.
+TR-092-2,NG-T092,2,cold,"Keeps emotional distance, especially during stressful events."
+TR-092-3,NG-T092,3,methodical,Follows repeatable procedures and checklists.
+TR-092-4,NG-T092,4,patient,Will wait as long as necessary for the right opportunity.
+TR-092-5,NG-T092,5,observant,Notices small environmental and behavioral details.
+TR-093-1,NG-T093,1,observant,Notices small environmental and behavioral details.
+TR-093-2,NG-T093,2,patient,Will wait as long as necessary for the right opportunity.
+TR-093-3,NG-T093,3,physical,"Relies on stamina, strength, or athletic ability."
+TR-093-4,NG-T093,4,quiet,Speaks little and reveals very little voluntarily.
+TR-093-5,NG-T093,5,protective,Behavioral trait used by the game engine.
+TR-094-1,NG-T094,1,inventive,Creates new methods rather than relying on standard ones.
+TR-094-2,NG-T094,2,hands_on,Prefers physical tools and practical work.
+TR-094-3,NG-T094,3,pragmatic,Chooses what works rather than what sounds ideal.
+TR-094-4,NG-T094,4,impatient,Makes mistakes when forced to wait or improvise slowly.
+TR-094-5,NG-T094,5,loyal,Protects trusted associates even when costly.
+TR-095-1,NG-T095,1,technical,"Comfortable with locks, electronics, machinery, or systems."
+TR-095-2,NG-T095,2,curious,"Investigates interesting objects, people, and places even when risky."
+TR-095-3,NG-T095,3,cocky,Underestimates opponents because of overconfidence.
+TR-095-4,NG-T095,4,restless,Struggles to stay in one place for long.
+TR-095-5,NG-T095,5,competitive,Treats the investigation as a contest to win.
+TR-096-1,NG-T096,1,quiet,Speaks little and reveals very little voluntarily.
+TR-096-2,NG-T096,2,bookish,Spends substantial time reading and researching.
+TR-096-3,NG-T096,3,meticulous,Checks details repeatedly and rarely leaves careless evidence.
+TR-096-4,NG-T096,4,patient,Will wait as long as necessary for the right opportunity.
+TR-096-5,NG-T096,5,suspicious,Behavioral trait used by the game engine.
+TR-097-1,NG-T097,1,risk_taker,Accepts substantial danger when the reward is attractive.
+TR-097-2,NG-T097,2,mathematical,Naturally spots numerical relationships and patterns.
+TR-097-3,NG-T097,3,charming,Behavioral trait used by the game engine.
+TR-097-4,NG-T097,4,impulsive,Behavioral trait used by the game engine.
+TR-097-5,NG-T097,5,competitive,Treats the investigation as a contest to win.
+TR-098-1,NG-T098,1,soft_spoken,"Uses a calm, quiet voice that encourages people to listen."
+TR-098-2,NG-T098,2,observant,Notices small environmental and behavioral details.
+TR-098-3,NG-T098,3,patient,Will wait as long as necessary for the right opportunity.
+TR-098-4,NG-T098,4,manipulative,Steers people toward decisions that benefit them.
+TR-098-5,NG-T098,5,fearless,Shows little hesitation in dangerous situations.
+TR-099-1,NG-T099,1,spatial,"Strong at understanding buildings, routes, layouts, and distances."
+TR-099-2,NG-T099,2,creative,Behavioral trait used by the game engine.
+TR-099-3,NG-T099,3,meticulous,Checks details repeatedly and rarely leaves careless evidence.
+TR-099-4,NG-T099,4,introverted,Prefers working alone and avoids unnecessary social contact.
+TR-099-5,NG-T099,5,stubborn,Refuses to abandon a plan once committed to it.
+TR-100-1,NG-T100,1,clever,Finds unconventional solutions to difficult problems.
+TR-100-2,NG-T100,2,patient,Will wait as long as necessary for the right opportunity.
+TR-100-3,NG-T100,3,charismatic,Naturally wins trust and attention from strangers.
+TR-100-4,NG-T100,4,paranoid,Assumes others are watching and constantly changes plans.
+TR-100-5,NG-T100,5,adaptable,Changes tactics quickly when circumstances shift.

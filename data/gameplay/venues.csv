@@ -1,0 +1,36 @@
+venue_id,venue_name,opens_hour,closes_hour,interview_minutes,witness_roles
+market,Market,6,18,60,market woman|produce seller|textile trader|customer|loader|food vendor
+library,Library,9,17,75,librarian|archivist|researcher|student|security guard
+nightclub,Nightclub,20,4,75,bouncer|bartender|waiter|performer|clubgoer
+church,Church,7,19,60,pastor|priest|usher|choir member|elder|deacon
+mosque,Mosque,5,21,60,imam|muezzin|teacher|worshipper|attendant
+museum,Museum,9,17,75,curator|guide|conservator|visitor|security guard
+motor_park,Motor park,5,23,45,agbero|driver|conductor|ticket seller|mechanic|passenger
+hotel,Hotel,0,24,60,receptionist|concierge|housekeeper|guest|security guard
+restaurant,Restaurant,7,23,60,cook|server|cashier|customer|manager
+airport,Airport,4,24,75,check-in agent|baggage handler|pilot|traveller|security officer
+radio_station,Radio station,8,22,60,presenter|producer|reporter|engineer|caller
+hospital,Hospital,0,24,75,doctor|nurse|porter|visitor|records clerk
+beach,Beach,6,20,60,lifeguard|fish seller|boat operator|food vendor
+carnival_workshop,Carnival workshop,9,20,75,costume maker|dancer|welder|drummer
+cattle_market,Cattle market,5,17,60,cattle trader|herder|veterinary worker|loader
+community_hall,Community hall,8,21,60,community leader|elder|youth organiser|dance instructor
+conservation_office,Conservation office,8,17,75,park ranger|wildlife officer|researcher|tour guide
+craft_market,Craft market,7,18,60,weaver|dyer|carver|bronze caster|leather seller
+emir_palace,Emir's palace,8,18,75,palace guard|horse groom|palace messenger|court historian
+factory_gate,Factory gate,6,18,60,factory worker|security man|artisan|tanker driver
+farm,Farm,5,18,75,farmer|produce buyer|farmhand|extension worker
+festival_ground,Festival ground,7,21,60,drummer|dancer|food vendor|festival organiser
+fishing_jetty,Fishing jetty,5,20,60,fisherman|boat operator|fish seller|ticket seller
+mining_site,Mining site,6,18,75,miner|quarry worker|mineral trader|site engineer
+monument,Monument,8,18,60,guide|photographer|caretaker|visitor
+palace,Royal palace,8,18,75,palace guard|court historian|chief|drummer
+police_station,Police station,0,24,75,desk officer|detective|security guard|complainant
+railway_station,Railway station,5,22,60,ticket seller|railway worker|passenger|security guard
+refinery,Refinery,0,24,75,engineer|security man|tanker driver|shift worker
+sacred_grove,Sacred grove,7,18,75,custodian|priestess|guide|devotee
+seaport,Seaport,0,24,75,dockworker|clearing agent|customs officer|sailor
+traditional_council,Traditional council,8,18,75,chief|elder|court secretary|historian
+university,University,7,22,75,lecturer|student|researcher|security guard
+waterfront,Waterfront,5,21,60,boatman|fish seller|dockworker|food vendor
+jetty,Passenger jetty,5,20,60,boat operator|ticket seller|passenger|fish seller

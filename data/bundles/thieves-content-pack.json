@@ -1,0 +1,1738 @@
+{
+  "version": "0.1",
+  "description": "Fictional Nigerian mystery-game thieves and behavioral traits.",
+  "thieves": [
+    {
+      "thief_id": "NG-T001",
+      "name": "Babatunde Adeyemi",
+      "alias": "The Professor",
+      "origin_city": "Ibadan",
+      "origin_state": "Oyo",
+      "primary_crime": "artifact_theft",
+      "traits": [
+        "meticulous",
+        "arrogant",
+        "historian",
+        "superstitious",
+        "impatient"
+      ],
+      "difficulty": 2
+    },
+    {
+      "thief_id": "NG-T002",
+      "name": "Amaka Nwosu",
+      "alias": "Red Viper",
+      "origin_city": "Enugu",
+      "origin_state": "Enugu",
+      "primary_crime": "smuggling",
+      "traits": [
+        "calculating",
+        "charismatic",
+        "paranoid",
+        "resourceful",
+        "vengeful"
+      ],
+      "difficulty": 3
+    },
+    {
+      "thief_id": "NG-T003",
+      "name": "Sani Bello",
+      "alias": "The Cartographer",
+      "origin_city": "Kano",
+      "origin_state": "Kano",
+      "primary_crime": "fraud",
+      "traits": [
+        "observant",
+        "quiet",
+        "geography_nerd",
+        "cautious",
+        "competitive"
+      ],
+      "difficulty": 4
+    },
+    {
+      "thief_id": "NG-T004",
+      "name": "Ifeoma Okeke",
+      "alias": "Madam Midnight",
+      "origin_city": "Onitsha",
+      "origin_state": "Anambra",
+      "primary_crime": "art_theft",
+      "traits": [
+        "elegant",
+        "patient",
+        "secretive",
+        "perfectionist",
+        "risk_taker"
+      ],
+      "difficulty": 5
+    },
+    {
+      "thief_id": "NG-T005",
+      "name": "Kunle Balogun",
+      "alias": "The Locksmith",
+      "origin_city": "Lagos",
+      "origin_state": "Lagos",
+      "primary_crime": "heist",
+      "traits": [
+        "technical",
+        "methodical",
+        "introverted",
+        "curious",
+        "stubborn"
+      ],
+      "difficulty": 1
+    },
+    {
+      "thief_id": "NG-T006",
+      "name": "Zainab Musa",
+      "alias": "The Falcon",
+      "origin_city": "Kaduna",
+      "origin_state": "Kaduna",
+      "primary_crime": "espionage",
+      "traits": [
+        "disciplined",
+        "alert",
+        "patriotic",
+        "deceptive",
+        "adaptable"
+      ],
+      "difficulty": 2
+    },
+    {
+      "thief_id": "NG-T007",
+      "name": "Chinedu Eze",
+      "alias": "Doctor Eze",
+      "origin_city": "Aba",
+      "origin_state": "Abia",
+      "primary_crime": "fraud",
+      "traits": [
+        "persuasive",
+        "educated",
+        "vain",
+        "improviser",
+        "empathetic"
+      ],
+      "difficulty": 3
+    },
+    {
+      "thief_id": "NG-T008",
+      "name": "Halima Yusuf",
+      "alias": "The Broker",
+      "origin_city": "Abuja",
+      "origin_state": "FCT",
+      "primary_crime": "political_intrigue",
+      "traits": [
+        "connected",
+        "calculating",
+        "patient",
+        "discreet",
+        "ambitious"
+      ],
+      "difficulty": 4
+    },
+    {
+      "thief_id": "NG-T009",
+      "name": "Tunde Akinwale",
+      "alias": "Blue Suit",
+      "origin_city": "Lagos",
+      "origin_state": "Lagos",
+      "primary_crime": "cybercrime",
+      "traits": [
+        "polished",
+        "tech_savvy",
+        "cocky",
+        "restless",
+        "opportunistic"
+      ],
+      "difficulty": 5
+    },
+    {
+      "thief_id": "NG-T010",
+      "name": "Ngozi Ibekwe",
+      "alias": "The Collector",
+      "origin_city": "Benin City",
+      "origin_state": "Edo",
+      "primary_crime": "antiquities",
+      "traits": [
+        "cultured",
+        "obsessive",
+        "wealthy",
+        "secretive",
+        "superstitious"
+      ],
+      "difficulty": 1
+    },
+    {
+      "thief_id": "NG-T011",
+      "name": "Musa Abdullahi",
+      "alias": "The Drifter",
+      "origin_city": "Sokoto",
+      "origin_state": "Sokoto",
+      "primary_crime": "smuggling",
+      "traits": [
+        "nomadic",
+        "resourceful",
+        "calm",
+        "unpredictable",
+        "streetwise"
+      ],
+      "difficulty": 2
+    },
+    {
+      "thief_id": "NG-T012",
+      "name": "Yetunde Ajayi",
+      "alias": "The Curator",
+      "origin_city": "Lagos",
+      "origin_state": "Lagos",
+      "primary_crime": "artifact_theft",
+      "traits": [
+        "refined",
+        "knowledgeable",
+        "deceptive",
+        "patient",
+        "controlling"
+      ],
+      "difficulty": 3
+    },
+    {
+      "thief_id": "NG-T013",
+      "name": "Emeka Umeh",
+      "alias": "Red Cap",
+      "origin_city": "Owerri",
+      "origin_state": "Imo",
+      "primary_crime": "kidnapping",
+      "traits": [
+        "commanding",
+        "loyal",
+        "volatile",
+        "strategic",
+        "proud"
+      ],
+      "difficulty": 4
+    },
+    {
+      "thief_id": "NG-T014",
+      "name": "Aisha Garba",
+      "alias": "The Whisper",
+      "origin_city": "Katsina",
+      "origin_state": "Katsina",
+      "primary_crime": "espionage",
+      "traits": [
+        "soft_spoken",
+        "observant",
+        "patient",
+        "manipulative",
+        "fearless"
+      ],
+      "difficulty": 5
+    },
+    {
+      "thief_id": "NG-T015",
+      "name": "Femi Oladipo",
+      "alias": "The Magician",
+      "origin_city": "Osogbo",
+      "origin_state": "Osun",
+      "primary_crime": "con_art",
+      "traits": [
+        "showman",
+        "quick_witted",
+        "charming",
+        "superstitious",
+        "improviser"
+      ],
+      "difficulty": 1
+    },
+    {
+      "thief_id": "NG-T016",
+      "name": "Maryam Ibrahim",
+      "alias": "The Archivist",
+      "origin_city": "Zaria",
+      "origin_state": "Kaduna",
+      "primary_crime": "historical_theft",
+      "traits": [
+        "bookish",
+        "meticulous",
+        "reserved",
+        "nostalgic",
+        "possessive"
+      ],
+      "difficulty": 2
+    },
+    {
+      "thief_id": "NG-T017",
+      "name": "Kelechi Obi",
+      "alias": "Switch",
+      "origin_city": "Port Harcourt",
+      "origin_state": "Rivers",
+      "primary_crime": "identity_fraud",
+      "traits": [
+        "adaptable",
+        "tech_savvy",
+        "deceptive",
+        "restless",
+        "playful"
+      ],
+      "difficulty": 3
+    },
+    {
+      "thief_id": "NG-T018",
+      "name": "Yemi Lawal",
+      "alias": "The Undertaker",
+      "origin_city": "Ilorin",
+      "origin_state": "Kwara",
+      "primary_crime": "murder",
+      "traits": [
+        "grim",
+        "patient",
+        "methodical",
+        "cold",
+        "observant"
+      ],
+      "difficulty": 4
+    },
+    {
+      "thief_id": "NG-T019",
+      "name": "Fatima Sule",
+      "alias": "Silver Fox",
+      "origin_city": "Jos",
+      "origin_state": "Plateau",
+      "primary_crime": "heist",
+      "traits": [
+        "clever",
+        "patient",
+        "elegant",
+        "skeptical",
+        "risk_taker"
+      ],
+      "difficulty": 5
+    },
+    {
+      "thief_id": "NG-T020",
+      "name": "Chukwudi Nnamdi",
+      "alias": "The Mechanic",
+      "origin_city": "Nnewi",
+      "origin_state": "Anambra",
+      "primary_crime": "vehicle_theft",
+      "traits": [
+        "hands_on",
+        "inventive",
+        "loyal",
+        "impatient",
+        "pragmatic"
+      ],
+      "difficulty": 1
+    },
+    {
+      "thief_id": "NG-T021",
+      "name": "Bisi Adebayo",
+      "alias": "The Diplomat",
+      "origin_city": "Abeokuta",
+      "origin_state": "Ogun",
+      "primary_crime": "political_intrigue",
+      "traits": [
+        "diplomatic",
+        "calculated",
+        "charming",
+        "ambitious",
+        "secretive"
+      ],
+      "difficulty": 2
+    },
+    {
+      "thief_id": "NG-T022",
+      "name": "Haruna Yakubu",
+      "alias": "The Shepherd",
+      "origin_city": "Maiduguri",
+      "origin_state": "Borno",
+      "primary_crime": "smuggling",
+      "traits": [
+        "resilient",
+        "cautious",
+        "quiet",
+        "resourceful",
+        "protective"
+      ],
+      "difficulty": 3
+    },
+    {
+      "thief_id": "NG-T023",
+      "name": "Adaeze Chukwu",
+      "alias": "Black Orchid",
+      "origin_city": "Calabar",
+      "origin_state": "Cross River",
+      "primary_crime": "art_theft",
+      "traits": [
+        "stylish",
+        "patient",
+        "romantic",
+        "deceptive",
+        "perfectionist"
+      ],
+      "difficulty": 4
+    },
+    {
+      "thief_id": "NG-T024",
+      "name": "Taiwo Fasina",
+      "alias": "The Gambler",
+      "origin_city": "Lagos",
+      "origin_state": "Lagos",
+      "primary_crime": "fraud",
+      "traits": [
+        "risk_taker",
+        "mathematical",
+        "charming",
+        "impulsive",
+        "competitive"
+      ],
+      "difficulty": 5
+    },
+    {
+      "thief_id": "NG-T025",
+      "name": "Abdulrahman Lawan",
+      "alias": "The Strategist",
+      "origin_city": "Bauchi",
+      "origin_state": "Bauchi",
+      "primary_crime": "heist",
+      "traits": [
+        "strategic",
+        "disciplined",
+        "patient",
+        "analytical",
+        "proud"
+      ],
+      "difficulty": 1
+    },
+    {
+      "thief_id": "NG-T026",
+      "name": "Ronke Afolabi",
+      "alias": "The Journalist",
+      "origin_city": "Akure",
+      "origin_state": "Ondo",
+      "primary_crime": "blackmail",
+      "traits": [
+        "inquisitive",
+        "persistent",
+        "sociable",
+        "cynical",
+        "resourceful"
+      ],
+      "difficulty": 2
+    },
+    {
+      "thief_id": "NG-T027",
+      "name": "Ikenna Maduka",
+      "alias": "The Surgeon",
+      "origin_city": "Enugu",
+      "origin_state": "Enugu",
+      "primary_crime": "murder",
+      "traits": [
+        "precise",
+        "cold",
+        "educated",
+        "perfectionist",
+        "detached"
+      ],
+      "difficulty": 3
+    },
+    {
+      "thief_id": "NG-T028",
+      "name": "Safiya Danjuma",
+      "alias": "The Diplomat's Daughter",
+      "origin_city": "Abuja",
+      "origin_state": "FCT",
+      "primary_crime": "espionage",
+      "traits": [
+        "privileged",
+        "cultured",
+        "manipulative",
+        "restless",
+        "fearless"
+      ],
+      "difficulty": 4
+    },
+    {
+      "thief_id": "NG-T029",
+      "name": "Segun Martins",
+      "alias": "The DJ",
+      "origin_city": "Lagos",
+      "origin_state": "Lagos",
+      "primary_crime": "smuggling",
+      "traits": [
+        "social",
+        "musical",
+        "restless",
+        "observant",
+        "opportunistic"
+      ],
+      "difficulty": 5
+    },
+    {
+      "thief_id": "NG-T030",
+      "name": "Rashida Ahmed",
+      "alias": "The Botanist",
+      "origin_city": "Kano",
+      "origin_state": "Kano",
+      "primary_crime": "poisoning",
+      "traits": [
+        "scientific",
+        "patient",
+        "quiet",
+        "curious",
+        "vengeful"
+      ],
+      "difficulty": 1
+    },
+    {
+      "thief_id": "NG-T031",
+      "name": "Obinna Eze",
+      "alias": "The Architect",
+      "origin_city": "Awka",
+      "origin_state": "Anambra",
+      "primary_crime": "heist",
+      "traits": [
+        "spatial",
+        "meticulous",
+        "creative",
+        "introverted",
+        "stubborn"
+      ],
+      "difficulty": 2
+    },
+    {
+      "thief_id": "NG-T032",
+      "name": "Folake Shittu",
+      "alias": "The Socialite",
+      "origin_city": "Lagos",
+      "origin_state": "Lagos",
+      "primary_crime": "fraud",
+      "traits": [
+        "glamorous",
+        "connected",
+        "persuasive",
+        "vain",
+        "calculating"
+      ],
+      "difficulty": 3
+    },
+    {
+      "thief_id": "NG-T033",
+      "name": "Usman Ibrahim",
+      "alias": "The Nomad",
+      "origin_city": "Gusau",
+      "origin_state": "Zamfara",
+      "primary_crime": "smuggling",
+      "traits": [
+        "adaptable",
+        "resilient",
+        "cautious",
+        "independent",
+        "streetwise"
+      ],
+      "difficulty": 4
+    },
+    {
+      "thief_id": "NG-T034",
+      "name": "Nneka Ekwueme",
+      "alias": "The Historian",
+      "origin_city": "Nsukka",
+      "origin_state": "Enugu",
+      "primary_crime": "artifact_theft",
+      "traits": [
+        "academic",
+        "idealistic",
+        "obsessive",
+        "patient",
+        "proud"
+      ],
+      "difficulty": 5
+    },
+    {
+      "thief_id": "NG-T035",
+      "name": "Jide Alabi",
+      "alias": "The Locksmith II",
+      "origin_city": "Ibadan",
+      "origin_state": "Oyo",
+      "primary_crime": "burglary",
+      "traits": [
+        "technical",
+        "quiet",
+        "patient",
+        "inventive",
+        "cautious"
+      ],
+      "difficulty": 1
+    },
+    {
+      "thief_id": "NG-T036",
+      "name": "Amina Bello",
+      "alias": "The Negotiator",
+      "origin_city": "Sokoto",
+      "origin_state": "Sokoto",
+      "primary_crime": "kidnapping",
+      "traits": [
+        "calm",
+        "persuasive",
+        "strategic",
+        "empathetic",
+        "controlling"
+      ],
+      "difficulty": 2
+    },
+    {
+      "thief_id": "NG-T037",
+      "name": "Deji Ogunleye",
+      "alias": "The Runner",
+      "origin_city": "Lagos",
+      "origin_state": "Lagos",
+      "primary_crime": "courier",
+      "traits": [
+        "fast",
+        "restless",
+        "streetwise",
+        "loyal",
+        "impulsive"
+      ],
+      "difficulty": 3
+    },
+    {
+      "thief_id": "NG-T038",
+      "name": "Chioma Okoro",
+      "alias": "The Actress",
+      "origin_city": "Port Harcourt",
+      "origin_state": "Rivers",
+      "primary_crime": "identity_fraud",
+      "traits": [
+        "dramatic",
+        "charismatic",
+        "adaptable",
+        "vain",
+        "observant"
+      ],
+      "difficulty": 4
+    },
+    {
+      "thief_id": "NG-T039",
+      "name": "Kabiru Umar",
+      "alias": "The Falconer",
+      "origin_city": "Kano",
+      "origin_state": "Kano",
+      "primary_crime": "poaching",
+      "traits": [
+        "patient",
+        "traditionalist",
+        "observant",
+        "resilient",
+        "secretive"
+      ],
+      "difficulty": 5
+    },
+    {
+      "thief_id": "NG-T040",
+      "name": "Tosin Bamgbose",
+      "alias": "The Banker",
+      "origin_city": "Lagos",
+      "origin_state": "Lagos",
+      "primary_crime": "financial_fraud",
+      "traits": [
+        "numerate",
+        "polished",
+        "ambitious",
+        "paranoid",
+        "greedy"
+      ],
+      "difficulty": 1
+    },
+    {
+      "thief_id": "NG-T041",
+      "name": "Blessing Eze",
+      "alias": "The Nurse",
+      "origin_city": "Benin City",
+      "origin_state": "Edo",
+      "primary_crime": "poisoning",
+      "traits": [
+        "empathetic",
+        "precise",
+        "secretive",
+        "patient",
+        "resentful"
+      ],
+      "difficulty": 2
+    },
+    {
+      "thief_id": "NG-T042",
+      "name": "Ibrahim Danladi",
+      "alias": "The Fixer",
+      "origin_city": "Abuja",
+      "origin_state": "FCT",
+      "primary_crime": "political_intrigue",
+      "traits": [
+        "connected",
+        "pragmatic",
+        "discreet",
+        "resourceful",
+        "cynical"
+      ],
+      "difficulty": 3
+    },
+    {
+      "thief_id": "NG-T043",
+      "name": "Temitope Akin",
+      "alias": "The Photographer",
+      "origin_city": "Lagos",
+      "origin_state": "Lagos",
+      "primary_crime": "blackmail",
+      "traits": [
+        "observant",
+        "artistic",
+        "patient",
+        "curious",
+        "opportunistic"
+      ],
+      "difficulty": 4
+    },
+    {
+      "thief_id": "NG-T044",
+      "name": "Ogechi Nwankwo",
+      "alias": "The Seamstress",
+      "origin_city": "Aba",
+      "origin_state": "Abia",
+      "primary_crime": "smuggling",
+      "traits": [
+        "precise",
+        "creative",
+        "patient",
+        "frugal",
+        "secretive"
+      ],
+      "difficulty": 5
+    },
+    {
+      "thief_id": "NG-T045",
+      "name": "Suleiman Abba",
+      "alias": "The Professor",
+      "origin_city": "Zaria",
+      "origin_state": "Kaduna",
+      "primary_crime": "academic_theft",
+      "traits": [
+        "intellectual",
+        "arrogant",
+        "meticulous",
+        "competitive",
+        "absent_minded"
+      ],
+      "difficulty": 1
+    },
+    {
+      "thief_id": "NG-T046",
+      "name": "Kemi Fashola",
+      "alias": "The Banker’s Widow",
+      "origin_city": "Lagos",
+      "origin_state": "Lagos",
+      "primary_crime": "financial_fraud",
+      "traits": [
+        "elegant",
+        "calculating",
+        "patient",
+        "resentful",
+        "persuasive"
+      ],
+      "difficulty": 2
+    },
+    {
+      "thief_id": "NG-T047",
+      "name": "Victor Nwachukwu",
+      "alias": "The Pilot",
+      "origin_city": "Owerri",
+      "origin_state": "Imo",
+      "primary_crime": "smuggling",
+      "traits": [
+        "adventurous",
+        "calm",
+        "technical",
+        "confident",
+        "restless"
+      ],
+      "difficulty": 3
+    },
+    {
+      "thief_id": "NG-T048",
+      "name": "Sarah Bassey",
+      "alias": "The Diver",
+      "origin_city": "Calabar",
+      "origin_state": "Cross River",
+      "primary_crime": "salvage_theft",
+      "traits": [
+        "fearless",
+        "patient",
+        "physical",
+        "curious",
+        "secretive"
+      ],
+      "difficulty": 4
+    },
+    {
+      "thief_id": "NG-T049",
+      "name": "Dare Akintola",
+      "alias": "The Comedian",
+      "origin_city": "Ibadan",
+      "origin_state": "Oyo",
+      "primary_crime": "con_art",
+      "traits": [
+        "funny",
+        "charming",
+        "improviser",
+        "observant",
+        "reckless"
+      ],
+      "difficulty": 5
+    },
+    {
+      "thief_id": "NG-T050",
+      "name": "Hauwa Mohammed",
+      "alias": "The Librarian",
+      "origin_city": "Kano",
+      "origin_state": "Kano",
+      "primary_crime": "information_theft",
+      "traits": [
+        "quiet",
+        "bookish",
+        "meticulous",
+        "patient",
+        "suspicious"
+      ],
+      "difficulty": 1
+    },
+    {
+      "thief_id": "NG-T051",
+      "name": "Nnamdi Okafor",
+      "alias": "The Prince",
+      "origin_city": "Benin City",
+      "origin_state": "Edo",
+      "primary_crime": "antiquities",
+      "traits": [
+        "proud",
+        "cultured",
+        "entitled",
+        "strategic",
+        "superstitious"
+      ],
+      "difficulty": 2
+    },
+    {
+      "thief_id": "NG-T052",
+      "name": "Shade Akinyemi",
+      "alias": "The Florist",
+      "origin_city": "Abeokuta",
+      "origin_state": "Ogun",
+      "primary_crime": "poisoning",
+      "traits": [
+        "gentle",
+        "scientific",
+        "secretive",
+        "patient",
+        "vengeful"
+      ],
+      "difficulty": 3
+    },
+    {
+      "thief_id": "NG-T053",
+      "name": "Mubarak Isah",
+      "alias": "The Trader",
+      "origin_city": "Kano",
+      "origin_state": "Kano",
+      "primary_crime": "smuggling",
+      "traits": [
+        "commercial",
+        "calculating",
+        "sociable",
+        "risk_taker",
+        "resourceful"
+      ],
+      "difficulty": 4
+    },
+    {
+      "thief_id": "NG-T054",
+      "name": "Ejiro Okoro",
+      "alias": "The Fisherman",
+      "origin_city": "Warri",
+      "origin_state": "Delta",
+      "primary_crime": "smuggling",
+      "traits": [
+        "patient",
+        "practical",
+        "quiet",
+        "resilient",
+        "superstitious"
+      ],
+      "difficulty": 5
+    },
+    {
+      "thief_id": "NG-T055",
+      "name": "Lola Martins",
+      "alias": "The Stylist",
+      "origin_city": "Lagos",
+      "origin_state": "Lagos",
+      "primary_crime": "identity_fraud",
+      "traits": [
+        "fashionable",
+        "social",
+        "observant",
+        "manipulative",
+        "perfectionist"
+      ],
+      "difficulty": 1
+    },
+    {
+      "thief_id": "NG-T056",
+      "name": "Yakubu Saleh",
+      "alias": "The Tracker",
+      "origin_city": "Jos",
+      "origin_state": "Plateau",
+      "primary_crime": "kidnapping",
+      "traits": [
+        "observant",
+        "patient",
+        "physical",
+        "quiet",
+        "methodical"
+      ],
+      "difficulty": 2
+    },
+    {
+      "thief_id": "NG-T057",
+      "name": "Chisom Nwafor",
+      "alias": "The Hacker",
+      "origin_city": "Enugu",
+      "origin_state": "Enugu",
+      "primary_crime": "cybercrime",
+      "traits": [
+        "technical",
+        "introverted",
+        "curious",
+        "cocky",
+        "restless"
+      ],
+      "difficulty": 3
+    },
+    {
+      "thief_id": "NG-T058",
+      "name": "Adewale Oni",
+      "alias": "The Priest",
+      "origin_city": "Ile-Ife",
+      "origin_state": "Osun",
+      "primary_crime": "artifact_theft",
+      "traits": [
+        "mysterious",
+        "cultured",
+        "patient",
+        "superstitious",
+        "persuasive"
+      ],
+      "difficulty": 4
+    },
+    {
+      "thief_id": "NG-T059",
+      "name": "Mariam Shehu",
+      "alias": "The Mathematician",
+      "origin_city": "Maiduguri",
+      "origin_state": "Borno",
+      "primary_crime": "financial_fraud",
+      "traits": [
+        "analytical",
+        "patient",
+        "precise",
+        "quiet",
+        "competitive"
+      ],
+      "difficulty": 5
+    },
+    {
+      "thief_id": "NG-T060",
+      "name": "Rotimi Bamidele",
+      "alias": "The Broker II",
+      "origin_city": "Lagos",
+      "origin_state": "Lagos",
+      "primary_crime": "blackmail",
+      "traits": [
+        "connected",
+        "charming",
+        "calculating",
+        "paranoid",
+        "ambitious"
+      ],
+      "difficulty": 1
+    },
+    {
+      "thief_id": "NG-T061",
+      "name": "Esther Ekanem",
+      "alias": "The Historian II",
+      "origin_city": "Calabar",
+      "origin_state": "Cross River",
+      "primary_crime": "artifact_theft",
+      "traits": [
+        "academic",
+        "curious",
+        "patient",
+        "idealistic",
+        "secretive"
+      ],
+      "difficulty": 2
+    },
+    {
+      "thief_id": "NG-T062",
+      "name": "Garba Sani",
+      "alias": "The Courier",
+      "origin_city": "Kaduna",
+      "origin_state": "Kaduna",
+      "primary_crime": "smuggling",
+      "traits": [
+        "fast",
+        "disciplined",
+        "loyal",
+        "cautious",
+        "restless"
+      ],
+      "difficulty": 3
+    },
+    {
+      "thief_id": "NG-T063",
+      "name": "Nkiru Obi",
+      "alias": "The Chess Player",
+      "origin_city": "Owerri",
+      "origin_state": "Imo",
+      "primary_crime": "heist",
+      "traits": [
+        "strategic",
+        "patient",
+        "competitive",
+        "logical",
+        "proud"
+      ],
+      "difficulty": 4
+    },
+    {
+      "thief_id": "NG-T064",
+      "name": "Samuel Adekunle",
+      "alias": "The Preacher",
+      "origin_city": "Ilorin",
+      "origin_state": "Kwara",
+      "primary_crime": "con_art",
+      "traits": [
+        "charismatic",
+        "persuasive",
+        "dramatic",
+        "observant",
+        "manipulative"
+      ],
+      "difficulty": 5
+    },
+    {
+      "thief_id": "NG-T065",
+      "name": "Rukayat Bello",
+      "alias": "The Collector II",
+      "origin_city": "Katsina",
+      "origin_state": "Katsina",
+      "primary_crime": "antiquities",
+      "traits": [
+        "obsessive",
+        "cultured",
+        "patient",
+        "wealthy",
+        "secretive"
+      ],
+      "difficulty": 1
+    },
+    {
+      "thief_id": "NG-T066",
+      "name": "Femi Aro",
+      "alias": "The Carpenter",
+      "origin_city": "Osogbo",
+      "origin_state": "Osun",
+      "primary_crime": "burglary",
+      "traits": [
+        "hands_on",
+        "patient",
+        "inventive",
+        "quiet",
+        "practical"
+      ],
+      "difficulty": 2
+    },
+    {
+      "thief_id": "NG-T067",
+      "name": "Juliet Nwosu",
+      "alias": "The Banker",
+      "origin_city": "Enugu",
+      "origin_state": "Enugu",
+      "primary_crime": "financial_fraud",
+      "traits": [
+        "numerate",
+        "polished",
+        "ambitious",
+        "cautious",
+        "deceptive"
+      ],
+      "difficulty": 3
+    },
+    {
+      "thief_id": "NG-T068",
+      "name": "Yahaya Musa",
+      "alias": "The Guide",
+      "origin_city": "Jos",
+      "origin_state": "Plateau",
+      "primary_crime": "smuggling",
+      "traits": [
+        "knowledgeable",
+        "friendly",
+        "observant",
+        "resourceful",
+        "cautious"
+      ],
+      "difficulty": 4
+    },
+    {
+      "thief_id": "NG-T069",
+      "name": "Morenike Adeola",
+      "alias": "The Heiress",
+      "origin_city": "Lagos",
+      "origin_state": "Lagos",
+      "primary_crime": "fraud",
+      "traits": [
+        "privileged",
+        "vain",
+        "intelligent",
+        "reckless",
+        "persuasive"
+      ],
+      "difficulty": 5
+    },
+    {
+      "thief_id": "NG-T070",
+      "name": "Emmanuel Etim",
+      "alias": "The Diver II",
+      "origin_city": "Calabar",
+      "origin_state": "Cross River",
+      "primary_crime": "salvage_theft",
+      "traits": [
+        "fearless",
+        "patient",
+        "physical",
+        "quiet",
+        "curious"
+      ],
+      "difficulty": 1
+    },
+    {
+      "thief_id": "NG-T071",
+      "name": "Aisha Sule",
+      "alias": "The Tailor",
+      "origin_city": "Kano",
+      "origin_state": "Kano",
+      "primary_crime": "identity_fraud",
+      "traits": [
+        "precise",
+        "creative",
+        "secretive",
+        "patient",
+        "observant"
+      ],
+      "difficulty": 2
+    },
+    {
+      "thief_id": "NG-T072",
+      "name": "Kunle Ajibade",
+      "alias": "The Historian III",
+      "origin_city": "Ibadan",
+      "origin_state": "Oyo",
+      "primary_crime": "artifact_theft",
+      "traits": [
+        "bookish",
+        "arrogant",
+        "nostalgic",
+        "meticulous",
+        "competitive"
+      ],
+      "difficulty": 3
+    },
+    {
+      "thief_id": "NG-T073",
+      "name": "Ngozi Nkem",
+      "alias": "The Negotiator II",
+      "origin_city": "Aba",
+      "origin_state": "Abia",
+      "primary_crime": "kidnapping",
+      "traits": [
+        "persuasive",
+        "calm",
+        "strategic",
+        "empathetic",
+        "controlling"
+      ],
+      "difficulty": 4
+    },
+    {
+      "thief_id": "NG-T074",
+      "name": "Sadiq Umar",
+      "alias": "The Smuggler",
+      "origin_city": "Sokoto",
+      "origin_state": "Sokoto",
+      "primary_crime": "smuggling",
+      "traits": [
+        "streetwise",
+        "cautious",
+        "resourceful",
+        "patient",
+        "greedy"
+      ],
+      "difficulty": 5
+    },
+    {
+      "thief_id": "NG-T075",
+      "name": "Damilola Femi",
+      "alias": "The Influencer",
+      "origin_city": "Lagos",
+      "origin_state": "Lagos",
+      "primary_crime": "fraud",
+      "traits": [
+        "social",
+        "vain",
+        "persuasive",
+        "restless",
+        "opportunistic"
+      ],
+      "difficulty": 1
+    },
+    {
+      "thief_id": "NG-T076",
+      "name": "Chukwuemeka Ibe",
+      "alias": "The Engineer",
+      "origin_city": "Enugu",
+      "origin_state": "Enugu",
+      "primary_crime": "heist",
+      "traits": [
+        "technical",
+        "logical",
+        "meticulous",
+        "introverted",
+        "stubborn"
+      ],
+      "difficulty": 2
+    },
+    {
+      "thief_id": "NG-T077",
+      "name": "Hadiza Garba",
+      "alias": "The Archivist II",
+      "origin_city": "Zaria",
+      "origin_state": "Kaduna",
+      "primary_crime": "information_theft",
+      "traits": [
+        "bookish",
+        "patient",
+        "secretive",
+        "nostalgic",
+        "possessive"
+      ],
+      "difficulty": 3
+    },
+    {
+      "thief_id": "NG-T078",
+      "name": "Tajudeen Yusuf",
+      "alias": "The Falcon II",
+      "origin_city": "Kano",
+      "origin_state": "Kano",
+      "primary_crime": "espionage",
+      "traits": [
+        "alert",
+        "disciplined",
+        "quiet",
+        "deceptive",
+        "fearless"
+      ],
+      "difficulty": 4
+    },
+    {
+      "thief_id": "NG-T079",
+      "name": "Abisola Kuti",
+      "alias": "The Singer",
+      "origin_city": "Abeokuta",
+      "origin_state": "Ogun",
+      "primary_crime": "blackmail",
+      "traits": [
+        "musical",
+        "charismatic",
+        "observant",
+        "social",
+        "vengeful"
+      ],
+      "difficulty": 5
+    },
+    {
+      "thief_id": "NG-T080",
+      "name": "Bassey Duke",
+      "alias": "The Governor",
+      "origin_city": "Calabar",
+      "origin_state": "Cross River",
+      "primary_crime": "political_intrigue",
+      "traits": [
+        "commanding",
+        "ambitious",
+        "connected",
+        "calculating",
+        "proud"
+      ],
+      "difficulty": 1
+    },
+    {
+      "thief_id": "NG-T081",
+      "name": "Oluwaseun Taiwo",
+      "alias": "The Driver",
+      "origin_city": "Lagos",
+      "origin_state": "Lagos",
+      "primary_crime": "courier",
+      "traits": [
+        "streetwise",
+        "observant",
+        "calm",
+        "loyal",
+        "impatient"
+      ],
+      "difficulty": 2
+    },
+    {
+      "thief_id": "NG-T082",
+      "name": "Fatima Aliyu",
+      "alias": "The Scientist",
+      "origin_city": "Abuja",
+      "origin_state": "FCT",
+      "primary_crime": "poisoning",
+      "traits": [
+        "analytical",
+        "precise",
+        "curious",
+        "secretive",
+        "perfectionist"
+      ],
+      "difficulty": 3
+    },
+    {
+      "thief_id": "NG-T083",
+      "name": "Uche Madu",
+      "alias": "The Collector III",
+      "origin_city": "Onitsha",
+      "origin_state": "Anambra",
+      "primary_crime": "antiquities",
+      "traits": [
+        "obsessive",
+        "commercial",
+        "cultured",
+        "greedy",
+        "patient"
+      ],
+      "difficulty": 4
+    },
+    {
+      "thief_id": "NG-T084",
+      "name": "Bolanle Seyi",
+      "alias": "The Actress II",
+      "origin_city": "Lagos",
+      "origin_state": "Lagos",
+      "primary_crime": "identity_fraud",
+      "traits": [
+        "dramatic",
+        "adaptable",
+        "charming",
+        "observant",
+        "deceptive"
+      ],
+      "difficulty": 5
+    },
+    {
+      "thief_id": "NG-T085",
+      "name": "Murtala Abdullahi",
+      "alias": "The Veteran",
+      "origin_city": "Kano",
+      "origin_state": "Kano",
+      "primary_crime": "heist",
+      "traits": [
+        "disciplined",
+        "strategic",
+        "patient",
+        "resilient",
+        "proud"
+      ],
+      "difficulty": 1
+    },
+    {
+      "thief_id": "NG-T086",
+      "name": "Adaobi Eze",
+      "alias": "The Botanist II",
+      "origin_city": "Nsukka",
+      "origin_state": "Enugu",
+      "primary_crime": "poisoning",
+      "traits": [
+        "scientific",
+        "quiet",
+        "curious",
+        "patient",
+        "resentful"
+      ],
+      "difficulty": 2
+    },
+    {
+      "thief_id": "NG-T087",
+      "name": "Yusuf Ibrahim",
+      "alias": "The Trader II",
+      "origin_city": "Katsina",
+      "origin_state": "Katsina",
+      "primary_crime": "smuggling",
+      "traits": [
+        "commercial",
+        "calculating",
+        "social",
+        "risk_taker",
+        "resourceful"
+      ],
+      "difficulty": 3
+    },
+    {
+      "thief_id": "NG-T088",
+      "name": "Tolu Adebisi",
+      "alias": "The Magician II",
+      "origin_city": "Ibadan",
+      "origin_state": "Oyo",
+      "primary_crime": "con_art",
+      "traits": [
+        "showman",
+        "quick_witted",
+        "charming",
+        "reckless",
+        "improviser"
+      ],
+      "difficulty": 4
+    },
+    {
+      "thief_id": "NG-T089",
+      "name": "Grace Okon",
+      "alias": "The Journalist II",
+      "origin_city": "Uyo",
+      "origin_state": "Akwa Ibom",
+      "primary_crime": "blackmail",
+      "traits": [
+        "inquisitive",
+        "persistent",
+        "sociable",
+        "cynical",
+        "brave"
+      ],
+      "difficulty": 5
+    },
+    {
+      "thief_id": "NG-T090",
+      "name": "Ishaq Bello",
+      "alias": "The Locksmith III",
+      "origin_city": "Kaduna",
+      "origin_state": "Kaduna",
+      "primary_crime": "burglary",
+      "traits": [
+        "technical",
+        "methodical",
+        "quiet",
+        "patient",
+        "cautious"
+      ],
+      "difficulty": 1
+    },
+    {
+      "thief_id": "NG-T091",
+      "name": "Chiamaka Obi",
+      "alias": "The Socialite II",
+      "origin_city": "Port Harcourt",
+      "origin_state": "Rivers",
+      "primary_crime": "fraud",
+      "traits": [
+        "glamorous",
+        "connected",
+        "persuasive",
+        "competitive",
+        "calculating"
+      ],
+      "difficulty": 2
+    },
+    {
+      "thief_id": "NG-T092",
+      "name": "Fatai Lawal",
+      "alias": "The Undertaker II",
+      "origin_city": "Ilorin",
+      "origin_state": "Kwara",
+      "primary_crime": "murder",
+      "traits": [
+        "grim",
+        "cold",
+        "methodical",
+        "patient",
+        "observant"
+      ],
+      "difficulty": 3
+    },
+    {
+      "thief_id": "NG-T093",
+      "name": "Amina Yusuf",
+      "alias": "The Tracker II",
+      "origin_city": "Jos",
+      "origin_state": "Plateau",
+      "primary_crime": "kidnapping",
+      "traits": [
+        "observant",
+        "patient",
+        "physical",
+        "quiet",
+        "protective"
+      ],
+      "difficulty": 4
+    },
+    {
+      "thief_id": "NG-T094",
+      "name": "Daniel Okoro",
+      "alias": "The Mechanic II",
+      "origin_city": "Nnewi",
+      "origin_state": "Anambra",
+      "primary_crime": "vehicle_theft",
+      "traits": [
+        "inventive",
+        "hands_on",
+        "pragmatic",
+        "impatient",
+        "loyal"
+      ],
+      "difficulty": 5
+    },
+    {
+      "thief_id": "NG-T095",
+      "name": "Seyi Balogun",
+      "alias": "The Hacker II",
+      "origin_city": "Lagos",
+      "origin_state": "Lagos",
+      "primary_crime": "cybercrime",
+      "traits": [
+        "technical",
+        "curious",
+        "cocky",
+        "restless",
+        "competitive"
+      ],
+      "difficulty": 1
+    },
+    {
+      "thief_id": "NG-T096",
+      "name": "Maryam Suleiman",
+      "alias": "The Librarian II",
+      "origin_city": "Sokoto",
+      "origin_state": "Sokoto",
+      "primary_crime": "information_theft",
+      "traits": [
+        "quiet",
+        "bookish",
+        "meticulous",
+        "patient",
+        "suspicious"
+      ],
+      "difficulty": 2
+    },
+    {
+      "thief_id": "NG-T097",
+      "name": "Kola Akin",
+      "alias": "The Gambler II",
+      "origin_city": "Lagos",
+      "origin_state": "Lagos",
+      "primary_crime": "fraud",
+      "traits": [
+        "risk_taker",
+        "mathematical",
+        "charming",
+        "impulsive",
+        "competitive"
+      ],
+      "difficulty": 3
+    },
+    {
+      "thief_id": "NG-T098",
+      "name": "Rahila Danjuma",
+      "alias": "The Whisper II",
+      "origin_city": "Katsina",
+      "origin_state": "Katsina",
+      "primary_crime": "espionage",
+      "traits": [
+        "soft_spoken",
+        "observant",
+        "patient",
+        "manipulative",
+        "fearless"
+      ],
+      "difficulty": 4
+    },
+    {
+      "thief_id": "NG-T099",
+      "name": "Chinedu Nwankwo",
+      "alias": "The Architect II",
+      "origin_city": "Awka",
+      "origin_state": "Anambra",
+      "primary_crime": "heist",
+      "traits": [
+        "spatial",
+        "creative",
+        "meticulous",
+        "introverted",
+        "stubborn"
+      ],
+      "difficulty": 5
+    },
+    {
+      "thief_id": "NG-T100",
+      "name": "Titi Afolayan",
+      "alias": "The Fox",
+      "origin_city": "Lagos",
+      "origin_state": "Lagos",
+      "primary_crime": "master_thief",
+      "traits": [
+        "clever",
+        "patient",
+        "charismatic",
+        "paranoid",
+        "adaptable"
+      ],
+      "difficulty": 1
+    }
+  ],
+  "trait_catalog": {
+    "meticulous": "Checks details repeatedly and rarely leaves careless evidence.",
+    "arrogant": "Believes they are intellectually superior to investigators.",
+    "historian": "Knows historical facts and enjoys using them as clues.",
+    "superstitious": "Avoids actions or places associated with personal omens.",
+    "impatient": "Makes mistakes when forced to wait or improvise slowly.",
+    "calculating": "Considers several outcomes before making a move.",
+    "charismatic": "Naturally wins trust and attention from strangers.",
+    "paranoid": "Assumes others are watching and constantly changes plans.",
+    "resourceful": "Can improvise useful solutions from limited resources.",
+    "vengeful": "Remembers perceived slights and seeks payback.",
+    "observant": "Notices small environmental and behavioral details.",
+    "quiet": "Speaks little and reveals very little voluntarily.",
+    "geography_nerd": "Has unusually strong knowledge of Nigerian geography.",
+    "cautious": "Avoids unnecessary exposure and prefers safer routes.",
+    "competitive": "Treats the investigation as a contest to win.",
+    "elegant": "Maintains a polished appearance even while committing crimes.",
+    "patient": "Will wait as long as necessary for the right opportunity.",
+    "secretive": "Reveals information only when absolutely necessary.",
+    "perfectionist": "Will delay an operation rather than accept imperfect execution.",
+    "risk_taker": "Accepts substantial danger when the reward is attractive.",
+    "technical": "Comfortable with locks, electronics, machinery, or systems.",
+    "methodical": "Follows repeatable procedures and checklists.",
+    "introverted": "Prefers working alone and avoids unnecessary social contact.",
+    "curious": "Investigates interesting objects, people, and places even when risky.",
+    "stubborn": "Refuses to abandon a plan once committed to it.",
+    "disciplined": "Maintains strict routines and self-control.",
+    "alert": "Constantly monitors surroundings for threats.",
+    "patriotic": "Has a strong attachment to Nigeria that influences choices.",
+    "deceptive": "Comfortable lying convincingly when necessary.",
+    "adaptable": "Changes tactics quickly when circumstances shift.",
+    "persuasive": "Can influence people through argument or emotional appeal.",
+    "educated": "Has broad formal knowledge and uses it strategically.",
+    "vain": "Cares deeply about appearance, reputation, or recognition.",
+    "improviser": "Performs well without a prepared plan.",
+    "empathetic": "Reads emotional states unusually well.",
+    "connected": "Has a wide network of useful contacts.",
+    "discreet": "Avoids drawing attention and keeps transactions quiet.",
+    "ambitious": "Wants increasing wealth, influence, or status.",
+    "polished": "Presents a credible professional image.",
+    "tech_savvy": "Comfortable using modern digital tools.",
+    "cocky": "Underestimates opponents because of overconfidence.",
+    "restless": "Struggles to stay in one place for long.",
+    "opportunistic": "Quickly exploits unexpected openings.",
+    "cultured": "Knows art, heritage, etiquette, and cultural history.",
+    "obsessive": "Becomes intensely focused on a particular goal or object.",
+    "wealthy": "Has legitimate resources that make unusual movements less suspicious.",
+    "nomadic": "Comfortable moving frequently between locations.",
+    "unpredictable": "Does not consistently follow recognizable patterns.",
+    "streetwise": "Understands informal networks, local habits, and urban survival.",
+    "refined": "Has sophisticated tastes and social manners.",
+    "controlling": "Wants other people and circumstances to follow their plan.",
+    "commanding": "Naturally assumes leadership in groups.",
+    "volatile": "Can react suddenly and intensely under pressure.",
+    "strategic": "Plans several moves ahead rather than acting impulsively.",
+    "proud": "Strongly protects personal reputation and dignity.",
+    "soft_spoken": "Uses a calm, quiet voice that encourages people to listen.",
+    "manipulative": "Steers people toward decisions that benefit them.",
+    "fearless": "Shows little hesitation in dangerous situations.",
+    "showman": "Enjoys spectacle, performance, and theatrical reveals.",
+    "quick_witted": "Generates clever responses rapidly under pressure.",
+    "bookish": "Spends substantial time reading and researching.",
+    "reserved": "Keeps emotional reactions private.",
+    "nostalgic": "Has a strong attachment to the past.",
+    "possessive": "Treats selected objects, places, or people as personal property.",
+    "dramatic": "Uses emotion and theatrical behavior to influence others.",
+    "playful": "Treats serious situations like games.",
+    "grim": "Has a bleak outlook and little concern for appearances.",
+    "cold": "Keeps emotional distance, especially during stressful events.",
+    "detached": "Separates personal feelings from decisions.",
+    "clever": "Finds unconventional solutions to difficult problems.",
+    "skeptical": "Questions claims until evidence supports them.",
+    "hands_on": "Prefers physical tools and practical work.",
+    "inventive": "Creates new methods rather than relying on standard ones.",
+    "loyal": "Protects trusted associates even when costly.",
+    "pragmatic": "Chooses what works rather than what sounds ideal.",
+    "social": "Comfortable meeting and talking to strangers.",
+    "musical": "Uses music and performance as part of identity or cover.",
+    "traditionalist": "Values customs and established practices.",
+    "numerate": "Highly comfortable with numbers and financial calculations.",
+    "greedy": "Will accept additional risk for more money.",
+    "idealistic": "Believes strongly in a personal cause or principle.",
+    "academic": "Approaches problems like research questions.",
+    "reckless": "Acts quickly without fully considering consequences.",
+    "mathematical": "Naturally spots numerical relationships and patterns.",
+    "frugal": "Avoids unnecessary spending and wastes little.",
+    "spatial": "Strong at understanding buildings, routes, layouts, and distances.",
+    "privileged": "Has social or financial advantages that open doors.",
+    "independent": "Dislikes relying on others and prefers self-sufficiency.",
+    "physical": "Relies on stamina, strength, or athletic ability.",
+    "commercial": "Thinks naturally in terms of markets, prices, and trade.",
+    "scientific": "Prefers evidence, experiments, and measurable explanations.",
+    "gentle": "Appears harmless and non-threatening to strangers.",
+    "mysterious": "Cultivates ambiguity around identity and motives.",
+    "knowledgeable": "Has broad factual knowledge beyond a single specialty.",
+    "friendly": "Builds rapport quickly and appears approachable.",
+    "professional": "Maintains a credible workplace persona under scrutiny.",
+    "socially_connected": "Uses broad social networks to obtain information.",
+    "brave": "Willing to face danger rather than retreat.",
+    "fast": "Moves quickly and dislikes slow plans.",
+    "traditional": "Prefers familiar customs and established routines.",
+    "scientific_minded": "Tests assumptions rather than accepting folklore.",
+    "commercial_minded": "Constantly evaluates opportunities in terms of value.",
+    "book_collector": "Collects rare books and documents.",
+    "artifact_obsessed": "Has an unusually strong fixation on historical objects.",
+    "identity_shifter": "Comfortable maintaining multiple believable identities.",
+    "route_planner": "Naturally maps journeys and contingency routes.",
+    "alibi_builder": "Plans explanations for their whereabouts in advance.",
+    "memory_expert": "Remembers names, faces, dates, and conversations unusually well.",
+    "accent_mimic": "Can imitate regional speech patterns convincingly.",
+    "foodie": "Uses restaurants and food culture as social cover.",
+    "night_owl": "Prefers operating late at night.",
+    "early_riser": "Often begins activities before most people are awake.",
+    "collector": "Acquires unusual objects and dislikes giving them up.",
+    "museum_lover": "Knows museums, galleries, and heritage sites well.",
+    "codebreaker": "Enjoys solving codes, patterns, and puzzles.",
+    "lockpick_fan": "Treats locks as puzzles rather than barriers.",
+    "map_reader": "Comfortable navigating without digital directions.",
+    "local_guide": "Knows practical details of places beyond tourist facts.",
+    "linguist": "Learns and switches between languages or dialects easily.",
+    "photographic_memory": "Recalls visual layouts and faces with unusual accuracy.",
+    "status_seeker": "Wants recognition and social elevation.",
+    "secret_hoarder": "Collects information that could be useful later.",
+    "deal_maker": "Prefers negotiation over confrontation.",
+    "bluffer": "Can maintain a false story under pressure.",
+    "risk_manager": "Takes risks only after estimating likely outcomes.",
+    "escape_artist": "Specializes in disappearing when a plan collapses.",
+    "patient_stalker": "Can quietly monitor a target for extended periods.",
+    "false_lead_specialist": "Enjoys planting believable but misleading evidence.",
+    "clue_collector": "Keeps notes about clues, routes, and investigators.",
+    "investigator_aware": "Studies how investigators think and react."
+  }
+}

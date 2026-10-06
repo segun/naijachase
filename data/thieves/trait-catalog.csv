@@ -1,0 +1,131 @@
+trait_key,description
+meticulous,Checks details repeatedly and rarely leaves careless evidence.
+arrogant,Believes they are intellectually superior to investigators.
+historian,Knows historical facts and enjoys using them as clues.
+superstitious,Avoids actions or places associated with personal omens.
+impatient,Makes mistakes when forced to wait or improvise slowly.
+calculating,Considers several outcomes before making a move.
+charismatic,Naturally wins trust and attention from strangers.
+paranoid,Assumes others are watching and constantly changes plans.
+resourceful,Can improvise useful solutions from limited resources.
+vengeful,Remembers perceived slights and seeks payback.
+observant,Notices small environmental and behavioral details.
+quiet,Speaks little and reveals very little voluntarily.
+geography_nerd,Has unusually strong knowledge of Nigerian geography.
+cautious,Avoids unnecessary exposure and prefers safer routes.
+competitive,Treats the investigation as a contest to win.
+elegant,Maintains a polished appearance even while committing crimes.
+patient,Will wait as long as necessary for the right opportunity.
+secretive,Reveals information only when absolutely necessary.
+perfectionist,Will delay an operation rather than accept imperfect execution.
+risk_taker,Accepts substantial danger when the reward is attractive.
+technical,"Comfortable with locks, electronics, machinery, or systems."
+methodical,Follows repeatable procedures and checklists.
+introverted,Prefers working alone and avoids unnecessary social contact.
+curious,"Investigates interesting objects, people, and places even when risky."
+stubborn,Refuses to abandon a plan once committed to it.
+disciplined,Maintains strict routines and self-control.
+alert,Constantly monitors surroundings for threats.
+patriotic,Has a strong attachment to Nigeria that influences choices.
+deceptive,Comfortable lying convincingly when necessary.
+adaptable,Changes tactics quickly when circumstances shift.
+persuasive,Can influence people through argument or emotional appeal.
+educated,Has broad formal knowledge and uses it strategically.
+vain,"Cares deeply about appearance, reputation, or recognition."
+improviser,Performs well without a prepared plan.
+empathetic,Reads emotional states unusually well.
+connected,Has a wide network of useful contacts.
+discreet,Avoids drawing attention and keeps transactions quiet.
+ambitious,"Wants increasing wealth, influence, or status."
+polished,Presents a credible professional image.
+tech_savvy,Comfortable using modern digital tools.
+cocky,Underestimates opponents because of overconfidence.
+restless,Struggles to stay in one place for long.
+opportunistic,Quickly exploits unexpected openings.
+cultured,"Knows art, heritage, etiquette, and cultural history."
+obsessive,Becomes intensely focused on a particular goal or object.
+wealthy,Has legitimate resources that make unusual movements less suspicious.
+nomadic,Comfortable moving frequently between locations.
+unpredictable,Does not consistently follow recognizable patterns.
+streetwise,"Understands informal networks, local habits, and urban survival."
+refined,Has sophisticated tastes and social manners.
+controlling,Wants other people and circumstances to follow their plan.
+commanding,Naturally assumes leadership in groups.
+volatile,Can react suddenly and intensely under pressure.
+strategic,Plans several moves ahead rather than acting impulsively.
+proud,Strongly protects personal reputation and dignity.
+soft_spoken,"Uses a calm, quiet voice that encourages people to listen."
+manipulative,Steers people toward decisions that benefit them.
+fearless,Shows little hesitation in dangerous situations.
+showman,"Enjoys spectacle, performance, and theatrical reveals."
+quick_witted,Generates clever responses rapidly under pressure.
+bookish,Spends substantial time reading and researching.
+reserved,Keeps emotional reactions private.
+nostalgic,Has a strong attachment to the past.
+possessive,"Treats selected objects, places, or people as personal property."
+dramatic,Uses emotion and theatrical behavior to influence others.
+playful,Treats serious situations like games.
+grim,Has a bleak outlook and little concern for appearances.
+cold,"Keeps emotional distance, especially during stressful events."
+detached,Separates personal feelings from decisions.
+clever,Finds unconventional solutions to difficult problems.
+skeptical,Questions claims until evidence supports them.
+hands_on,Prefers physical tools and practical work.
+inventive,Creates new methods rather than relying on standard ones.
+loyal,Protects trusted associates even when costly.
+pragmatic,Chooses what works rather than what sounds ideal.
+social,Comfortable meeting and talking to strangers.
+musical,Uses music and performance as part of identity or cover.
+traditionalist,Values customs and established practices.
+numerate,Highly comfortable with numbers and financial calculations.
+greedy,Will accept additional risk for more money.
+idealistic,Believes strongly in a personal cause or principle.
+academic,Approaches problems like research questions.
+reckless,Acts quickly without fully considering consequences.
+mathematical,Naturally spots numerical relationships and patterns.
+frugal,Avoids unnecessary spending and wastes little.
+spatial,"Strong at understanding buildings, routes, layouts, and distances."
+privileged,Has social or financial advantages that open doors.
+independent,Dislikes relying on others and prefers self-sufficiency.
+physical,"Relies on stamina, strength, or athletic ability."
+commercial,"Thinks naturally in terms of markets, prices, and trade."
+scientific,"Prefers evidence, experiments, and measurable explanations."
+gentle,Appears harmless and non-threatening to strangers.
+mysterious,Cultivates ambiguity around identity and motives.
+knowledgeable,Has broad factual knowledge beyond a single specialty.
+friendly,Builds rapport quickly and appears approachable.
+professional,Maintains a credible workplace persona under scrutiny.
+socially_connected,Uses broad social networks to obtain information.
+brave,Willing to face danger rather than retreat.
+fast,Moves quickly and dislikes slow plans.
+traditional,Prefers familiar customs and established routines.
+scientific_minded,Tests assumptions rather than accepting folklore.
+commercial_minded,Constantly evaluates opportunities in terms of value.
+book_collector,Collects rare books and documents.
+artifact_obsessed,Has an unusually strong fixation on historical objects.
+identity_shifter,Comfortable maintaining multiple believable identities.
+route_planner,Naturally maps journeys and contingency routes.
+alibi_builder,Plans explanations for their whereabouts in advance.
+memory_expert,"Remembers names, faces, dates, and conversations unusually well."
+accent_mimic,Can imitate regional speech patterns convincingly.
+foodie,Uses restaurants and food culture as social cover.
+night_owl,Prefers operating late at night.
+early_riser,Often begins activities before most people are awake.
+collector,Acquires unusual objects and dislikes giving them up.
+museum_lover,"Knows museums, galleries, and heritage sites well."
+codebreaker,"Enjoys solving codes, patterns, and puzzles."
+lockpick_fan,Treats locks as puzzles rather than barriers.
+map_reader,Comfortable navigating without digital directions.
+local_guide,Knows practical details of places beyond tourist facts.
+linguist,Learns and switches between languages or dialects easily.
+photographic_memory,Recalls visual layouts and faces with unusual accuracy.
+status_seeker,Wants recognition and social elevation.
+secret_hoarder,Collects information that could be useful later.
+deal_maker,Prefers negotiation over confrontation.
+bluffer,Can maintain a false story under pressure.
+risk_manager,Takes risks only after estimating likely outcomes.
+escape_artist,Specializes in disappearing when a plan collapses.
+patient_stalker,Can quietly monitor a target for extended periods.
+false_lead_specialist,Enjoys planting believable but misleading evidence.
+clue_collector,"Keeps notes about clues, routes, and investigators."
+investigator_aware,Studies how investigators think and react.

@@ -1,0 +1,33 @@
+{
+  "version": "1.2",
+  "counts": {
+    "locations": 500,
+    "knowledge": 5243,
+    "relations": 5238,
+    "clue_formulations": 12729
+  },
+  "compatibility": {
+    "preserves_location_ids": "LOC-001..LOC-102",
+    "preserves_knowledge_ids": "KN-0001..KN-0110",
+    "existing_missions_remain_valid": true
+  },
+  "sources": [
+    "https://currentaffairs.ng/lg/",
+    "https://inecnigeria.org/about/state-offices/",
+    "https://whc.unesco.org/en/statesparties/ng/",
+    "https://foreignaffairs.gov.ng/nigeria/history-of-nigeria/",
+    "https://foreignaffairs.gov.ng/nigeria/culture/",
+    "https://ich.unesco.org/en/state/nigeria-NG?info=elements-on-the-lists",
+    "https://nigeriareposit.nln.gov.ng/handle/20.500.14186/1349",
+    "https://nigeriaparkservice.gov.ng/about-us/",
+    "https://nipc.gov.ng/nigeria-states/",
+    "https://www.fao.org/nigeria/fao-in-nigeria/nigeria-at-a-glance/en/",
+    "https://github.com/open-admin-data/nigeria-administrative-divisions"
+  ],
+  "files": [
+    "../locations/locations.csv",
+    "../knowledge/knowledge.csv",
+    "../knowledge/location-knowledge-relations.csv",
+    "../clues/clue-formulations.csv"
+  ]
+}

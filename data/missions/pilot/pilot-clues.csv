@@ -1,0 +1,121 @@
+clue_id,mission_id,sequence,location_id,clue_type,knowledge_id,clue_text,points_to_location_id
+NG-P001-C1,NG-P001,1,LOC-037,kingdoms_empires,KN-S2-0023,The next stop is described by this note: Yoruba traditions regard the destination as an ancestral centre of civilization.,LOC-053
+NG-P001-C2,NG-P001,2,LOC-053,sokoto_caliphate,KN-SE-0036,The next stop is described by this note: Usman dan Fodio is associated with the founding of the caliphate based at the destination.,LOC-050
+NG-P001-C3,NG-P001,3,LOC-050,landmark,KN-SE-0104,The next stop is described by this note: Nigeria's National Theatre is located in the destination.,LOC-038
+NG-P001-C4,NG-P001,4,LOC-038,warrant_trait,,The final witness describes a suspect who is meticulous and uses the alias The Professor. Issue the warrant before making the arrest.,LOC-038
+NG-P002-C1,NG-P002,1,LOC-038,state_identity,KN-S2-0107,The suspect booked passage to the capital of this state: this state is home to Yankari Game Reserve.,LOC-005
+NG-P002-C2,NG-P002,2,LOC-005,literature,KN-SE-0064,The next stop is described by this note: Wole Soyinka was born in the destination.,LOC-044
+NG-P002-C3,NG-P002,3,LOC-044,festival,KN-SE-0048,The next stop is described by this note: The destination's fishing festival is associated with the surrounding state.,LOC-070
+NG-P002-C4,NG-P002,4,LOC-070,warrant_trait,,The final witness describes a suspect who is calculating and uses the alias Red Viper. Issue the warrant before making the arrest.,LOC-070
+NG-P003-C1,NG-P003,1,LOC-040,industry,KN-S2-0094,The next stop is described by this note: the destination is a major petroleum and port centre in the surrounding state.,LOC-060
+NG-P003-C2,NG-P003,2,LOC-060,state_identity,KN-S2-0132,The next stop is described by this note: the surrounding state links the destination with the history of the surrounding state Empire.,LOC-039
+NG-P003-C3,NG-P003,3,LOC-039,lokoja,KN-SE-0046,The next stop is described by this note: the destination stands near the confluence of the Niger and Benue rivers.,LOC-062
+NG-P003-C4,NG-P003,4,LOC-062,warrant_trait,,The final witness describes a suspect who is observant and uses the alias The Cartographer. Issue the warrant before making the arrest.,LOC-062
+NG-P004-C1,NG-P004,1,LOC-043,world_heritage,KN-SE-0002,The next stop is described by this note: The Osun-the destination Sacred Grove is one of Nigeria's two inscribed World Heritage properties.,LOC-054
+NG-P004-C2,NG-P004,2,LOC-054,state_identity,KN-S2-0114,"The next stop is described by this note: the surrounding state contains the destination, historic centre of the Kingdom of Benin.",LOC-041
+NG-P004-C3,NG-P004,3,LOC-041,textiles_crafts,KN-S2-0052,The next stop is described by this note: the destination's historic dye pits are associated with indigo cloth production.,LOC-040
+NG-P004-C4,NG-P004,4,LOC-040,warrant_trait,,The final witness describes a suspect who is elegant and uses the alias Madam Midnight. Issue the warrant before making the arrest.,LOC-040
+NG-P005-C1,NG-P005,1,LOC-043,world_heritage,KN-SE-0005,The next stop is described by this note: the destination is one of Nigeria's two inscribed World Heritage properties.,LOC-077
+NG-P005-C2,NG-P005,2,LOC-077,industry,KN-S2-0091,The next stop is described by this note: the destination's growth was historically linked to coal mining.,LOC-042
+NG-P005-C3,NG-P005,3,LOC-042,mountains,KN-S2-0086,The next stop is described by this note: The destination's Plateau is an elevated region in central Nigeria.,LOC-046
+NG-P005-C4,NG-P005,4,LOC-046,warrant_trait,,The final witness describes a suspect who is technical and uses the alias The Locksmith. Issue the warrant before making the arrest.,LOC-046
+NG-P006-C1,NG-P006,1,LOC-047,ports,KN-SE-0096,The next stop is described by this note: the destination is a major port city in the surrounding state.,LOC-043
+NG-P006-C2,NG-P006,2,LOC-043,state_identity,KN-S2-0139,"The next stop is described by this note: The surrounding state contains the destination, Nigeria's federal capital.",LOC-076
+NG-P006-C3,NG-P006,3,LOC-076,national_park,KN-SE-0077,The next stop is described by this note: the destination protects rainforest ecosystems in southeastern Nigeria.,LOC-084
+NG-P006-C4,NG-P006,4,LOC-084,warrant_trait,,The final witness describes a suspect who is disciplined and uses the alias The Falcon. Issue the warrant before making the arrest.,LOC-084
+NG-P007-C1,NG-P007,1,LOC-076,industry,KN-S2-0098,The next stop is described by this note: the destination is home to one of West Africa's major commercial markets.,LOC-056
+NG-P007-C2,NG-P007,2,LOC-056,rivers,KN-S2-0081,The next stop is described by this note: the destination stands on the banks of the Benue River.,LOC-063
+NG-P007-C3,NG-P007,3,LOC-063,state_identity,KN-S2-0111,"The next stop is described by this note: the surrounding state combines rainforest, the surrounding state estuary and the city of the destination.",LOC-047
+NG-P007-C4,NG-P007,4,LOC-047,warrant_trait,,The final witness describes a suspect who is persuasive and uses the alias Doctor Eze. Issue the warrant before making the arrest.,LOC-047
+NG-P008-C1,NG-P008,1,LOC-037,national_parks,KN-S2-0074,The next stop is described by this note: Kamuku National Park is in The destination's state.,LOC-048
+NG-P008-C2,NG-P008,2,LOC-048,industry,KN-S2-0096,"The next stop is described by this note: the destination is known for manufacturing, markets and small-scale enterprise.",LOC-057
+NG-P008-C3,NG-P008,3,LOC-057,state_identity,KN-S2-0135,The next stop is described by this note: The destination's state is the historic seat of the caliphate based at the destination.,LOC-050
+NG-P008-C4,NG-P008,4,LOC-050,warrant_trait,,The final witness describes a suspect who is connected and uses the alias The Broker. Issue the warrant before making the arrest.,LOC-050
+NG-P009-C1,NG-P009,1,LOC-038,festival,KN-SE-0049,The next stop is described by this note: Competitive fishing is the signature event of the destination's festival.,LOC-070
+NG-P009-C2,NG-P009,2,LOC-070,abeokuta,KN-SE-0045,The next stop is described by this note: Olumo Rock is closely associated with the destination's settlement history.,LOC-044
+NG-P009-C3,NG-P009,3,LOC-044,hausa_states,KN-SE-0033,The next stop is described by this note: the destination was one of the historic Hausa city-states.,LOC-040
+NG-P009-C4,NG-P009,4,LOC-040,warrant_trait,,The final witness describes a suspect who is polished and uses the alias Blue Suit. Issue the warrant before making the arrest.,LOC-040
+NG-P010-C1,NG-P010,1,LOC-040,state_identity,KN-S2-0116,The next stop is described by this note: The destination's state's capital grew around the coal industry.,LOC-042
+NG-P010-C2,NG-P010,2,LOC-042,landmark,KN-SE-0102,The next stop is described by this note: Mapo Hall is a prominent civic landmark in the destination.,LOC-039
+NG-P010-C3,NG-P010,3,LOC-039,landmark,KN-SE-0103,The next stop is described by this note: Aso Rock is a large granitic outcrop in the destination.,LOC-076
+NG-P010-C4,NG-P010,4,LOC-076,warrant_trait,,The final witness describes a suspect who is cultured and uses the alias The Collector. Issue the warrant before making the arrest.,LOC-076
+NG-P011-C1,NG-P011,1,LOC-040,rail,KN-SE-0093,A torn itinerary gives one cultural or historical marker: A standard-gauge railway links the destination with Ibadan. Name the destination.,LOC-038
+NG-P011-C2,NG-P011,2,LOC-038,state_identity,KN-S2-0113,The suspect booked passage to the capital of this state: this state is associated with rice farming and mineral resources including salt and limestone.,LOC-011
+NG-P011-C3,NG-P011,3,LOC-011,kingdoms_empires,KN-S2-0020,A torn itinerary gives one cultural or historical marker: The caliphate based at the destination was founded through the jihad led by Usman dan Fodio. Name the destination.,LOC-050
+NG-P011-C4,NG-P011,4,LOC-050,warrant_trait,,The final witness describes a suspect who is nomadic and uses the alias The Drifter. Issue the warrant before making the arrest.,LOC-050
+NG-P012-C1,NG-P012,1,LOC-076,kingdoms_empires,KN-S2-0029,A torn itinerary gives one cultural or historical marker: The old city developed around Efik trading communities near the Cross River estuary. Name the destination.,LOC-047
+NG-P012-C2,NG-P012,2,LOC-047,state_identity,KN-S2-0129,A torn itinerary gives one cultural or historical marker: the surrounding state combines the historic city of the destination with a major industrial corridor. Name the destination.,LOC-044
+NG-P012-C3,NG-P012,3,LOC-044,state_identity,KN-S2-0134,A torn itinerary gives one cultural or historical marker: the surrounding state is a petroleum-producing coastal state centred on the destination. Name the destination.,LOC-043
+NG-P012-C4,NG-P012,4,LOC-043,warrant_trait,,The final witness describes a suspect who is refined and uses the alias The Curator. Issue the warrant before making the arrest.,LOC-043
+NG-P013-C1,NG-P013,1,LOC-047,national_park,KN-SE-0074,"A torn itinerary gives one cultural or historical marker: the destination covers about 5,907 square kilometres. Name the destination.",LOC-083
+NG-P013-C2,NG-P013,2,LOC-083,state_identity,KN-S2-0120,A torn itinerary gives one cultural or historical marker: The destination's state includes Zaria and archaeological areas associated with Nok culture. Name the destination.,LOC-048
+NG-P013-C3,NG-P013,3,LOC-048,kingdoms_empires,KN-S2-0017,A torn itinerary gives one cultural or historical marker: the destination developed as a historic Hausa trading and learning centre. Name the destination.,LOC-067
+NG-P013-C4,NG-P013,4,LOC-067,warrant_trait,,The final witness describes a suspect who is commanding and uses the alias Red Cap. Issue the warrant before making the arrest.,LOC-067
+NG-P014-C1,NG-P014,1,LOC-076,rivers,KN-S2-0082,A torn itinerary gives one cultural or historical marker: the destination lies on the eastern bank of the River Niger. Name the destination.,LOC-056
+NG-P014-C2,NG-P014,2,LOC-056,ile_ife,KN-SE-0041,A torn itinerary gives one cultural or historical marker: the destination is a historic centre of Yoruba civilization. Name the destination.,LOC-053
+NG-P014-C3,NG-P014,3,LOC-053,state_identity,KN-S2-0121,A torn itinerary gives one cultural or historical marker: The destination's state is a major commercial centre with a long history of textile and leather crafts. Name the destination.,LOC-040
+NG-P014-C4,NG-P014,4,LOC-040,warrant_trait,,The final witness describes a suspect who is soft_spoken and uses the alias The Whisper. Issue the warrant before making the arrest.,LOC-040
+NG-P015-C1,NG-P015,1,LOC-037,kingdoms_empires,KN-S2-0018,A torn itinerary gives one cultural or historical marker: Zazzau is the historic Hausa kingdom centred on present-day the destination. Name the destination.,LOC-049
+NG-P015-C2,NG-P015,2,LOC-049,kingdoms_empires,KN-S2-0026,"A torn itinerary gives one cultural or historical marker: The Kingdom of Benin was centred on the destination, not the modern Republic of Benin. Name the destination.",LOC-041
+NG-P015-C3,NG-P015,3,LOC-041,state_identity,KN-S2-0104,The suspect booked passage to the capital of this state: this state contains part of Gashaka Gumti National Park and the Sukur Cultural Landscape.,LOC-002
+NG-P015-C4,NG-P015,4,LOC-002,warrant_trait,,The final witness describes a suspect who is showman and uses the alias The Magician. Issue the warrant before making the arrest.,LOC-002
+NG-P016-C1,NG-P016,1,LOC-038,landmark,KN-SE-0101,A torn itinerary gives one cultural or historical marker: Cocoa House in the destination is associated with southwestern Nigeria's cocoa economy. Name the destination.,LOC-039
+NG-P016-C2,NG-P016,2,LOC-039,state_identity,KN-S2-0117,The suspect booked passage to the capital of this state: this state lies in northeastern Nigeria near the Gongola River basin.,LOC-015
+NG-P016-C3,NG-P016,3,LOC-015,unesco_tentative,KN-SE-0021,A torn itinerary gives one cultural or historical marker: the destination joined Nigeria's UNESCO Tentative List in 2007. Name the destination.,LOC-082
+NG-P016-C4,NG-P016,4,LOC-082,warrant_trait,,The final witness describes a suspect who is bookish and uses the alias The Archivist. Issue the warrant before making the arrest.,LOC-082
+NG-P017-C1,NG-P017,1,LOC-039,world_heritage,KN-SE-0006,A torn itinerary gives one cultural or historical marker: UNESCO classifies the destination as a cultural property. Name the destination.,LOC-077
+NG-P017-C2,NG-P017,2,LOC-077,state_identity,KN-S2-0131,A torn itinerary gives one cultural or historical marker: the surrounding state contains the destination's Sacred Grove and the historic city of Ile-Ife. Name the destination.,LOC-054
+NG-P017-C3,NG-P017,3,LOC-054,state_identity,KN-S2-0137,The suspect booked passage to the capital of this state: this state includes Sahel landscapes and part of the Hadejia-Nguru wetlands.,LOC-035
+NG-P017-C4,NG-P017,4,LOC-035,warrant_trait,,The final witness describes a suspect who is adaptable and uses the alias Switch. Issue the warrant before making the arrest.,LOC-035
+NG-P018-C1,NG-P018,1,LOC-040,state_identity,KN-S2-0112,The suspect booked passage to the capital of this state: this state spans part of the Niger this state and includes the petroleum centre of Warri.,LOC-010
+NG-P018-C2,NG-P018,2,LOC-010,intangible_heritage,KN-S2-0040,A torn itinerary gives one cultural or historical marker: The destination's festival culminates in a fishing competition in the surrounding state. Name the destination.,LOC-070
+NG-P018-C3,NG-P018,3,LOC-070,lokoja,KN-SE-0047,A torn itinerary gives one cultural or historical marker: The Niger-Benue confluence made the destination strategically important for river transport. Name the destination.,LOC-062
+NG-P018-C4,NG-P018,4,LOC-062,warrant_trait,,The final witness describes a suspect who is grim and uses the alias The Undertaker. Issue the warrant before making the arrest.,LOC-062
+NG-P019-C1,NG-P019,1,LOC-043,state_identity,KN-S2-0115,The suspect booked passage to the capital of this state: this state is known for its many hills and the Ikogosi warm and cold springs.,LOC-013
+NG-P019-C2,NG-P019,2,LOC-013,state_identity,KN-S2-0133,A torn itinerary gives one cultural or historical marker: the surrounding state is centred on the highland city of the destination and has a history of tin mining. Name the destination.,LOC-046
+NG-P019-C3,NG-P019,3,LOC-046,state_identity,KN-S2-0103,The suspect booked passage to the capital of this state: this state is associated with Aba's manufacturing and the heritage of Arochukwu.,LOC-001
+NG-P019-C4,NG-P019,4,LOC-001,warrant_trait,,The final witness describes a suspect who is clever and uses the alias Silver Fox. Issue the warrant before making the arrest.,LOC-001
+NG-P020-C1,NG-P020,1,LOC-047,national_park,KN-SE-0079,A torn itinerary gives one cultural or historical marker: the destination includes the Borgu and Zugurma sectors. Name the destination.,LOC-086
+NG-P020-C2,NG-P020,2,LOC-086,state_identity,KN-S2-0136,The suspect booked passage to the capital of this state: this state includes the Mambilla Plateau and much of Gashaka Gumti National Park.,LOC-034
+NG-P020-C3,NG-P020,3,LOC-034,civil_war,KN-S2-0004,A torn itinerary gives one cultural or historical marker: the destination served as Biafra's initial capital. Name the destination.,LOC-042
+NG-P020-C4,NG-P020,4,LOC-042,warrant_trait,,The final witness describes a suspect who is hands_on and uses the alias The Mechanic. Issue the warrant before making the arrest.,LOC-042
+NG-P021-C1,NG-P021,1,LOC-076,unesco_tentative,KN-SE-0009,"The route cipher contains only this specialist detail: Gangriwal, Nigeria's highest point, rises within the destination. Identify the destination.",LOC-083
+NG-P021-C2,NG-P021,2,LOC-083,world_heritage,KN-SE-0001,The route cipher contains only this specialist detail: The Osun-the destination Sacred Grove was inscribed on the UNESCO World Heritage List in 2005. Identify the destination.,LOC-054
+NG-P021-C3,NG-P021,3,LOC-054,industry,KN-S2-0092,The route cipher contains only this specialist detail: the destination and the Plateau region became major centres of tin mining. Identify the destination.,LOC-046
+NG-P021-C4,NG-P021,4,LOC-046,warrant_trait,,The final witness describes a suspect who is diplomatic and uses the alias The Diplomat. Issue the warrant before making the arrest.,LOC-046
+NG-P022-C1,NG-P022,1,LOC-037,sokoto_caliphate,KN-SE-0035,The route cipher contains only this specialist detail: The caliphate based at the destination emerged in the early nineteenth century. Identify the destination.,LOC-050
+NG-P022-C2,NG-P022,2,LOC-050,kingdoms_empires,KN-S2-0022,The route cipher contains only this specialist detail: the destination became an emirate on the southern frontier of the Sokoto Caliphate. Identify the destination.,LOC-045
+NG-P022-C3,NG-P022,3,LOC-045,festival,KN-S2-0049,The route cipher contains only this specialist detail: The Eyo masquerade is a ceremonial tradition associated with the destination Island. Identify the destination.,LOC-038
+NG-P022-C4,NG-P022,4,LOC-038,warrant_trait,,The final witness describes a suspect who is resilient and uses the alias The Shepherd. Issue the warrant before making the arrest.,LOC-038
+NG-P023-C1,NG-P023,1,LOC-038,civil_war,KN-S2-0007,"The route cipher contains only this specialist detail: Federal forces captured the destination in 1968, cutting Biafra off from a major seaport. Identify the destination.",LOC-043
+NG-P023-C2,NG-P023,2,LOC-043,kingdoms_empires,KN-S2-0030,The route cipher contains only this specialist detail: The Olu is the traditional ruler of the Itsekiri Kingdom of the destination. Identify the destination.,LOC-060
+NG-P023-C3,NG-P023,3,LOC-060,rivers,KN-S2-0078,The route cipher contains only this specialist detail: The Niger and Benue rivers meet at the destination. Identify the destination.,LOC-062
+NG-P023-C4,NG-P023,4,LOC-062,warrant_trait,,The final witness describes a suspect who is stylish and uses the alias Black Orchid. Issue the warrant before making the arrest.,LOC-062
+NG-P024-C1,NG-P024,1,LOC-039,unesco_tentative,KN-SE-0007,The route cipher contains only this specialist detail: the destination joined Nigeria's UNESCO Tentative List in 2025. Identify the destination.,LOC-083
+NG-P024-C2,NG-P024,2,LOC-083,industry,KN-S2-0097,"The route cipher contains only this specialist detail: the destination has long been a centre for trade, leatherwork and textiles. Identify the destination.",LOC-040
+NG-P024-C3,NG-P024,3,LOC-040,abeokuta,KN-SE-0044,The route cipher contains only this specialist detail: the destination's name means under the rock in Yoruba. Identify the destination.,LOC-044
+NG-P024-C4,NG-P024,4,LOC-044,warrant_trait,,The final witness describes a suspect who is risk_taker and uses the alias The Gambler. Issue the warrant before making the arrest.,LOC-044
+NG-P025-C1,NG-P025,1,LOC-043,civil_war,KN-S2-0006,The route cipher contains only this specialist detail: the destination was one of the principal cities contested during the Nigerian Civil War. Identify the destination.,LOC-058
+NG-P025-C2,NG-P025,2,LOC-058,benin_kingdom,KN-SE-0039,The route cipher contains only this specialist detail: the destination was the capital of the historic Kingdom of Benin. Identify the destination.,LOC-041
+NG-P025-C3,NG-P025,3,LOC-041,unesco_tentative,KN-SE-0018,"The route cipher contains only this specialist detail: Dala Hill, Kurmi Market and the Emir's Palace are associated with the destination's ancient city walls. Identify the destination.",LOC-040
+NG-P025-C4,NG-P025,4,LOC-040,warrant_trait,,The final witness describes a suspect who is strategic and uses the alias The Strategist. Issue the warrant before making the arrest.,LOC-040
+NG-P026-C1,NG-P026,1,LOC-043,state_identity,KN-S2-0126,The route cipher contains only this specialist detail: The destination's state contains Nigeria's largest port and commercial metropolis. Identify the destination.,LOC-038
+NG-P026-C2,NG-P026,2,LOC-038,higher_education,KN-SE-0097,The route cipher contains only this specialist detail: The University of the destination began as University College the destination in 1948. Identify the destination.,LOC-039
+NG-P026-C3,NG-P026,3,LOC-039,state_identity,KN-S2-0122,The route cipher contains only this specialist detail: The destination's state includes historic Hausa centres such as the destination and Daura. Identify the destination.,LOC-067
+NG-P026-C4,NG-P026,4,LOC-067,warrant_trait,,The final witness describes a suspect who is inquisitive and uses the alias The Journalist. Issue the warrant before making the arrest.,LOC-067
+NG-P027-C1,NG-P027,1,LOC-047,intangible_heritage,KN-S2-0039,The route cipher contains only this specialist detail: UNESCO inscribed the destination's fishing and cultural festival on its Representative List in 2016. Identify the destination.,LOC-070
+NG-P027-C2,NG-P027,2,LOC-070,national_parks,KN-S2-0072,The suspect booked passage to the capital of this state: Yankari was delisted as a national park in 2006 and is managed as a game reserve by this state.,LOC-005
+NG-P027-C3,NG-P027,3,LOC-005,world_heritage,KN-SE-0004,The route cipher contains only this specialist detail: the destination was inscribed on the UNESCO World Heritage List in 1999. Identify the destination.,LOC-077
+NG-P027-C4,NG-P027,4,LOC-077,warrant_trait,,The final witness describes a suspect who is precise and uses the alias The Surgeon. Issue the warrant before making the arrest.,LOC-077
+NG-P028-C1,NG-P028,1,LOC-076,state_identity,KN-S2-0125,"The route cipher contains only this specialist detail: the surrounding state includes the destination, a historic emirate and commercial centre. Identify the destination.",LOC-045
+NG-P028-C2,NG-P028,2,LOC-045,festival,KN-SE-0050,"The route cipher contains only this specialist detail: The Osun-the destination Festival honours Osun, the Yoruba river deity. Identify the destination.",LOC-054
+NG-P028-C3,NG-P028,3,LOC-054,industry,KN-S2-0093,The route cipher contains only this specialist detail: the destination developed as a major centre for Nigeria's petroleum industry. Identify the destination.,LOC-043
+NG-P028-C4,NG-P028,4,LOC-043,warrant_trait,,The final witness describes a suspect who is privileged and uses the alias The Diplomat's Daughter. Issue the warrant before making the arrest.,LOC-043
+NG-P029-C1,NG-P029,1,LOC-037,civil_war,KN-S2-0005,The suspect booked passage to the capital of this state: its capital became a major administrative centre for Biafra after Enugu fell.,LOC-001
+NG-P029-C2,NG-P029,2,LOC-001,rivers,KN-S2-0080,The route cipher contains only this specialist detail: The river named for the destination is a tributary within the wider Niger basin. Identify the destination.,LOC-050
+NG-P029-C3,NG-P029,3,LOC-050,kingdoms_empires,KN-S2-0016,"The route cipher contains only this specialist detail: the destination was one of the Hausa Bakwai, the seven traditional Hausa states. Identify the destination.",LOC-040
+NG-P029-C4,NG-P029,4,LOC-040,warrant_trait,,The final witness describes a suspect who is social and uses the alias The DJ. Issue the warrant before making the arrest.,LOC-040
+NG-P030-C1,NG-P030,1,LOC-038,ile_ife,KN-SE-0042,The route cipher contains only this specialist detail: The Ooni is the traditional ruler associated with the destination. Identify the destination.,LOC-053
+NG-P030-C2,NG-P030,2,LOC-053,rivers,KN-S2-0083,The route cipher contains only this specialist detail: The Cross River flows into the Gulf of Guinea near the destination. Identify the destination.,LOC-047
+NG-P030-C3,NG-P030,3,LOC-047,river_system,KN-SE-0080,The route cipher contains only this specialist detail: The River Benue joins the River Niger at the destination. Identify the destination.,LOC-062
+NG-P030-C4,NG-P030,4,LOC-062,warrant_trait,,The final witness describes a suspect who is scientific and uses the alias The Botanist. Issue the warrant before making the arrest.,LOC-062
