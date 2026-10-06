@@ -63,9 +63,12 @@ distance between state capitals. Travel is limited to Nigeria's 36 states and
 the Federal Capital Territory. Consecutive stops within one state use a local
 road transfer rather than pretending the player can fly directly to an LGA.
 
-A warrant becomes available only after five profile fields identify exactly one
-thief. Successful cases award career points and promotions. The current case is
-saved automatically and can be resumed on the next run.
+A warrant becomes available only after eight dossier fields identify exactly
+one thief: sex, height, skin tone, hair, hobby, vehicle, accessory, and a
+distinguishing feature. Each detail is embedded naturally in witness dialogue,
+including role-appropriate Nigerian Pidgin. Successful cases award career
+points and promotions. The current case is saved automatically and can be
+resumed on the next run.
 
 Useful commands:
 
@@ -109,9 +112,11 @@ landmarks, parks, museums, institutions, and heritage sites. Location type and
 tags determine which venues and witnesses can appear, and the witness wording
 identifies the local investigation setting without revealing the destination.
 Local transfers consume time and persist in saved cases. Because the source
-location catalogue does not yet include coordinates, local journey times are
-deterministic hub-based estimates; verified geospatial routing is tracked as a
-later balancing task.
+location catalogue did not include coordinates, the geospatial pass now joins
+416 locations to Nigerian LGA boundary centroids. Nineteen state capitals use
+the state-hub coordinates, while 65 unmatched landmarks and institutions keep
+a documented offline state-hub fallback pending landmark-level verification.
+Local transfer time uses coordinate distance with a road-distance factor.
 
 The mission-quality layer adds 1,000 narrative profiles and replaces the old
 ten-premise cycle in play. Every case now has a unique title, a concrete stolen
@@ -122,7 +127,22 @@ active witness evidence to prioritise false destinations that share one or two
 clues with the correct state. The case remains solvable only by combining all
 three clues.
 
+The P2 balance model defines five difficulty levels. Easy and standard cases
+use direct formulations and three travel choices; medium uses four choices;
+challenging and hard use indirect formulations and five choices. Higher levels
+select clue combinations with more candidate states and more overlap, while
+all statements remain truthful and carry an explicit reliability label. Venue
+ordering minimises unnecessary opening-hour waits without removing the time
+pressure. Difficulty-scaled case points, false-travel penalties, time bonuses,
+and promotion thresholds replace the original flat rewards.
+
+`data/gameplay/mission-balance-report.csv` records the full 1,000-case
+simulation. Every route resolves after three clues and every simulated case
+finishes with at least a two-day deadline buffer.
+
 Regenerate location placement data with
-`python3 scripts/build_location_investigations.py` and mission stories with
-`python3 scripts/build_mission_narratives.py`, then run the automated checks
+`python3 scripts/build_location_coordinates.py` followed by
+`python3 scripts/build_location_investigations.py`. Regenerate mission stories
+with `python3 scripts/build_mission_narratives.py`, produce the balance audit
+with `python3 scripts/simulate_game_balance.py`, then run the automated checks
 with `python3 -m unittest discover -s tests -v`.

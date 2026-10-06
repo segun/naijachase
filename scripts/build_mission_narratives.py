@@ -32,7 +32,7 @@ def main():
   used.add(title);signature=m['signature_trait'].replace('_',' ');behaviour=BEHAVIOUR.get(m['signature_trait'],f"keeps displaying a {signature} streak");thief_number=int(m['thief_id'][-3:])-1;calling=f"{CALLING[thief_number%len(CALLING)]} bearing a tiny {CALLING_MARKS[thief_number//len(CALLING)]} mark"
   crime=m['crime_type'].replace('_',' ');article='an' if crime[0].lower() in 'aeiou' else 'a'
   premise=f"Someone has taken {item} from {route[0]['name']}. The route suggests {article} {crime} operation, and the object may be moved again before the week is over."
-  briefing=f"The local case officer seals the scene at {route[0]['name']}. Recover {item}, identify the thief from five profile details, and obtain a warrant before the trail reaches {route[3]['name']}."
+  briefing=f"The local case officer seals the scene at {route[0]['name']}. Recover {item}, identify the thief from eight dossier details, and obtain a warrant before the trail reaches {route[3]['name']}."
   transitions=[f"A verified sighting carries the trail from {origin['name']} to {destination['name']}. Local officers in {destination['state_or_territory'].split('/')[0]} have been told to expect you, but not to alert the suspect." for origin,destination in zip(route,route[1:])]
   capture=f"At {route[3]['name']}, the exits begin to close as your warrant reaches the local team. The suspect notices the cordon and makes one last attempt to blend into the crowd."
   conclusion=f"The warrant holds. {thief['alias']} is taken into custody at {route[3]['name']}, and {item} is secured for return to its custodians."

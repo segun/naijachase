@@ -1,5 +1,5 @@
 """Map every playable location to locally suitable investigation venues."""
-import ast,csv,hashlib
+import ast,csv,hashlib,math
 from pathlib import Path
 ROOT=Path(__file__).resolve().parent.parent;LOCATIONS=ROOT/'data/locations/locations.csv';PROFILES=ROOT/'data/gameplay/state-venue-profiles.csv';OUT=ROOT/'data/gameplay/location-venue-map.csv'
 TYPE_VENUES={
@@ -11,12 +11,10 @@ def read(path):
 def state_name(value):
  state=value.split('/')[0];return 'Federal Capital Territory' if state=='FCT' else state
 def stable_number(text,low,high):return low+int(hashlib.sha256(text.encode()).hexdigest()[:8],16)%(high-low+1)
-def local_minutes(row):
- kind=row['location_type']
- if kind in ('state_capital','federal_capital'):return 0
- if kind in ('major_city','commercial_city','historic_city','heritage_city'):return stable_number(row['location_id'],25,75)
- if kind in ('landmark','museum','gallery','government_site','heritage_site'):return stable_number(row['location_id'],15,55)
- return stable_number(row['location_id'],35,150)
+def local_minutes(row,coordinate,hubs):
+ hub=hubs[state_name(row['state_or_territory'])];lat1,lon1=float(hub['latitude']),float(hub['longitude']);lat2,lon2=float(coordinate['latitude']),float(coordinate['longitude'])
+ a=math.sin(math.radians(lat2-lat1)/2)**2+math.cos(math.radians(lat1))*math.cos(math.radians(lat2))*math.sin(math.radians(lon2-lon1)/2)**2;km=6371*2*math.asin(math.sqrt(a))*1.25
+ return 0 if km<2 else min(240,max(15,round(km/45*60+15)))
 def context(row):return f"This lead takes you into {row['name']}, recorded in the case directory as a {row['location_type'].replace('_',' ')}."
 def witness_note(row):
  kind=row['location_type']
@@ -25,7 +23,7 @@ def witness_note(row):
  if kind in ('national_park','game_reserve','nature_site','mountain_resort','waterfall'):return f"The witness knows the visitor routes and field activity around {row['name']}."
  return f"The witness works among the everyday movement of people through {row['name']}."
 def main():
- locations=read(LOCATIONS);profiles=read(PROFILES);weights={(x['state'],x['venue_id']):int(x['suitability_weight']) for x in profiles};out=[]
+ locations=read(LOCATIONS);profiles=read(PROFILES);weights={(x['state'],x['venue_id']):int(x['suitability_weight']) for x in profiles};coordinates={x['location_id']:x for x in read(ROOT/'data/gameplay/location-coordinates.csv')};hubs={x['state']:x for x in read(ROOT/'data/gameplay/state-hubs.csv')};out=[]
  for loc in locations:
   state=state_name(loc['state_or_territory']);tags=ast.literal_eval(loc['game_tags'] or '[]');candidates=[]
   for venue in TYPE_VENUES.get(loc['location_type'],[]):
@@ -38,7 +36,7 @@ def main():
   for venue in fallback:
    if venue not in available:available.append(venue)
   for rank,venue in enumerate(available[:5],1):
-   base=loc['name'].removesuffix(' LGA');out.append({'location_id':loc['location_id'],'location_name':loc['name'],'location_type':loc['location_type'],'state':state,'venue_id':venue,'venue_name':f"{base} {SUFFIX.get(venue,venue.replace('_',' ').title())}",'location_fit':max(1,6-rank),'hub_travel_minutes':local_minutes(loc),'location_context':context(loc),'witness_context':witness_note(loc)})
+   base=loc['name'].removesuffix(' LGA');coordinate=coordinates[loc['location_id']];out.append({'location_id':loc['location_id'],'location_name':loc['name'],'location_type':loc['location_type'],'state':state,'venue_id':venue,'venue_name':f"{base} {SUFFIX.get(venue,venue.replace('_',' ').title())}",'location_fit':max(1,6-rank),'hub_travel_minutes':local_minutes(loc,coordinate,hubs),'latitude':coordinate['latitude'],'longitude':coordinate['longitude'],'coordinate_kind':coordinate['coordinate_kind'],'location_context':context(loc),'witness_context':witness_note(loc)})
  # Guarantee that every state-approved venue can be placed somewhere suitable.
  by_state={}
  for loc in locations:by_state.setdefault(state_name(loc['state_or_territory']),[]).append(loc)
@@ -47,7 +45,7 @@ def main():
   if not weight or (state,venue) in existing:continue
   choices=by_state[state];fitted=[loc for loc in choices if venue in TYPE_VENUES.get(loc['location_type'],[]) or any(venue in TAG_VENUES.get(tag,[]) for tag in ast.literal_eval(loc['game_tags'] or '[]'))]
   loc=(fitted or choices)[stable_number(state+venue,0,len(fitted or choices)-1)];base=loc['name'].removesuffix(' LGA')
-  out.append({'location_id':loc['location_id'],'location_name':loc['name'],'location_type':loc['location_type'],'state':state,'venue_id':venue,'venue_name':f"{base} {SUFFIX.get(venue,venue.replace('_',' ').title())}",'location_fit':3,'hub_travel_minutes':local_minutes(loc),'location_context':context(loc),'witness_context':witness_note(loc)})
+  coordinate=coordinates[loc['location_id']];out.append({'location_id':loc['location_id'],'location_name':loc['name'],'location_type':loc['location_type'],'state':state,'venue_id':venue,'venue_name':f"{base} {SUFFIX.get(venue,venue.replace('_',' ').title())}",'location_fit':3,'hub_travel_minutes':local_minutes(loc,coordinate,hubs),'latitude':coordinate['latitude'],'longitude':coordinate['longitude'],'coordinate_kind':coordinate['coordinate_kind'],'location_context':context(loc),'witness_context':witness_note(loc)})
  OUT.parent.mkdir(parents=True,exist_ok=True)
  with OUT.open('w',encoding='utf-8',newline='') as f:
   w=csv.DictWriter(f,fieldnames=list(out[0]),lineterminator='\n');w.writeheader();w.writerows(out)

@@ -12,7 +12,7 @@ completed.
 - [x] 5,243 knowledge records
 - [x] 12,729 clue formulations
 - [x] 1,000 missions
-- [x] 100 thieves with unique five-attribute profiles
+- [x] 100 thieves with unique eight-attribute dossiers
 - [x] All 36 states plus the Federal Capital Territory
 - [x] Complete state-to-state distance and travel-time graph
 - [x] 35 venue types
@@ -22,11 +22,13 @@ completed.
 - [x] All 500 locations mapped through 2,946 suitable location-to-venue links
 - [x] 1,000 complete mission narrative profiles with unique titles
 - [x] 100 thief-specific calling cards
+- [x] Balance simulation report for all 1,000 missions
+- [x] Coordinate-backed local travel for 416 matched locations
 - [x] 518 destination clue atoms: 14 for every jurisdiction
 - [x] 9,324 dialogue variants across three difficulty levels and two registers
 - [x] All 1,000 missions connected to the contextual witness engine
 - [x] Career-level recent clue and dialogue tracking
-- [x] 30 automated tests passing
+- [x] 35 automated tests passing
 
 ## Completed game systems
 
@@ -64,11 +66,14 @@ completed.
 
 ### Suspects and warrants
 
-- [x] Five evidence fields: hair, hobby, vehicle, accessory, and feature
+- [x] Eight dossier fields: sex, height, skin tone, hair, hobby, vehicle,
+  accessory, and distinguishing feature
 - [x] Unique profile for every thief
 - [x] Profile evidence gathered during ordinary witness interviews
+- [x] Physical descriptors are embedded naturally in both English and Nigerian
+  Pidgin witness accounts
 - [x] Completed profile resolves to one thief
-- [x] Warrant required before arrest
+- [x] All eight fields are required before a warrant can be issued
 - [x] Correct warrant and capture state required to close a case
 
 ### Context-aware venues
@@ -92,14 +97,15 @@ completed.
 - [ ] Nigerian Pidgin variants are mechanically generated and still require
   regional, native-speaker editorial review.
 - [x] Venue context is state-, city-, LGA-, landmark-, and institution-aware.
-- [ ] Local travel times are deterministic hub-based estimates until verified
-  coordinates or road-routing data are added.
+- [x] Local travel uses verified LGA boundary centroids wherever matched.
+- [ ] Sixty-five non-LGA landmarks and institutions still use the documented
+  state-hub fallback until landmark-level coordinates are verified.
 - [x] All 1,000 missions have coherent generated narrative profiles rather than
   the former ten repeated premises.
 - [ ] The generated mission narratives still need a human line-editing pass to
   achieve the nuance of 1,000 individually authored cases.
-- [ ] Difficulty affects clue selection but needs broader balancing across
-  ambiguity, time, travel, false leads, and witness reliability.
+- [x] Difficulty is balanced across ambiguity, phrasing, travel choices, false
+  leads, time, scoring, and explicitly labelled witness reliability.
 - [ ] Cultural, historical, and linguistic content needs a systematic editorial
   and source-verification pass before publication.
 - [x] Venue encounters now have an atmospheric terminal presentation.
@@ -164,17 +170,17 @@ completed.
 
 ### P2 — Difficulty and game balance
 
-- [ ] Define measurable easy, medium, and hard ambiguity targets.
-- [ ] Make difficult witnesses more indirect without becoming obscure.
-- [ ] Tune the number and quality of false destinations.
-- [ ] Balance opening hours and waiting penalties.
-- [ ] Balance road and air travel times against the seven-day deadline.
-- [ ] Replace estimated in-state travel times with verified coordinate or
+- [x] Define measurable easy, medium, and hard ambiguity targets.
+- [x] Make difficult witnesses more indirect without becoming obscure.
+- [x] Tune the number and quality of false destinations.
+- [x] Balance opening hours and waiting penalties.
+- [x] Balance road and air travel times against the seven-day deadline.
+- [x] Replace estimated in-state travel times with verified coordinate or
   road-routing data while keeping an offline deterministic fallback.
-- [ ] Add witness reliability carefully; never make a case depend on an
+- [x] Add witness reliability carefully; never make a case depend on an
   unknowably false statement.
-- [ ] Run automated simulations to measure solve rates and remaining time.
-- [ ] Tune points, penalties, warrants, and promotion thresholds.
+- [x] Run automated simulations to measure solve rates and remaining time.
+- [x] Tune points, penalties, warrants, and promotion thresholds.
 
 ### P2 — Editorial review
 
@@ -198,6 +204,24 @@ completed.
 - [ ] Add accessibility-friendly display settings.
 - [ ] Add an in-game help and rules screen.
 
+### P3 - Production readiness
+
+- [ ] Use a relational database like mysql instead of csv files
+- [ ] Make sure DB is normalized
+- [ ] Build the engine in Rust
+- [ ] Start the web based UI project, create image artifacts, animations, 3D (of course), for instance when flying an airplane flying over a believable terrain animation or driving through the suburbs animation or obtaining the warrant animation, each thief should have a 3D representation that represents them.
+- [ ] User should be able to build a profile for themselves too, select avatar, uniform, sex, car brands (room for advertisement), preferred flight operator (room for advertisement) etc
+- [ ] User should have an achievements page to see all the criminals they've caught, we need to build some other achievements into the game like flying achievements, driving achievements, number of states visited achievements, leaderboards etc
+- [ ] User will select a location at the state of the game as home base, when they are in home base, witness questioning costs no time. 
+- [ ] User can ask another user for help...e.g if User A flew to Kano and another User B sets Kano as home base....if User B is online, they can ask User B for help. User B then questions witnesses on their behalf and send a recommendation to them (remember User B witness questioning costs nothing because of home base). The only caveat is User B must be at home...if User B is on a mission in Abia for instance, even though their home base is Kano, they can not render help to user A...they can get alert to fly to home and help user A, in which case they pay the time cost of flying to home and flying back to continue their mission. 
+- [ ] WHen user render help, they earn points, these points can be used on the app (I don't know what they can use it for yet...help!!!)
+- [ ] User can bribe witness to give them better clues. They can pay real cash (monetization) to buy some type of in game cash they can use to bribe witness...when a witness is bribed, he gives more accurate information...sometimes a witness can collect the cash and still not give better information. 
+- [ ] User can spend in game cash (or points...not sure yet) to speed up travel times, buy better cars, fly better airlines (e.g fly private jet).
+- [ ] User can bribe judges to get a warrant even if the profile is not fully completed. Sometimes the judges collect the bribe and give the warrant, sometimes the user gets thrown in jail for X number of time, they can pay in game cash to get out of jail immediately or stay in jail for the X number of time.
+- [ ] The lower the number of profile points completed, the more bribe is needed to get a warrant....
+- [ ] we don't automatically give the user the name of a thief, no after building the profile, we provide 3 thiefs and their characteristics and the user must using the built profile to select one of the 3...of course one of the three thieves provided must be correct
+- [ ] User must manually build the dosier too from the witness clues, we don't automatically build it for them....if a witness says something like "brown eyes" they must open their dosier and add brown eyes under say for excample eye color or "likes to whistle" under say feature.
+
 ### P3 — Future interfaces
 
 - [ ] Separate engine logic from terminal input/output completely.
@@ -213,8 +237,10 @@ Run these checks after changing gameplay data or engine logic:
 ```bash
 python3 scripts/build_gameplay_data.py
 python3 scripts/build_state_clue_atoms.py
+python3 scripts/build_location_coordinates.py
 python3 scripts/build_location_investigations.py
 python3 scripts/build_mission_narratives.py
+python3 scripts/simulate_game_balance.py
 python3 -m unittest discover -s tests -v
 ```
 

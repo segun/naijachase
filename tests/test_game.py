@@ -1,6 +1,6 @@
 import csv,random,tempfile,unittest
 from pathlib import Path
-from game import Career,GameData,Session,rank_for
+from game import Career,GameData,Session,rank_for,DIFFICULTY_RULES,CASE_BASE
 ROOT=Path(__file__).resolve().parent.parent
 class GameTests(unittest.TestCase):
  @classmethod
@@ -8,7 +8,8 @@ class GameTests(unittest.TestCase):
   cls.data=GameData.load(ROOT);cls.ready=next(m for m in cls.data.missions.values() if cls.data.engine_ready(m))
  def test_supporting_data(self):
   self.assertEqual(len(self.data.hubs),37);self.assertEqual(len(self.data.travel),1332);self.assertEqual(len(self.data.venues),35);self.assertEqual(len(self.data.profiles),100)
-  signatures={(p['hair'],p['hobby'],p['vehicle'],p['accessory'],p['feature']) for p in self.data.profiles.values()};self.assertEqual(len(signatures),100)
+  fields=('sex','height','skin_tone','hair','hobby','vehicle','accessory','feature');signatures={tuple(p[x] for x in fields) for p in self.data.profiles.values()};self.assertEqual(len(signatures),100)
+  self.assertEqual({p['sex'] for p in self.data.profiles.values()},{'male','female'});self.assertEqual({p['height'] for p in self.data.profiles.values()},{'tall','medium height','short'});self.assertEqual({p['skin_tone'] for p in self.data.profiles.values()},{'dark-skinned','light-skinned'})
  def test_curated_states_have_unique_three_clue_solution(self):
   self.assertEqual(len(self.data.clue_engine.by_state),37)
   for state in self.data.clue_engine.by_state:self.assertTrue(self.data.clue_engine.combinations(state),state)
@@ -64,6 +65,11 @@ class GameTests(unittest.TestCase):
   self.assertEqual({(x['state'],x['venue_id']) for x in links},approved)
   for row in links:
    self.assertGreaterEqual(int(row['hub_travel_minutes']),0);self.assertTrue(row['location_context']);self.assertTrue(row['witness_context'])
+ def test_location_coordinates_use_real_lga_centroids_with_fallbacks(self):
+  with (ROOT/'data/gameplay/location-coordinates.csv').open(encoding='utf-8-sig',newline='') as f:rows=list(csv.DictReader(f))
+  self.assertEqual(len(rows),500);self.assertEqual({x['location_id'] for x in rows},set(self.data.locations))
+  self.assertGreaterEqual(sum(x['coordinate_kind']=='lga_boundary_centroid' for x in rows),400)
+  self.assertTrue(all(4<=float(x['latitude'])<=14.5 and 2<=float(x['longitude'])<=15.5 for x in rows))
  def test_encounters_include_context_names_and_role_behaviour(self):
   profile=self.data.profiles['NG-T001'];seen=set()
   for elapsed in (0,12*60,5*1440,6*1440+14*60):
@@ -87,8 +93,15 @@ class GameTests(unittest.TestCase):
   encounters=self.data.clue_engine.encounters(state,'TEST',0,profile,'3');possible=None
   for encounter in encounters:
    candidates=set(encounter['candidate_states'].split('|'));possible=candidates if possible is None else possible&candidates
-   self.assertIn(encounter['profile_value'],encounter['dialogue'])
+   expected={'male':'man','female':'woman'}.get(encounter['profile_value'],encounter['profile_value']);self.assertIn(expected,encounter['dialogue'])
   self.assertEqual(possible,{state});self.assertEqual(len({x['venue_id'] for x in encounters}),3)
+ def test_all_eight_profile_fields_have_natural_witness_descriptions(self):
+  from clue_engine import profile_sentence
+  profile=self.data.profiles['NG-T001']
+  for field in ('sex','height','skin_tone','hair','hobby','vehicle','accessory','feature'):
+   for pidgin in (False,True):
+    sentence=profile_sentence(field,profile[field],pidgin);self.assertTrue(sentence.endswith('.'));self.assertNotIn('_',sentence)
+  self.assertIn('man',profile_sentence('sex','male'));self.assertIn('woman',profile_sentence('sex','female'));self.assertIn('medium height',profile_sentence('height','medium height'))
  def test_only_fully_curated_cases_are_offered(self):
   ready=[m['mission_id'] for m in self.data.missions.values() if self.data.engine_ready(m)]
   self.assertEqual(len(ready),1000);self.assertEqual(len({self.data.missions[x]['thief_id'] for x in ready}),100)
@@ -135,12 +148,12 @@ class GameTests(unittest.TestCase):
  def test_venue_hours_and_waiting(self):
   s=Session.new(self.data,self.ready);night=next(x for x in self.data.venues if x['venue_id']=='nightclub')
   self.assertFalse(s.is_open(night));wait=s.wait_to_open(night);self.assertEqual(wait,13*60);self.assertTrue(s.is_open(night))
- def test_profile_and_warrant_require_five_fields(self):
+ def test_profile_and_warrant_require_eight_fields(self):
   s=Session.new(self.data,self.ready);self.assertIsNone(s.warrant_match())
-  for stage,count in [(0,3),(1,2)]:
+  for stage,count in [(0,3),(1,3),(2,2)]:
    s.stage=stage;s.current_state=s.route[stage]
    for i,v in enumerate(s.venue_set()[:count]):s.interview(v,i)
-  self.assertTrue(s.profile_complete);self.assertEqual(s.warrant_match(),s.mission['thief_id'])
+  self.assertEqual(set(s.evidence),{'sex','height','skin_tone','hair','hobby','vehicle','accessory','feature'});self.assertTrue(s.profile_complete);self.assertEqual(s.warrant_match(),s.mission['thief_id'])
  def test_correct_travel_advances_time_and_stage(self):
   s=Session.new(self.data,self.ready);target=s.route[1];before=s.elapsed
   correct,row=s.travel_to(target);self.assertTrue(correct);self.assertEqual(s.stage,1);self.assertEqual(s.elapsed-before,int(row['travel_minutes']))
@@ -179,5 +192,28 @@ class GameTests(unittest.TestCase):
   restored=Session.restore(self.data,s.save_dict());self.assertEqual(restored.elapsed,315);self.assertEqual(restored.evidence,{'hair':'test'})
   legacy=s.save_dict();legacy.pop('current_location_id');restored=Session.restore(self.data,legacy);self.assertEqual(restored.current_location_id,s.mission['start_location_id'])
  def test_ranks(self):
-  self.assertEqual(rank_for(0),'Rookie');self.assertEqual(rank_for(5000),'Inspector');self.assertEqual(rank_for(25000),'Master Detective')
+  self.assertEqual(rank_for(0),'Rookie');self.assertEqual(rank_for(5000),'Senior Investigator');self.assertEqual(rank_for(25000),'Chief Inspector');self.assertEqual(rank_for(35000),'Master Detective')
+ def test_all_five_difficulty_levels_have_complete_rules(self):
+  self.assertEqual(set(DIFFICULTY_RULES),{'1','2','3','4','5'});self.assertEqual(set(CASE_BASE),set(DIFFICULTY_RULES))
+  self.assertEqual([DIFFICULTY_RULES[str(x)]['options'] for x in range(1,6)],[3,3,4,5,5])
+  self.assertEqual([DIFFICULTY_RULES[str(x)]['register'] for x in range(1,6)],['easy','easy','medium','hard','hard'])
+  self.assertTrue(all('false' not in DIFFICULTY_RULES[str(x)]['reliability'] for x in range(1,6)))
+ def test_difficulty_controls_ambiguity_and_reliability(self):
+  profile=self.data.profiles['NG-T001'];means={}
+  for difficulty in ('1','3','5'):
+   values=[]
+   for state in self.data.hubs:
+    encounters=self.data.clue_engine.encounters(state,'BALANCE',0,profile,difficulty,investigation_state=state)
+    values.append(sum(len(x['candidate_states'].split('|')) for x in encounters)/3)
+    self.assertTrue(all(x['reliability']==DIFFICULTY_RULES[difficulty]['reliability'] for x in encounters))
+   means[difficulty]=sum(values)/len(values)
+  self.assertLess(means['1'],means['5']);self.assertLessEqual(means['1'],means['3'])
+ def test_balance_report_meets_deadline_and_difficulty_targets(self):
+  with (ROOT/'data/gameplay/mission-balance-report.csv').open(encoding='utf-8-sig',newline='') as f:rows=list(csv.DictReader(f))
+  self.assertEqual(len(rows),1000);self.assertTrue(all(x['deadline_pass']=='yes' and x['minimum_target_buffer_pass']=='yes' for x in rows))
+  self.assertTrue(all(x['dossier_complete']=='yes' and x['warrant_match']=='yes' and x['dossier_fields_collected']=='8' for x in rows))
+  self.assertTrue(all(float(x['three_clue_route_solve_probability'])==1 for x in rows));self.assertTrue(all(float(x['evidence_sharing_false_lead_rate'])>=.66 for x in rows))
+  by_level={level:[x for x in rows if x['difficulty']==level] for level in ('1','3','5')}
+  ambiguity={k:sum(float(x['average_clue_candidates']) for x in v)/len(v) for k,v in by_level.items()};two_clue={k:sum(float(x['two_clue_route_solve_probability']) for x in v)/len(v) for k,v in by_level.items()}
+  self.assertLess(ambiguity['1'],ambiguity['5']);self.assertGreater(two_clue['1'],two_clue['5'])
 if __name__=='__main__':unittest.main()

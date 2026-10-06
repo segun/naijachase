@@ -96,6 +96,9 @@ SCENE_CUES={
 NAME_TEMPLATES={
  "market":"{hub} Travellers' Market","library":"{state} Reading House","nightclub":"Lagoon Lights Club","church":"{hub} Unity Church","mosque":"{hub} Unity Mosque","museum":"{state} Memory House","motor_park":"{hub} Main Motor Park","hotel":"Crossroads Hotel","restaurant":"The Travellers' Pot","airport":"{hub} Air Terminal","radio_station":"{state} Community Radio","hospital":"{hub} General Hospital","beach":"Blue Horizon Beach","carnival_workshop":"Unity Carnival Workshop","cattle_market":"{hub} Livestock Yard","community_hall":"{hub} Community Hall","conservation_office":"{state} Field Office","craft_market":"{hub} Makers' Market","emir_palace":"Emirate Visitor Court","factory_gate":"{hub} Industrial Gate","farm":"Green Acres Farm","festival_ground":"{hub} Festival Ground","fishing_jetty":"Riverbend Fishing Jetty","mining_site":"Red Earth Workings","monument":"{state} Heritage Monument","palace":"Royal Visitor Court","police_station":"{hub} Central Police Station","railway_station":"{hub} Railway Station","refinery":"Eastern Process Gate","sacred_grove":"Quiet River Grove","seaport":"Harbour Gate Terminal","traditional_council":"{hub} Traditional Council","university":"{state} Civic University","waterfront":"River Road Landing","jetty":"Crossing Point Jetty"}
 HAIR=["closely cropped hair","long braided hair","a shaved head","short curly hair","shoulder-length hair","grey-streaked hair","a neat afro","dyed red hair","long dreadlocks","a distinctive centre part"]
+SEX=["male","female"]
+HEIGHT=["tall","medium height","short"]
+SKIN_TONE=["dark-skinned","light-skinned"]
 HOBBY=["tennis","chess","birdwatching","photography","horse riding","jazz records","football","antique maps","gardening","long-distance running"]
 VEHICLE=["a red convertible","a black motorcycle","a silver saloon","a white pickup","a green sports car","a blue minibus","a vintage coupe","a yellow SUV","a grey hatchback","a dark luxury sedan"]
 ACCESSORY=["a gold wristwatch","round spectacles","a red scarf","a carved walking stick","a silver briefcase","a wide-brimmed hat","a leather satchel","a camera bag","white gloves","a beaded bracelet"]
@@ -128,8 +131,8 @@ def main():
    travel.append({"origin_state":a["state"],"destination_state":b["state"],"distance_km":km,"travel_mode":mode,"travel_minutes":int(minutes)})
  profiles=[]
  for i,t in enumerate(read(ROOT/"data/thieves/thieves.csv")):
-  profiles.append({"thief_id":t["thief_id"],"hair":HAIR[i%10],"hobby":HOBBY[(i//10)%10],"vehicle":VEHICLE[(i*3)%10],"accessory":ACCESSORY[(i*7)%10],"feature":FEATURE[(i*9)%10]})
- assert len({(x["hair"],x["hobby"],x["vehicle"],x["accessory"],x["feature"]) for x in profiles})==len(profiles)
+  profiles.append({"thief_id":t["thief_id"],"sex":SEX[i%2],"height":HEIGHT[(i//2)%3],"skin_tone":SKIN_TONE[(i//6)%2],"hair":HAIR[i%10],"hobby":HOBBY[(i//10)%10],"vehicle":VEHICLE[(i*3)%10],"accessory":ACCESSORY[(i*7)%10],"feature":FEATURE[(i*9)%10]})
+ assert len({tuple(x[k] for k in ("sex","height","skin_tone","hair","hobby","vehicle","accessory","feature")) for x in profiles})==len(profiles)
  venues=[{"venue_id":v[0],"venue_name":v[1],"opens_hour":v[2],"closes_hour":v[3],"interview_minutes":v[4],"witness_roles":v[5]} for v in VENUES]
  experiences=[]
  for venue in venues:

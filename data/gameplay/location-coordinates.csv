@@ -1,0 +1,501 @@
+location_id,latitude,longitude,coordinate_kind,source
+LOC-001,5.530000,7.490000,state_hub_coordinate,Curated state-hub coordinate; landmark-level verification still required
+LOC-002,9.200000,12.480000,state_hub_coordinate,Curated state-hub coordinate; landmark-level verification still required
+LOC-003,5.007867,7.917473,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-004,6.210000,7.070000,state_hub_coordinate,Curated state-hub coordinate; landmark-level verification still required
+LOC-005,10.243024,9.930038,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-006,4.920000,6.260000,state_hub_coordinate,Curated state-hub coordinate; landmark-level verification still required
+LOC-007,7.738626,8.520426,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-008,11.836527,13.120344,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-009,4.950000,8.320000,state_hub_coordinate,Curated state-hub coordinate; landmark-level verification still required
+LOC-010,6.200000,6.730000,state_hub_coordinate,Curated state-hub coordinate; landmark-level verification still required
+LOC-011,6.259845,8.219654,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-012,6.340000,5.630000,state_hub_coordinate,Curated state-hub coordinate; landmark-level verification still required
+LOC-013,7.611843,5.268477,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-014,6.450000,7.510000,state_hub_coordinate,Curated state-hub coordinate; landmark-level verification still required
+LOC-015,10.291133,11.160290,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-016,5.490000,7.040000,state_hub_coordinate,Curated state-hub coordinate; landmark-level verification still required
+LOC-017,11.794777,9.312382,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-018,10.520000,7.440000,state_hub_coordinate,Curated state-hub coordinate; landmark-level verification still required
+LOC-019,12.000000,8.520000,state_hub_coordinate,Curated state-hub coordinate; landmark-level verification still required
+LOC-020,13.012131,7.613281,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-021,12.480831,4.260813,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-022,8.206128,6.470132,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-023,8.500000,4.550000,state_hub_coordinate,Curated state-hub coordinate; landmark-level verification still required
+LOC-024,6.600206,3.348669,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-025,8.638207,8.723293,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-026,9.620000,6.550000,state_hub_coordinate,Curated state-hub coordinate; landmark-level verification still required
+LOC-027,7.150000,3.350000,state_hub_coordinate,Curated state-hub coordinate; landmark-level verification still required
+LOC-028,7.250000,5.190000,state_hub_coordinate,Curated state-hub coordinate; landmark-level verification still required
+LOC-029,7.754886,4.567140,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-030,7.380000,3.950000,state_hub_coordinate,Curated state-hub coordinate; landmark-level verification still required
+LOC-031,9.900000,8.860000,state_hub_coordinate,Curated state-hub coordinate; landmark-level verification still required
+LOC-032,4.776194,7.023896,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-033,13.060000,5.240000,state_hub_coordinate,Curated state-hub coordinate; landmark-level verification still required
+LOC-034,8.919497,11.326424,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-035,11.833227,12.014315,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-036,11.841259,6.772328,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-037,9.080000,7.400000,state_hub_coordinate,Curated state-hub coordinate; landmark-level verification still required
+LOC-038,6.600000,3.350000,state_hub_fallback,Curated state-hub coordinate; landmark-level verification still required
+LOC-039,7.380000,3.950000,state_hub_fallback,Curated state-hub coordinate; landmark-level verification still required
+LOC-040,12.000000,8.520000,state_hub_fallback,Curated state-hub coordinate; landmark-level verification still required
+LOC-041,6.340000,5.630000,state_hub_fallback,Curated state-hub coordinate; landmark-level verification still required
+LOC-042,6.450000,7.510000,state_hub_fallback,Curated state-hub coordinate; landmark-level verification still required
+LOC-043,4.776194,7.023896,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-044,7.150000,3.350000,state_hub_fallback,Curated state-hub coordinate; landmark-level verification still required
+LOC-045,8.500000,4.550000,state_hub_fallback,Curated state-hub coordinate; landmark-level verification still required
+LOC-046,9.900000,8.860000,state_hub_fallback,Curated state-hub coordinate; landmark-level verification still required
+LOC-047,4.950000,8.320000,state_hub_fallback,Curated state-hub coordinate; landmark-level verification still required
+LOC-048,10.520000,7.440000,state_hub_fallback,Curated state-hub coordinate; landmark-level verification still required
+LOC-049,11.029784,7.691017,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-050,13.060000,5.240000,state_hub_fallback,Curated state-hub coordinate; landmark-level verification still required
+LOC-051,11.836527,13.120344,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-052,7.250000,5.190000,state_hub_fallback,Curated state-hub coordinate; landmark-level verification still required
+LOC-053,7.770000,4.560000,state_hub_fallback,Curated state-hub coordinate; landmark-level verification still required
+LOC-054,7.754886,4.567140,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-055,6.210000,7.070000,state_hub_fallback,Curated state-hub coordinate; landmark-level verification still required
+LOC-056,6.210000,7.070000,state_hub_fallback,Curated state-hub coordinate; landmark-level verification still required
+LOC-057,5.530000,7.490000,state_hub_fallback,Curated state-hub coordinate; landmark-level verification still required
+LOC-058,5.490000,7.040000,state_hub_fallback,Curated state-hub coordinate; landmark-level verification still required
+LOC-059,5.007867,7.917473,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-060,6.200000,6.730000,state_hub_fallback,Curated state-hub coordinate; landmark-level verification still required
+LOC-061,4.920000,6.260000,state_hub_fallback,Curated state-hub coordinate; landmark-level verification still required
+LOC-062,8.206128,6.470132,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-063,7.738626,8.520426,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-064,9.620000,6.550000,state_hub_fallback,Curated state-hub coordinate; landmark-level verification still required
+LOC-065,8.638207,8.723293,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-066,11.841259,6.772328,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-067,13.012131,7.613281,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-068,11.794777,9.312382,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-069,12.480831,4.260813,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-070,12.692533,4.432126,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-071,6.441057,2.920825,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-072,6.555465,3.968661,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-073,6.616417,3.566736,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-074,6.600000,3.350000,state_hub_fallback,Curated state-hub coordinate; landmark-level verification still required
+LOC-075,6.453622,3.393997,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-076,9.080000,7.400000,state_hub_fallback,Curated state-hub coordinate; landmark-level verification still required
+LOC-077,9.200000,12.480000,state_hub_fallback,Curated state-hub coordinate; landmark-level verification still required
+LOC-078,7.770000,4.560000,state_hub_fallback,Curated state-hub coordinate; landmark-level verification still required
+LOC-079,7.150000,3.350000,state_hub_fallback,Curated state-hub coordinate; landmark-level verification still required
+LOC-080,9.620000,6.550000,state_hub_fallback,Curated state-hub coordinate; landmark-level verification still required
+LOC-081,7.250000,5.190000,state_hub_fallback,Curated state-hub coordinate; landmark-level verification still required
+LOC-082,6.210000,7.070000,state_hub_fallback,Curated state-hub coordinate; landmark-level verification still required
+LOC-083,8.890000,11.360000,state_hub_fallback,Curated state-hub coordinate; landmark-level verification still required
+LOC-084,4.950000,8.320000,state_hub_fallback,Curated state-hub coordinate; landmark-level verification still required
+LOC-085,10.310000,9.840000,state_hub_fallback,Curated state-hub coordinate; landmark-level verification still required
+LOC-086,9.620000,6.550000,state_hub_fallback,Curated state-hub coordinate; landmark-level verification still required
+LOC-087,9.620000,6.550000,state_hub_fallback,Curated state-hub coordinate; landmark-level verification still required
+LOC-088,7.770000,4.560000,state_hub_fallback,Curated state-hub coordinate; landmark-level verification still required
+LOC-089,6.450000,7.510000,state_hub_fallback,Curated state-hub coordinate; landmark-level verification still required
+LOC-090,4.950000,8.320000,state_hub_fallback,Curated state-hub coordinate; landmark-level verification still required
+LOC-091,6.600000,3.350000,state_hub_fallback,Curated state-hub coordinate; landmark-level verification still required
+LOC-092,6.600000,3.350000,state_hub_fallback,Curated state-hub coordinate; landmark-level verification still required
+LOC-093,6.600000,3.350000,state_hub_fallback,Curated state-hub coordinate; landmark-level verification still required
+LOC-094,6.340000,5.630000,state_hub_fallback,Curated state-hub coordinate; landmark-level verification still required
+LOC-095,6.600000,3.350000,state_hub_fallback,Curated state-hub coordinate; landmark-level verification still required
+LOC-096,9.080000,7.400000,state_hub_fallback,Curated state-hub coordinate; landmark-level verification still required
+LOC-097,9.080000,7.400000,state_hub_fallback,Curated state-hub coordinate; landmark-level verification still required
+LOC-098,9.080000,7.400000,state_hub_fallback,Curated state-hub coordinate; landmark-level verification still required
+LOC-099,9.080000,7.400000,state_hub_fallback,Curated state-hub coordinate; landmark-level verification still required
+LOC-100,6.600000,3.350000,state_hub_fallback,Curated state-hub coordinate; landmark-level verification still required
+LOC-101,7.380000,3.950000,state_hub_fallback,Curated state-hub coordinate; landmark-level verification still required
+LOC-102,7.380000,3.950000,state_hub_fallback,Curated state-hub coordinate; landmark-level verification still required
+LOC-103,5.113107,7.372450,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-104,5.083219,7.352131,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-105,5.515292,7.807664,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-106,5.664508,7.608013,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-107,5.406395,7.584306,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-108,5.289838,7.398968,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-109,5.391175,7.420349,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-110,5.530000,7.490000,state_hub_fallback,Curated state-hub coordinate; landmark-level verification still required
+LOC-111,5.145955,7.466607,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-112,5.667211,7.801954,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-113,5.180908,7.322756,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-114,5.019121,7.350848,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-115,4.930326,7.418142,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-116,4.946621,7.247575,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-117,5.586054,7.487878,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-118,5.493316,7.452959,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-119,5.964468,7.407048,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-120,9.398249,12.024671,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-121,9.202926,12.641689,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-122,8.429339,12.008130,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-123,9.200000,12.480000,state_hub_fallback,Curated state-hub coordinate; landmark-level verification still required
+LOC-124,10.185740,12.493325,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-125,9.200000,12.480000,state_hub_fallback,Curated state-hub coordinate; landmark-level verification still required
+LOC-126,10.299015,12.933159,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-127,8.701899,12.336190,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-128,9.557771,11.706137,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-129,10.811241,13.502317,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-130,9.856981,13.164111,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-131,8.991923,11.967425,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-132,10.574773,13.404549,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-133,10.362725,13.359450,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-134,10.181731,13.304351,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-135,9.442125,11.819658,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-136,9.865443,12.099773,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-137,9.823108,12.619751,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-138,7.968952,11.823801,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-139,9.257108,12.439882,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-140,9.260374,12.336610,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-141,5.022061,7.771541,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-142,4.518416,7.693837,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-143,4.636997,7.947597,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-144,4.639742,8.075032,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-145,5.108046,7.647922,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-146,4.969841,7.613012,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-147,4.815411,7.844460,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-148,4.561811,8.070956,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-149,4.914736,7.955492,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-150,5.207108,7.884758,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-151,5.010076,7.536397,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-152,5.211555,7.783432,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-153,4.606844,7.620038,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-154,5.194518,7.703978,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-155,5.394059,7.748778,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-156,5.152854,7.987626,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-157,4.648204,8.253213,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-158,4.689740,7.762073,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-159,4.824704,8.031815,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-160,4.896490,7.890624,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-161,4.746852,7.959760,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-162,5.246556,7.604249,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-163,4.821429,8.133824,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-164,4.629268,7.854614,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-165,4.809349,8.234014,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-166,4.810577,7.662932,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-167,4.750587,8.262560,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-168,4.877151,7.583164,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-169,5.011019,8.055245,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-170,4.717286,8.165508,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-171,5.007867,7.917473,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-172,5.982438,7.086070,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-173,6.314091,6.885929,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-174,6.498576,6.809680,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-175,6.090529,7.018981,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-176,6.342627,7.058724,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-177,6.197423,7.087619,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-178,6.559727,6.988816,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-179,6.236905,6.965603,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-180,5.991030,6.849820,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-181,6.128246,6.890687,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-182,6.069945,6.880571,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-183,5.849886,6.861214,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-184,6.187980,6.992300,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-185,6.009689,6.914434,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-186,5.948286,6.973758,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-187,5.886434,6.735127,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-188,6.165076,6.800017,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-189,6.138216,6.772833,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-190,6.105109,7.161806,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-191,5.994380,7.226458,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-192,6.223208,6.897546,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-193,9.887885,10.483109,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-194,10.243024,9.930038,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-195,9.628226,9.614207,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-196,11.620192,10.783988,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-197,11.144455,10.608358,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-198,9.999790,9.492863,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-199,12.037286,10.603694,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-200,10.750529,10.002709,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-201,11.405299,10.247514,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-202,11.859112,10.039044,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-203,11.679271,9.927702,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-204,11.661595,10.341473,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-205,10.410927,10.526471,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-206,11.389267,10.481383,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-207,11.047568,9.231122,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-208,11.468114,10.016702,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-209,9.810539,9.598552,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-210,10.439065,9.228510,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-211,11.154706,9.738002,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-212,12.243294,10.383071,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-213,4.373387,6.196710,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-214,4.945566,5.702015,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-215,5.086746,6.262985,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-216,4.534591,6.390610,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-217,4.767783,6.330867,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-218,5.127500,6.216878,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-219,4.667080,5.930971,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-220,4.920000,6.260000,state_hub_fallback,Curated state-hub coordinate; landmark-level verification still required
+LOC-221,6.794265,8.002571,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-222,7.877311,7.891497,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-223,7.650133,7.886129,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-224,7.356531,9.174179,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-225,7.367000,8.859793,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-226,7.922345,8.759470,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-227,7.387205,8.435708,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-228,7.623437,8.223306,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-229,7.292482,9.591572,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-230,7.057190,8.669909,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-231,6.804708,9.473491,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-232,7.666599,9.255508,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-233,7.738626,8.520426,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-234,7.022496,8.281027,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-235,7.020615,7.663330,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-236,7.256326,7.945217,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-237,6.855868,8.387736,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-238,7.048856,7.860458,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-239,7.730000,8.520000,state_hub_fallback,Curated state-hub coordinate; landmark-level verification still required
+LOC-240,7.614088,8.859011,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-241,7.664158,9.632462,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-242,7.078590,9.090006,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-243,6.853619,9.065445,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-244,13.428835,13.322900,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-245,10.647650,12.943247,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-246,11.544441,14.102381,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-247,10.405083,11.701989,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-248,10.796991,12.098382,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-249,10.842492,12.798928,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-250,11.129921,12.747734,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-251,11.921602,14.036682,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-252,12.664728,12.761694,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-253,12.867912,13.228727,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-254,11.169988,13.584821,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-255,10.453754,12.270986,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-256,11.911452,13.170277,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-257,11.640636,12.475833,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-258,12.040518,14.480684,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-259,11.612350,13.084694,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-260,13.046755,13.717538,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-261,10.446826,11.885056,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-262,12.008573,13.534994,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-263,12.176993,12.633253,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-264,11.836527,13.120344,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-265,12.405720,13.844272,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-266,13.068784,12.690167,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-267,12.542118,13.619736,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-268,12.240025,14.179493,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-269,12.474103,13.127823,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-270,10.181523,11.974896,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-271,5.887921,8.026531,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-272,5.409934,8.533027,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-273,4.895401,8.494654,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-274,4.808042,8.568920,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-275,4.950000,8.320000,state_hub_fallback,Curated state-hub coordinate; landmark-level verification still required
+LOC-276,5.543807,8.070029,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-277,6.279015,9.010094,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-278,5.010948,8.362641,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-279,4.865673,8.330579,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-280,5.862024,8.796797,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-281,6.075689,8.617171,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-282,6.519245,9.321710,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-283,5.985835,8.374744,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-284,6.565163,9.076019,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-285,5.165322,8.147460,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-286,6.508828,8.724777,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-287,5.800520,8.184348,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-288,6.654011,8.585155,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-289,6.362989,6.480592,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-290,6.134390,6.484204,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-291,5.204185,5.859525,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-292,5.235695,5.588065,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-293,5.686249,5.984826,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-294,5.920221,5.752780,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-295,6.229254,6.293216,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-296,6.181415,6.198037,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-297,5.528772,6.235736,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-298,5.382556,6.220713,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-299,5.685977,6.512442,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-300,5.800697,6.342011,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-301,5.686233,5.778673,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-302,6.315206,6.645032,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-303,6.094368,6.677751,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-304,5.173361,6.098869,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-305,5.834324,5.651579,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-306,5.470436,5.816631,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-307,5.511363,6.051751,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-308,5.341267,5.901727,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-309,5.844505,6.249626,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-310,5.572868,5.776545,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-311,5.907673,5.244307,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-312,5.631320,5.603319,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-313,5.582821,5.406031,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-314,6.259845,8.219654,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-315,5.879882,7.923646,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-316,5.836919,7.814348,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-317,6.541721,8.122234,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-318,6.267169,7.973225,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-319,6.127425,7.999668,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-320,6.087120,8.180936,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-321,6.406972,7.809797,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-322,5.892274,7.617729,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-323,6.487872,8.276262,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-324,6.011599,7.788578,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-325,6.528440,7.985623,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-326,6.113145,7.849470,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-327,7.362920,6.136028,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-328,6.363440,5.587503,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-329,6.726297,6.255342,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-330,6.769053,6.391164,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-331,6.588161,6.471849,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-332,6.663149,6.137131,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-333,6.975849,6.517593,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-334,7.198000,6.505752,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-335,6.993129,6.312500,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-336,6.509617,6.242764,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-337,6.170307,5.651069,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-338,6.226516,5.553860,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-339,6.066529,6.002960,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-340,6.488099,5.534138,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-341,6.485199,5.271201,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-342,7.044321,6.059114,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-343,6.923658,5.898627,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-344,6.506886,5.908744,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-345,7.611843,5.268477,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-346,7.690635,4.933764,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-347,7.732371,5.672644,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-348,7.520354,5.041892,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-349,7.684766,5.009537,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-350,7.423221,5.514957,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-351,7.620000,5.220000,state_hub_fallback,Curated state-hub coordinate; landmark-level verification still required
+LOC-352,7.857225,5.186248,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-353,7.845658,5.056447,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-354,7.489106,5.212240,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-355,7.892875,5.511041,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-356,7.620000,5.220000,state_hub_fallback,Curated state-hub coordinate; landmark-level verification still required
+LOC-357,7.710931,5.231241,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-358,7.436679,5.397122,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-359,7.995613,5.130427,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-360,7.884419,5.344854,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-361,6.050789,7.603869,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-362,6.149515,7.453073,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-363,6.548715,7.558388,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-364,6.443633,7.532956,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-365,6.396915,7.511558,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-366,6.406729,7.223375,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-367,6.684604,7.417719,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-368,7.021488,7.456109,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-369,6.949422,7.381607,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-370,6.742908,7.722670,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-371,6.318644,7.666157,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-372,6.328695,7.534331,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-373,6.831966,7.394617,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-374,6.163243,7.286506,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-375,6.878318,7.561227,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-376,6.488390,7.331922,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-377,6.733337,7.139629,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-378,8.825812,6.847325,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-379,9.259738,7.498604,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-380,9.066393,7.029092,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-381,8.655711,7.229909,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-382,8.744445,6.975561,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-383,9.080000,7.400000,state_hub_fallback,Curated state-hub coordinate; landmark-level verification still required
+LOC-384,10.115165,11.034394,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-385,9.836635,11.660275,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-386,9.833250,11.117383,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-387,10.793323,10.825792,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-388,10.778589,11.342067,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-389,10.291133,11.160290,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-390,9.851719,11.419988,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-391,10.493715,11.176355,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-392,11.065848,11.197284,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-393,10.290000,11.170000,state_hub_fallback,Curated state-hub coordinate; landmark-level verification still required
+LOC-394,10.273473,11.483997,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-395,5.430991,7.250182,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-396,5.561335,7.264406,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-397,5.678726,7.288764,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-398,5.490000,7.040000,state_hub_fallback,Curated state-hub coordinate; landmark-level verification still required
+LOC-399,5.885464,7.135842,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-400,5.816634,7.130616,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-401,5.639974,7.379216,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-402,5.564371,7.152829,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-403,5.677801,7.187874,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-404,5.688861,7.052206,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-405,5.595886,7.022821,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-406,5.311679,7.158418,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-407,5.709278,7.006645,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-408,5.753925,7.105129,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-409,5.710043,7.126065,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-410,5.563503,7.359958,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-411,5.654163,6.807636,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-412,5.427094,6.823629,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-413,5.829678,7.324179,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-414,5.490000,7.040000,state_hub_fallback,Curated state-hub coordinate; landmark-level verification still required
+LOC-415,5.806474,7.034149,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-416,5.848551,6.972644,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-417,5.711576,6.941532,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-418,5.748406,6.892509,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-419,5.476651,7.017427,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-420,5.451982,7.091338,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-421,5.432032,6.973688,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-422,12.350428,9.992603,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-423,12.608336,8.861268,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-424,12.818017,10.065460,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-425,11.760000,9.340000,state_hub_fallback,Curated state-hub coordinate; landmark-level verification still required
+LOC-426,11.579700,9.723460,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-427,11.794777,9.312382,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-428,12.492497,9.526240,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-429,12.410945,9.080996,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-430,12.631687,9.401056,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-431,12.644722,10.464707,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-432,11.191745,9.974957,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-433,12.754428,8.285820,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-434,12.466692,10.051759,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-435,12.061978,9.555376,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-436,12.158333,9.998509,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-437,12.491528,9.756504,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-438,12.650814,8.520941,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-439,11.760000,9.340000,state_hub_fallback,Curated state-hub coordinate; landmark-level verification still required
+LOC-440,11.835259,9.575342,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-441,12.707713,9.576638,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-442,12.546889,9.977671,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-443,12.229338,9.688954,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-444,12.177469,9.107451,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-445,12.587315,8.328701,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-446,12.642540,9.213540,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-447,12.277488,9.376040,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-448,12.755172,8.517182,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-449,10.864793,6.662396,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-450,10.361438,7.224819,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-451,11.118833,7.366318,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-452,10.743317,7.544266,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-453,11.275016,8.203556,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-454,9.489568,8.027200,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-455,9.397727,8.260656,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-456,9.839026,7.658150,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-457,10.548797,7.447261,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-458,10.507676,7.412458,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-459,9.487404,7.624366,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-460,10.299285,8.279173,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-461,9.619272,8.459985,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-462,10.263097,7.864990,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-463,10.871104,8.363258,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-464,11.270453,7.763841,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-465,10.369328,8.566649,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-466,10.520000,7.440000,state_hub_fallback,Curated state-hub coordinate; landmark-level verification still required
+LOC-467,11.173802,7.679214,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-468,9.240879,8.460169,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-469,10.957980,7.991248,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-470,10.520000,7.440000,state_hub_fallback,Curated state-hub coordinate; landmark-level verification still required
+LOC-471,11.029784,7.691017,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-472,11.973131,9.069093,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-473,11.634090,9.113166,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-474,12.102438,8.134546,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-475,11.509633,8.311105,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-476,12.276560,8.267196,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-477,11.673972,8.591811,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-478,12.021548,8.495477,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-479,12.429840,8.628298,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-480,11.803589,8.671191,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-481,12.147472,8.391247,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-482,10.847127,8.675089,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-483,12.032966,8.521892,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-484,12.150826,8.860344,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-485,11.558133,8.848707,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-486,12.000000,8.520000,state_hub_fallback,Curated state-hub coordinate; landmark-level verification still required
+LOC-487,11.790451,9.055299,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-488,12.045308,8.730670,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-489,11.984061,8.485987,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-490,11.898802,7.950475,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-491,11.887044,8.175107,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-492,11.976700,8.514297,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-493,11.754964,8.005890,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-494,11.508538,8.681248,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-495,11.595469,8.146521,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-496,11.919247,8.517310,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-497,12.442501,8.277137,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-498,11.780783,8.500261,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-499,11.814866,8.386541,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
+LOC-500,12.417702,8.489218,lga_boundary_centroid,https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer/2
