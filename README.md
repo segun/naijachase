@@ -63,12 +63,15 @@ distance between state capitals. Travel is limited to Nigeria's 36 states and
 the Federal Capital Territory. Consecutive stops within one state use a local
 road transfer rather than pretending the player can fly directly to an LGA.
 
-A warrant becomes available only after eight dossier fields identify exactly
-one thief: sex, height, skin tone, hair, hobby, vehicle, accessory, and a
+A warrant becomes available only after the player manually completes eight
+dossier fields: sex, height, skin tone, hair, hobby, vehicle, accessory, and a
 distinguishing feature. Each detail is embedded naturally in witness dialogue,
-including role-appropriate Nigerian Pidgin. Successful cases award career
-points and promotions. The current case is saved automatically and can be
-resumed on the next run.
+including role-appropriate Nigerian Pidgin, but the game does not copy it into
+the dossier. The player interprets the statement, chooses the appropriate
+field value, and may revise it later. At the capture state, the game presents
+three plausible suspect profiles and the player chooses the warrant target.
+Successful cases award career points and promotions. The current case is saved
+automatically and can be resumed on the next run.
 
 Useful commands:
 
@@ -110,6 +113,15 @@ Sessions retain their deterministic seed and a serialisable replay log. Career
 and active-case saves carry format version 2; older unversioned saves migrate
 when loaded. Automated coverage runs every one of the 1,000 missions through
 the public command interface as well as through the existing content checks.
+
+P3.2 makes deduction player-controlled. Witness interviews populate private
+case observations but never the player's dossier. Dossier entries consume a
+small difficulty-scaled amount of case time; an entry that contradicts an
+observed account produces a warning and score penalty without disclosing the
+correct value. Once all eight fields are filled, the engine deterministically
+selects the culprit and the two closest alternative profiles for warrant
+comparison. The warrant is issued for the suspect selected by the player, so a
+wrong interpretation can now produce a wrong arrest and escape.
 
 `scripts/build_gameplay_data.py` regenerates the state hubs, distance-based
 travel graph, venue catalogue, and unique thief profiles under `data/gameplay/`.

@@ -49,13 +49,13 @@ class Career:
   return cls(**{k:v for k,v in payload.items() if k in allowed})
 @dataclass
 class Session:
- data:GameData;mission:dict;elapsed:int=0;stage:int=0;current_state:str="";current_location_id:str="";evidence:dict=field(default_factory=dict);visited:list=field(default_factory=list);case_score:int=0;candidate_sets:dict=field(default_factory=dict);avoid_atoms:list=field(default_factory=list);avoid_variants:list=field(default_factory=list);travel_history:list=field(default_factory=list);seed:int=0;replay_log:list=field(default_factory=list)
+ data:GameData;mission:dict;elapsed:int=0;stage:int=0;current_state:str="";current_location_id:str="";evidence:dict=field(default_factory=dict);observed_traits:dict=field(default_factory=dict);visited:list=field(default_factory=list);case_score:int=0;candidate_sets:dict=field(default_factory=dict);avoid_atoms:list=field(default_factory=list);avoid_variants:list=field(default_factory=list);travel_history:list=field(default_factory=list);seed:int=0;replay_log:list=field(default_factory=list)
  @classmethod
  def new(cls,data,m,recent_atoms=None,recent_variants=None,seed=0):
   start=data.route(m)[0];return cls(data,m,current_state=start,current_location_id=m["start_location_id"],case_score=CASE_BASE[m["difficulty"]],avoid_atoms=list(recent_atoms or []),avoid_variants=list(recent_variants or []),travel_history=[start],seed=seed,replay_log=[{"command":"start_case","mission_id":m["mission_id"],"seed":seed}])
  @classmethod
- def restore(cls,data,s):return cls(data=data,mission=data.missions[s["mission_id"]],elapsed=s["elapsed"],stage=s["stage"],current_state=s["current_state"],current_location_id=s.get("current_location_id",data.missions[s["mission_id"]][("start_location_id","stop_2_location_id","stop_3_location_id","capture_location_id")[s["stage"]]]),evidence=s["evidence"],visited=s["visited"],case_score=s["case_score"],candidate_sets=s.get("candidate_sets",{}),avoid_atoms=s.get("avoid_atoms",[]),avoid_variants=s.get("avoid_variants",[]),travel_history=s.get("travel_history",[s["current_state"]]),seed=s.get("seed",0),replay_log=s.get("replay_log",[]))
- def save_dict(self):return {"state_version":SAVE_VERSION,"mission_id":self.mission["mission_id"],"elapsed":self.elapsed,"stage":self.stage,"current_state":self.current_state,"current_location_id":self.current_location_id,"evidence":self.evidence,"visited":self.visited,"case_score":self.case_score,"candidate_sets":self.candidate_sets,"avoid_atoms":self.avoid_atoms,"avoid_variants":self.avoid_variants,"travel_history":self.travel_history,"seed":self.seed,"replay_log":self.replay_log}
+ def restore(cls,data,s):return cls(data=data,mission=data.missions[s["mission_id"]],elapsed=s["elapsed"],stage=s["stage"],current_state=s["current_state"],current_location_id=s.get("current_location_id",data.missions[s["mission_id"]][("start_location_id","stop_2_location_id","stop_3_location_id","capture_location_id")[s["stage"]]]),evidence=s["evidence"],observed_traits=s.get("observed_traits",{}),visited=s["visited"],case_score=s["case_score"],candidate_sets=s.get("candidate_sets",{}),avoid_atoms=s.get("avoid_atoms",[]),avoid_variants=s.get("avoid_variants",[]),travel_history=s.get("travel_history",[s["current_state"]]),seed=s.get("seed",0),replay_log=s.get("replay_log",[]))
+ def save_dict(self):return {"state_version":SAVE_VERSION,"mission_id":self.mission["mission_id"],"elapsed":self.elapsed,"stage":self.stage,"current_state":self.current_state,"current_location_id":self.current_location_id,"evidence":self.evidence,"observed_traits":self.observed_traits,"visited":self.visited,"case_score":self.case_score,"candidate_sets":self.candidate_sets,"avoid_atoms":self.avoid_atoms,"avoid_variants":self.avoid_variants,"travel_history":self.travel_history,"seed":self.seed,"replay_log":self.replay_log}
  @property
  def expired(self):return self.elapsed>=10080
  @property
@@ -99,7 +99,7 @@ class Session:
   local_minutes=self.travel_to_venue(v);v=self.data.clue_engine.contextualize(v,self.current_state,self.mission["mission_id"],self.stage,self.elapsed)
   investigation_minutes=20+int(v["interview_minutes"])+int(v.get("event_minutes",0));spent=local_minutes+investigation_minutes;self.elapsed+=investigation_minutes;self.visited.append(key);role=v.get("role") or random.Random(key+self.mission["mission_id"]).choice(v["witness_roles"].split("|"))
   on_trail=self.current_state==self.route[self.stage];field_name=v.get("profile_field",FIELDS[(self.stage*3+index)%len(FIELDS)]);profile=self.data.profiles[self.mission["thief_id"]];new=None
-  if on_trail and field_name not in self.evidence:self.evidence[field_name]=profile[field_name];new=(field_name,profile[field_name])
+  if on_trail and field_name not in self.observed_traits:self.observed_traits[field_name]=profile[field_name];new=(field_name,profile[field_name])
   if not on_trail:route="I have not seen anyone matching that description. This is a false trail."
   elif self.stage<3 and "dialogue" in v:
    route=v["dialogue"]
@@ -176,15 +176,31 @@ class GameEngine:
   correct,row=s.travel_to(state);s.replay_log.append({"command":"travel","state":state})
   kind="arrived_on_trail" if correct else "false_destination"
   return CommandResult(correct,[EngineEvent(kind,{"state":state,"stage":s.stage,"travel":row,"at_capture":s.at_capture})],{"correct":correct,"travel":row})
+ def trait_values(self,trait):return sorted({p[trait] for p in self.data.profiles.values()}) if trait in FIELDS else []
  def record_trait(self,s,trait,value):
   if trait not in FIELDS:return CommandResult(False,[EngineEvent("invalid_trait",{"trait":trait})])
-  s.evidence[trait]=value;s.replay_log.append({"command":"record_trait","trait":trait,"value":value})
-  return CommandResult(True,[EngineEvent("trait_recorded",{"trait":trait,"value":value})])
- def request_warrant(self,s):
-  match=s.warrant_match();s.replay_log.append({"command":"request_warrant"})
+  if value not in self.trait_values(trait):return CommandResult(False,[EngineEvent("invalid_trait_value",{"trait":trait,"value":value})])
+  minutes=3+int(s.mission["difficulty"]);s.elapsed+=minutes;s.evidence[trait]=value;s.replay_log.append({"command":"record_trait","trait":trait,"value":value})
+  conflict=trait in s.observed_traits and s.observed_traits[trait]!=value
+  if conflict:s.case_score=max(0,s.case_score-10*int(s.mission["difficulty"]))
+  events=[EngineEvent("trait_recorded",{"trait":trait,"value":value,"minutes":minutes})]
+  if conflict:events.append(EngineEvent("dossier_conflict",{"trait":trait}))
+  return CommandResult(True,events,{"conflict":conflict})
+ def suspect_candidates(self,s):
+  culprit=s.mission["thief_id"]
+  def score(item):
+   tid,profile=item;matches=sum(profile.get(k)==v for k,v in s.evidence.items())
+   return (-matches,tid)
+  others=[tid for tid,_ in sorted(((tid,p) for tid,p in self.data.profiles.items() if tid!=culprit),key=score)[:2]]
+  candidates=[culprit]+others;random.Random(f"{s.mission['mission_id']}|{sorted(s.evidence.items())}").shuffle(candidates);return candidates
+ def request_warrant(self,s,suspect_id=None):
+  s.replay_log.append({"command":"request_warrant","suspect_id":suspect_id})
   if not s.at_capture:return CommandResult(False,[EngineEvent("warrant_wrong_jurisdiction",{})])
-  if not match:return CommandResult(False,[EngineEvent("warrant_incomplete",{"missing":len(FIELDS)-len(s.evidence)})])
-  return CommandResult(True,[EngineEvent("warrant_ready",{"suspect_id":match})],{"suspect_id":match})
+  if not s.profile_complete:return CommandResult(False,[EngineEvent("warrant_incomplete",{"missing":len(FIELDS)-len(s.evidence)})])
+  candidates=self.suspect_candidates(s)
+  if suspect_id is None:return CommandResult(False,[EngineEvent("suspect_selection_required",{"candidate_ids":candidates})],{"candidate_ids":candidates})
+  if suspect_id not in candidates:return CommandResult(False,[EngineEvent("invalid_warrant_suspect",{"suspect_id":suspect_id})])
+  return CommandResult(True,[EngineEvent("warrant_ready",{"suspect_id":suspect_id})],{"suspect_id":suspect_id})
  def arrest(self,s,suspect_id):
   s.elapsed+=30;s.replay_log.append({"command":"arrest","suspect_id":suspect_id})
   if suspect_id!=s.mission["thief_id"]:return CommandResult(False,[EngineEvent("suspect_escaped",{"suspect_id":suspect_id})])
@@ -206,10 +222,10 @@ class Game:
    self.say("Enter one of the listed numbers.")
  def persist(self,s=None):self.career.active=s.save_dict() if s else None;self.career.dump()
  def status(self,s):
-  self.say(f"\n{s.clock()} | {s.current_state} ({self.data.hubs[s.current_state]['hub_city']}) | Case score {s.case_score}");self.say(f"Deadline: next Monday 07:00 | Profile evidence: {len(s.evidence)}/{len(FIELDS)}")
+  self.say(f"\n{s.clock()} | {s.current_state} ({self.data.hubs[s.current_state]['hub_city']}) | Case score {s.case_score}");self.say(f"Deadline: next Monday 07:00 | Dossier entries: {len(s.evidence)}/{len(FIELDS)}")
  def case_dossier(self,s):
   m=s.mission;start=self.data.locations[m['start_location_id']]
-  self.say("\n=== CASE DOSSIER ===");self.say(f"Case: {m['mission_id']} — {m['title']}");self.say(f"Investigator: {self.career.name} | Rank: {self.career.rank}");self.say(f"Theme: {m['case_theme']} | Difficulty: {DIFFICULTY_NAMES[m['difficulty']]}");self.say(f"Stolen item: {m['stolen_item']}");self.say(f"Opening location: {start['name']}, {s.current_state}");self.say("Deadline: Next Monday at 07:00");self.say("Objective: follow the state-to-state trail, collect all eight suspect traits, and obtain the correct warrant at the capture state.");self.say(m['premise']);self.say(m['opening_briefing'])
+  self.say("\n=== CASE DOSSIER ===");self.say(f"Case: {m['mission_id']} — {m['title']}");self.say(f"Investigator: {self.career.name} | Rank: {self.career.rank}");self.say(f"Theme: {m['case_theme']} | Difficulty: {DIFFICULTY_NAMES[m['difficulty']]}");self.say(f"Stolen item: {m['stolen_item']}");self.say(f"Opening location: {start['name']}, {s.current_state}");self.say("Deadline: Next Monday at 07:00");self.say("Objective: follow the state-to-state trail, interpret witness descriptions, enter all eight suspect traits yourself, and select the correct warrant target at the capture state.");self.say(m['premise']);self.say(m['opening_briefing'])
  def notebook(self,s):
   possible=s.possible_destinations();eliminated=s.eliminated_destinations();matches=s.suspect_matches()
   self.say("\n=== DETECTIVE NOTEBOOK ===");self.say(f"Case: {s.mission['mission_id']} | Time: {s.clock()} | Score: {s.case_score}")
@@ -222,14 +238,22 @@ class Game:
   self.say(f"  Matching suspects: {len(matches)}")
   if len(matches)<=5:
    for tid in matches:self.say(f"    {self.data.thieves[tid]['alias']} — {self.data.thieves[tid]['name']}")
-  self.say("  Warrant status: "+("READY" if s.warrant_match() else f"LOCKED — {len(FIELDS)-len(s.evidence)} traits still required"))
+  self.say("  Warrant status: "+("READY FOR SUSPECT COMPARISON" if s.profile_complete else f"LOCKED — {len(FIELDS)-len(s.evidence)} entries still required"))
+ def edit_dossier(self,s):
+  labels=[f"{key.replace('_',' ').title()}: {s.evidence.get(key,'Unknown')}" for key in FIELDS]+["Return to investigation"]
+  pick=self.choose("Choose a dossier field",labels,False)
+  if pick==len(FIELDS):return
+  trait=FIELDS[pick];values=self.engine.trait_values(trait);choice=self.choose(f"Record {trait.replace('_',' ')}",values+["Cancel"],False)
+  if choice==len(values):return
+  result=self.engine.record_trait(s,trait,values[choice]);minutes=result.event("trait_recorded").data["minutes"];self.say(f"Dossier updated: {trait.replace('_',' ').title()} — {values[choice]}. Paperwork time: {minutes} minutes.")
+  if result.event("dossier_conflict"):self.say("Warning: this entry appears to conflict with a witness account in your case notes. Review the wording before requesting a warrant.")
  def warrant_paperwork(self,s,match):
   suspect=self.data.thieves[match]
   self.say("\n=== WARRANT APPLICATION ===");self.say(f"Case number: {s.mission['mission_id']}");self.say(f"Applicant: Investigator {self.career.name}");self.say(f"Jurisdiction: {s.current_state}");self.say(f"Named suspect: {suspect['alias']} — {suspect['name']}")
   for key in FIELDS:self.say(f"  {key.replace('_',' ').title()}: {s.evidence[key]}")
-  self.say("Identity comparison: UNIQUE MATCH");self.say("Application status: READY FOR SIGNATURE")
+  self.say("Identity comparison: PLAYER-SELECTED CANDIDATE");self.say("Application status: READY FOR SIGNATURE")
  def help(self):
-  self.say("\n=== HELP AND RULES ===");self.say("Solve the case before next Monday at 07:00. Question witnesses at three local venues; each visit and journey costs time. Combine their accounts in the notebook to narrow the next state. Travel is between states or the FCT, while venue visits happen locally. Collect all eight identifying traits. At the final state, compare the completed dossier, request the warrant, and arrest the matching thief. Closed venues may require a wait. Wrong journeys cost time and points. The game saves automatically; choose Save and quit for a clean exit.");self.say("Display options: --plain uses ASCII punctuation, --width N changes line width (50–120), and --no-wrap preserves each printed line.")
+  self.say("\n=== HELP AND RULES ===");self.say("Solve the case before next Monday at 07:00. Question witnesses at three local venues; each visit and journey costs time. Combine their accounts in the notebook to narrow the next state. Travel is between states or the FCT, while venue visits happen locally. Witnesses describe suspect traits in conversation; use Update suspect dossier to enter your own interpretation. You may revise any entry. At the final state, complete all eight fields, compare three plausible suspects, select one warrant target, and make the arrest. Closed venues may require a wait. Wrong journeys and wrong warrants have consequences. The game saves automatically; choose Save and quit for a clean exit.");self.say("Display options: --plain uses ASCII punctuation, --width N changes line width (50–120), and --no-wrap preserves each printed line.")
  def play(self,s):
   m=s.mission;self.case_dossier(s);self.say(f"\n=== ARRIVAL: {s.current_state.upper()} ===");self.say(f"You report to {self.data.hubs[s.current_state]['hub_city']} and open the investigation.")
   while not s.expired:
@@ -237,7 +261,7 @@ class Game:
    for v in venues:
     status=self.engine.venue_status(s,v)
     menu.append(f"Visit {v['venue_name']} [{status}]")
-   menu+=["Open detective notebook","Request warrant" if s.at_capture else "Travel to another state","Help and rules","Save and quit"]
+   menu+=["Open detective notebook","Update suspect dossier","Request warrant" if s.at_capture else "Travel to another state","Help and rules","Save and quit"]
    pick=self.choose("Choose an action",menu,False)
    if pick<3:
     v=venues[pick]
@@ -264,12 +288,20 @@ class Game:
      self.say(f"Notebook reliability: {result['reliability']}.")
      if result["story_detail"]:self.say(result["story_detail"])
      if result["after"]:self.say(result["after"])
-     if result["profile"]:self.say(f"Notebook updated: {result['profile'][0].title()}.")
+     if result["profile"]:self.say(f"Case notes updated with a witness detail about {result['profile'][0].replace('_',' ')}. Enter your interpretation in the suspect dossier.")
      if result["possibilities"]:self.say(f"Possible destinations: {', '.join(result['possibilities'])}.")
    elif pick==3:self.notebook(s)
-   elif pick==4 and s.at_capture:
-    warrant=self.engine.request_warrant(s);match=warrant.data.get("suspect_id")
-    if not warrant.ok:self.say("The dossier is incomplete. Eight identifying attributes are required.");continue
+   elif pick==4:self.edit_dossier(s)
+   elif pick==5 and s.at_capture:
+    warrant=self.engine.request_warrant(s)
+    if warrant.event("warrant_incomplete"):self.say("The dossier is incomplete. Eight identifying attributes are required.");continue
+    candidates=warrant.data["candidate_ids"];labels=[]
+    for tid in candidates:
+     thief=self.data.thieves[tid];profile=self.data.profiles[tid];traits=", ".join(f"{key.replace('_',' ')}: {profile[key]}" for key in FIELDS)
+     labels.append(f"{thief['alias']} — {thief['name']} | {traits}")
+    selected=self.choose("Compare the dossier and select the warrant target",labels+["Cancel"],False)
+    if selected==len(candidates):continue
+    match=candidates[selected];warrant=self.engine.request_warrant(s,match)
     suspect=self.data.thieves[match];self.warrant_paperwork(s,match);yes=self.choose(f"Issue warrant for {suspect['alias']} — {suspect['name']}",["Sign and issue warrant","Cancel"],False)
     if yes:continue
     arrest=self.engine.arrest(s,match)
@@ -279,7 +311,7 @@ class Game:
      if old!=self.career.rank:self.say(f"\n=== PROMOTION NOTICE ===\nCongratulations, Investigator {self.career.name}. Headquarters promotes you from {old} to {self.career.rank}.")
      return True
     self.say("\n=== ESCAPE ===");self.say("The warrant names the wrong suspect. While officers correct the paperwork, the thief slips away.");self.say(m["failure_conclusion"]);self.persist();return False
-   elif pick==4:
+   elif pick==5:
     options=self.engine.travel_options(s);labels=[]
     for row in options:
      mins=int(row["travel_minutes"]);labels.append(f"{row['state']} — {row['hub_city']} ({row['travel_mode']}, {row['distance_km']}{'' if row['distance_km']=='within state' else ' km'}, {mins//60}h {mins%60}m)")
@@ -289,7 +321,7 @@ class Game:
     if travel.ok:
      self.say(m[f"transition_{s.stage}"]);self.say(f"\n=== ARRIVAL: {s.current_state.upper()} ===");self.say(f"You arrive through {self.data.hubs[s.current_state]['hub_city']}. "+("The suspect is close; finish the dossier and secure a warrant." if s.at_capture else "The trail is warm. Find three local witnesses."))
     else:self.say(m["false_lead_explanation"])
-   elif pick==5:self.help()
+   elif pick==6:self.help()
    else:self.persist(s);self.say("Game saved.");return False
   self.say("\n=== DEADLINE EXPIRED ===");self.say("Next Monday, 07:00. Headquarters closes the active pursuit as the seven-day window ends.");self.say(m["failure_conclusion"]);self.say("The thief escaped.");self.persist();return False
 def mission_menu(game,difficulty=None):

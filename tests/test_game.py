@@ -1,6 +1,6 @@
 import csv,io,random,tempfile,unittest
 from pathlib import Path
-from game import Career,Game,GameData,Session,rank_for,DIFFICULTY_RULES,CASE_BASE
+from game import Career,Game,GameData,Session,rank_for,DIFFICULTY_RULES,CASE_BASE,FIELDS
 from engine import GameEngine,SAVE_VERSION
 ROOT=Path(__file__).resolve().parent.parent
 class GameTests(unittest.TestCase):
@@ -164,20 +164,23 @@ class GameTests(unittest.TestCase):
   s=Session.new(self.data,self.ready);night=next(x for x in self.data.venues if x['venue_id']=='nightclub')
   self.assertFalse(s.is_open(night));wait=s.wait_to_open(night);self.assertEqual(wait,13*60);self.assertTrue(s.is_open(night))
  def test_profile_and_warrant_require_eight_fields(self):
-  s=Session.new(self.data,self.ready);self.assertIsNone(s.warrant_match())
+  s=Session.new(self.data,self.ready);engine=GameEngine(self.data,Career('Ada'));self.assertIsNone(s.warrant_match())
   for stage,count in [(0,3),(1,3),(2,2)]:
    s.stage=stage;s.current_state=s.route[stage]
    for i,v in enumerate(s.venue_set()[:count]):s.interview(v,i)
+  self.assertFalse(s.evidence);self.assertEqual(len(s.observed_traits),8)
+  for trait,value in s.observed_traits.items():engine.record_trait(s,trait,value)
   self.assertEqual(set(s.evidence),{'sex','height','skin_tone','hair','hobby','vehicle','accessory','feature'});self.assertTrue(s.profile_complete);self.assertEqual(s.warrant_match(),s.mission['thief_id'])
  def test_correct_travel_advances_time_and_stage(self):
   s=Session.new(self.data,self.ready);target=s.route[1];before=s.elapsed
   correct,row=s.travel_to(target);self.assertTrue(correct);self.assertEqual(s.stage,1);self.assertEqual(s.elapsed-before,int(row['travel_minutes']))
  def test_engine_playthrough_reaches_capture_with_warrant(self):
-  s=Session.new(self.data,self.ready)
+  s=Session.new(self.data,self.ready);engine=GameEngine(self.data,Career('Ada'))
   for stage in range(4):
    s.stage=stage;s.current_state=s.route[stage]
    for i,v in enumerate(s.venue_set()):s.interview(v,i)
    if stage<3:s.travel_to(s.route[stage+1])
+  for trait,value in s.observed_traits.items():engine.record_trait(s,trait,value)
   self.assertTrue(s.at_capture);self.assertEqual(s.warrant_match(),s.mission['thief_id']);self.assertFalse(s.expired)
  def test_all_missions_complete_an_engine_dry_run(self):
   for mission in self.data.missions.values():
@@ -220,7 +223,7 @@ class GameTests(unittest.TestCase):
    if field in ('thief_id',):continue
    if field in ('sex','height','skin_tone','hair','hobby','vehicle','accessory','feature'):s.evidence[field]=value
   match=s.warrant_match();game.warrant_paperwork(s,match);rendered=out.getvalue()
-  for heading in ('CASE DOSSIER','DETECTIVE NOTEBOOK','TRAVEL MAP','DESTINATION ANALYSIS','SUSPECT DOSSIER','HELP AND RULES','WARRANT APPLICATION','UNIQUE MATCH'):self.assertIn(heading,rendered)
+  for heading in ('CASE DOSSIER','DETECTIVE NOTEBOOK','TRAVEL MAP','DESTINATION ANALYSIS','SUSPECT DOSSIER','HELP AND RULES','WARRANT APPLICATION','PLAYER-SELECTED CANDIDATE'):self.assertIn(heading,rendered)
  def test_plain_accessibility_mode_and_line_width(self):
   out=io.StringIO();game=Game(self.data,Career('Ada'),out=out,width=50,plain=True);game.say('Alpha — Beta → “Gamma”')
   self.assertEqual(out.getvalue().strip(),'Alpha - Beta -> "Gamma"');self.assertEqual(game.width,50)
@@ -272,7 +275,27 @@ class GameTests(unittest.TestCase):
     for index,venue in enumerate(engine.venues(s)):
      result=engine.visit_venue(s,venue,index,wait=True);self.assertTrue(result.ok,(mission['mission_id'],stage))
     if stage<3:self.assertTrue(engine.travel(s,s.route[stage+1]).ok)
-   warrant=engine.request_warrant(s);self.assertTrue(warrant.ok,mission['mission_id'])
+   self.assertFalse(s.evidence)
+   for trait,value in s.observed_traits.items():self.assertTrue(engine.record_trait(s,trait,value).ok)
+   selection=engine.request_warrant(s);self.assertIsNotNone(selection.event('suspect_selection_required'))
+   self.assertEqual(len(selection.data['candidate_ids']),3);self.assertIn(mission['thief_id'],selection.data['candidate_ids'])
+   warrant=engine.request_warrant(s,mission['thief_id']);self.assertTrue(warrant.ok,mission['mission_id'])
    self.assertTrue(engine.arrest(s,warrant.data['suspect_id']).ok,mission['mission_id'])
   self.assertEqual(len(career.solved),1000)
+ def test_manual_dossier_conflict_does_not_reveal_correct_value(self):
+  engine=GameEngine(self.data,Career('Ada'));s=engine.start_case(self.ready).data['session'];venue=engine.venues(s)[0];engine.visit_venue(s,venue,0,wait=True)
+  trait=next(iter(s.observed_traits));correct=s.observed_traits[trait];wrong=next(value for value in engine.trait_values(trait) if value!=correct)
+  result=engine.record_trait(s,trait,wrong);conflict=result.event('dossier_conflict')
+  self.assertIsNotNone(conflict);self.assertEqual(conflict.data,{'trait':trait});self.assertNotIn(correct,str(conflict.as_dict()))
+ def test_suspect_candidates_are_stable_plausible_and_include_culprit(self):
+  engine=GameEngine(self.data,Career('Ada'));s=engine.start_case(self.ready).data['session'];profile=self.data.profiles[s.mission['thief_id']]
+  for trait in FIELDS:engine.record_trait(s,trait,profile[trait])
+  first=engine.suspect_candidates(s);self.assertEqual(first,engine.suspect_candidates(s));self.assertEqual(len(set(first)),3);self.assertIn(s.mission['thief_id'],first)
+ def test_incomplete_and_wrong_suspect_warrant_paths(self):
+  engine=GameEngine(self.data,Career('Ada'));s=engine.start_case(self.ready).data['session'];s.stage=3;s.current_state=s.route[3]
+  incomplete=engine.request_warrant(s);self.assertIsNotNone(incomplete.event('warrant_incomplete'))
+  profile=self.data.profiles[s.mission['thief_id']]
+  for trait in FIELDS:engine.record_trait(s,trait,profile[trait])
+  wrong=next(tid for tid in engine.suspect_candidates(s) if tid!=s.mission['thief_id']);warrant=engine.request_warrant(s,wrong)
+  self.assertTrue(warrant.ok);arrest=engine.arrest(s,wrong);self.assertFalse(arrest.ok);self.assertIsNotNone(arrest.event('suspect_escaped'))
 if __name__=='__main__':unittest.main()

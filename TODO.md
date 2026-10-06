@@ -31,7 +31,7 @@ completed.
 - [x] 9,324 dialogue variants across three difficulty levels and two registers
 - [x] All 1,000 missions connected to the contextual witness engine
 - [x] Career-level recent clue and dialogue tracking
-- [x] 44 automated tests passing
+- [x] 47 automated tests passing
 
 ## Completed game systems
 
@@ -72,10 +72,11 @@ completed.
 - [x] Eight dossier fields: sex, height, skin tone, hair, hobby, vehicle,
   accessory, and distinguishing feature
 - [x] Unique profile for every thief
-- [x] Profile evidence gathered during ordinary witness interviews
+- [x] Profile evidence described during ordinary witness interviews and entered
+  manually by the player
 - [x] Physical descriptors are embedded naturally in both English and Nigerian
   Pidgin witness accounts
-- [x] Completed profile resolves to one thief
+- [x] Completed profile opens a three-suspect comparison led by the player
 - [x] All eight fields are required before a warrant can be issued
 - [x] Correct warrant and capture state required to close a case
 
@@ -237,16 +238,16 @@ before committing to expensive 3D production.
 
 #### P3.2 — Player-controlled deduction
 
-- [ ] Stop automatically adding traits to the suspect dossier.
-- [ ] Let players translate witness statements into dossier fields themselves.
-- [ ] Allow dossier entries to be changed before requesting a warrant.
-- [ ] Once enough evidence exists, present three plausible suspects and require
+- [x] Stop automatically adding traits to the suspect dossier.
+- [x] Let players translate witness statements into dossier fields themselves.
+- [x] Allow dossier entries to be changed before requesting a warrant.
+- [x] Once enough evidence exists, present three plausible suspects and require
   the player to choose the warrant target.
-- [ ] Ensure one candidate is correct and the other two differ by subtle,
+- [x] Ensure one candidate is correct and the other two differ by subtle,
   evidence-supported traits rather than random mismatches.
-- [ ] Explain contradictory or incomplete entries without revealing the answer.
-- [ ] Rebalance time, score, and difficulty for manual deduction.
-- [ ] Exit criterion: automated scenarios cover correct, incomplete,
+- [x] Explain contradictory or incomplete entries without revealing the answer.
+- [x] Rebalance time, score, and difficulty for manual deduction.
+- [x] Exit criterion: automated scenarios cover correct, incomplete,
   contradictory, and wrong-suspect paths at every difficulty.
 
 #### P3.3 — Data model and persistence
