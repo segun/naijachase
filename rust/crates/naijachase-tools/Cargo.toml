@@ -6,4 +6,5 @@ edition="2024"
 naijachase-content={path="../naijachase-content"}
 naijachase-core.workspace=true
 naijachase-contracts.workspace=true
+naijachase-storage={path="../naijachase-storage"}
 csv.workspace=true

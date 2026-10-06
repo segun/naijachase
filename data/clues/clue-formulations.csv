@@ -12395,9 +12395,9 @@ CF-S2-00081,KN-S2-0027,dispatch,2,Dispatch clue: The walls and earthworks around
 CF-S2-00082,KN-S2-0028,question,3,Which answer fits this fact: Many communities east of the Niger historically organized political life through autonomous towns and villages?,Autonomous communities,kingdoms_empires
 CF-S2-00083,KN-S2-0028,witness,3,A witness mentions that Many communities east of the Niger historically organized political life through autonomous towns and villages. What key detail identifies the lead?,Autonomous communities,kingdoms_empires
 CF-S2-00084,KN-S2-0028,dispatch,3,Dispatch clue: Many communities east of the Niger historically organized political life through autonomous towns and villages. Record the relevant answer.,Autonomous communities,kingdoms_empires
-CF-S2-00085,KN-S2-0029,question,2,Which answer fits this fact: Old Calabar developed around Efik trading communities near the Cross River estuary?,Efik,kingdoms_empires
-CF-S2-00086,KN-S2-0029,witness,2,A witness mentions that Old Calabar developed around Efik trading communities near the Cross River estuary. What key detail identifies the lead?,Efik,kingdoms_empires
-CF-S2-00087,KN-S2-0029,dispatch,2,Dispatch clue: Old Calabar developed around Efik trading communities near the Cross River estuary. Record the relevant answer.,Efik,kingdoms_empires
+CF-S2-00085,KN-S2-0029,question,2,Which answer fits this fact: Old Calabar developed around Efik trading communities near the mouth of the Cross River?,Efik,kingdoms_empires
+CF-S2-00086,KN-S2-0029,witness,2,A witness mentions that Old Calabar developed around Efik trading communities near the mouth of the Cross River. What key detail identifies the lead?,Efik,kingdoms_empires
+CF-S2-00087,KN-S2-0029,dispatch,2,Dispatch clue: Old Calabar developed around Efik trading communities near the mouth of the Cross River. Record the relevant answer.,Efik,kingdoms_empires
 CF-S2-00088,KN-S2-0030,question,2,Which answer fits this fact: The Olu is the traditional ruler of the Itsekiri Kingdom of Warri?,Olu,kingdoms_empires
 CF-S2-00089,KN-S2-0030,witness,2,A witness mentions that The Olu is the traditional ruler of the Itsekiri Kingdom of Warri. What key detail identifies the lead?,Olu,kingdoms_empires
 CF-S2-00090,KN-S2-0030,dispatch,2,Dispatch clue: The Olu is the traditional ruler of the Itsekiri Kingdom of Warri. Record the relevant answer.,Olu,kingdoms_empires
@@ -12641,9 +12641,9 @@ CF-S2-00327,KN-S2-0109,dispatch,1,Dispatch clue: Benue State is named after the 
 CF-S2-00328,KN-S2-0110,question,2,Which answer fits this fact: Borno State is closely associated with the history of Kanem-Borno and the Lake Chad basin?,Borno,state_identity
 CF-S2-00329,KN-S2-0110,witness,2,A witness mentions that Borno State is closely associated with the history of Kanem-Borno and the Lake Chad basin. What key detail identifies the lead?,Borno,state_identity
 CF-S2-00330,KN-S2-0110,dispatch,2,Dispatch clue: Borno State is closely associated with the history of Kanem-Borno and the Lake Chad basin. Record the relevant answer.,Borno,state_identity
-CF-S2-00331,KN-S2-0111,question,1,"Which answer fits this fact: Cross River State combines rainforest, the Cross River estuary and the city of Calabar?",Cross River,state_identity
-CF-S2-00332,KN-S2-0111,witness,1,"A witness mentions that Cross River State combines rainforest, the Cross River estuary and the city of Calabar. What key detail identifies the lead?",Cross River,state_identity
-CF-S2-00333,KN-S2-0111,dispatch,1,"Dispatch clue: Cross River State combines rainforest, the Cross River estuary and the city of Calabar. Record the relevant answer.",Cross River,state_identity
+CF-S2-00331,KN-S2-0111,question,1,"Which answer fits this fact: Cross River State combines rainforest, the mouth of the Cross River and the city of Calabar?",Cross River,state_identity
+CF-S2-00332,KN-S2-0111,witness,1,"A witness mentions that Cross River State combines rainforest, the mouth of the Cross River and the city of Calabar. What key detail identifies the lead?",Cross River,state_identity
+CF-S2-00333,KN-S2-0111,dispatch,1,"Dispatch clue: Cross River State combines rainforest, the mouth of the Cross River and the city of Calabar. Record the relevant answer.",Cross River,state_identity
 CF-S2-00334,KN-S2-0112,question,2,Which answer fits this fact: Delta State spans part of the Niger Delta and includes the petroleum centre of Warri?,Delta,state_identity
 CF-S2-00335,KN-S2-0112,witness,2,A witness mentions that Delta State spans part of the Niger Delta and includes the petroleum centre of Warri. What key detail identifies the lead?,Delta,state_identity
 CF-S2-00336,KN-S2-0112,dispatch,2,Dispatch clue: Delta State spans part of the Niger Delta and includes the petroleum centre of Warri. Record the relevant answer.,Delta,state_identity

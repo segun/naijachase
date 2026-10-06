@@ -20,6 +20,9 @@ fn state() -> GameState {
         career_points: 0,
         dossier: BTreeMap::new(),
         observations: BTreeMap::new(),
+        visited_venues: vec![],
+        warrant_suspect: None,
+        hideout_venue: "market".into(),
         replay: vec![],
         outcome: None,
     }

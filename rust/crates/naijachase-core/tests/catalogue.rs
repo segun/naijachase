@@ -22,20 +22,36 @@ fn all_missions_complete_in_rust() {
             career_points: 0,
             dossier: BTreeMap::new(),
             observations: BTreeMap::new(),
+            visited_venues: vec![],
+            warrant_suspect: None,
+            hideout_venue: "market".into(),
             replay: vec![],
             outcome: None,
         };
-        for (k, v) in p.traits() {
-            s = apply(
-                s,
-                Command::VisitVenue {
-                    trait_name: k.into(),
-                    trait_value: v.into(),
-                    minutes: 30,
-                },
-            )
-            .unwrap()
-            .0;
+        let traits = p.traits();
+        for stage in 0..route.len() {
+            let (k, v) = traits[stage];
+            for witness in 0..3 {
+                s = apply(
+                    s,
+                    Command::VisitVenue {
+                        venue_id: format!("venue-{stage}-{witness}"),
+                        trait_name: if witness == 0 {
+                            k.into()
+                        } else {
+                            String::new()
+                        },
+                        trait_value: if witness == 0 {
+                            v.into()
+                        } else {
+                            String::new()
+                        },
+                        minutes: 250,
+                    },
+                )
+                .unwrap()
+                .0;
+            }
             s = apply(
                 s,
                 Command::RecordTrait {
@@ -45,22 +61,19 @@ fn all_missions_complete_in_rust() {
             )
             .unwrap()
             .0;
-        }
-        for destination in &route[1..] {
-            let minutes = if destination == &s.state {
-                90
-            } else {
-                data.travel[&(s.state.clone(), destination.clone())].travel_minutes
-            };
-            s = apply(
-                s,
-                Command::Travel {
-                    destination: destination.clone(),
-                    minutes,
-                },
-            )
-            .unwrap()
-            .0;
+            if stage + 1 < route.len() {
+                let destination = &route[stage + 1];
+                let minutes = data.travel[&(s.state.clone(), destination.clone())].travel_minutes;
+                s = apply(
+                    s,
+                    Command::Travel {
+                        destination: destination.clone(),
+                        minutes,
+                    },
+                )
+                .unwrap()
+                .0;
+            }
         }
         s = apply(
             s,
@@ -70,14 +83,22 @@ fn all_missions_complete_in_rust() {
         )
         .unwrap()
         .0;
+        s.hideout_venue = "market".into();
         s = apply(
             s,
-            Command::Arrest {
-                suspect_id: m.thief_id.clone(),
+            Command::SearchHideout {
+                venue_id: "market".into(),
+                minutes: 45,
             },
         )
         .unwrap()
         .0;
-        assert_eq!(s.outcome.as_deref(), Some("solved"), "{}", m.mission_id)
+        assert_eq!(s.outcome.as_deref(), Some("solved"), "{}", m.mission_id);
+        assert!(
+            (7200..8640).contains(&s.elapsed),
+            "{} took {} minutes",
+            m.mission_id,
+            s.elapsed
+        );
     }
 }

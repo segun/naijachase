@@ -1,1001 +1,1001 @@
-mission_id,difficulty,difficulty_label,average_clue_candidates,two_clue_route_solve_probability,three_clue_route_solve_probability,travel_options,evidence_sharing_false_lead_rate,themed_venue_stages,dossier_fields_collected,dossier_complete,warrant_match,local_travel_minutes,waiting_minutes,total_case_minutes,remaining_minutes,deadline_pass,minimum_target_buffer_pass,estimated_case_award,witness_truth_policy
-NG-M0001,2,standard,2.78,0.5000,1.0000,3,1.0000,0,8,yes,yes,975,345,3070,7010,yes,yes,1324,all clues truthful; indirect accounts corroborated
-NG-M0002,3,medium,2.78,1.0000,1.0000,4,1.0000,2,8,yes,yes,272,252,2057,8023,yes,yes,1705,all clues truthful; indirect accounts corroborated
-NG-M0003,4,challenging,3.00,0.0833,1.0000,5,0.9167,4,8,yes,yes,491,1309,3476,6604,yes,yes,1930,all clues truthful; indirect accounts corroborated
-NG-M0004,5,hard,3.11,0.5000,1.0000,5,0.9167,2,8,yes,yes,184,1211,3169,6911,yes,yes,2355,all clues truthful; indirect accounts corroborated
-NG-M0005,1,easy,2.67,1.0000,1.0000,3,1.0000,4,8,yes,yes,374,331,2447,7633,yes,yes,1061,all clues truthful; indirect accounts corroborated
-NG-M0006,2,standard,2.67,1.0000,1.0000,3,1.0000,3,8,yes,yes,597,2133,4585,5495,yes,yes,1224,all clues truthful; indirect accounts corroborated
-NG-M0007,3,medium,3.00,1.0000,1.0000,4,1.0000,2,8,yes,yes,965,2024,4642,5438,yes,yes,1490,all clues truthful; indirect accounts corroborated
-NG-M0008,4,challenging,3.00,0.0833,1.0000,5,0.9167,3,8,yes,yes,130,405,2271,7809,yes,yes,2050,all clues truthful; indirect accounts corroborated
-NG-M0009,5,hard,3.11,0.1667,1.0000,5,0.8333,3,8,yes,yes,443,92,2234,7846,yes,yes,2460,all clues truthful; indirect accounts corroborated
-NG-M0010,1,easy,2.78,0.5000,1.0000,3,1.0000,2,8,yes,yes,699,2091,4577,5503,yes,yes,953,all clues truthful; indirect accounts corroborated
-NG-M0011,2,standard,2.89,0.5000,1.0000,3,1.0000,3,8,yes,yes,738,870,3403,6677,yes,yes,1304,all clues truthful; indirect accounts corroborated
-NG-M0012,3,medium,2.67,1.0000,1.0000,4,1.0000,2,8,yes,yes,662,1056,3416,6664,yes,yes,1595,all clues truthful; indirect accounts corroborated
-NG-M0013,4,challenging,3.00,0.0833,1.0000,5,0.8333,1,8,yes,yes,503,742,2966,7114,yes,yes,1978,all clues truthful; indirect accounts corroborated
-NG-M0014,5,hard,3.11,0.2500,1.0000,5,1.0000,2,8,yes,yes,493,347,2509,7571,yes,yes,2432,all clues truthful; indirect accounts corroborated
-NG-M0015,1,easy,2.78,1.0000,1.0000,3,1.0000,3,8,yes,yes,229,1016,2942,7138,yes,yes,1034,all clues truthful; indirect accounts corroborated
-NG-M0016,2,standard,2.67,1.0000,1.0000,3,1.0000,2,8,yes,yes,43,675,2543,7537,yes,yes,1360,all clues truthful; indirect accounts corroborated
-NG-M0017,3,medium,2.78,1.0000,1.0000,4,1.0000,1,8,yes,yes,705,1365,3813,6267,yes,yes,1560,all clues truthful; indirect accounts corroborated
-NG-M0018,4,challenging,3.00,0.1250,1.0000,5,0.8333,2,8,yes,yes,351,480,2492,7588,yes,yes,2026,all clues truthful; indirect accounts corroborated
-NG-M0019,5,hard,3.11,0.5000,1.0000,5,1.0000,3,8,yes,yes,545,30,2304,7776,yes,yes,2453,all clues truthful; indirect accounts corroborated
-NG-M0020,1,easy,2.56,1.0000,1.0000,3,1.0000,2,8,yes,yes,218,478,2468,7612,yes,yes,1058,all clues truthful; indirect accounts corroborated
-NG-M0021,2,standard,2.56,1.0000,1.0000,3,1.0000,3,8,yes,yes,857,2038,4675,5405,yes,yes,1220,all clues truthful; indirect accounts corroborated
-NG-M0022,3,medium,2.78,0.5000,1.0000,4,1.0000,3,8,yes,yes,130,1025,2973,7107,yes,yes,1630,all clues truthful; indirect accounts corroborated
-NG-M0023,4,challenging,3.00,0.3333,1.0000,5,1.0000,2,8,yes,yes,165,145,2061,8019,yes,yes,2068,all clues truthful; indirect accounts corroborated
-NG-M0024,5,hard,3.00,0.1250,1.0000,5,0.8333,3,8,yes,yes,0,240,1939,8141,yes,yes,2495,all clues truthful; indirect accounts corroborated
-NG-M0025,1,easy,2.67,0.5000,1.0000,3,1.0000,3,8,yes,yes,767,1018,3497,6583,yes,yes,1007,all clues truthful; indirect accounts corroborated
-NG-M0026,2,standard,2.78,0.5000,1.0000,3,1.0000,0,8,yes,yes,567,236,2553,7527,yes,yes,1360,all clues truthful; indirect accounts corroborated
-NG-M0027,3,medium,2.89,0.5000,1.0000,4,1.0000,2,8,yes,yes,692,1108,3423,6657,yes,yes,1590,all clues truthful; indirect accounts corroborated
-NG-M0028,4,challenging,3.00,0.5000,1.0000,5,1.0000,2,8,yes,yes,499,0,2205,7875,yes,yes,2056,all clues truthful; indirect accounts corroborated
-NG-M0029,5,hard,3.00,0.1667,1.0000,5,0.9167,3,8,yes,yes,106,1079,2989,7091,yes,yes,2376,all clues truthful; indirect accounts corroborated
-NG-M0030,1,easy,2.78,0.5000,1.0000,3,1.0000,0,8,yes,yes,1007,1768,4382,5698,yes,yes,962,all clues truthful; indirect accounts corroborated
-NG-M0031,2,standard,2.78,1.0000,1.0000,3,1.0000,2,8,yes,yes,167,643,2455,7625,yes,yes,1368,all clues truthful; indirect accounts corroborated
-NG-M0032,3,medium,2.89,0.2500,1.0000,4,1.0000,1,8,yes,yes,952,688,3428,6652,yes,yes,1590,all clues truthful; indirect accounts corroborated
-NG-M0033,4,challenging,3.00,0.1250,1.0000,5,0.9167,2,8,yes,yes,378,807,2891,7189,yes,yes,1984,all clues truthful; indirect accounts corroborated
-NG-M0034,5,hard,3.00,0.2500,1.0000,5,1.0000,2,8,yes,yes,967,718,3429,6651,yes,yes,2320,all clues truthful; indirect accounts corroborated
-NG-M0035,1,easy,2.78,1.0000,1.0000,3,1.0000,4,8,yes,yes,241,315,2238,7842,yes,yes,1070,all clues truthful; indirect accounts corroborated
-NG-M0036,2,standard,2.89,0.5000,1.0000,3,1.0000,2,8,yes,yes,384,0,2104,7976,yes,yes,1388,all clues truthful; indirect accounts corroborated
-NG-M0037,3,medium,2.78,1.0000,1.0000,4,1.0000,3,8,yes,yes,693,1212,3618,6462,yes,yes,1575,all clues truthful; indirect accounts corroborated
-NG-M0038,4,challenging,3.00,0.1250,1.0000,5,1.0000,2,8,yes,yes,355,845,3026,7054,yes,yes,1972,all clues truthful; indirect accounts corroborated
-NG-M0039,5,hard,3.22,0.2500,1.0000,5,0.9167,2,8,yes,yes,129,336,2209,7871,yes,yes,2467,all clues truthful; indirect accounts corroborated
-NG-M0040,1,easy,2.78,0.3333,1.0000,3,1.0000,2,8,yes,yes,678,522,2972,7108,yes,yes,1034,all clues truthful; indirect accounts corroborated
-NG-M0041,2,standard,3.00,0.5000,1.0000,3,1.0000,1,8,yes,yes,712,909,3371,6709,yes,yes,1304,all clues truthful; indirect accounts corroborated
-NG-M0042,3,medium,2.67,1.0000,1.0000,4,1.0000,1,8,yes,yes,892,323,2988,7092,yes,yes,1630,all clues truthful; indirect accounts corroborated
-NG-M0043,4,challenging,3.00,0.2500,1.0000,5,1.0000,2,8,yes,yes,582,0,2243,7837,yes,yes,2050,all clues truthful; indirect accounts corroborated
-NG-M0044,5,hard,3.00,0.5000,1.0000,5,1.0000,2,8,yes,yes,743,66,2658,7422,yes,yes,2411,all clues truthful; indirect accounts corroborated
-NG-M0045,1,easy,2.67,1.0000,1.0000,3,1.0000,4,8,yes,yes,101,334,1982,8098,yes,yes,1082,all clues truthful; indirect accounts corroborated
-NG-M0046,2,standard,2.89,0.5000,1.0000,3,1.0000,1,8,yes,yes,961,879,3530,6550,yes,yes,1296,all clues truthful; indirect accounts corroborated
-NG-M0047,3,medium,2.78,1.0000,1.0000,4,1.0000,3,8,yes,yes,158,334,2220,7860,yes,yes,1695,all clues truthful; indirect accounts corroborated
-NG-M0048,4,challenging,3.00,0.5000,1.0000,5,0.9167,4,8,yes,yes,435,2250,4466,5614,yes,yes,1828,all clues truthful; indirect accounts corroborated
-NG-M0049,5,hard,3.00,0.2500,1.0000,5,0.8333,3,8,yes,yes,458,787,2989,7091,yes,yes,2376,all clues truthful; indirect accounts corroborated
-NG-M0050,1,easy,2.78,0.5000,1.0000,3,1.0000,3,8,yes,yes,649,626,2867,7213,yes,yes,1040,all clues truthful; indirect accounts corroborated
-NG-M0051,2,standard,2.78,1.0000,1.0000,3,1.0000,2,8,yes,yes,198,1257,3235,6845,yes,yes,1316,all clues truthful; indirect accounts corroborated
-NG-M0052,3,medium,2.78,1.0000,1.0000,4,1.0000,2,8,yes,yes,491,1032,3296,6784,yes,yes,1605,all clues truthful; indirect accounts corroborated
-NG-M0053,4,challenging,3.00,0.2500,1.0000,5,0.9167,3,8,yes,yes,967,714,3387,6693,yes,yes,1936,all clues truthful; indirect accounts corroborated
-NG-M0054,5,hard,3.11,0.5000,1.0000,5,1.0000,3,8,yes,yes,904,719,3427,6653,yes,yes,2320,all clues truthful; indirect accounts corroborated
-NG-M0055,1,easy,2.67,1.0000,1.0000,3,1.0000,4,8,yes,yes,875,1840,4382,5698,yes,yes,962,all clues truthful; indirect accounts corroborated
-NG-M0056,2,standard,2.67,0.5000,1.0000,3,1.0000,2,8,yes,yes,786,1929,4420,5660,yes,yes,1236,all clues truthful; indirect accounts corroborated
-NG-M0057,3,medium,2.78,0.5000,1.0000,4,1.0000,2,8,yes,yes,274,131,2103,7977,yes,yes,1700,all clues truthful; indirect accounts corroborated
-NG-M0058,4,challenging,3.00,0.2500,1.0000,5,0.8333,4,8,yes,yes,322,1058,3161,6919,yes,yes,1960,all clues truthful; indirect accounts corroborated
-NG-M0059,5,hard,3.00,0.1667,1.0000,5,1.0000,3,8,yes,yes,637,895,3321,6759,yes,yes,2334,all clues truthful; indirect accounts corroborated
-NG-M0060,1,easy,2.44,1.0000,1.0000,3,1.0000,0,8,yes,yes,892,589,3253,6827,yes,yes,1019,all clues truthful; indirect accounts corroborated
-NG-M0061,2,standard,2.89,0.5000,1.0000,3,1.0000,3,8,yes,yes,365,1090,3070,7010,yes,yes,1324,all clues truthful; indirect accounts corroborated
-NG-M0062,3,medium,2.78,0.2500,1.0000,4,1.0000,1,8,yes,yes,346,1135,3209,6871,yes,yes,1610,all clues truthful; indirect accounts corroborated
-NG-M0063,4,challenging,3.00,0.2500,1.0000,5,0.8333,2,8,yes,yes,18,357,2141,7939,yes,yes,2062,all clues truthful; indirect accounts corroborated
-NG-M0064,5,hard,3.11,0.5000,1.0000,5,1.0000,2,8,yes,yes,915,351,3070,7010,yes,yes,2362,all clues truthful; indirect accounts corroborated
-NG-M0065,1,easy,2.67,0.5000,1.0000,3,1.0000,4,8,yes,yes,545,925,3287,6793,yes,yes,1019,all clues truthful; indirect accounts corroborated
-NG-M0066,2,standard,2.78,1.0000,1.0000,3,1.0000,2,8,yes,yes,914,920,3569,6511,yes,yes,1292,all clues truthful; indirect accounts corroborated
-NG-M0067,3,medium,2.78,1.0000,1.0000,4,1.0000,4,8,yes,yes,0,300,1953,8127,yes,yes,1715,all clues truthful; indirect accounts corroborated
-NG-M0068,4,challenging,3.00,0.1250,1.0000,5,0.6667,1,8,yes,yes,506,597,2824,7256,yes,yes,1990,all clues truthful; indirect accounts corroborated
-NG-M0069,5,hard,3.22,0.2500,1.0000,5,1.0000,2,8,yes,yes,604,1034,3427,6653,yes,yes,2320,all clues truthful; indirect accounts corroborated
-NG-M0070,1,easy,2.67,1.0000,1.0000,3,1.0000,1,8,yes,yes,271,14,1952,8128,yes,yes,1085,all clues truthful; indirect accounts corroborated
-NG-M0071,2,standard,2.67,1.0000,1.0000,3,1.0000,2,8,yes,yes,622,578,2890,7190,yes,yes,1336,all clues truthful; indirect accounts corroborated
-NG-M0072,3,medium,2.78,1.0000,1.0000,4,1.0000,3,8,yes,yes,0,225,2103,7977,yes,yes,1700,all clues truthful; indirect accounts corroborated
-NG-M0073,4,challenging,3.00,0.2500,1.0000,5,0.9167,2,8,yes,yes,911,1101,3673,6407,yes,yes,1906,all clues truthful; indirect accounts corroborated
-NG-M0074,5,hard,3.00,0.1250,1.0000,5,0.8333,4,8,yes,yes,0,270,1939,8141,yes,yes,2495,all clues truthful; indirect accounts corroborated
-NG-M0075,1,easy,2.78,0.2500,1.0000,3,1.0000,3,8,yes,yes,960,593,3385,6695,yes,yes,1013,all clues truthful; indirect accounts corroborated
-NG-M0076,2,standard,2.67,1.0000,1.0000,3,1.0000,2,8,yes,yes,405,981,3106,6974,yes,yes,1324,all clues truthful; indirect accounts corroborated
-NG-M0077,3,medium,2.89,1.0000,1.0000,4,1.0000,3,8,yes,yes,733,0,2446,7634,yes,yes,1675,all clues truthful; indirect accounts corroborated
-NG-M0078,4,challenging,3.00,0.1250,1.0000,5,0.8333,3,8,yes,yes,228,1142,3061,7019,yes,yes,1966,all clues truthful; indirect accounts corroborated
-NG-M0079,5,hard,3.22,0.1250,1.0000,5,0.9167,4,8,yes,yes,182,241,2137,7943,yes,yes,2474,all clues truthful; indirect accounts corroborated
-NG-M0080,1,easy,2.67,1.0000,1.0000,3,1.0000,2,8,yes,yes,968,315,3025,7055,yes,yes,1031,all clues truthful; indirect accounts corroborated
-NG-M0081,2,standard,2.78,0.5000,1.0000,3,1.0000,1,8,yes,yes,713,1132,3625,6455,yes,yes,1288,all clues truthful; indirect accounts corroborated
-NG-M0082,3,medium,2.78,0.5000,1.0000,4,1.0000,2,8,yes,yes,338,1627,3813,6267,yes,yes,1560,all clues truthful; indirect accounts corroborated
-NG-M0083,4,challenging,3.00,0.2500,1.0000,5,0.7500,4,8,yes,yes,0,330,1991,8089,yes,yes,2074,all clues truthful; indirect accounts corroborated
-NG-M0084,5,hard,3.22,0.1667,1.0000,5,1.0000,2,8,yes,yes,534,1104,3427,6653,yes,yes,2320,all clues truthful; indirect accounts corroborated
-NG-M0085,1,easy,2.56,1.0000,1.0000,3,1.0000,4,8,yes,yes,357,1146,3230,6850,yes,yes,1022,all clues truthful; indirect accounts corroborated
-NG-M0086,2,standard,2.67,1.0000,1.0000,3,1.0000,1,8,yes,yes,415,410,2410,7670,yes,yes,1368,all clues truthful; indirect accounts corroborated
-NG-M0087,3,medium,2.78,0.5000,1.0000,4,1.0000,2,8,yes,yes,551,784,3123,6957,yes,yes,1615,all clues truthful; indirect accounts corroborated
-NG-M0088,4,challenging,3.00,0.2500,1.0000,5,1.0000,3,8,yes,yes,230,730,2711,7369,yes,yes,2002,all clues truthful; indirect accounts corroborated
-NG-M0089,5,hard,3.00,0.0833,1.0000,5,1.0000,4,8,yes,yes,861,414,3004,7076,yes,yes,2369,all clues truthful; indirect accounts corroborated
-NG-M0090,1,easy,2.67,1.0000,1.0000,3,1.0000,2,8,yes,yes,202,188,2057,8023,yes,yes,1079,all clues truthful; indirect accounts corroborated
-NG-M0091,2,standard,2.78,0.5000,1.0000,3,1.0000,2,8,yes,yes,1008,910,3683,6397,yes,yes,1284,all clues truthful; indirect accounts corroborated
-NG-M0092,3,medium,2.67,0.5000,1.0000,4,1.0000,3,8,yes,yes,1009,1841,4593,5487,yes,yes,1495,all clues truthful; indirect accounts corroborated
-NG-M0093,4,challenging,3.00,1.0000,1.0000,5,0.9167,3,8,yes,yes,1129,1556,4331,5749,yes,yes,1840,all clues truthful; indirect accounts corroborated
-NG-M0094,5,hard,3.11,0.3333,1.0000,5,0.9167,3,8,yes,yes,493,2087,4369,5711,yes,yes,2215,all clues truthful; indirect accounts corroborated
-NG-M0095,1,easy,2.78,1.0000,1.0000,3,1.0000,3,8,yes,yes,861,544,3087,6993,yes,yes,1028,all clues truthful; indirect accounts corroborated
-NG-M0096,2,standard,2.89,1.0000,1.0000,3,1.0000,2,8,yes,yes,1142,802,3679,6401,yes,yes,1284,all clues truthful; indirect accounts corroborated
-NG-M0097,3,medium,2.67,1.0000,1.0000,4,1.0000,2,8,yes,yes,645,168,2646,7434,yes,yes,1655,all clues truthful; indirect accounts corroborated
-NG-M0098,4,challenging,3.00,0.5000,1.0000,5,0.9167,1,8,yes,yes,495,352,2568,7512,yes,yes,2020,all clues truthful; indirect accounts corroborated
-NG-M0099,5,hard,3.22,0.2500,1.0000,5,1.0000,3,8,yes,yes,572,688,2974,7106,yes,yes,2376,all clues truthful; indirect accounts corroborated
-NG-M0100,1,easy,2.89,1.0000,1.0000,3,1.0000,1,8,yes,yes,628,1279,3574,6506,yes,yes,1004,all clues truthful; indirect accounts corroborated
-NG-M0101,2,standard,2.56,1.0000,1.0000,3,1.0000,4,8,yes,yes,121,239,2155,7925,yes,yes,1388,all clues truthful; indirect accounts corroborated
-NG-M0102,3,medium,2.67,1.0000,1.0000,4,1.0000,1,8,yes,yes,778,407,2898,7182,yes,yes,1635,all clues truthful; indirect accounts corroborated
-NG-M0103,4,challenging,3.00,0.2500,1.0000,5,1.0000,2,8,yes,yes,799,991,3616,6464,yes,yes,1912,all clues truthful; indirect accounts corroborated
-NG-M0104,5,hard,3.11,0.5000,1.0000,5,0.9167,3,8,yes,yes,154,720,2693,7387,yes,yes,2411,all clues truthful; indirect accounts corroborated
-NG-M0105,1,easy,2.67,1.0000,1.0000,3,1.0000,3,8,yes,yes,82,1298,3062,7018,yes,yes,1028,all clues truthful; indirect accounts corroborated
-NG-M0106,2,standard,2.89,0.5000,1.0000,3,1.0000,4,8,yes,yes,503,1285,3568,6512,yes,yes,1292,all clues truthful; indirect accounts corroborated
-NG-M0107,3,medium,2.67,1.0000,1.0000,4,1.0000,3,8,yes,yes,158,270,2201,7879,yes,yes,1695,all clues truthful; indirect accounts corroborated
-NG-M0108,4,challenging,3.00,0.2500,1.0000,5,1.0000,4,8,yes,yes,666,357,2594,7486,yes,yes,2014,all clues truthful; indirect accounts corroborated
-NG-M0109,5,hard,3.11,0.1667,1.0000,5,1.0000,3,8,yes,yes,843,552,3199,6881,yes,yes,2348,all clues truthful; indirect accounts corroborated
-NG-M0110,1,easy,2.67,0.5000,1.0000,3,1.0000,3,8,yes,yes,254,586,2522,7558,yes,yes,1055,all clues truthful; indirect accounts corroborated
-NG-M0111,2,standard,2.78,1.0000,1.0000,3,1.0000,2,8,yes,yes,876,354,2980,7100,yes,yes,1332,all clues truthful; indirect accounts corroborated
-NG-M0112,3,medium,2.89,1.0000,1.0000,4,1.0000,2,8,yes,yes,114,261,2028,8052,yes,yes,1710,all clues truthful; indirect accounts corroborated
-NG-M0113,4,challenging,3.00,0.5000,1.0000,5,0.8333,1,8,yes,yes,590,1360,3731,6349,yes,yes,1900,all clues truthful; indirect accounts corroborated
-NG-M0114,5,hard,3.00,0.1250,1.0000,5,0.7500,4,8,yes,yes,1031,345,3105,6975,yes,yes,2362,all clues truthful; indirect accounts corroborated
-NG-M0115,1,easy,2.67,1.0000,1.0000,3,1.0000,2,8,yes,yes,938,1012,3617,6463,yes,yes,1001,all clues truthful; indirect accounts corroborated
-NG-M0116,2,standard,2.78,0.3333,1.0000,3,1.0000,2,8,yes,yes,390,1182,3277,6803,yes,yes,1312,all clues truthful; indirect accounts corroborated
-NG-M0117,3,medium,2.78,1.0000,1.0000,4,1.0000,3,8,yes,yes,570,767,3050,7030,yes,yes,1625,all clues truthful; indirect accounts corroborated
-NG-M0118,4,challenging,3.00,0.2500,1.0000,5,0.9167,4,8,yes,yes,1418,1177,4346,5734,yes,yes,1840,all clues truthful; indirect accounts corroborated
-NG-M0119,5,hard,3.11,0.5000,1.0000,5,1.0000,2,8,yes,yes,787,153,2819,7261,yes,yes,2397,all clues truthful; indirect accounts corroborated
-NG-M0120,1,easy,2.67,1.0000,1.0000,3,1.0000,2,8,yes,yes,314,1366,3407,6673,yes,yes,1013,all clues truthful; indirect accounts corroborated
-NG-M0121,2,standard,3.00,0.5000,1.0000,3,1.0000,2,8,yes,yes,314,948,2997,7083,yes,yes,1332,all clues truthful; indirect accounts corroborated
-NG-M0122,3,medium,3.00,0.3333,1.0000,4,1.0000,4,8,yes,yes,356,259,2298,7782,yes,yes,1685,all clues truthful; indirect accounts corroborated
-NG-M0123,4,challenging,3.00,0.3333,1.0000,5,1.0000,2,8,yes,yes,767,750,3268,6812,yes,yes,1948,all clues truthful; indirect accounts corroborated
-NG-M0124,5,hard,3.00,0.0556,1.0000,5,1.0000,4,8,yes,yes,643,809,3151,6929,yes,yes,2355,all clues truthful; indirect accounts corroborated
-NG-M0125,1,easy,2.56,1.0000,1.0000,3,1.0000,3,8,yes,yes,503,2347,4667,5413,yes,yes,950,all clues truthful; indirect accounts corroborated
-NG-M0126,2,standard,2.89,1.0000,1.0000,3,1.0000,4,8,yes,yes,118,1247,2875,7205,yes,yes,1340,all clues truthful; indirect accounts corroborated
-NG-M0127,3,medium,2.89,1.0000,1.0000,4,1.0000,2,8,yes,yes,420,795,2883,7197,yes,yes,1635,all clues truthful; indirect accounts corroborated
-NG-M0128,4,challenging,3.00,0.5000,1.0000,5,0.9167,2,8,yes,yes,157,231,2109,7971,yes,yes,2062,all clues truthful; indirect accounts corroborated
-NG-M0129,5,hard,3.11,0.3333,1.0000,5,0.9167,0,8,yes,yes,585,821,3165,6915,yes,yes,2355,all clues truthful; indirect accounts corroborated
-NG-M0130,1,easy,2.56,1.0000,1.0000,3,1.0000,3,8,yes,yes,639,850,3276,6804,yes,yes,1019,all clues truthful; indirect accounts corroborated
-NG-M0131,2,standard,3.00,1.0000,1.0000,3,1.0000,3,8,yes,yes,747,1039,3431,6649,yes,yes,1300,all clues truthful; indirect accounts corroborated
-NG-M0132,3,medium,3.00,0.3333,1.0000,4,1.0000,3,8,yes,yes,130,420,2263,7817,yes,yes,1690,all clues truthful; indirect accounts corroborated
-NG-M0133,4,challenging,3.00,0.1667,1.0000,5,0.7500,2,8,yes,yes,269,265,2240,7840,yes,yes,2050,all clues truthful; indirect accounts corroborated
-NG-M0134,5,hard,3.11,0.2500,1.0000,5,1.0000,4,8,yes,yes,518,7,2269,7811,yes,yes,2460,all clues truthful; indirect accounts corroborated
-NG-M0135,1,easy,2.67,1.0000,1.0000,3,1.0000,2,8,yes,yes,604,1112,3518,6562,yes,yes,1007,all clues truthful; indirect accounts corroborated
-NG-M0136,2,standard,2.67,1.0000,1.0000,3,1.0000,3,8,yes,yes,630,713,3003,7077,yes,yes,1328,all clues truthful; indirect accounts corroborated
-NG-M0137,3,medium,2.78,1.0000,1.0000,4,1.0000,3,8,yes,yes,458,2107,4338,5742,yes,yes,1515,all clues truthful; indirect accounts corroborated
-NG-M0138,4,challenging,3.00,0.0833,1.0000,5,0.9167,2,8,yes,yes,461,44,2151,7929,yes,yes,2062,all clues truthful; indirect accounts corroborated
-NG-M0139,5,hard,3.00,1.0000,1.0000,5,1.0000,2,8,yes,yes,618,1167,3499,6581,yes,yes,2313,all clues truthful; indirect accounts corroborated
-NG-M0140,1,easy,2.67,1.0000,1.0000,3,1.0000,3,8,yes,yes,727,856,3385,6695,yes,yes,1013,all clues truthful; indirect accounts corroborated
-NG-M0141,2,standard,2.78,1.0000,1.0000,3,1.0000,1,8,yes,yes,708,1347,3805,6275,yes,yes,1276,all clues truthful; indirect accounts corroborated
-NG-M0142,3,medium,2.78,1.0000,1.0000,4,1.0000,4,8,yes,yes,250,1130,3033,7047,yes,yes,1625,all clues truthful; indirect accounts corroborated
-NG-M0143,4,challenging,3.00,0.5000,1.0000,5,1.0000,2,8,yes,yes,590,925,3266,6814,yes,yes,1948,all clues truthful; indirect accounts corroborated
-NG-M0144,5,hard,3.11,0.1250,1.0000,5,0.9167,3,8,yes,yes,354,402,2485,7595,yes,yes,2432,all clues truthful; indirect accounts corroborated
-NG-M0145,1,easy,2.56,1.0000,1.0000,3,1.0000,1,8,yes,yes,1065,1563,4400,5680,yes,yes,962,all clues truthful; indirect accounts corroborated
-NG-M0146,2,standard,2.89,0.2500,1.0000,3,1.0000,3,8,yes,yes,328,392,2500,7580,yes,yes,1364,all clues truthful; indirect accounts corroborated
-NG-M0147,3,medium,2.89,1.0000,1.0000,4,1.0000,3,8,yes,yes,55,720,2533,7547,yes,yes,1665,all clues truthful; indirect accounts corroborated
-NG-M0148,4,challenging,3.00,0.5000,1.0000,5,0.8333,2,8,yes,yes,0,1365,2966,7114,yes,yes,1978,all clues truthful; indirect accounts corroborated
-NG-M0149,5,hard,3.33,0.2500,1.0000,5,0.9167,2,8,yes,yes,547,758,3019,7061,yes,yes,2369,all clues truthful; indirect accounts corroborated
-NG-M0150,1,easy,2.78,0.5000,1.0000,3,1.0000,2,8,yes,yes,488,832,3077,7003,yes,yes,1028,all clues truthful; indirect accounts corroborated
-NG-M0151,2,standard,2.78,1.0000,1.0000,3,1.0000,2,8,yes,yes,818,952,3430,6650,yes,yes,1300,all clues truthful; indirect accounts corroborated
-NG-M0152,3,medium,2.67,1.0000,1.0000,4,1.0000,1,8,yes,yes,795,1222,3715,6365,yes,yes,1570,all clues truthful; indirect accounts corroborated
-NG-M0153,4,challenging,3.00,0.1667,1.0000,5,0.9167,2,8,yes,yes,0,1185,2996,7084,yes,yes,1978,all clues truthful; indirect accounts corroborated
-NG-M0154,5,hard,3.00,0.2500,1.0000,5,1.0000,3,8,yes,yes,913,1772,4354,5726,yes,yes,2215,all clues truthful; indirect accounts corroborated
-NG-M0155,1,easy,2.67,1.0000,1.0000,3,1.0000,1,8,yes,yes,204,1026,2897,7183,yes,yes,1037,all clues truthful; indirect accounts corroborated
-NG-M0156,2,standard,2.89,0.5000,1.0000,3,1.0000,2,8,yes,yes,1026,2034,4855,5225,yes,yes,1208,all clues truthful; indirect accounts corroborated
-NG-M0157,3,medium,2.78,1.0000,1.0000,4,1.0000,1,8,yes,yes,585,570,2883,7197,yes,yes,1635,all clues truthful; indirect accounts corroborated
-NG-M0158,4,challenging,3.00,0.2500,1.0000,5,1.0000,4,8,yes,yes,1210,499,3385,6695,yes,yes,1936,all clues truthful; indirect accounts corroborated
-NG-M0159,5,hard,3.11,0.5000,1.0000,5,0.9167,2,8,yes,yes,407,176,2312,7768,yes,yes,2453,all clues truthful; indirect accounts corroborated
-NG-M0160,1,easy,2.78,0.5000,1.0000,3,1.0000,4,8,yes,yes,448,24,2184,7896,yes,yes,1073,all clues truthful; indirect accounts corroborated
-NG-M0161,2,standard,2.78,1.0000,1.0000,3,1.0000,3,8,yes,yes,447,1428,3625,6455,yes,yes,1288,all clues truthful; indirect accounts corroborated
-NG-M0162,3,medium,2.78,1.0000,1.0000,4,1.0000,1,8,yes,yes,663,612,3078,7002,yes,yes,1620,all clues truthful; indirect accounts corroborated
-NG-M0163,4,challenging,3.00,0.2500,1.0000,5,0.8333,3,8,yes,yes,103,1742,3686,6394,yes,yes,1906,all clues truthful; indirect accounts corroborated
-NG-M0164,5,hard,3.22,0.2500,1.0000,5,1.0000,4,8,yes,yes,567,1194,3580,6500,yes,yes,2306,all clues truthful; indirect accounts corroborated
-NG-M0165,1,easy,2.78,0.5000,1.0000,3,1.0000,3,8,yes,yes,428,1223,3393,6687,yes,yes,1013,all clues truthful; indirect accounts corroborated
-NG-M0166,2,standard,2.56,1.0000,1.0000,3,1.0000,2,8,yes,yes,696,444,2905,7175,yes,yes,1336,all clues truthful; indirect accounts corroborated
-NG-M0167,3,medium,2.89,0.5000,1.0000,4,1.0000,3,8,yes,yes,664,986,3348,6732,yes,yes,1600,all clues truthful; indirect accounts corroborated
-NG-M0168,4,challenging,3.00,0.3333,1.0000,5,1.0000,3,8,yes,yes,774,1851,4436,5644,yes,yes,1834,all clues truthful; indirect accounts corroborated
-NG-M0169,5,hard,3.00,0.3333,1.0000,5,1.0000,1,8,yes,yes,18,0,1597,8483,yes,yes,2537,all clues truthful; indirect accounts corroborated
-NG-M0170,1,easy,2.78,0.5000,1.0000,3,1.0000,2,8,yes,yes,838,632,3137,6943,yes,yes,1025,all clues truthful; indirect accounts corroborated
-NG-M0171,2,standard,2.78,1.0000,1.0000,3,1.0000,3,8,yes,yes,232,908,2905,7175,yes,yes,1336,all clues truthful; indirect accounts corroborated
-NG-M0172,3,medium,2.89,0.3333,1.0000,4,1.0000,2,8,yes,yes,1060,461,3204,6876,yes,yes,1610,all clues truthful; indirect accounts corroborated
-NG-M0173,4,challenging,3.00,0.2500,1.0000,5,0.9167,3,8,yes,yes,179,180,2185,7895,yes,yes,2056,all clues truthful; indirect accounts corroborated
-NG-M0174,5,hard,3.11,1.0000,1.0000,5,1.0000,4,8,yes,yes,1349,1396,4414,5666,yes,yes,2208,all clues truthful; indirect accounts corroborated
-NG-M0175,1,easy,2.67,1.0000,1.0000,3,1.0000,2,8,yes,yes,198,1242,3227,6853,yes,yes,1022,all clues truthful; indirect accounts corroborated
-NG-M0176,2,standard,2.89,1.0000,1.0000,3,1.0000,1,8,yes,yes,507,952,3194,6886,yes,yes,1316,all clues truthful; indirect accounts corroborated
-NG-M0177,3,medium,2.78,0.5000,1.0000,4,1.0000,2,8,yes,yes,1274,1561,4593,5487,yes,yes,1495,all clues truthful; indirect accounts corroborated
-NG-M0178,4,challenging,3.00,0.2500,1.0000,5,0.9167,2,8,yes,yes,613,1292,3671,6409,yes,yes,1906,all clues truthful; indirect accounts corroborated
-NG-M0179,5,hard,3.11,0.1667,1.0000,5,1.0000,1,8,yes,yes,847,488,3049,7031,yes,yes,2369,all clues truthful; indirect accounts corroborated
-NG-M0180,1,easy,2.67,1.0000,1.0000,3,1.0000,3,8,yes,yes,748,1367,3812,6268,yes,yes,992,all clues truthful; indirect accounts corroborated
-NG-M0181,2,standard,2.78,1.0000,1.0000,3,1.0000,2,8,yes,yes,258,147,2095,7985,yes,yes,1392,all clues truthful; indirect accounts corroborated
-NG-M0182,3,medium,2.89,1.0000,1.0000,4,1.0000,1,8,yes,yes,374,826,2958,7122,yes,yes,1630,all clues truthful; indirect accounts corroborated
-NG-M0183,4,challenging,3.00,0.1667,1.0000,5,1.0000,3,8,yes,yes,696,919,3456,6624,yes,yes,1930,all clues truthful; indirect accounts corroborated
-NG-M0184,5,hard,3.00,0.2500,1.0000,5,1.0000,3,8,yes,yes,99,0,1903,8177,yes,yes,2502,all clues truthful; indirect accounts corroborated
-NG-M0185,1,easy,2.78,1.0000,1.0000,3,1.0000,2,8,yes,yes,320,394,2321,7759,yes,yes,1067,all clues truthful; indirect accounts corroborated
-NG-M0186,2,standard,2.78,0.2500,1.0000,3,1.0000,1,8,yes,yes,513,1041,3244,6836,yes,yes,1312,all clues truthful; indirect accounts corroborated
-NG-M0187,3,medium,2.67,1.0000,1.0000,4,1.0000,2,8,yes,yes,36,954,2793,7287,yes,yes,1645,all clues truthful; indirect accounts corroborated
-NG-M0188,4,challenging,3.00,0.5000,1.0000,5,1.0000,1,8,yes,yes,737,1103,3621,6459,yes,yes,1912,all clues truthful; indirect accounts corroborated
-NG-M0189,5,hard,3.00,0.1667,1.0000,5,1.0000,1,8,yes,yes,65,310,2239,7841,yes,yes,2460,all clues truthful; indirect accounts corroborated
-NG-M0190,1,easy,2.78,1.0000,1.0000,3,1.0000,2,8,yes,yes,895,541,3148,6932,yes,yes,1025,all clues truthful; indirect accounts corroborated
-NG-M0191,2,standard,2.78,1.0000,1.0000,3,1.0000,3,8,yes,yes,0,285,1960,8120,yes,yes,1400,all clues truthful; indirect accounts corroborated
-NG-M0192,3,medium,2.78,0.5000,1.0000,4,1.0000,2,8,yes,yes,491,784,2988,7092,yes,yes,1630,all clues truthful; indirect accounts corroborated
-NG-M0193,4,challenging,3.00,0.2500,1.0000,5,0.9167,2,8,yes,yes,557,787,3140,6940,yes,yes,1960,all clues truthful; indirect accounts corroborated
-NG-M0194,5,hard,3.00,0.0833,1.0000,5,0.9167,4,8,yes,yes,277,167,2098,7982,yes,yes,2481,all clues truthful; indirect accounts corroborated
-NG-M0195,1,easy,2.44,1.0000,1.0000,3,1.0000,3,8,yes,yes,650,1945,4322,5758,yes,yes,965,all clues truthful; indirect accounts corroborated
-NG-M0196,2,standard,2.56,0.5000,1.0000,3,1.0000,3,8,yes,yes,0,240,2095,7985,yes,yes,1392,all clues truthful; indirect accounts corroborated
-NG-M0197,3,medium,2.78,1.0000,1.0000,4,1.0000,2,8,yes,yes,1326,647,3626,6454,yes,yes,1575,all clues truthful; indirect accounts corroborated
-NG-M0198,4,challenging,3.00,0.2500,1.0000,5,0.8333,3,8,yes,yes,36,249,1886,8194,yes,yes,2086,all clues truthful; indirect accounts corroborated
-NG-M0199,5,hard,3.11,0.2500,1.0000,5,1.0000,0,8,yes,yes,828,1107,3829,6251,yes,yes,2278,all clues truthful; indirect accounts corroborated
-NG-M0200,1,easy,2.56,1.0000,1.0000,3,1.0000,3,8,yes,yes,639,1024,3360,6720,yes,yes,1016,all clues truthful; indirect accounts corroborated
-NG-M0201,2,standard,2.89,0.5000,1.0000,3,1.0000,3,8,yes,yes,874,1841,4390,5690,yes,yes,1236,all clues truthful; indirect accounts corroborated
-NG-M0202,3,medium,2.78,1.0000,1.0000,4,1.0000,3,8,yes,yes,356,307,2361,7719,yes,yes,1680,all clues truthful; indirect accounts corroborated
-NG-M0203,4,challenging,3.00,0.1250,1.0000,5,0.9167,2,8,yes,yes,258,537,2486,7594,yes,yes,2026,all clues truthful; indirect accounts corroborated
-NG-M0204,5,hard,3.00,0.2500,1.0000,5,0.9167,3,8,yes,yes,279,1101,3169,6911,yes,yes,2355,all clues truthful; indirect accounts corroborated
-NG-M0205,1,easy,2.78,1.0000,1.0000,3,1.0000,3,8,yes,yes,1506,1314,4577,5503,yes,yes,953,all clues truthful; indirect accounts corroborated
-NG-M0206,2,standard,2.44,1.0000,1.0000,3,1.0000,3,8,yes,yes,835,642,3257,6823,yes,yes,1312,all clues truthful; indirect accounts corroborated
-NG-M0207,3,medium,3.00,1.0000,1.0000,4,1.0000,3,8,yes,yes,578,712,2898,7182,yes,yes,1635,all clues truthful; indirect accounts corroborated
-NG-M0208,4,challenging,3.00,0.1250,1.0000,5,0.9167,2,8,yes,yes,413,955,3074,7006,yes,yes,1966,all clues truthful; indirect accounts corroborated
-NG-M0209,5,hard,3.11,0.1250,1.0000,5,0.9167,2,8,yes,yes,18,342,2149,7931,yes,yes,2474,all clues truthful; indirect accounts corroborated
-NG-M0210,1,easy,2.78,1.0000,1.0000,3,1.0000,3,8,yes,yes,1001,810,3613,6467,yes,yes,1001,all clues truthful; indirect accounts corroborated
-NG-M0211,2,standard,2.78,0.2500,1.0000,3,1.0000,3,8,yes,yes,262,250,2337,7743,yes,yes,1376,all clues truthful; indirect accounts corroborated
-NG-M0212,3,medium,2.78,1.0000,1.0000,4,1.0000,3,8,yes,yes,755,2485,5043,5037,yes,yes,1455,all clues truthful; indirect accounts corroborated
-NG-M0213,4,challenging,3.00,0.3333,1.0000,5,0.8333,4,8,yes,yes,0,375,2006,8074,yes,yes,2074,all clues truthful; indirect accounts corroborated
-NG-M0214,5,hard,3.22,0.1250,1.0000,5,0.8333,1,8,yes,yes,468,454,2666,7414,yes,yes,2411,all clues truthful; indirect accounts corroborated
-NG-M0215,1,easy,2.67,1.0000,1.0000,3,1.0000,4,8,yes,yes,462,939,3128,6952,yes,yes,1025,all clues truthful; indirect accounts corroborated
-NG-M0216,2,standard,2.78,1.0000,1.0000,3,1.0000,2,8,yes,yes,716,212,2558,7522,yes,yes,1360,all clues truthful; indirect accounts corroborated
-NG-M0217,3,medium,2.78,1.0000,1.0000,4,1.0000,4,8,yes,yes,933,745,3346,6734,yes,yes,1600,all clues truthful; indirect accounts corroborated
-NG-M0218,4,challenging,3.00,0.5000,1.0000,5,0.9167,2,8,yes,yes,101,315,2227,7853,yes,yes,2050,all clues truthful; indirect accounts corroborated
-NG-M0219,5,hard,3.11,0.0833,1.0000,5,1.0000,2,8,yes,yes,889,1856,4414,5666,yes,yes,2208,all clues truthful; indirect accounts corroborated
-NG-M0220,1,easy,2.67,1.0000,1.0000,3,1.0000,3,8,yes,yes,0,255,1922,8158,yes,yes,1085,all clues truthful; indirect accounts corroborated
-NG-M0221,2,standard,2.89,0.2500,1.0000,3,1.0000,1,8,yes,yes,1103,272,3230,6850,yes,yes,1316,all clues truthful; indirect accounts corroborated
-NG-M0222,3,medium,2.78,1.0000,1.0000,4,1.0000,3,8,yes,yes,417,2433,4593,5487,yes,yes,1495,all clues truthful; indirect accounts corroborated
-NG-M0223,4,challenging,3.00,1.0000,1.0000,5,0.9167,3,8,yes,yes,612,753,3071,7009,yes,yes,1966,all clues truthful; indirect accounts corroborated
-NG-M0224,5,hard,3.11,0.1250,1.0000,5,0.8333,1,8,yes,yes,416,933,3078,7002,yes,yes,2362,all clues truthful; indirect accounts corroborated
-NG-M0225,1,easy,2.56,1.0000,1.0000,3,1.0000,4,8,yes,yes,162,1068,3002,7078,yes,yes,1031,all clues truthful; indirect accounts corroborated
-NG-M0226,2,standard,2.67,1.0000,1.0000,3,1.0000,1,8,yes,yes,1364,0,3084,6996,yes,yes,1324,all clues truthful; indirect accounts corroborated
-NG-M0227,3,medium,2.78,0.5000,1.0000,4,1.0000,1,8,yes,yes,669,1176,3633,6447,yes,yes,1575,all clues truthful; indirect accounts corroborated
-NG-M0228,4,challenging,3.00,0.5000,1.0000,5,0.9167,2,8,yes,yes,237,375,2393,7687,yes,yes,2038,all clues truthful; indirect accounts corroborated
-NG-M0229,5,hard,3.11,0.1250,1.0000,5,0.8333,3,8,yes,yes,94,1556,3364,6716,yes,yes,2327,all clues truthful; indirect accounts corroborated
-NG-M0230,1,easy,2.78,0.5000,1.0000,3,1.0000,3,8,yes,yes,701,1849,4337,5743,yes,yes,965,all clues truthful; indirect accounts corroborated
-NG-M0231,2,standard,2.56,1.0000,1.0000,3,1.0000,4,8,yes,yes,378,1117,3230,6850,yes,yes,1316,all clues truthful; indirect accounts corroborated
-NG-M0232,3,medium,2.78,1.0000,1.0000,4,1.0000,3,8,yes,yes,383,292,2313,7767,yes,yes,1685,all clues truthful; indirect accounts corroborated
-NG-M0233,4,challenging,3.00,0.1111,1.0000,5,0.9167,3,8,yes,yes,539,1381,3731,6349,yes,yes,1900,all clues truthful; indirect accounts corroborated
-NG-M0234,5,hard,3.00,1.0000,1.0000,5,1.0000,2,8,yes,yes,254,931,2914,7166,yes,yes,2383,all clues truthful; indirect accounts corroborated
-NG-M0235,1,easy,2.78,1.0000,1.0000,3,1.0000,2,8,yes,yes,856,489,3087,6993,yes,yes,1028,all clues truthful; indirect accounts corroborated
-NG-M0236,2,standard,2.89,1.0000,1.0000,3,1.0000,2,8,yes,yes,118,257,2035,8045,yes,yes,1396,all clues truthful; indirect accounts corroborated
-NG-M0237,3,medium,2.89,0.5000,1.0000,4,1.0000,4,8,yes,yes,569,0,2297,7783,yes,yes,1685,all clues truthful; indirect accounts corroborated
-NG-M0238,4,challenging,3.00,0.2500,1.0000,5,0.7500,2,8,yes,yes,788,927,3436,6644,yes,yes,1930,all clues truthful; indirect accounts corroborated
-NG-M0239,5,hard,3.11,0.5000,1.0000,5,0.9167,3,8,yes,yes,1053,2082,4819,5261,yes,yes,2159,all clues truthful; indirect accounts corroborated
-NG-M0240,1,easy,2.67,0.3333,1.0000,3,1.0000,4,8,yes,yes,390,1167,3269,6811,yes,yes,1019,all clues truthful; indirect accounts corroborated
-NG-M0241,2,standard,2.78,1.0000,1.0000,3,1.0000,2,8,yes,yes,726,627,3043,7037,yes,yes,1328,all clues truthful; indirect accounts corroborated
-NG-M0242,3,medium,2.89,1.0000,1.0000,4,1.0000,3,8,yes,yes,1453,1775,4986,5094,yes,yes,1460,all clues truthful; indirect accounts corroborated
-NG-M0243,4,challenging,3.00,0.2500,1.0000,5,0.9167,2,8,yes,yes,787,183,2811,7269,yes,yes,1996,all clues truthful; indirect accounts corroborated
-NG-M0244,5,hard,3.11,0.5000,1.0000,5,0.9167,1,8,yes,yes,533,652,2914,7166,yes,yes,2383,all clues truthful; indirect accounts corroborated
-NG-M0245,1,easy,2.78,1.0000,1.0000,3,1.0000,3,8,yes,yes,940,1745,4382,5698,yes,yes,962,all clues truthful; indirect accounts corroborated
-NG-M0246,2,standard,3.00,0.3333,1.0000,3,1.0000,3,8,yes,yes,329,1126,3145,6935,yes,yes,1320,all clues truthful; indirect accounts corroborated
-NG-M0247,3,medium,2.78,1.0000,1.0000,4,1.0000,3,8,yes,yes,794,588,3125,6955,yes,yes,1615,all clues truthful; indirect accounts corroborated
-NG-M0248,4,challenging,3.00,0.1667,1.0000,5,1.0000,0,8,yes,yes,923,557,3171,6909,yes,yes,1960,all clues truthful; indirect accounts corroborated
-NG-M0249,5,hard,3.00,0.1250,1.0000,5,1.0000,3,8,yes,yes,394,69,2297,7783,yes,yes,2453,all clues truthful; indirect accounts corroborated
-NG-M0250,1,easy,2.67,1.0000,1.0000,3,1.0000,3,8,yes,yes,435,254,2221,7859,yes,yes,1070,all clues truthful; indirect accounts corroborated
-NG-M0251,2,standard,2.78,0.5000,1.0000,3,1.0000,3,8,yes,yes,524,1291,3460,6620,yes,yes,1300,all clues truthful; indirect accounts corroborated
-NG-M0252,3,medium,2.78,1.0000,1.0000,4,1.0000,2,8,yes,yes,192,249,2154,7926,yes,yes,1700,all clues truthful; indirect accounts corroborated
-NG-M0253,4,challenging,3.00,0.3333,1.0000,5,0.9167,3,8,yes,yes,499,821,3071,7009,yes,yes,1966,all clues truthful; indirect accounts corroborated
-NG-M0254,5,hard,3.00,0.1667,1.0000,5,0.9167,1,8,yes,yes,345,101,2250,7830,yes,yes,2460,all clues truthful; indirect accounts corroborated
-NG-M0255,1,easy,2.89,1.0000,1.0000,3,1.0000,2,8,yes,yes,970,2019,4626,5454,yes,yes,950,all clues truthful; indirect accounts corroborated
-NG-M0256,2,standard,3.00,0.3333,1.0000,3,1.0000,3,8,yes,yes,130,375,2270,7810,yes,yes,1380,all clues truthful; indirect accounts corroborated
-NG-M0257,3,medium,2.89,0.5000,1.0000,4,1.0000,3,8,yes,yes,79,176,1908,8172,yes,yes,1720,all clues truthful; indirect accounts corroborated
-NG-M0258,4,challenging,3.00,0.5000,1.0000,5,0.9167,1,8,yes,yes,409,71,2246,7834,yes,yes,2050,all clues truthful; indirect accounts corroborated
-NG-M0259,5,hard,3.11,0.1250,1.0000,5,0.9167,2,8,yes,yes,663,990,3457,6623,yes,yes,2320,all clues truthful; indirect accounts corroborated
-NG-M0260,1,easy,2.56,1.0000,1.0000,3,1.0000,2,8,yes,yes,747,956,3400,6680,yes,yes,1013,all clues truthful; indirect accounts corroborated
-NG-M0261,2,standard,2.89,1.0000,1.0000,3,1.0000,2,8,yes,yes,903,867,3490,6590,yes,yes,1296,all clues truthful; indirect accounts corroborated
-NG-M0262,3,medium,2.78,1.0000,1.0000,4,1.0000,2,8,yes,yes,609,801,3063,7017,yes,yes,1620,all clues truthful; indirect accounts corroborated
-NG-M0263,4,challenging,3.00,1.0000,1.0000,5,1.0000,3,8,yes,yes,720,1065,3491,6589,yes,yes,1924,all clues truthful; indirect accounts corroborated
-NG-M0264,5,hard,3.00,0.0833,1.0000,5,1.0000,2,8,yes,yes,0,180,2029,8051,yes,yes,2488,all clues truthful; indirect accounts corroborated
-NG-M0265,1,easy,2.78,1.0000,1.0000,3,1.0000,1,8,yes,yes,528,672,2942,7138,yes,yes,1034,all clues truthful; indirect accounts corroborated
-NG-M0266,2,standard,2.67,1.0000,1.0000,3,1.0000,2,8,yes,yes,394,1256,3340,6740,yes,yes,1308,all clues truthful; indirect accounts corroborated
-NG-M0267,3,medium,2.89,1.0000,1.0000,4,1.0000,4,8,yes,yes,532,653,2883,7197,yes,yes,1635,all clues truthful; indirect accounts corroborated
-NG-M0268,4,challenging,3.00,0.2500,1.0000,5,0.8333,1,8,yes,yes,547,143,2411,7669,yes,yes,2032,all clues truthful; indirect accounts corroborated
-NG-M0269,5,hard,3.00,0.2500,1.0000,5,1.0000,1,8,yes,yes,1223,2752,5794,4286,yes,yes,2047,all clues truthful; indirect accounts corroborated
-NG-M0270,1,easy,2.67,0.2500,1.0000,3,1.0000,3,8,yes,yes,328,842,2957,7123,yes,yes,1034,all clues truthful; indirect accounts corroborated
-NG-M0271,2,standard,2.89,1.0000,1.0000,3,1.0000,2,8,yes,yes,55,200,1990,8090,yes,yes,1396,all clues truthful; indirect accounts corroborated
-NG-M0272,3,medium,2.78,0.5000,1.0000,4,1.0000,3,8,yes,yes,54,831,2568,7512,yes,yes,1665,all clues truthful; indirect accounts corroborated
-NG-M0273,4,challenging,3.00,0.1250,1.0000,5,0.6667,3,8,yes,yes,211,59,1991,8089,yes,yes,2074,all clues truthful; indirect accounts corroborated
-NG-M0274,5,hard,3.22,0.5000,1.0000,5,1.0000,1,8,yes,yes,566,694,3019,7061,yes,yes,2369,all clues truthful; indirect accounts corroborated
-NG-M0275,1,easy,2.78,1.0000,1.0000,3,1.0000,2,8,yes,yes,661,1139,3407,6673,yes,yes,1013,all clues truthful; indirect accounts corroborated
-NG-M0276,2,standard,2.67,1.0000,1.0000,3,1.0000,2,8,yes,yes,419,1031,3170,6910,yes,yes,1320,all clues truthful; indirect accounts corroborated
-NG-M0277,3,medium,2.78,1.0000,1.0000,4,1.0000,3,8,yes,yes,290,925,3003,7077,yes,yes,1625,all clues truthful; indirect accounts corroborated
-NG-M0278,4,challenging,3.00,0.2500,1.0000,5,1.0000,0,8,yes,yes,913,1772,4346,5734,yes,yes,1840,all clues truthful; indirect accounts corroborated
-NG-M0279,5,hard,3.11,0.1250,1.0000,5,0.8333,4,8,yes,yes,218,532,2374,7706,yes,yes,2446,all clues truthful; indirect accounts corroborated
-NG-M0280,1,easy,2.89,0.2500,1.0000,3,1.0000,2,8,yes,yes,1073,1612,4517,5563,yes,yes,956,all clues truthful; indirect accounts corroborated
-NG-M0281,2,standard,2.67,1.0000,1.0000,3,1.0000,2,8,yes,yes,653,547,2890,7190,yes,yes,1336,all clues truthful; indirect accounts corroborated
-NG-M0282,3,medium,2.67,1.0000,1.0000,4,1.0000,2,8,yes,yes,1003,500,3201,6879,yes,yes,1610,all clues truthful; indirect accounts corroborated
-NG-M0283,4,challenging,3.00,0.3333,1.0000,5,1.0000,3,8,yes,yes,352,261,2304,7776,yes,yes,2044,all clues truthful; indirect accounts corroborated
-NG-M0284,5,hard,3.22,0.5000,1.0000,5,1.0000,1,8,yes,yes,246,121,2111,7969,yes,yes,2474,all clues truthful; indirect accounts corroborated
-NG-M0285,1,easy,2.78,1.0000,1.0000,3,1.0000,3,8,yes,yes,1049,1591,4307,5773,yes,yes,968,all clues truthful; indirect accounts corroborated
-NG-M0286,2,standard,2.56,1.0000,1.0000,3,1.0000,2,8,yes,yes,140,940,2890,7190,yes,yes,1336,all clues truthful; indirect accounts corroborated
-NG-M0287,3,medium,2.89,1.0000,1.0000,4,1.0000,3,8,yes,yes,117,288,2118,7962,yes,yes,1700,all clues truthful; indirect accounts corroborated
-NG-M0288,4,challenging,3.00,0.0833,1.0000,5,0.9167,3,8,yes,yes,300,390,2486,7594,yes,yes,2026,all clues truthful; indirect accounts corroborated
-NG-M0289,5,hard,3.11,0.1667,1.0000,5,1.0000,2,8,yes,yes,389,158,2276,7804,yes,yes,2460,all clues truthful; indirect accounts corroborated
-NG-M0290,1,easy,2.67,1.0000,1.0000,3,1.0000,2,8,yes,yes,1040,1540,4382,5698,yes,yes,962,all clues truthful; indirect accounts corroborated
-NG-M0291,2,standard,2.78,0.5000,1.0000,3,1.0000,2,8,yes,yes,711,1104,3460,6620,yes,yes,1300,all clues truthful; indirect accounts corroborated
-NG-M0292,3,medium,2.78,0.5000,1.0000,4,1.0000,2,8,yes,yes,1071,1434,4338,5742,yes,yes,1515,all clues truthful; indirect accounts corroborated
-NG-M0293,4,challenging,3.00,0.3333,1.0000,5,1.0000,4,8,yes,yes,18,0,1589,8491,yes,yes,2116,all clues truthful; indirect accounts corroborated
-NG-M0294,5,hard,3.00,0.0833,1.0000,5,1.0000,1,8,yes,yes,587,896,3167,6913,yes,yes,2355,all clues truthful; indirect accounts corroborated
-NG-M0295,1,easy,2.67,1.0000,1.0000,3,1.0000,3,8,yes,yes,118,355,2200,7880,yes,yes,1073,all clues truthful; indirect accounts corroborated
-NG-M0296,2,standard,2.78,1.0000,1.0000,3,1.0000,2,8,yes,yes,644,826,3205,6875,yes,yes,1316,all clues truthful; indirect accounts corroborated
-NG-M0297,3,medium,2.67,1.0000,1.0000,4,1.0000,3,8,yes,yes,774,1281,3783,6297,yes,yes,1560,all clues truthful; indirect accounts corroborated
-NG-M0298,4,challenging,3.00,0.2500,1.0000,5,1.0000,4,8,yes,yes,787,458,2891,7189,yes,yes,1984,all clues truthful; indirect accounts corroborated
-NG-M0299,5,hard,3.00,0.5000,1.0000,5,0.9167,2,8,yes,yes,263,1132,3169,6911,yes,yes,2355,all clues truthful; indirect accounts corroborated
-NG-M0300,1,easy,2.78,1.0000,1.0000,3,1.0000,3,8,yes,yes,609,2001,4382,5698,yes,yes,962,all clues truthful; indirect accounts corroborated
-NG-M0301,2,standard,2.67,1.0000,1.0000,3,1.0000,3,8,yes,yes,144,291,2095,7985,yes,yes,1392,all clues truthful; indirect accounts corroborated
-NG-M0302,3,medium,2.89,0.2500,1.0000,4,1.0000,4,8,yes,yes,1455,1635,4863,5217,yes,yes,1470,all clues truthful; indirect accounts corroborated
-NG-M0303,4,challenging,3.00,0.2500,1.0000,5,1.0000,2,8,yes,yes,757,1163,3656,6424,yes,yes,1912,all clues truthful; indirect accounts corroborated
-NG-M0304,5,hard,3.00,0.2500,1.0000,5,1.0000,1,8,yes,yes,1045,710,3439,6641,yes,yes,2320,all clues truthful; indirect accounts corroborated
-NG-M0305,1,easy,2.78,1.0000,1.0000,3,1.0000,2,8,yes,yes,222,290,2194,7886,yes,yes,1073,all clues truthful; indirect accounts corroborated
-NG-M0306,2,standard,2.89,0.5000,1.0000,3,1.0000,4,8,yes,yes,461,0,2136,7944,yes,yes,1388,all clues truthful; indirect accounts corroborated
-NG-M0307,3,medium,2.78,1.0000,1.0000,4,1.0000,0,8,yes,yes,759,2076,4563,5517,yes,yes,1495,all clues truthful; indirect accounts corroborated
-NG-M0308,4,challenging,3.00,0.2500,1.0000,5,1.0000,2,8,yes,yes,506,754,3101,6979,yes,yes,1966,all clues truthful; indirect accounts corroborated
-NG-M0309,5,hard,3.22,0.2500,1.0000,5,0.9167,3,8,yes,yes,69,396,2254,7826,yes,yes,2460,all clues truthful; indirect accounts corroborated
-NG-M0310,1,easy,2.78,0.5000,1.0000,3,1.0000,4,8,yes,yes,588,1062,3422,6658,yes,yes,1010,all clues truthful; indirect accounts corroborated
-NG-M0311,2,standard,3.00,0.5000,1.0000,3,1.0000,2,8,yes,yes,434,1051,3235,6845,yes,yes,1316,all clues truthful; indirect accounts corroborated
-NG-M0312,3,medium,2.67,1.0000,1.0000,4,1.0000,3,8,yes,yes,501,624,2913,7167,yes,yes,1635,all clues truthful; indirect accounts corroborated
-NG-M0313,4,challenging,3.00,1.0000,1.0000,5,1.0000,2,8,yes,yes,931,1414,4021,6059,yes,yes,1870,all clues truthful; indirect accounts corroborated
-NG-M0314,5,hard,3.00,0.3333,1.0000,5,1.0000,1,8,yes,yes,1064,1441,4354,5726,yes,yes,2215,all clues truthful; indirect accounts corroborated
-NG-M0315,1,easy,2.67,1.0000,1.0000,3,1.0000,3,8,yes,yes,348,87,1967,8113,yes,yes,1085,all clues truthful; indirect accounts corroborated
-NG-M0316,2,standard,2.89,0.5000,1.0000,3,1.0000,4,8,yes,yes,869,973,3532,6548,yes,yes,1296,all clues truthful; indirect accounts corroborated
-NG-M0317,3,medium,2.78,1.0000,1.0000,4,1.0000,2,8,yes,yes,204,334,2266,7814,yes,yes,1690,all clues truthful; indirect accounts corroborated
-NG-M0318,4,challenging,3.00,0.5000,1.0000,5,0.9167,4,8,yes,yes,434,2476,4691,5389,yes,yes,1804,all clues truthful; indirect accounts corroborated
-NG-M0319,5,hard,3.00,0.2500,1.0000,5,0.9167,3,8,yes,yes,306,33,2173,7907,yes,yes,2467,all clues truthful; indirect accounts corroborated
-NG-M0320,1,easy,2.78,1.0000,1.0000,3,1.0000,2,8,yes,yes,408,469,2469,7611,yes,yes,1058,all clues truthful; indirect accounts corroborated
-NG-M0321,2,standard,2.78,1.0000,1.0000,3,1.0000,2,8,yes,yes,198,1257,3235,6845,yes,yes,1316,all clues truthful; indirect accounts corroborated
-NG-M0322,3,medium,2.89,1.0000,1.0000,4,1.0000,4,8,yes,yes,553,906,3202,6878,yes,yes,1610,all clues truthful; indirect accounts corroborated
-NG-M0323,4,challenging,3.00,0.5000,1.0000,5,0.9167,2,8,yes,yes,1068,365,3169,6911,yes,yes,1960,all clues truthful; indirect accounts corroborated
-NG-M0324,5,hard,3.11,0.2500,1.0000,5,1.0000,4,8,yes,yes,928,710,3427,6653,yes,yes,2320,all clues truthful; indirect accounts corroborated
-NG-M0325,1,easy,2.67,1.0000,1.0000,3,1.0000,2,8,yes,yes,695,565,2942,7138,yes,yes,1034,all clues truthful; indirect accounts corroborated
-NG-M0326,2,standard,2.56,1.0000,1.0000,3,1.0000,4,8,yes,yes,305,358,2353,7727,yes,yes,1372,all clues truthful; indirect accounts corroborated
-NG-M0327,3,medium,2.89,1.0000,1.0000,4,1.0000,1,8,yes,yes,297,1038,3003,7077,yes,yes,1625,all clues truthful; indirect accounts corroborated
-NG-M0328,4,challenging,3.00,0.2500,1.0000,5,0.8333,3,8,yes,yes,279,1101,3161,6919,yes,yes,1960,all clues truthful; indirect accounts corroborated
-NG-M0329,5,hard,3.00,0.1667,1.0000,5,1.0000,3,8,yes,yes,272,793,2914,7166,yes,yes,2383,all clues truthful; indirect accounts corroborated
-NG-M0330,1,easy,2.44,1.0000,1.0000,3,1.0000,2,8,yes,yes,598,0,2370,7710,yes,yes,1064,all clues truthful; indirect accounts corroborated
-NG-M0331,2,standard,2.89,0.2500,1.0000,3,1.0000,3,8,yes,yes,324,339,2293,7787,yes,yes,1376,all clues truthful; indirect accounts corroborated
-NG-M0332,3,medium,2.78,0.2500,1.0000,4,1.0000,3,8,yes,yes,396,1127,3221,6859,yes,yes,1610,all clues truthful; indirect accounts corroborated
-NG-M0333,4,challenging,3.00,0.1250,1.0000,5,0.8333,3,8,yes,yes,18,342,2141,7939,yes,yes,2062,all clues truthful; indirect accounts corroborated
-NG-M0334,5,hard,3.11,0.5000,1.0000,5,1.0000,3,8,yes,yes,936,330,3070,7010,yes,yes,2362,all clues truthful; indirect accounts corroborated
-NG-M0335,1,easy,2.56,0.5000,1.0000,3,1.0000,2,8,yes,yes,195,540,2537,7543,yes,yes,1055,all clues truthful; indirect accounts corroborated
-NG-M0336,2,standard,2.89,1.0000,1.0000,3,1.0000,3,8,yes,yes,942,648,3280,6800,yes,yes,1312,all clues truthful; indirect accounts corroborated
-NG-M0337,3,medium,2.78,1.0000,1.0000,4,1.0000,2,8,yes,yes,0,300,1953,8127,yes,yes,1715,all clues truthful; indirect accounts corroborated
-NG-M0338,4,challenging,3.00,0.2500,1.0000,5,0.6667,1,8,yes,yes,507,783,2996,7084,yes,yes,1978,all clues truthful; indirect accounts corroborated
-NG-M0339,5,hard,3.22,0.2500,1.0000,5,1.0000,2,8,yes,yes,462,882,3148,6932,yes,yes,2355,all clues truthful; indirect accounts corroborated
-NG-M0340,1,easy,2.56,1.0000,1.0000,3,1.0000,2,8,yes,yes,439,167,2258,7822,yes,yes,1070,all clues truthful; indirect accounts corroborated
-NG-M0341,2,standard,2.67,1.0000,1.0000,3,1.0000,3,8,yes,yes,456,1111,3287,6793,yes,yes,1312,all clues truthful; indirect accounts corroborated
-NG-M0342,3,medium,2.78,1.0000,1.0000,4,1.0000,3,8,yes,yes,164,240,2237,7843,yes,yes,1690,all clues truthful; indirect accounts corroborated
-NG-M0343,4,challenging,3.00,0.1250,1.0000,5,0.9167,3,8,yes,yes,941,2170,4802,5278,yes,yes,1792,all clues truthful; indirect accounts corroborated
-NG-M0344,5,hard,3.00,0.2500,1.0000,5,0.8333,3,8,yes,yes,36,249,1909,8171,yes,yes,2502,all clues truthful; indirect accounts corroborated
-NG-M0345,1,easy,2.78,0.2500,1.0000,3,1.0000,2,8,yes,yes,1096,1394,4322,5758,yes,yes,965,all clues truthful; indirect accounts corroborated
-NG-M0346,2,standard,2.67,1.0000,1.0000,3,1.0000,4,8,yes,yes,676,744,3125,6955,yes,yes,1320,all clues truthful; indirect accounts corroborated
-NG-M0347,3,medium,2.89,1.0000,1.0000,4,1.0000,2,8,yes,yes,373,317,2418,7662,yes,yes,1675,all clues truthful; indirect accounts corroborated
-NG-M0348,4,challenging,3.00,0.0833,1.0000,5,0.8333,3,8,yes,yes,265,1055,3041,7039,yes,yes,1972,all clues truthful; indirect accounts corroborated
-NG-M0349,5,hard,3.22,0.1250,1.0000,5,0.9167,3,8,yes,yes,167,1063,3034,7046,yes,yes,2369,all clues truthful; indirect accounts corroborated
-NG-M0350,1,easy,2.67,1.0000,1.0000,3,1.0000,1,8,yes,yes,1041,332,3070,7010,yes,yes,1028,all clues truthful; indirect accounts corroborated
-NG-M0351,2,standard,2.78,0.5000,1.0000,3,1.0000,2,8,yes,yes,634,1211,3640,6440,yes,yes,1288,all clues truthful; indirect accounts corroborated
-NG-M0352,3,medium,2.78,0.5000,1.0000,4,1.0000,4,8,yes,yes,302,883,2958,7122,yes,yes,1630,all clues truthful; indirect accounts corroborated
-NG-M0353,4,challenging,3.00,0.1250,1.0000,5,0.7500,3,8,yes,yes,174,1476,3371,6709,yes,yes,1936,all clues truthful; indirect accounts corroborated
-NG-M0354,5,hard,3.22,0.1667,1.0000,5,1.0000,3,8,yes,yes,447,1206,3427,6653,yes,yes,2320,all clues truthful; indirect accounts corroborated
-NG-M0355,1,easy,2.56,1.0000,1.0000,3,1.0000,3,8,yes,yes,358,1270,3370,6710,yes,yes,1013,all clues truthful; indirect accounts corroborated
-NG-M0356,2,standard,2.78,1.0000,1.0000,3,1.0000,4,8,yes,yes,342,699,2581,7499,yes,yes,1356,all clues truthful; indirect accounts corroborated
-NG-M0357,3,medium,2.78,0.5000,1.0000,4,1.0000,3,8,yes,yes,637,638,3033,7047,yes,yes,1625,all clues truthful; indirect accounts corroborated
-NG-M0358,4,challenging,3.00,0.2500,1.0000,5,1.0000,3,8,yes,yes,0,585,2306,7774,yes,yes,2044,all clues truthful; indirect accounts corroborated
-NG-M0359,5,hard,3.00,0.1667,1.0000,5,1.0000,1,8,yes,yes,972,288,3004,7076,yes,yes,2369,all clues truthful; indirect accounts corroborated
-NG-M0360,1,easy,2.67,1.0000,1.0000,3,1.0000,2,8,yes,yes,148,242,2057,8023,yes,yes,1079,all clues truthful; indirect accounts corroborated
-NG-M0361,2,standard,2.78,0.5000,1.0000,3,1.0000,2,8,yes,yes,420,1740,3940,6140,yes,yes,1268,all clues truthful; indirect accounts corroborated
-NG-M0362,3,medium,2.67,1.0000,1.0000,4,1.0000,4,8,yes,yes,1304,234,3236,6844,yes,yes,1610,all clues truthful; indirect accounts corroborated
-NG-M0363,4,challenging,3.00,0.5000,1.0000,5,0.9167,3,8,yes,yes,653,1057,3401,6679,yes,yes,1936,all clues truthful; indirect accounts corroborated
-NG-M0364,5,hard,3.11,0.1667,1.0000,5,0.9167,2,8,yes,yes,264,270,2293,7787,yes,yes,2453,all clues truthful; indirect accounts corroborated
-NG-M0365,1,easy,2.78,1.0000,1.0000,3,1.0000,3,8,yes,yes,617,715,3029,7051,yes,yes,1031,all clues truthful; indirect accounts corroborated
-NG-M0366,2,standard,2.89,1.0000,1.0000,3,1.0000,4,8,yes,yes,994,965,3664,6416,yes,yes,1284,all clues truthful; indirect accounts corroborated
-NG-M0367,3,medium,2.67,1.0000,1.0000,4,1.0000,2,8,yes,yes,753,153,2769,7311,yes,yes,1645,all clues truthful; indirect accounts corroborated
-NG-M0368,4,challenging,3.00,0.5000,1.0000,5,0.9167,1,8,yes,yes,703,482,2906,7174,yes,yes,1984,all clues truthful; indirect accounts corroborated
-NG-M0369,5,hard,3.22,0.2500,1.0000,5,1.0000,2,8,yes,yes,350,930,3054,7026,yes,yes,2369,all clues truthful; indirect accounts corroborated
-NG-M0370,1,easy,2.89,0.3333,1.0000,3,1.0000,4,8,yes,yes,240,360,2282,7798,yes,yes,1067,all clues truthful; indirect accounts corroborated
-NG-M0371,2,standard,2.78,1.0000,1.0000,3,1.0000,3,8,yes,yes,833,976,3589,6491,yes,yes,1292,all clues truthful; indirect accounts corroborated
-NG-M0372,3,medium,2.89,1.0000,1.0000,4,1.0000,4,8,yes,yes,144,81,1953,8127,yes,yes,1715,all clues truthful; indirect accounts corroborated
-NG-M0373,4,challenging,3.00,0.1250,1.0000,5,1.0000,4,8,yes,yes,572,0,2398,7682,yes,yes,2038,all clues truthful; indirect accounts corroborated
-NG-M0374,5,hard,3.11,0.5000,1.0000,5,1.0000,4,8,yes,yes,266,249,2034,8046,yes,yes,2488,all clues truthful; indirect accounts corroborated
-NG-M0375,1,easy,2.67,0.5000,1.0000,3,1.0000,3,8,yes,yes,480,1566,3728,6352,yes,yes,995,all clues truthful; indirect accounts corroborated
-NG-M0376,2,standard,2.78,1.0000,1.0000,3,1.0000,3,8,yes,yes,195,231,2116,7964,yes,yes,1388,all clues truthful; indirect accounts corroborated
-NG-M0377,3,medium,2.78,1.0000,1.0000,4,1.0000,1,8,yes,yes,926,1037,3736,6344,yes,yes,1565,all clues truthful; indirect accounts corroborated
-NG-M0378,4,challenging,3.00,0.1667,1.0000,5,0.9167,2,8,yes,yes,565,785,3146,6934,yes,yes,1960,all clues truthful; indirect accounts corroborated
-NG-M0379,5,hard,3.11,0.1111,1.0000,5,1.0000,3,8,yes,yes,974,1177,3835,6245,yes,yes,2278,all clues truthful; indirect accounts corroborated
-NG-M0380,1,easy,2.67,0.3333,1.0000,3,1.0000,3,8,yes,yes,130,1370,3227,6853,yes,yes,1022,all clues truthful; indirect accounts corroborated
-NG-M0381,2,standard,2.89,0.5000,1.0000,3,1.0000,2,8,yes,yes,189,326,2205,7875,yes,yes,1384,all clues truthful; indirect accounts corroborated
-NG-M0382,3,medium,2.89,0.5000,1.0000,4,1.0000,4,8,yes,yes,584,0,2327,7753,yes,yes,1685,all clues truthful; indirect accounts corroborated
-NG-M0383,4,challenging,3.00,0.1250,1.0000,5,0.8333,2,8,yes,yes,292,1073,3131,6949,yes,yes,1960,all clues truthful; indirect accounts corroborated
-NG-M0384,5,hard,3.00,1.0000,1.0000,5,1.0000,3,8,yes,yes,878,975,3582,6498,yes,yes,2306,all clues truthful; indirect accounts corroborated
-NG-M0385,1,easy,2.67,1.0000,1.0000,3,1.0000,3,8,yes,yes,158,1484,3429,6651,yes,yes,1010,all clues truthful; indirect accounts corroborated
-NG-M0386,2,standard,2.89,1.0000,1.0000,3,1.0000,2,8,yes,yes,546,0,2176,7904,yes,yes,1384,all clues truthful; indirect accounts corroborated
-NG-M0387,3,medium,2.89,1.0000,1.0000,4,1.0000,2,8,yes,yes,372,345,2445,7635,yes,yes,1675,all clues truthful; indirect accounts corroborated
-NG-M0388,4,challenging,3.00,0.0833,1.0000,5,1.0000,2,8,yes,yes,110,70,2021,8059,yes,yes,2074,all clues truthful; indirect accounts corroborated
-NG-M0389,5,hard,3.00,0.2500,1.0000,5,0.9167,3,8,yes,yes,228,621,2638,7442,yes,yes,2418,all clues truthful; indirect accounts corroborated
-NG-M0390,1,easy,2.67,1.0000,1.0000,3,1.0000,3,8,yes,yes,267,1068,3002,7078,yes,yes,1031,all clues truthful; indirect accounts corroborated
-NG-M0391,2,standard,2.89,0.5000,1.0000,3,1.0000,2,8,yes,yes,515,925,3145,6935,yes,yes,1320,all clues truthful; indirect accounts corroborated
-NG-M0392,3,medium,2.78,0.5000,1.0000,4,1.0000,3,8,yes,yes,555,810,3078,7002,yes,yes,1620,all clues truthful; indirect accounts corroborated
-NG-M0393,4,challenging,3.00,0.2500,1.0000,5,1.0000,2,8,yes,yes,1236,1569,4601,5479,yes,yes,1816,all clues truthful; indirect accounts corroborated
-NG-M0394,5,hard,3.00,0.1667,1.0000,5,0.9167,3,8,yes,yes,86,229,2089,7991,yes,yes,2481,all clues truthful; indirect accounts corroborated
-NG-M0395,1,easy,2.78,1.0000,1.0000,3,1.0000,3,8,yes,yes,280,950,2957,7123,yes,yes,1034,all clues truthful; indirect accounts corroborated
-NG-M0396,2,standard,2.67,0.5000,1.0000,3,1.0000,2,8,yes,yes,0,270,1885,8195,yes,yes,1404,all clues truthful; indirect accounts corroborated
-NG-M0397,3,medium,2.67,1.0000,1.0000,4,1.0000,2,8,yes,yes,521,296,2500,7580,yes,yes,1670,all clues truthful; indirect accounts corroborated
-NG-M0398,4,challenging,3.00,0.2500,1.0000,5,0.9167,2,8,yes,yes,690,960,3416,6664,yes,yes,1936,all clues truthful; indirect accounts corroborated
-NG-M0399,5,hard,3.00,0.2500,1.0000,5,1.0000,2,8,yes,yes,918,726,3253,6827,yes,yes,2341,all clues truthful; indirect accounts corroborated
-NG-M0400,1,easy,2.67,1.0000,1.0000,3,1.0000,0,8,yes,yes,328,109,2104,7976,yes,yes,1076,all clues truthful; indirect accounts corroborated
-NG-M0401,2,standard,3.00,1.0000,1.0000,3,1.0000,4,8,yes,yes,753,867,3250,6830,yes,yes,1312,all clues truthful; indirect accounts corroborated
-NG-M0402,3,medium,2.89,0.3333,1.0000,4,1.0000,2,8,yes,yes,130,375,2278,7802,yes,yes,1690,all clues truthful; indirect accounts corroborated
-NG-M0403,4,challenging,3.00,0.1667,1.0000,5,0.7500,3,8,yes,yes,61,329,2096,7984,yes,yes,2068,all clues truthful; indirect accounts corroborated
-NG-M0404,5,hard,3.11,0.2500,1.0000,5,1.0000,0,8,yes,yes,470,14,2228,7852,yes,yes,2460,all clues truthful; indirect accounts corroborated
-NG-M0405,1,easy,2.67,1.0000,1.0000,3,1.0000,2,8,yes,yes,738,1065,3605,6475,yes,yes,1001,all clues truthful; indirect accounts corroborated
-NG-M0406,2,standard,2.67,1.0000,1.0000,3,1.0000,2,8,yes,yes,874,1405,3954,6126,yes,yes,1268,all clues truthful; indirect accounts corroborated
-NG-M0407,3,medium,2.89,1.0000,1.0000,4,1.0000,2,8,yes,yes,509,661,2898,7182,yes,yes,1635,all clues truthful; indirect accounts corroborated
-NG-M0408,4,challenging,3.00,0.0833,1.0000,5,0.9167,3,8,yes,yes,621,774,3071,7009,yes,yes,1966,all clues truthful; indirect accounts corroborated
-NG-M0409,5,hard,3.00,1.0000,1.0000,5,0.9167,2,8,yes,yes,720,1065,3499,6581,yes,yes,2313,all clues truthful; indirect accounts corroborated
-NG-M0410,1,easy,2.67,1.0000,1.0000,3,1.0000,3,8,yes,yes,409,1346,3602,6478,yes,yes,1001,all clues truthful; indirect accounts corroborated
-NG-M0411,2,standard,2.67,1.0000,1.0000,3,1.0000,3,8,yes,yes,751,1304,3805,6275,yes,yes,1276,all clues truthful; indirect accounts corroborated
-NG-M0412,3,medium,2.78,1.0000,1.0000,4,1.0000,3,8,yes,yes,267,1368,3348,6732,yes,yes,1600,all clues truthful; indirect accounts corroborated
-NG-M0413,4,challenging,3.00,0.5000,1.0000,5,1.0000,3,8,yes,yes,414,50,2185,7895,yes,yes,2056,all clues truthful; indirect accounts corroborated
-NG-M0414,5,hard,3.11,0.1250,1.0000,5,0.9167,3,8,yes,yes,687,993,3439,6641,yes,yes,2320,all clues truthful; indirect accounts corroborated
-NG-M0415,1,easy,2.56,1.0000,1.0000,3,1.0000,3,8,yes,yes,923,1807,4472,5608,yes,yes,959,all clues truthful; indirect accounts corroborated
-NG-M0416,2,standard,2.78,0.5000,1.0000,3,1.0000,4,8,yes,yes,271,824,2875,7205,yes,yes,1340,all clues truthful; indirect accounts corroborated
-NG-M0417,3,medium,2.89,1.0000,1.0000,4,1.0000,3,8,yes,yes,165,145,2068,8012,yes,yes,1705,all clues truthful; indirect accounts corroborated
-NG-M0418,4,challenging,3.00,0.1250,1.0000,5,0.8333,3,8,yes,yes,0,240,1931,8149,yes,yes,2080,all clues truthful; indirect accounts corroborated
-NG-M0419,5,hard,3.33,0.2500,1.0000,5,0.9167,4,8,yes,yes,865,1775,4369,5711,yes,yes,2215,all clues truthful; indirect accounts corroborated
-NG-M0420,1,easy,2.78,0.5000,1.0000,3,1.0000,2,8,yes,yes,556,764,3077,7003,yes,yes,1028,all clues truthful; indirect accounts corroborated
-NG-M0421,2,standard,2.89,1.0000,1.0000,3,1.0000,4,8,yes,yes,699,976,3260,6820,yes,yes,1312,all clues truthful; indirect accounts corroborated
-NG-M0422,3,medium,2.67,1.0000,1.0000,4,1.0000,2,8,yes,yes,296,109,2118,7962,yes,yes,1700,all clues truthful; indirect accounts corroborated
-NG-M0423,4,challenging,3.00,0.0833,1.0000,5,0.9167,1,8,yes,yes,0,330,2111,7969,yes,yes,2062,all clues truthful; indirect accounts corroborated
-NG-M0424,5,hard,3.00,0.2500,1.0000,5,1.0000,3,8,yes,yes,882,2043,4609,5471,yes,yes,2187,all clues truthful; indirect accounts corroborated
-NG-M0425,1,easy,2.67,1.0000,1.0000,3,1.0000,3,8,yes,yes,199,1061,2897,7183,yes,yes,1037,all clues truthful; indirect accounts corroborated
-NG-M0426,2,standard,2.89,0.2500,1.0000,3,1.0000,0,8,yes,yes,1251,549,3535,6545,yes,yes,1296,all clues truthful; indirect accounts corroborated
-NG-M0427,3,medium,2.78,1.0000,1.0000,4,1.0000,2,8,yes,yes,778,857,3363,6717,yes,yes,1595,all clues truthful; indirect accounts corroborated
-NG-M0428,4,challenging,3.00,0.2500,1.0000,5,0.9167,2,8,yes,yes,1026,464,3211,6869,yes,yes,1954,all clues truthful; indirect accounts corroborated
-NG-M0429,5,hard,3.11,0.3333,1.0000,5,0.9167,1,8,yes,yes,177,340,2216,7864,yes,yes,2467,all clues truthful; indirect accounts corroborated
-NG-M0430,1,easy,2.67,0.5000,1.0000,3,1.0000,3,8,yes,yes,365,100,2177,7903,yes,yes,1073,all clues truthful; indirect accounts corroborated
-NG-M0431,2,standard,2.78,1.0000,1.0000,3,1.0000,4,8,yes,yes,634,1271,3610,6470,yes,yes,1288,all clues truthful; indirect accounts corroborated
-NG-M0432,3,medium,2.67,1.0000,1.0000,4,1.0000,2,8,yes,yes,452,778,3078,7002,yes,yes,1620,all clues truthful; indirect accounts corroborated
-NG-M0433,4,challenging,3.00,0.2500,1.0000,5,0.8333,3,8,yes,yes,167,223,2126,7954,yes,yes,2062,all clues truthful; indirect accounts corroborated
-NG-M0434,5,hard,3.22,0.2500,1.0000,5,1.0000,3,8,yes,yes,652,1135,3621,6459,yes,yes,2299,all clues truthful; indirect accounts corroborated
-NG-M0435,1,easy,2.78,0.5000,1.0000,3,1.0000,2,8,yes,yes,568,963,3243,6837,yes,yes,1019,all clues truthful; indirect accounts corroborated
-NG-M0436,2,standard,2.67,1.0000,1.0000,3,1.0000,0,8,yes,yes,660,555,2995,7085,yes,yes,1332,all clues truthful; indirect accounts corroborated
-NG-M0437,3,medium,2.89,0.5000,1.0000,4,1.0000,3,8,yes,yes,591,1319,3578,6502,yes,yes,1580,all clues truthful; indirect accounts corroborated
-NG-M0438,4,challenging,3.00,0.3333,1.0000,5,1.0000,3,8,yes,yes,1112,2044,4997,5083,yes,yes,1774,all clues truthful; indirect accounts corroborated
-NG-M0439,5,hard,3.00,1.0000,1.0000,5,1.0000,3,8,yes,yes,124,446,2194,7886,yes,yes,2467,all clues truthful; indirect accounts corroborated
-NG-M0440,1,easy,2.78,0.5000,1.0000,3,1.0000,2,8,yes,yes,859,596,3137,6943,yes,yes,1025,all clues truthful; indirect accounts corroborated
-NG-M0441,2,standard,2.78,1.0000,1.0000,3,1.0000,2,8,yes,yes,219,951,2905,7175,yes,yes,1336,all clues truthful; indirect accounts corroborated
-NG-M0442,3,medium,2.89,1.0000,1.0000,4,1.0000,3,8,yes,yes,388,2462,4623,5457,yes,yes,1490,all clues truthful; indirect accounts corroborated
-NG-M0443,4,challenging,3.00,0.1667,1.0000,5,0.9167,4,8,yes,yes,641,469,2891,7189,yes,yes,1984,all clues truthful; indirect accounts corroborated
-NG-M0444,5,hard,3.11,0.5000,1.0000,5,1.0000,3,8,yes,yes,1398,1812,4954,5126,yes,yes,2145,all clues truthful; indirect accounts corroborated
-NG-M0445,1,easy,2.67,1.0000,1.0000,3,1.0000,3,8,yes,yes,437,982,3161,6919,yes,yes,1025,all clues truthful; indirect accounts corroborated
-NG-M0446,2,standard,2.89,1.0000,1.0000,3,1.0000,2,8,yes,yes,637,533,2890,7190,yes,yes,1336,all clues truthful; indirect accounts corroborated
-NG-M0447,3,medium,2.78,0.5000,1.0000,4,1.0000,1,8,yes,yes,757,705,3175,6905,yes,yes,1615,all clues truthful; indirect accounts corroborated
-NG-M0448,4,challenging,3.00,0.5000,1.0000,5,0.9167,2,8,yes,yes,946,428,3140,6940,yes,yes,1960,all clues truthful; indirect accounts corroborated
-NG-M0449,5,hard,3.11,0.2500,1.0000,5,1.0000,4,8,yes,yes,828,1253,3780,6300,yes,yes,2285,all clues truthful; indirect accounts corroborated
-NG-M0450,1,easy,2.56,1.0000,1.0000,3,1.0000,4,8,yes,yes,109,618,2484,7596,yes,yes,1058,all clues truthful; indirect accounts corroborated
-NG-M0451,2,standard,2.78,0.5000,1.0000,3,1.0000,4,8,yes,yes,357,48,2080,8000,yes,yes,1392,all clues truthful; indirect accounts corroborated
-NG-M0452,3,medium,2.78,1.0000,1.0000,4,1.0000,2,8,yes,yes,438,672,2898,7182,yes,yes,1635,all clues truthful; indirect accounts corroborated
-NG-M0453,4,challenging,3.00,0.1667,1.0000,5,1.0000,3,8,yes,yes,865,32,2678,7402,yes,yes,2008,all clues truthful; indirect accounts corroborated
-NG-M0454,5,hard,3.00,0.2500,1.0000,5,1.0000,2,8,yes,yes,193,0,1997,8083,yes,yes,2488,all clues truthful; indirect accounts corroborated
-NG-M0455,1,easy,2.78,1.0000,1.0000,3,1.0000,3,8,yes,yes,426,409,2427,7653,yes,yes,1061,all clues truthful; indirect accounts corroborated
-NG-M0456,2,standard,2.78,0.2500,1.0000,3,1.0000,0,8,yes,yes,474,1091,3255,6825,yes,yes,1312,all clues truthful; indirect accounts corroborated
-NG-M0457,3,medium,2.67,1.0000,1.0000,4,1.0000,2,8,yes,yes,36,954,2793,7287,yes,yes,1645,all clues truthful; indirect accounts corroborated
-NG-M0458,4,challenging,3.00,0.1667,1.0000,5,1.0000,2,8,yes,yes,856,1005,3657,6423,yes,yes,1912,all clues truthful; indirect accounts corroborated
-NG-M0459,5,hard,3.00,0.1667,1.0000,5,1.0000,4,8,yes,yes,305,955,3094,6986,yes,yes,2362,all clues truthful; indirect accounts corroborated
-NG-M0460,1,easy,2.78,1.0000,1.0000,3,1.0000,3,8,yes,yes,55,1160,2957,7123,yes,yes,1034,all clues truthful; indirect accounts corroborated
-NG-M0461,2,standard,2.78,1.0000,1.0000,3,1.0000,4,8,yes,yes,0,315,1945,8135,yes,yes,1400,all clues truthful; indirect accounts corroborated
-NG-M0462,3,medium,2.67,1.0000,1.0000,4,1.0000,2,8,yes,yes,388,1682,3813,6267,yes,yes,1560,all clues truthful; indirect accounts corroborated
-NG-M0463,4,challenging,3.00,0.2500,1.0000,5,0.9167,4,8,yes,yes,605,988,3419,6661,yes,yes,1936,all clues truthful; indirect accounts corroborated
-NG-M0464,5,hard,3.00,0.0556,1.0000,5,0.9167,3,8,yes,yes,343,182,2164,7916,yes,yes,2467,all clues truthful; indirect accounts corroborated
-NG-M0465,1,easy,2.56,1.0000,1.0000,3,1.0000,4,8,yes,yes,709,705,3081,6999,yes,yes,1028,all clues truthful; indirect accounts corroborated
-NG-M0466,2,standard,2.56,0.5000,1.0000,3,1.0000,4,8,yes,yes,111,240,2176,7904,yes,yes,1384,all clues truthful; indirect accounts corroborated
-NG-M0467,3,medium,2.78,1.0000,1.0000,4,1.0000,0,8,yes,yes,985,620,3228,6852,yes,yes,1610,all clues truthful; indirect accounts corroborated
-NG-M0468,4,challenging,3.00,0.1250,1.0000,5,0.8333,4,8,yes,yes,18,252,1931,8149,yes,yes,2080,all clues truthful; indirect accounts corroborated
-NG-M0469,5,hard,3.11,0.1250,1.0000,5,0.9167,1,8,yes,yes,912,1533,4354,5726,yes,yes,2215,all clues truthful; indirect accounts corroborated
-NG-M0470,1,easy,2.67,1.0000,1.0000,3,1.0000,2,8,yes,yes,510,796,3033,7047,yes,yes,1031,all clues truthful; indirect accounts corroborated
-NG-M0471,2,standard,2.78,1.0000,1.0000,3,1.0000,4,8,yes,yes,304,172,2166,7914,yes,yes,1384,all clues truthful; indirect accounts corroborated
-NG-M0472,3,medium,2.78,0.5000,1.0000,4,1.0000,1,8,yes,yes,456,952,3151,6929,yes,yes,1615,all clues truthful; indirect accounts corroborated
-NG-M0473,4,challenging,3.00,0.1250,1.0000,5,0.8333,4,8,yes,yes,264,1116,3131,6949,yes,yes,1960,all clues truthful; indirect accounts corroborated
-NG-M0474,5,hard,3.00,0.2500,1.0000,5,1.0000,3,8,yes,yes,1146,1509,4414,5666,yes,yes,2208,all clues truthful; indirect accounts corroborated
-NG-M0475,1,easy,2.67,0.5000,1.0000,3,1.0000,1,8,yes,yes,629,1291,3707,6373,yes,yes,998,all clues truthful; indirect accounts corroborated
-NG-M0476,2,standard,2.78,0.2500,1.0000,3,1.0000,2,8,yes,yes,337,833,2950,7130,yes,yes,1332,all clues truthful; indirect accounts corroborated
-NG-M0477,3,medium,2.78,1.0000,1.0000,4,1.0000,3,8,yes,yes,67,1283,3048,7032,yes,yes,1625,all clues truthful; indirect accounts corroborated
-NG-M0478,4,challenging,3.00,0.0833,1.0000,5,0.8333,2,8,yes,yes,137,1018,2891,7189,yes,yes,1984,all clues truthful; indirect accounts corroborated
-NG-M0479,5,hard,3.11,0.5000,1.0000,5,1.0000,4,8,yes,yes,112,360,2246,7834,yes,yes,2460,all clues truthful; indirect accounts corroborated
-NG-M0480,1,easy,2.67,0.5000,1.0000,3,1.0000,3,8,yes,yes,463,342,2412,7668,yes,yes,1061,all clues truthful; indirect accounts corroborated
-NG-M0481,2,standard,2.78,0.5000,1.0000,3,1.0000,4,8,yes,yes,535,781,3066,7014,yes,yes,1324,all clues truthful; indirect accounts corroborated
-NG-M0482,3,medium,2.89,0.5000,1.0000,4,1.0000,3,8,yes,yes,200,415,2298,7782,yes,yes,1685,all clues truthful; indirect accounts corroborated
-NG-M0483,4,challenging,3.00,0.0833,1.0000,5,1.0000,2,8,yes,yes,861,384,2996,7084,yes,yes,1978,all clues truthful; indirect accounts corroborated
-NG-M0484,5,hard,3.22,0.2500,1.0000,5,0.9167,3,8,yes,yes,209,1654,3562,6518,yes,yes,2306,all clues truthful; indirect accounts corroborated
-NG-M0485,1,easy,2.78,0.5000,1.0000,3,1.0000,4,8,yes,yes,856,869,3422,6658,yes,yes,1010,all clues truthful; indirect accounts corroborated
-NG-M0486,2,standard,2.56,1.0000,1.0000,3,1.0000,1,8,yes,yes,1073,632,3425,6655,yes,yes,1300,all clues truthful; indirect accounts corroborated
-NG-M0487,3,medium,2.89,1.0000,1.0000,4,1.0000,3,8,yes,yes,851,889,3348,6732,yes,yes,1600,all clues truthful; indirect accounts corroborated
-NG-M0488,4,challenging,3.00,0.3333,1.0000,5,0.9167,3,8,yes,yes,272,1055,3078,7002,yes,yes,1966,all clues truthful; indirect accounts corroborated
-NG-M0489,5,hard,3.22,0.1667,1.0000,5,1.0000,2,8,yes,yes,348,1092,3199,6881,yes,yes,2348,all clues truthful; indirect accounts corroborated
-NG-M0490,1,easy,2.78,1.0000,1.0000,3,1.0000,2,8,yes,yes,1257,1353,4382,5698,yes,yes,962,all clues truthful; indirect accounts corroborated
-NG-M0491,2,standard,2.56,1.0000,1.0000,3,1.0000,3,8,yes,yes,681,162,2638,7442,yes,yes,1356,all clues truthful; indirect accounts corroborated
-NG-M0492,3,medium,2.78,0.5000,1.0000,4,1.0000,1,8,yes,yes,375,0,2088,7992,yes,yes,1705,all clues truthful; indirect accounts corroborated
-NG-M0493,4,challenging,3.00,0.1667,1.0000,5,0.9167,3,8,yes,yes,993,341,3040,7040,yes,yes,1972,all clues truthful; indirect accounts corroborated
-NG-M0494,5,hard,3.00,0.0833,1.0000,5,0.9167,4,8,yes,yes,291,1014,3034,7046,yes,yes,2369,all clues truthful; indirect accounts corroborated
-NG-M0495,1,easy,2.78,1.0000,1.0000,3,1.0000,3,8,yes,yes,979,619,3325,6755,yes,yes,1016,all clues truthful; indirect accounts corroborated
-NG-M0496,2,standard,2.89,1.0000,1.0000,3,1.0000,0,8,yes,yes,320,955,3010,7070,yes,yes,1328,all clues truthful; indirect accounts corroborated
-NG-M0497,3,medium,2.78,0.5000,1.0000,4,1.0000,1,8,yes,yes,644,6,2438,7642,yes,yes,1675,all clues truthful; indirect accounts corroborated
-NG-M0498,4,challenging,3.00,0.1667,1.0000,5,0.8333,3,8,yes,yes,248,257,2031,8049,yes,yes,2074,all clues truthful; indirect accounts corroborated
-NG-M0499,5,hard,3.11,0.0833,1.0000,5,1.0000,4,8,yes,yes,500,1300,3484,6596,yes,yes,2313,all clues truthful; indirect accounts corroborated
-NG-M0500,1,easy,2.67,1.0000,1.0000,3,1.0000,3,8,yes,yes,136,1289,3137,6943,yes,yes,1025,all clues truthful; indirect accounts corroborated
-NG-M0501,2,standard,2.56,1.0000,1.0000,3,1.0000,1,8,yes,yes,211,1274,3220,6860,yes,yes,1316,all clues truthful; indirect accounts corroborated
-NG-M0502,3,medium,2.78,0.5000,1.0000,4,1.0000,4,8,yes,yes,454,461,2523,7557,yes,yes,1665,all clues truthful; indirect accounts corroborated
-NG-M0503,4,challenging,3.00,0.1667,1.0000,5,0.9167,3,8,yes,yes,672,686,3124,6956,yes,yes,1960,all clues truthful; indirect accounts corroborated
-NG-M0504,5,hard,3.00,0.0833,1.0000,5,1.0000,3,8,yes,yes,400,815,2914,7166,yes,yes,2383,all clues truthful; indirect accounts corroborated
-NG-M0505,1,easy,2.78,1.0000,1.0000,3,1.0000,1,8,yes,yes,741,549,3032,7048,yes,yes,1031,all clues truthful; indirect accounts corroborated
-NG-M0506,2,standard,2.89,1.0000,1.0000,3,1.0000,2,8,yes,yes,139,236,2035,8045,yes,yes,1396,all clues truthful; indirect accounts corroborated
-NG-M0507,3,medium,2.89,1.0000,1.0000,4,1.0000,3,8,yes,yes,516,2004,4353,5727,yes,yes,1515,all clues truthful; indirect accounts corroborated
-NG-M0508,4,challenging,3.00,0.1250,1.0000,5,0.7500,2,8,yes,yes,1018,732,3456,6624,yes,yes,1930,all clues truthful; indirect accounts corroborated
-NG-M0509,5,hard,3.11,0.2500,1.0000,5,0.9167,3,8,yes,yes,883,827,3409,6671,yes,yes,2327,all clues truthful; indirect accounts corroborated
-NG-M0510,1,easy,2.67,0.3333,1.0000,3,1.0000,4,8,yes,yes,402,1191,3305,6775,yes,yes,1016,all clues truthful; indirect accounts corroborated
-NG-M0511,2,standard,2.89,1.0000,1.0000,3,1.0000,1,8,yes,yes,804,597,3091,6989,yes,yes,1324,all clues truthful; indirect accounts corroborated
-NG-M0512,3,medium,2.89,0.5000,1.0000,4,1.0000,2,8,yes,yes,1103,1552,4398,5682,yes,yes,1510,all clues truthful; indirect accounts corroborated
-NG-M0513,4,challenging,3.00,0.2500,1.0000,5,0.9167,2,8,yes,yes,823,147,2811,7269,yes,yes,1996,all clues truthful; indirect accounts corroborated
-NG-M0514,5,hard,3.11,0.5000,1.0000,5,0.9167,3,8,yes,yes,640,560,2914,7166,yes,yes,2383,all clues truthful; indirect accounts corroborated
-NG-M0515,1,easy,2.78,1.0000,1.0000,3,1.0000,2,8,yes,yes,809,1149,3655,6425,yes,yes,1001,all clues truthful; indirect accounts corroborated
-NG-M0516,2,standard,3.00,1.0000,1.0000,3,1.0000,3,8,yes,yes,302,868,2890,7190,yes,yes,1336,all clues truthful; indirect accounts corroborated
-NG-M0517,3,medium,2.78,1.0000,1.0000,4,1.0000,3,8,yes,yes,535,1070,3393,6687,yes,yes,1595,all clues truthful; indirect accounts corroborated
-NG-M0518,4,challenging,3.00,0.0370,1.0000,5,1.0000,2,8,yes,yes,759,689,3139,6941,yes,yes,1960,all clues truthful; indirect accounts corroborated
-NG-M0519,5,hard,3.00,0.1250,1.0000,5,1.0000,2,8,yes,yes,907,538,3249,6831,yes,yes,2341,all clues truthful; indirect accounts corroborated
-NG-M0520,1,easy,2.67,1.0000,1.0000,3,1.0000,3,8,yes,yes,145,125,1772,8308,yes,yes,1094,all clues truthful; indirect accounts corroborated
-NG-M0521,2,standard,2.89,0.5000,1.0000,3,1.0000,1,8,yes,yes,408,6,2104,7976,yes,yes,1388,all clues truthful; indirect accounts corroborated
-NG-M0522,3,medium,2.78,1.0000,1.0000,4,1.0000,3,8,yes,yes,114,249,2061,8019,yes,yes,1705,all clues truthful; indirect accounts corroborated
-NG-M0523,4,challenging,3.00,0.1667,1.0000,5,0.9167,4,8,yes,yes,1261,3189,6246,3834,yes,yes,1648,all clues truthful; indirect accounts corroborated
-NG-M0524,5,hard,3.00,0.1667,1.0000,5,0.9167,3,8,yes,yes,593,0,2397,7683,yes,yes,2446,all clues truthful; indirect accounts corroborated
-NG-M0525,1,easy,2.89,1.0000,1.0000,3,1.0000,3,8,yes,yes,1028,1942,4592,5488,yes,yes,953,all clues truthful; indirect accounts corroborated
-NG-M0526,2,standard,3.00,0.3333,1.0000,3,1.0000,3,8,yes,yes,130,375,2270,7810,yes,yes,1380,all clues truthful; indirect accounts corroborated
-NG-M0527,3,medium,2.89,0.5000,1.0000,4,1.0000,2,8,yes,yes,79,326,2103,7977,yes,yes,1700,all clues truthful; indirect accounts corroborated
-NG-M0528,4,challenging,3.00,0.2500,1.0000,5,0.9167,2,8,yes,yes,664,0,2400,7680,yes,yes,2038,all clues truthful; indirect accounts corroborated
-NG-M0529,5,hard,3.11,0.2500,1.0000,5,0.9167,2,8,yes,yes,448,1190,3442,6638,yes,yes,2320,all clues truthful; indirect accounts corroborated
-NG-M0530,1,easy,2.67,1.0000,1.0000,3,1.0000,4,8,yes,yes,612,633,2897,7183,yes,yes,1037,all clues truthful; indirect accounts corroborated
-NG-M0531,2,standard,2.89,1.0000,1.0000,3,1.0000,2,8,yes,yes,784,783,3287,6793,yes,yes,1312,all clues truthful; indirect accounts corroborated
-NG-M0532,3,medium,2.78,1.0000,1.0000,4,1.0000,3,8,yes,yes,394,1031,3063,7017,yes,yes,1620,all clues truthful; indirect accounts corroborated
-NG-M0533,4,challenging,3.00,1.0000,1.0000,5,1.0000,2,8,yes,yes,561,804,3086,6994,yes,yes,1966,all clues truthful; indirect accounts corroborated
-NG-M0534,5,hard,3.00,0.0833,1.0000,5,1.0000,3,8,yes,yes,86,137,2042,8038,yes,yes,2481,all clues truthful; indirect accounts corroborated
-NG-M0535,1,easy,2.78,1.0000,1.0000,3,1.0000,0,8,yes,yes,648,552,2942,7138,yes,yes,1034,all clues truthful; indirect accounts corroborated
-NG-M0536,2,standard,2.67,1.0000,1.0000,3,1.0000,2,8,yes,yes,278,952,2875,7205,yes,yes,1340,all clues truthful; indirect accounts corroborated
-NG-M0537,3,medium,3.00,1.0000,1.0000,4,1.0000,3,8,yes,yes,567,873,3153,6927,yes,yes,1615,all clues truthful; indirect accounts corroborated
-NG-M0538,4,challenging,3.00,0.2500,1.0000,5,0.8333,4,8,yes,yes,413,228,2377,7703,yes,yes,2038,all clues truthful; indirect accounts corroborated
-NG-M0539,5,hard,3.00,0.2500,1.0000,5,1.0000,2,8,yes,yes,1099,1511,4444,5636,yes,yes,2201,all clues truthful; indirect accounts corroborated
-NG-M0540,1,easy,2.67,0.2500,1.0000,3,1.0000,4,8,yes,yes,357,828,2942,7138,yes,yes,1034,all clues truthful; indirect accounts corroborated
-NG-M0541,2,standard,2.78,1.0000,1.0000,3,1.0000,3,8,yes,yes,313,1547,3625,6455,yes,yes,1288,all clues truthful; indirect accounts corroborated
-NG-M0542,3,medium,2.67,0.5000,1.0000,4,1.0000,4,8,yes,yes,58,227,1938,8142,yes,yes,1715,all clues truthful; indirect accounts corroborated
-NG-M0543,4,challenging,3.00,0.1250,1.0000,5,0.6667,3,8,yes,yes,137,151,1994,8086,yes,yes,2074,all clues truthful; indirect accounts corroborated
-NG-M0544,5,hard,3.22,0.2500,1.0000,5,1.0000,4,8,yes,yes,483,777,3019,7061,yes,yes,2369,all clues truthful; indirect accounts corroborated
-NG-M0545,1,easy,2.78,1.0000,1.0000,3,1.0000,1,8,yes,yes,979,821,3407,6673,yes,yes,1013,all clues truthful; indirect accounts corroborated
-NG-M0546,2,standard,2.67,1.0000,1.0000,3,1.0000,2,8,yes,yes,338,109,2152,7928,yes,yes,1388,all clues truthful; indirect accounts corroborated
-NG-M0547,3,medium,2.89,1.0000,1.0000,4,1.0000,3,8,yes,yes,0,315,2163,7917,yes,yes,1695,all clues truthful; indirect accounts corroborated
-NG-M0548,4,challenging,3.00,0.2500,1.0000,5,1.0000,0,8,yes,yes,913,1772,4346,5734,yes,yes,1840,all clues truthful; indirect accounts corroborated
-NG-M0549,5,hard,3.11,0.2500,1.0000,5,0.9167,3,8,yes,yes,264,531,2434,7646,yes,yes,2439,all clues truthful; indirect accounts corroborated
-NG-M0550,1,easy,2.89,0.1250,1.0000,3,1.0000,3,8,yes,yes,1169,1906,4847,5233,yes,yes,941,all clues truthful; indirect accounts corroborated
-NG-M0551,2,standard,2.67,1.0000,1.0000,3,1.0000,1,8,yes,yes,509,359,2573,7507,yes,yes,1360,all clues truthful; indirect accounts corroborated
-NG-M0552,3,medium,2.67,1.0000,1.0000,4,1.0000,1,8,yes,yes,1043,639,3380,6700,yes,yes,1595,all clues truthful; indirect accounts corroborated
-NG-M0553,4,challenging,3.00,0.5000,1.0000,5,0.9167,3,8,yes,yes,311,207,2254,7826,yes,yes,2050,all clues truthful; indirect accounts corroborated
-NG-M0554,5,hard,3.22,0.2500,1.0000,5,0.9167,4,8,yes,yes,644,646,3004,7076,yes,yes,2369,all clues truthful; indirect accounts corroborated
-NG-M0555,1,easy,2.78,1.0000,1.0000,3,1.0000,0,8,yes,yes,610,2120,4442,5638,yes,yes,959,all clues truthful; indirect accounts corroborated
-NG-M0556,2,standard,2.67,1.0000,1.0000,3,1.0000,1,8,yes,yes,493,797,3070,7010,yes,yes,1324,all clues truthful; indirect accounts corroborated
-NG-M0557,3,medium,2.89,1.0000,1.0000,4,1.0000,3,8,yes,yes,88,632,2508,7572,yes,yes,1670,all clues truthful; indirect accounts corroborated
-NG-M0558,4,challenging,3.00,0.5000,1.0000,5,0.9167,3,8,yes,yes,447,213,2426,7654,yes,yes,2032,all clues truthful; indirect accounts corroborated
-NG-M0559,5,hard,3.11,0.1111,1.0000,5,1.0000,2,8,yes,yes,363,135,2242,7838,yes,yes,2460,all clues truthful; indirect accounts corroborated
-NG-M0560,1,easy,2.67,1.0000,1.0000,3,1.0000,4,8,yes,yes,836,1039,3647,6433,yes,yes,1001,all clues truthful; indirect accounts corroborated
-NG-M0561,2,standard,2.89,0.5000,1.0000,3,1.0000,2,8,yes,yes,800,1171,3676,6404,yes,yes,1284,all clues truthful; indirect accounts corroborated
-NG-M0562,3,medium,2.78,1.0000,1.0000,4,1.0000,1,8,yes,yes,485,324,2627,7453,yes,yes,1660,all clues truthful; indirect accounts corroborated
-NG-M0563,4,challenging,3.00,1.0000,1.0000,5,1.0000,3,8,yes,yes,248,272,2151,7929,yes,yes,2062,all clues truthful; indirect accounts corroborated
-NG-M0564,5,hard,3.00,0.2500,1.0000,5,1.0000,4,8,yes,yes,699,84,2452,7628,yes,yes,2439,all clues truthful; indirect accounts corroborated
-NG-M0565,1,easy,2.67,1.0000,1.0000,3,1.0000,2,8,yes,yes,143,328,2198,7882,yes,yes,1073,all clues truthful; indirect accounts corroborated
-NG-M0566,2,standard,2.89,0.3333,1.0000,3,1.0000,2,8,yes,yes,1257,723,3655,6425,yes,yes,1288,all clues truthful; indirect accounts corroborated
-NG-M0567,3,medium,2.67,1.0000,1.0000,4,1.0000,3,8,yes,yes,755,1270,3828,6252,yes,yes,1560,all clues truthful; indirect accounts corroborated
-NG-M0568,4,challenging,3.00,0.5000,1.0000,5,1.0000,2,8,yes,yes,1219,918,3798,6282,yes,yes,1894,all clues truthful; indirect accounts corroborated
-NG-M0569,5,hard,3.00,0.5000,1.0000,5,0.9167,2,8,yes,yes,263,1132,3169,6911,yes,yes,2355,all clues truthful; indirect accounts corroborated
-NG-M0570,1,easy,2.78,1.0000,1.0000,3,1.0000,4,8,yes,yes,355,246,2328,7752,yes,yes,1067,all clues truthful; indirect accounts corroborated
-NG-M0571,2,standard,2.67,1.0000,1.0000,3,1.0000,2,8,yes,yes,840,663,3208,6872,yes,yes,1316,all clues truthful; indirect accounts corroborated
-NG-M0572,3,medium,2.89,1.0000,1.0000,4,1.0000,4,8,yes,yes,1044,815,3587,6493,yes,yes,1580,all clues truthful; indirect accounts corroborated
-NG-M0573,4,challenging,3.00,0.1250,1.0000,5,0.9167,2,8,yes,yes,599,1019,3354,6726,yes,yes,1942,all clues truthful; indirect accounts corroborated
-NG-M0574,5,hard,3.22,0.2500,1.0000,5,1.0000,4,8,yes,yes,478,192,2369,7711,yes,yes,2446,all clues truthful; indirect accounts corroborated
-NG-M0575,1,easy,2.78,1.0000,1.0000,3,1.0000,1,8,yes,yes,341,979,2987,7093,yes,yes,1034,all clues truthful; indirect accounts corroborated
-NG-M0576,2,standard,2.89,1.0000,1.0000,3,1.0000,3,8,yes,yes,371,1084,3235,6845,yes,yes,1316,all clues truthful; indirect accounts corroborated
-NG-M0577,3,medium,2.89,1.0000,1.0000,4,1.0000,1,8,yes,yes,937,738,3478,6602,yes,yes,1590,all clues truthful; indirect accounts corroborated
-NG-M0578,4,challenging,3.00,0.2500,1.0000,5,1.0000,1,8,yes,yes,209,440,2445,7635,yes,yes,2032,all clues truthful; indirect accounts corroborated
-NG-M0579,5,hard,3.11,0.2500,1.0000,5,1.0000,3,8,yes,yes,151,179,2014,8066,yes,yes,2488,all clues truthful; indirect accounts corroborated
-NG-M0580,1,easy,2.67,0.2500,1.0000,3,1.0000,4,8,yes,yes,532,2288,4517,5563,yes,yes,956,all clues truthful; indirect accounts corroborated
-NG-M0581,2,standard,2.56,1.0000,1.0000,3,1.0000,2,8,yes,yes,18,267,2035,8045,yes,yes,1396,all clues truthful; indirect accounts corroborated
-NG-M0582,3,medium,2.78,1.0000,1.0000,4,1.0000,3,8,yes,yes,587,659,3034,7046,yes,yes,1625,all clues truthful; indirect accounts corroborated
-NG-M0583,4,challenging,3.00,0.5000,1.0000,5,1.0000,2,8,yes,yes,329,180,2365,7715,yes,yes,2038,all clues truthful; indirect accounts corroborated
-NG-M0584,5,hard,3.00,0.3333,1.0000,5,1.0000,2,8,yes,yes,956,1027,3727,6353,yes,yes,2285,all clues truthful; indirect accounts corroborated
-NG-M0585,1,easy,2.67,1.0000,1.0000,3,1.0000,1,8,yes,yes,0,300,1952,8128,yes,yes,1085,all clues truthful; indirect accounts corroborated
-NG-M0586,2,standard,2.67,1.0000,1.0000,3,1.0000,2,8,yes,yes,372,1698,3805,6275,yes,yes,1276,all clues truthful; indirect accounts corroborated
-NG-M0587,3,medium,2.78,1.0000,1.0000,4,1.0000,3,8,yes,yes,570,2235,4593,5487,yes,yes,1495,all clues truthful; indirect accounts corroborated
-NG-M0588,4,challenging,3.00,0.0556,1.0000,5,0.9167,2,8,yes,yes,394,228,2253,7827,yes,yes,2050,all clues truthful; indirect accounts corroborated
-NG-M0589,5,hard,3.11,0.2500,1.0000,5,1.0000,2,8,yes,yes,546,826,3086,6994,yes,yes,2362,all clues truthful; indirect accounts corroborated
-NG-M0590,1,easy,2.56,0.5000,1.0000,3,1.0000,3,8,yes,yes,0,240,2057,8023,yes,yes,1079,all clues truthful; indirect accounts corroborated
-NG-M0591,2,standard,2.78,1.0000,1.0000,3,1.0000,0,8,yes,yes,1009,594,3218,6862,yes,yes,1316,all clues truthful; indirect accounts corroborated
-NG-M0592,3,medium,2.89,1.0000,1.0000,4,1.0000,3,8,yes,yes,0,0,1593,8487,yes,yes,1745,all clues truthful; indirect accounts corroborated
-NG-M0593,4,challenging,3.00,0.1250,1.0000,5,0.8333,3,8,yes,yes,826,1619,4346,5734,yes,yes,1840,all clues truthful; indirect accounts corroborated
-NG-M0594,5,hard,3.00,0.1250,1.0000,5,0.9167,4,8,yes,yes,543,1316,3588,6492,yes,yes,2306,all clues truthful; indirect accounts corroborated
-NG-M0595,1,easy,2.67,1.0000,1.0000,3,1.0000,3,8,yes,yes,417,273,2402,7678,yes,yes,1061,all clues truthful; indirect accounts corroborated
-NG-M0596,2,standard,2.78,0.5000,1.0000,3,1.0000,3,8,yes,yes,240,1225,3215,6865,yes,yes,1316,all clues truthful; indirect accounts corroborated
-NG-M0597,3,medium,2.67,1.0000,1.0000,4,1.0000,4,8,yes,yes,61,299,2163,7917,yes,yes,1695,all clues truthful; indirect accounts corroborated
-NG-M0598,4,challenging,3.00,0.2500,1.0000,5,1.0000,2,8,yes,yes,1243,833,3797,6283,yes,yes,1894,all clues truthful; indirect accounts corroborated
-NG-M0599,5,hard,3.00,0.2500,1.0000,5,0.9167,1,8,yes,yes,868,1757,4444,5636,yes,yes,2201,all clues truthful; indirect accounts corroborated
-NG-M0600,1,easy,2.78,0.5000,1.0000,3,1.0000,4,8,yes,yes,301,884,2942,7138,yes,yes,1034,all clues truthful; indirect accounts corroborated
-NG-M0601,2,standard,2.89,1.0000,1.0000,3,1.0000,4,8,yes,yes,460,338,2428,7652,yes,yes,1368,all clues truthful; indirect accounts corroborated
-NG-M0602,3,medium,2.78,0.2500,1.0000,4,1.0000,2,8,yes,yes,336,999,3093,6987,yes,yes,1620,all clues truthful; indirect accounts corroborated
-NG-M0603,4,challenging,3.00,0.1250,1.0000,5,0.8333,3,8,yes,yes,36,324,2141,7939,yes,yes,2062,all clues truthful; indirect accounts corroborated
-NG-M0604,5,hard,3.11,0.5000,1.0000,5,1.0000,2,8,yes,yes,854,430,3088,6992,yes,yes,2362,all clues truthful; indirect accounts corroborated
-NG-M0605,1,easy,2.67,0.2500,1.0000,3,1.0000,3,8,yes,yes,65,250,2147,7933,yes,yes,1076,all clues truthful; indirect accounts corroborated
-NG-M0606,2,standard,2.78,1.0000,1.0000,3,1.0000,3,8,yes,yes,1030,2105,4930,5150,yes,yes,1200,all clues truthful; indirect accounts corroborated
-NG-M0607,3,medium,3.00,1.0000,1.0000,4,1.0000,3,8,yes,yes,0,0,1593,8487,yes,yes,1745,all clues truthful; indirect accounts corroborated
-NG-M0608,4,challenging,3.00,0.2500,1.0000,5,0.6667,2,8,yes,yes,511,779,2996,7084,yes,yes,1978,all clues truthful; indirect accounts corroborated
-NG-M0609,5,hard,3.22,0.2500,1.0000,5,1.0000,3,8,yes,yes,565,1073,3427,6653,yes,yes,2320,all clues truthful; indirect accounts corroborated
-NG-M0610,1,easy,2.67,1.0000,1.0000,3,1.0000,1,8,yes,yes,570,690,2897,7183,yes,yes,1037,all clues truthful; indirect accounts corroborated
-NG-M0611,2,standard,2.56,1.0000,1.0000,3,1.0000,2,8,yes,yes,962,688,3325,6755,yes,yes,1308,all clues truthful; indirect accounts corroborated
-NG-M0612,3,medium,2.78,1.0000,1.0000,4,1.0000,2,8,yes,yes,0,255,2088,7992,yes,yes,1705,all clues truthful; indirect accounts corroborated
-NG-M0613,4,challenging,3.00,0.2500,1.0000,5,0.9167,3,8,yes,yes,1017,1058,3736,6344,yes,yes,1900,all clues truthful; indirect accounts corroborated
-NG-M0614,5,hard,3.00,0.1250,1.0000,5,0.8333,3,8,yes,yes,18,252,1909,8171,yes,yes,2502,all clues truthful; indirect accounts corroborated
-NG-M0615,1,easy,2.78,0.2500,1.0000,3,1.0000,2,8,yes,yes,896,1639,4382,5698,yes,yes,962,all clues truthful; indirect accounts corroborated
-NG-M0616,2,standard,2.67,1.0000,1.0000,3,1.0000,2,8,yes,yes,541,775,3051,7029,yes,yes,1328,all clues truthful; indirect accounts corroborated
-NG-M0617,3,medium,3.00,0.5000,1.0000,4,1.0000,4,8,yes,yes,1101,1108,3892,6188,yes,yes,1555,all clues truthful; indirect accounts corroborated
-NG-M0618,4,challenging,3.00,0.5000,1.0000,5,0.9167,3,8,yes,yes,700,2274,4725,5355,yes,yes,1804,all clues truthful; indirect accounts corroborated
-NG-M0619,5,hard,3.22,0.1250,1.0000,5,0.9167,1,8,yes,yes,438,867,3034,7046,yes,yes,2369,all clues truthful; indirect accounts corroborated
-NG-M0620,1,easy,2.67,1.0000,1.0000,3,1.0000,1,8,yes,yes,1492,1313,4517,5563,yes,yes,956,all clues truthful; indirect accounts corroborated
-NG-M0621,2,standard,2.78,0.5000,1.0000,3,1.0000,0,8,yes,yes,669,1176,3625,6455,yes,yes,1288,all clues truthful; indirect accounts corroborated
-NG-M0622,3,medium,2.78,1.0000,1.0000,4,1.0000,3,8,yes,yes,200,1987,4020,6060,yes,yes,1545,all clues truthful; indirect accounts corroborated
-NG-M0623,4,challenging,3.00,0.1250,1.0000,5,0.7500,0,8,yes,yes,144,186,2021,8059,yes,yes,2074,all clues truthful; indirect accounts corroborated
-NG-M0624,5,hard,3.22,0.0833,1.0000,5,1.0000,1,8,yes,yes,727,1303,3789,6291,yes,yes,2278,all clues truthful; indirect accounts corroborated
-NG-M0625,1,easy,2.56,0.5000,1.0000,3,1.0000,1,8,yes,yes,604,700,3046,7034,yes,yes,1031,all clues truthful; indirect accounts corroborated
-NG-M0626,2,standard,2.67,1.0000,1.0000,3,1.0000,3,8,yes,yes,497,178,2305,7775,yes,yes,1376,all clues truthful; indirect accounts corroborated
-NG-M0627,3,medium,2.78,0.5000,1.0000,4,1.0000,1,8,yes,yes,448,963,3199,6881,yes,yes,1610,all clues truthful; indirect accounts corroborated
-NG-M0628,4,challenging,3.00,0.2500,1.0000,5,1.0000,2,8,yes,yes,0,585,2306,7774,yes,yes,2044,all clues truthful; indirect accounts corroborated
-NG-M0629,5,hard,3.00,0.0833,1.0000,5,1.0000,3,8,yes,yes,861,414,3004,7076,yes,yes,2369,all clues truthful; indirect accounts corroborated
-NG-M0630,1,easy,2.67,1.0000,1.0000,3,1.0000,3,8,yes,yes,52,338,2072,8008,yes,yes,1079,all clues truthful; indirect accounts corroborated
-NG-M0631,2,standard,2.89,0.5000,1.0000,3,1.0000,4,8,yes,yes,306,92,2148,7932,yes,yes,1388,all clues truthful; indirect accounts corroborated
-NG-M0632,3,medium,2.67,1.0000,1.0000,4,1.0000,2,8,yes,yes,533,840,3116,6964,yes,yes,1620,all clues truthful; indirect accounts corroborated
-NG-M0633,4,challenging,3.00,0.3333,1.0000,5,0.9167,3,8,yes,yes,742,983,3356,6724,yes,yes,1942,all clues truthful; indirect accounts corroborated
-NG-M0634,5,hard,3.11,0.1667,1.0000,5,0.9167,2,8,yes,yes,326,270,2355,7725,yes,yes,2446,all clues truthful; indirect accounts corroborated
-NG-M0635,1,easy,2.78,1.0000,1.0000,3,1.0000,3,8,yes,yes,596,739,3017,7063,yes,yes,1031,all clues truthful; indirect accounts corroborated
-NG-M0636,2,standard,2.89,1.0000,1.0000,3,1.0000,2,8,yes,yes,1032,1023,3805,6275,yes,yes,1276,all clues truthful; indirect accounts corroborated
-NG-M0637,3,medium,2.67,1.0000,1.0000,4,1.0000,2,8,yes,yes,655,1895,4398,5682,yes,yes,1510,all clues truthful; indirect accounts corroborated
-NG-M0638,4,challenging,3.00,0.5000,1.0000,5,0.9167,2,8,yes,yes,673,482,2906,7174,yes,yes,1984,all clues truthful; indirect accounts corroborated
-NG-M0639,5,hard,3.22,0.2500,1.0000,5,1.0000,3,8,yes,yes,869,413,3026,7054,yes,yes,2369,all clues truthful; indirect accounts corroborated
-NG-M0640,1,easy,2.89,1.0000,1.0000,3,1.0000,2,8,yes,yes,621,1989,4322,5758,yes,yes,965,all clues truthful; indirect accounts corroborated
-NG-M0641,2,standard,2.78,1.0000,1.0000,3,1.0000,3,8,yes,yes,690,596,3021,7059,yes,yes,1328,all clues truthful; indirect accounts corroborated
-NG-M0642,3,medium,2.78,1.0000,1.0000,4,1.0000,3,8,yes,yes,195,30,1968,8112,yes,yes,1715,all clues truthful; indirect accounts corroborated
-NG-M0643,4,challenging,3.00,0.2500,1.0000,5,1.0000,3,8,yes,yes,426,1094,3316,6764,yes,yes,1942,all clues truthful; indirect accounts corroborated
-NG-M0644,5,hard,3.11,0.5000,1.0000,5,1.0000,1,8,yes,yes,390,149,2058,8022,yes,yes,2481,all clues truthful; indirect accounts corroborated
-NG-M0645,1,easy,2.67,0.5000,1.0000,3,1.0000,3,8,yes,yes,521,1525,3728,6352,yes,yes,995,all clues truthful; indirect accounts corroborated
-NG-M0646,2,standard,2.67,1.0000,1.0000,3,1.0000,2,8,yes,yes,240,246,2176,7904,yes,yes,1384,all clues truthful; indirect accounts corroborated
-NG-M0647,3,medium,2.78,1.0000,1.0000,4,1.0000,1,8,yes,yes,924,276,2958,7122,yes,yes,1630,all clues truthful; indirect accounts corroborated
-NG-M0648,4,challenging,3.00,0.0833,1.0000,5,0.8333,4,8,yes,yes,293,2339,4503,5577,yes,yes,1822,all clues truthful; indirect accounts corroborated
-NG-M0649,5,hard,3.11,0.1111,1.0000,5,1.0000,3,8,yes,yes,950,1166,3800,6280,yes,yes,2278,all clues truthful; indirect accounts corroborated
-NG-M0650,1,easy,2.67,0.3333,1.0000,3,1.0000,2,8,yes,yes,130,1325,3227,6853,yes,yes,1022,all clues truthful; indirect accounts corroborated
-NG-M0651,2,standard,2.89,0.5000,1.0000,3,1.0000,3,8,yes,yes,453,972,3070,7010,yes,yes,1324,all clues truthful; indirect accounts corroborated
-NG-M0652,3,medium,2.89,0.5000,1.0000,4,1.0000,1,8,yes,yes,584,0,2327,7753,yes,yes,1685,all clues truthful; indirect accounts corroborated
-NG-M0653,4,challenging,3.00,0.1250,1.0000,5,0.8333,3,8,yes,yes,86,1324,3161,6919,yes,yes,1960,all clues truthful; indirect accounts corroborated
-NG-M0654,5,hard,3.00,0.5000,1.0000,5,1.0000,3,8,yes,yes,995,1068,3792,6288,yes,yes,2278,all clues truthful; indirect accounts corroborated
-NG-M0655,1,easy,2.78,1.0000,1.0000,3,1.0000,2,8,yes,yes,369,786,2882,7198,yes,yes,1037,all clues truthful; indirect accounts corroborated
-NG-M0656,2,standard,2.78,1.0000,1.0000,3,1.0000,2,8,yes,yes,363,102,2110,7970,yes,yes,1388,all clues truthful; indirect accounts corroborated
-NG-M0657,3,medium,3.00,1.0000,1.0000,4,1.0000,2,8,yes,yes,176,330,2204,7876,yes,yes,1695,all clues truthful; indirect accounts corroborated
-NG-M0658,4,challenging,3.00,0.0833,1.0000,5,1.0000,2,8,yes,yes,0,180,2021,8059,yes,yes,2074,all clues truthful; indirect accounts corroborated
-NG-M0659,5,hard,3.00,0.1250,1.0000,5,0.9167,3,8,yes,yes,310,398,2467,7613,yes,yes,2432,all clues truthful; indirect accounts corroborated
-NG-M0660,1,easy,2.67,1.0000,1.0000,3,1.0000,1,8,yes,yes,370,1073,3095,6985,yes,yes,1028,all clues truthful; indirect accounts corroborated
-NG-M0661,2,standard,2.89,0.5000,1.0000,3,1.0000,3,8,yes,yes,448,0,2138,7942,yes,yes,1388,all clues truthful; indirect accounts corroborated
-NG-M0662,3,medium,2.89,0.5000,1.0000,4,1.0000,2,8,yes,yes,275,133,2136,7944,yes,yes,1700,all clues truthful; indirect accounts corroborated
-NG-M0663,4,challenging,3.00,0.2500,1.0000,5,1.0000,3,8,yes,yes,772,1868,4436,5644,yes,yes,1834,all clues truthful; indirect accounts corroborated
-NG-M0664,5,hard,3.00,0.1667,1.0000,5,0.9167,3,8,yes,yes,55,275,2104,7976,yes,yes,2474,all clues truthful; indirect accounts corroborated
-NG-M0665,1,easy,2.78,1.0000,1.0000,3,1.0000,2,8,yes,yes,138,200,2050,8030,yes,yes,1079,all clues truthful; indirect accounts corroborated
-NG-M0666,2,standard,2.67,0.5000,1.0000,3,1.0000,2,8,yes,yes,19,251,1945,8135,yes,yes,1400,all clues truthful; indirect accounts corroborated
-NG-M0667,3,medium,2.78,1.0000,1.0000,4,1.0000,3,8,yes,yes,751,1919,4338,5742,yes,yes,1515,all clues truthful; indirect accounts corroborated
-NG-M0668,4,challenging,3.00,0.1667,1.0000,5,0.8333,2,8,yes,yes,204,48,2048,8032,yes,yes,2068,all clues truthful; indirect accounts corroborated
-NG-M0669,5,hard,3.00,0.2500,1.0000,5,0.9167,4,8,yes,yes,1187,1618,4414,5666,yes,yes,2208,all clues truthful; indirect accounts corroborated
-NG-M0670,1,easy,2.67,1.0000,1.0000,3,1.0000,2,8,yes,yes,446,109,2222,7858,yes,yes,1070,all clues truthful; indirect accounts corroborated
-NG-M0671,2,standard,2.78,1.0000,1.0000,3,1.0000,2,8,yes,yes,230,115,2140,7940,yes,yes,1388,all clues truthful; indirect accounts corroborated
-NG-M0672,3,medium,2.89,0.5000,1.0000,4,1.0000,2,8,yes,yes,802,1565,4020,6060,yes,yes,1545,all clues truthful; indirect accounts corroborated
-NG-M0673,4,challenging,3.00,0.5000,1.0000,5,0.8333,3,8,yes,yes,70,395,2066,8014,yes,yes,2068,all clues truthful; indirect accounts corroborated
-NG-M0674,5,hard,3.11,0.0556,1.0000,5,1.0000,0,8,yes,yes,1691,1294,4759,5321,yes,yes,2166,all clues truthful; indirect accounts corroborated
-NG-M0675,1,easy,2.56,1.0000,1.0000,3,1.0000,2,8,yes,yes,410,474,2566,7514,yes,yes,1055,all clues truthful; indirect accounts corroborated
-NG-M0676,2,standard,2.56,1.0000,1.0000,3,1.0000,2,8,yes,yes,1101,575,3366,6714,yes,yes,1304,all clues truthful; indirect accounts corroborated
-NG-M0677,3,medium,2.78,1.0000,1.0000,4,1.0000,2,8,yes,yes,168,298,2149,7931,yes,yes,1700,all clues truthful; indirect accounts corroborated
-NG-M0678,4,challenging,3.00,0.3333,1.0000,5,0.9167,1,8,yes,yes,235,192,2148,7932,yes,yes,2062,all clues truthful; indirect accounts corroborated
-NG-M0679,5,hard,3.00,0.2500,1.0000,5,1.0000,3,8,yes,yes,824,527,3080,7000,yes,yes,2362,all clues truthful; indirect accounts corroborated
-NG-M0680,1,easy,2.56,1.0000,1.0000,3,1.0000,2,8,yes,yes,184,1246,3262,6818,yes,yes,1019,all clues truthful; indirect accounts corroborated
-NG-M0681,2,standard,2.89,1.0000,1.0000,3,1.0000,2,8,yes,yes,117,288,2125,7955,yes,yes,1388,all clues truthful; indirect accounts corroborated
-NG-M0682,3,medium,2.89,0.5000,1.0000,4,1.0000,3,8,yes,yes,518,1117,3438,6642,yes,yes,1590,all clues truthful; indirect accounts corroborated
-NG-M0683,4,challenging,3.00,0.5000,1.0000,5,1.0000,2,8,yes,yes,373,211,2305,7775,yes,yes,2044,all clues truthful; indirect accounts corroborated
-NG-M0684,5,hard,3.00,0.2500,1.0000,5,1.0000,1,8,yes,yes,424,160,2358,7722,yes,yes,2446,all clues truthful; indirect accounts corroborated
-NG-M0685,1,easy,2.89,0.5000,1.0000,3,1.0000,1,8,yes,yes,531,0,2183,7897,yes,yes,1073,all clues truthful; indirect accounts corroborated
-NG-M0686,2,standard,2.67,1.0000,1.0000,3,1.0000,2,8,yes,yes,408,1002,3235,6845,yes,yes,1316,all clues truthful; indirect accounts corroborated
-NG-M0687,3,medium,2.89,1.0000,1.0000,4,1.0000,3,8,yes,yes,248,322,2163,7917,yes,yes,1695,all clues truthful; indirect accounts corroborated
-NG-M0688,4,challenging,3.00,0.5000,1.0000,5,1.0000,2,8,yes,yes,867,881,3439,6641,yes,yes,1930,all clues truthful; indirect accounts corroborated
-NG-M0689,5,hard,3.22,0.1250,1.0000,5,0.9167,2,8,yes,yes,287,288,2334,7746,yes,yes,2453,all clues truthful; indirect accounts corroborated
-NG-M0690,1,easy,2.89,1.0000,1.0000,3,1.0000,2,8,yes,yes,676,771,3189,6891,yes,yes,1022,all clues truthful; indirect accounts corroborated
-NG-M0691,2,standard,2.67,1.0000,1.0000,3,1.0000,4,8,yes,yes,277,136,2178,7902,yes,yes,1384,all clues truthful; indirect accounts corroborated
-NG-M0692,3,medium,2.89,0.5000,1.0000,4,1.0000,1,8,yes,yes,851,394,2883,7197,yes,yes,1635,all clues truthful; indirect accounts corroborated
-NG-M0693,4,challenging,3.00,0.3333,1.0000,5,0.9167,3,8,yes,yes,263,340,2339,7741,yes,yes,2044,all clues truthful; indirect accounts corroborated
-NG-M0694,5,hard,3.11,0.3333,1.0000,5,1.0000,1,8,yes,yes,491,853,3118,6962,yes,yes,2362,all clues truthful; indirect accounts corroborated
-NG-M0695,1,easy,2.67,1.0000,1.0000,3,1.0000,1,8,yes,yes,904,720,3306,6774,yes,yes,1016,all clues truthful; indirect accounts corroborated
-NG-M0696,2,standard,2.89,0.5000,1.0000,3,1.0000,2,8,yes,yes,689,751,3175,6905,yes,yes,1320,all clues truthful; indirect accounts corroborated
-NG-M0697,3,medium,2.89,0.5000,1.0000,4,1.0000,2,8,yes,yes,1029,362,3044,7036,yes,yes,1625,all clues truthful; indirect accounts corroborated
-NG-M0698,4,challenging,3.00,0.2500,1.0000,5,1.0000,2,8,yes,yes,565,875,3161,6919,yes,yes,1960,all clues truthful; indirect accounts corroborated
-NG-M0699,5,hard,3.11,0.1250,1.0000,5,0.9167,1,8,yes,yes,228,1002,2914,7166,yes,yes,2383,all clues truthful; indirect accounts corroborated
-NG-M0700,1,easy,2.78,1.0000,1.0000,3,1.0000,2,8,yes,yes,495,879,3146,6934,yes,yes,1025,all clues truthful; indirect accounts corroborated
-NG-M0701,2,standard,2.78,1.0000,1.0000,3,1.0000,3,8,yes,yes,505,2180,4450,5630,yes,yes,1232,all clues truthful; indirect accounts corroborated
-NG-M0702,3,medium,2.78,1.0000,1.0000,4,1.0000,1,8,yes,yes,566,709,3078,7002,yes,yes,1620,all clues truthful; indirect accounts corroborated
-NG-M0703,4,challenging,3.00,0.2500,1.0000,5,0.8333,3,8,yes,yes,197,1048,2981,7099,yes,yes,1978,all clues truthful; indirect accounts corroborated
-NG-M0704,5,hard,3.22,0.2500,1.0000,5,1.0000,3,8,yes,yes,601,1150,3585,6495,yes,yes,2306,all clues truthful; indirect accounts corroborated
-NG-M0705,1,easy,2.78,0.5000,1.0000,3,1.0000,1,8,yes,yes,426,909,3062,7018,yes,yes,1028,all clues truthful; indirect accounts corroborated
-NG-M0706,2,standard,2.44,1.0000,1.0000,3,1.0000,2,8,yes,yes,397,818,2950,7130,yes,yes,1332,all clues truthful; indirect accounts corroborated
-NG-M0707,3,medium,2.89,0.2500,1.0000,4,1.0000,2,8,yes,yes,972,933,3603,6477,yes,yes,1575,all clues truthful; indirect accounts corroborated
-NG-M0708,4,challenging,3.00,0.3333,1.0000,5,1.0000,2,8,yes,yes,760,1850,4436,5644,yes,yes,1834,all clues truthful; indirect accounts corroborated
-NG-M0709,5,hard,3.00,0.5000,1.0000,5,1.0000,2,8,yes,yes,248,272,2174,7906,yes,yes,2467,all clues truthful; indirect accounts corroborated
-NG-M0710,1,easy,2.78,0.5000,1.0000,3,1.0000,3,8,yes,yes,817,638,3137,6943,yes,yes,1025,all clues truthful; indirect accounts corroborated
-NG-M0711,2,standard,2.78,1.0000,1.0000,3,1.0000,2,8,yes,yes,227,913,2905,7175,yes,yes,1336,all clues truthful; indirect accounts corroborated
-NG-M0712,3,medium,2.89,0.3333,1.0000,4,1.0000,3,8,yes,yes,1062,718,3478,6602,yes,yes,1590,all clues truthful; indirect accounts corroborated
-NG-M0713,4,challenging,3.00,0.2500,1.0000,5,0.9167,2,8,yes,yes,817,413,2981,7099,yes,yes,1978,all clues truthful; indirect accounts corroborated
-NG-M0714,5,hard,3.11,0.5000,1.0000,5,1.0000,2,8,yes,yes,1199,2232,5130,4950,yes,yes,2124,all clues truthful; indirect accounts corroborated
-NG-M0715,1,easy,2.67,1.0000,1.0000,3,1.0000,2,8,yes,yes,327,1242,3356,6724,yes,yes,1016,all clues truthful; indirect accounts corroborated
-NG-M0716,2,standard,2.78,1.0000,1.0000,3,1.0000,2,8,yes,yes,637,533,2890,7190,yes,yes,1336,all clues truthful; indirect accounts corroborated
-NG-M0717,3,medium,2.78,1.0000,1.0000,4,1.0000,3,8,yes,yes,784,604,3161,6919,yes,yes,1615,all clues truthful; indirect accounts corroborated
-NG-M0718,4,challenging,3.00,0.2500,1.0000,5,0.9167,3,8,yes,yes,627,798,3176,6904,yes,yes,1960,all clues truthful; indirect accounts corroborated
-NG-M0719,5,hard,3.11,0.0833,1.0000,5,1.0000,2,8,yes,yes,654,1002,3385,6695,yes,yes,2327,all clues truthful; indirect accounts corroborated
-NG-M0720,1,easy,2.67,1.0000,1.0000,3,1.0000,3,8,yes,yes,316,1334,3392,6688,yes,yes,1013,all clues truthful; indirect accounts corroborated
-NG-M0721,2,standard,2.78,1.0000,1.0000,3,1.0000,1,8,yes,yes,258,147,2080,8000,yes,yes,1392,all clues truthful; indirect accounts corroborated
-NG-M0722,3,medium,2.78,1.0000,1.0000,4,1.0000,3,8,yes,yes,293,315,2351,7729,yes,yes,1680,all clues truthful; indirect accounts corroborated
-NG-M0723,4,challenging,3.00,0.1667,1.0000,5,1.0000,1,8,yes,yes,865,32,2678,7402,yes,yes,2008,all clues truthful; indirect accounts corroborated
-NG-M0724,5,hard,3.00,0.2500,1.0000,5,1.0000,1,8,yes,yes,99,0,1903,8177,yes,yes,2502,all clues truthful; indirect accounts corroborated
-NG-M0725,1,easy,2.78,0.5000,1.0000,3,1.0000,3,8,yes,yes,243,188,2068,8012,yes,yes,1079,all clues truthful; indirect accounts corroborated
-NG-M0726,2,standard,2.67,0.5000,1.0000,3,1.0000,2,8,yes,yes,585,1071,3331,6749,yes,yes,1308,all clues truthful; indirect accounts corroborated
-NG-M0727,3,medium,2.67,1.0000,1.0000,4,1.0000,3,8,yes,yes,54,954,2811,7269,yes,yes,1645,all clues truthful; indirect accounts corroborated
-NG-M0728,4,challenging,3.00,0.2500,1.0000,5,1.0000,2,8,yes,yes,957,801,3539,6541,yes,yes,1924,all clues truthful; indirect accounts corroborated
-NG-M0729,5,hard,3.00,0.1667,1.0000,5,1.0000,3,8,yes,yes,114,295,2288,7792,yes,yes,2453,all clues truthful; indirect accounts corroborated
-NG-M0730,1,easy,2.78,1.0000,1.0000,3,1.0000,2,8,yes,yes,372,1011,3110,6970,yes,yes,1028,all clues truthful; indirect accounts corroborated
-NG-M0731,2,standard,2.89,1.0000,1.0000,3,1.0000,3,8,yes,yes,0,300,1960,8120,yes,yes,1400,all clues truthful; indirect accounts corroborated
-NG-M0732,3,medium,2.78,0.5000,1.0000,4,1.0000,3,8,yes,yes,609,681,2988,7092,yes,yes,1630,all clues truthful; indirect accounts corroborated
-NG-M0733,4,challenging,3.00,0.2500,1.0000,5,0.9167,3,8,yes,yes,591,1017,3419,6661,yes,yes,1936,all clues truthful; indirect accounts corroborated
-NG-M0734,5,hard,3.00,0.0556,1.0000,5,0.9167,3,8,yes,yes,480,150,2269,7811,yes,yes,2460,all clues truthful; indirect accounts corroborated
-NG-M0735,1,easy,2.44,1.0000,1.0000,3,1.0000,4,8,yes,yes,325,1392,3474,6606,yes,yes,1010,all clues truthful; indirect accounts corroborated
-NG-M0736,2,standard,2.56,0.5000,1.0000,3,1.0000,2,8,yes,yes,82,285,2147,7933,yes,yes,1388,all clues truthful; indirect accounts corroborated
-NG-M0737,3,medium,2.78,1.0000,1.0000,4,1.0000,1,8,yes,yes,988,978,3619,6461,yes,yes,1575,all clues truthful; indirect accounts corroborated
-NG-M0738,4,challenging,3.00,0.5000,1.0000,5,0.8333,3,8,yes,yes,0,0,1601,8479,yes,yes,2116,all clues truthful; indirect accounts corroborated
-NG-M0739,5,hard,3.11,0.2500,1.0000,5,1.0000,1,8,yes,yes,786,1149,3829,6251,yes,yes,2278,all clues truthful; indirect accounts corroborated
-NG-M0740,1,easy,2.67,0.5000,1.0000,3,1.0000,1,8,yes,yes,243,244,2169,7911,yes,yes,1073,all clues truthful; indirect accounts corroborated
-NG-M0741,2,standard,2.78,1.0000,1.0000,3,1.0000,3,8,yes,yes,936,864,3520,6560,yes,yes,1296,all clues truthful; indirect accounts corroborated
-NG-M0742,3,medium,2.78,1.0000,1.0000,4,1.0000,4,8,yes,yes,605,730,3063,7017,yes,yes,1620,all clues truthful; indirect accounts corroborated
-NG-M0743,4,challenging,3.00,0.1250,1.0000,5,0.8333,3,8,yes,yes,364,806,2891,7189,yes,yes,1984,all clues truthful; indirect accounts corroborated
-NG-M0744,5,hard,3.00,0.2500,1.0000,5,1.0000,0,8,yes,yes,1049,822,3600,6480,yes,yes,2306,all clues truthful; indirect accounts corroborated
-NG-M0745,1,easy,2.67,0.5000,1.0000,3,1.0000,3,8,yes,yes,754,1151,3722,6358,yes,yes,995,all clues truthful; indirect accounts corroborated
-NG-M0746,2,standard,2.78,1.0000,1.0000,3,1.0000,2,8,yes,yes,352,833,2950,7130,yes,yes,1332,all clues truthful; indirect accounts corroborated
-NG-M0747,3,medium,2.89,1.0000,1.0000,4,1.0000,3,8,yes,yes,82,608,2433,7647,yes,yes,1675,all clues truthful; indirect accounts corroborated
-NG-M0748,4,challenging,3.00,0.1667,1.0000,5,0.8333,2,8,yes,yes,348,1032,3131,6949,yes,yes,1960,all clues truthful; indirect accounts corroborated
-NG-M0749,5,hard,3.11,0.2500,1.0000,5,1.0000,2,8,yes,yes,343,932,3079,7001,yes,yes,2362,all clues truthful; indirect accounts corroborated
-NG-M0750,1,easy,2.67,0.5000,1.0000,3,1.0000,4,8,yes,yes,383,0,1945,8135,yes,yes,1085,all clues truthful; indirect accounts corroborated
-NG-M0751,2,standard,2.78,0.5000,1.0000,3,1.0000,1,8,yes,yes,554,571,2875,7205,yes,yes,1340,all clues truthful; indirect accounts corroborated
-NG-M0752,3,medium,2.89,0.5000,1.0000,4,1.0000,3,8,yes,yes,106,509,2283,7797,yes,yes,1685,all clues truthful; indirect accounts corroborated
-NG-M0753,4,challenging,3.00,0.1667,1.0000,5,1.0000,1,8,yes,yes,972,288,2996,7084,yes,yes,1978,all clues truthful; indirect accounts corroborated
-NG-M0754,5,hard,3.22,0.1250,1.0000,5,0.9167,3,8,yes,yes,282,1581,3547,6533,yes,yes,2306,all clues truthful; indirect accounts corroborated
-NG-M0755,1,easy,2.78,0.2500,1.0000,3,1.0000,0,8,yes,yes,1192,1643,4517,5563,yes,yes,956,all clues truthful; indirect accounts corroborated
-NG-M0756,2,standard,2.44,1.0000,1.0000,3,1.0000,3,8,yes,yes,535,695,2905,7175,yes,yes,1336,all clues truthful; indirect accounts corroborated
-NG-M0757,3,medium,2.89,1.0000,1.0000,4,1.0000,3,8,yes,yes,476,1616,3790,6290,yes,yes,1560,all clues truthful; indirect accounts corroborated
-NG-M0758,4,challenging,3.00,0.1111,1.0000,5,1.0000,3,8,yes,yes,402,944,3067,7013,yes,yes,1966,all clues truthful; indirect accounts corroborated
-NG-M0759,5,hard,3.22,0.1667,1.0000,5,1.0000,2,8,yes,yes,692,1251,3687,6393,yes,yes,2292,all clues truthful; indirect accounts corroborated
-NG-M0760,1,easy,2.78,1.0000,1.0000,3,1.0000,2,8,yes,yes,1122,792,3656,6424,yes,yes,1001,all clues truthful; indirect accounts corroborated
-NG-M0761,2,standard,2.56,1.0000,1.0000,3,1.0000,1,8,yes,yes,610,183,2603,7477,yes,yes,1356,all clues truthful; indirect accounts corroborated
-NG-M0762,3,medium,2.78,1.0000,1.0000,4,1.0000,2,8,yes,yes,808,917,3423,6657,yes,yes,1590,all clues truthful; indirect accounts corroborated
-NG-M0763,4,challenging,3.00,0.1667,1.0000,5,1.0000,2,8,yes,yes,990,807,3503,6577,yes,yes,1924,all clues truthful; indirect accounts corroborated
-NG-M0764,5,hard,3.00,0.0833,1.0000,5,0.9167,4,8,yes,yes,171,290,2190,7890,yes,yes,2467,all clues truthful; indirect accounts corroborated
-NG-M0765,1,easy,2.78,1.0000,1.0000,3,1.0000,3,8,yes,yes,534,1071,3377,6703,yes,yes,1013,all clues truthful; indirect accounts corroborated
-NG-M0766,2,standard,2.78,1.0000,1.0000,3,1.0000,3,8,yes,yes,653,637,3010,7070,yes,yes,1328,all clues truthful; indirect accounts corroborated
-NG-M0767,3,medium,2.78,0.5000,1.0000,4,1.0000,0,8,yes,yes,947,538,3243,6837,yes,yes,1605,all clues truthful; indirect accounts corroborated
-NG-M0768,4,challenging,3.00,0.5000,1.0000,5,0.8333,3,8,yes,yes,248,272,2016,8064,yes,yes,2074,all clues truthful; indirect accounts corroborated
-NG-M0769,5,hard,3.11,0.1250,1.0000,5,1.0000,1,8,yes,yes,374,30,2133,7947,yes,yes,2474,all clues truthful; indirect accounts corroborated
-NG-M0770,1,easy,2.67,1.0000,1.0000,3,1.0000,3,8,yes,yes,164,1081,2942,7138,yes,yes,1034,all clues truthful; indirect accounts corroborated
-NG-M0771,2,standard,2.67,1.0000,1.0000,3,1.0000,2,8,yes,yes,560,1285,3625,6455,yes,yes,1288,all clues truthful; indirect accounts corroborated
-NG-M0772,3,medium,2.78,1.0000,1.0000,4,1.0000,3,8,yes,yes,762,564,3114,6966,yes,yes,1620,all clues truthful; indirect accounts corroborated
-NG-M0773,4,challenging,3.00,0.1667,1.0000,5,1.0000,3,8,yes,yes,832,683,3176,6904,yes,yes,1960,all clues truthful; indirect accounts corroborated
-NG-M0774,5,hard,3.00,0.0833,1.0000,5,0.9167,3,8,yes,yes,130,405,2279,7801,yes,yes,2460,all clues truthful; indirect accounts corroborated
-NG-M0775,1,easy,2.67,1.0000,1.0000,3,1.0000,2,8,yes,yes,79,221,1982,8098,yes,yes,1082,all clues truthful; indirect accounts corroborated
-NG-M0776,2,standard,2.78,0.5000,1.0000,3,1.0000,2,8,yes,yes,529,0,2219,7861,yes,yes,1384,all clues truthful; indirect accounts corroborated
-NG-M0777,3,medium,2.89,0.5000,1.0000,4,1.0000,3,8,yes,yes,640,986,3429,6651,yes,yes,1590,all clues truthful; indirect accounts corroborated
-NG-M0778,4,challenging,3.00,0.3333,1.0000,5,1.0000,4,8,yes,yes,1279,1406,4346,5734,yes,yes,1840,all clues truthful; indirect accounts corroborated
-NG-M0779,5,hard,3.11,0.1250,1.0000,5,0.9167,1,8,yes,yes,476,345,2520,7560,yes,yes,2432,all clues truthful; indirect accounts corroborated
-NG-M0780,1,easy,2.78,1.0000,1.0000,3,1.0000,3,8,yes,yes,504,951,3077,7003,yes,yes,1028,all clues truthful; indirect accounts corroborated
-NG-M0781,2,standard,3.00,1.0000,1.0000,3,1.0000,2,8,yes,yes,240,1185,3145,6935,yes,yes,1320,all clues truthful; indirect accounts corroborated
-NG-M0782,3,medium,2.78,1.0000,1.0000,4,1.0000,2,8,yes,yes,756,940,3514,6566,yes,yes,1585,all clues truthful; indirect accounts corroborated
-NG-M0783,4,challenging,3.00,0.2500,1.0000,5,0.9167,1,8,yes,yes,368,862,2996,7084,yes,yes,1978,all clues truthful; indirect accounts corroborated
-NG-M0784,5,hard,3.11,0.1667,1.0000,5,1.0000,3,8,yes,yes,236,1504,3469,6611,yes,yes,2320,all clues truthful; indirect accounts corroborated
-NG-M0785,1,easy,2.78,1.0000,1.0000,3,1.0000,4,8,yes,yes,549,876,3137,6943,yes,yes,1025,all clues truthful; indirect accounts corroborated
-NG-M0786,2,standard,2.67,1.0000,1.0000,3,1.0000,3,8,yes,yes,599,1066,3415,6665,yes,yes,1304,all clues truthful; indirect accounts corroborated
-NG-M0787,3,medium,2.67,1.0000,1.0000,4,1.0000,2,8,yes,yes,885,1755,4428,5652,yes,yes,1510,all clues truthful; indirect accounts corroborated
-NG-M0788,4,challenging,3.00,0.1667,1.0000,5,0.9167,4,8,yes,yes,157,173,2081,7999,yes,yes,2068,all clues truthful; indirect accounts corroborated
-NG-M0789,5,hard,3.11,0.0556,1.0000,5,1.0000,2,8,yes,yes,165,115,2084,7996,yes,yes,2481,all clues truthful; indirect accounts corroborated
-NG-M0790,1,easy,2.67,0.5000,1.0000,3,1.0000,4,8,yes,yes,19,236,1892,8188,yes,yes,1088,all clues truthful; indirect accounts corroborated
-NG-M0791,2,standard,2.67,1.0000,1.0000,3,1.0000,3,8,yes,yes,988,1667,4330,5750,yes,yes,1240,all clues truthful; indirect accounts corroborated
-NG-M0792,3,medium,2.78,0.5000,1.0000,4,1.0000,4,8,yes,yes,637,503,2898,7182,yes,yes,1635,all clues truthful; indirect accounts corroborated
-NG-M0793,4,challenging,3.00,0.1250,1.0000,5,1.0000,1,8,yes,yes,1072,1073,3746,6334,yes,yes,1900,all clues truthful; indirect accounts corroborated
-NG-M0794,5,hard,3.11,0.2500,1.0000,5,1.0000,2,8,yes,yes,410,1055,3194,6886,yes,yes,2348,all clues truthful; indirect accounts corroborated
-NG-M0795,1,easy,2.67,1.0000,1.0000,3,1.0000,2,8,yes,yes,273,87,2147,7933,yes,yes,1076,all clues truthful; indirect accounts corroborated
-NG-M0796,2,standard,2.78,0.5000,1.0000,3,1.0000,0,8,yes,yes,995,968,3578,6502,yes,yes,1292,all clues truthful; indirect accounts corroborated
-NG-M0797,3,medium,2.67,1.0000,1.0000,4,1.0000,3,8,yes,yes,152,283,2103,7977,yes,yes,1700,all clues truthful; indirect accounts corroborated
-NG-M0798,4,challenging,3.00,0.0833,1.0000,5,0.9167,4,8,yes,yes,1181,1774,4751,5329,yes,yes,1798,all clues truthful; indirect accounts corroborated
-NG-M0799,5,hard,3.00,0.2500,1.0000,5,1.0000,2,8,yes,yes,648,1272,3664,6416,yes,yes,2292,all clues truthful; indirect accounts corroborated
-NG-M0800,1,easy,2.44,1.0000,1.0000,3,1.0000,1,8,yes,yes,723,507,2867,7213,yes,yes,1040,all clues truthful; indirect accounts corroborated
-NG-M0801,2,standard,2.89,1.0000,1.0000,3,1.0000,3,8,yes,yes,760,669,3119,6961,yes,yes,1324,all clues truthful; indirect accounts corroborated
-NG-M0802,3,medium,2.78,1.0000,1.0000,4,1.0000,2,8,yes,yes,460,81,2179,7901,yes,yes,1695,all clues truthful; indirect accounts corroborated
-NG-M0803,4,challenging,3.00,1.0000,1.0000,5,0.9167,2,8,yes,yes,480,720,2906,7174,yes,yes,1984,all clues truthful; indirect accounts corroborated
-NG-M0804,5,hard,3.00,0.0833,1.0000,5,1.0000,2,8,yes,yes,0,180,2029,8051,yes,yes,2488,all clues truthful; indirect accounts corroborated
-NG-M0805,1,easy,2.78,1.0000,1.0000,3,1.0000,1,8,yes,yes,859,359,2960,7120,yes,yes,1034,all clues truthful; indirect accounts corroborated
-NG-M0806,2,standard,2.78,1.0000,1.0000,3,1.0000,3,8,yes,yes,346,1097,3103,6977,yes,yes,1324,all clues truthful; indirect accounts corroborated
-NG-M0807,3,medium,2.89,0.5000,1.0000,4,1.0000,3,8,yes,yes,400,0,2098,7982,yes,yes,1705,all clues truthful; indirect accounts corroborated
-NG-M0808,4,challenging,3.00,0.2500,1.0000,5,0.8333,2,8,yes,yes,357,253,2346,7734,yes,yes,2038,all clues truthful; indirect accounts corroborated
-NG-M0809,5,hard,3.00,0.5000,1.0000,5,1.0000,2,8,yes,yes,697,102,2618,7462,yes,yes,2418,all clues truthful; indirect accounts corroborated
-NG-M0810,1,easy,2.67,0.2500,1.0000,3,1.0000,4,8,yes,yes,240,1425,3437,6643,yes,yes,1010,all clues truthful; indirect accounts corroborated
-NG-M0811,2,standard,2.89,1.0000,1.0000,3,1.0000,3,8,yes,yes,255,200,2175,7905,yes,yes,1384,all clues truthful; indirect accounts corroborated
-NG-M0812,3,medium,2.67,0.5000,1.0000,4,1.0000,3,8,yes,yes,72,1233,2958,7122,yes,yes,1630,all clues truthful; indirect accounts corroborated
-NG-M0813,4,challenging,3.00,0.1250,1.0000,5,0.6667,2,8,yes,yes,427,461,2549,7531,yes,yes,2020,all clues truthful; indirect accounts corroborated
-NG-M0814,5,hard,3.22,0.3333,1.0000,5,1.0000,3,8,yes,yes,686,1144,3634,6446,yes,yes,2299,all clues truthful; indirect accounts corroborated
-NG-M0815,1,easy,2.67,1.0000,1.0000,3,1.0000,3,8,yes,yes,1146,1674,4442,5638,yes,yes,959,all clues truthful; indirect accounts corroborated
-NG-M0816,2,standard,2.67,1.0000,1.0000,3,1.0000,2,8,yes,yes,192,933,2875,7205,yes,yes,1340,all clues truthful; indirect accounts corroborated
-NG-M0817,3,medium,2.78,1.0000,1.0000,4,1.0000,3,8,yes,yes,319,881,2988,7092,yes,yes,1630,all clues truthful; indirect accounts corroborated
-NG-M0818,4,challenging,3.00,0.2500,1.0000,5,1.0000,3,8,yes,yes,882,2043,4601,5479,yes,yes,1816,all clues truthful; indirect accounts corroborated
-NG-M0819,5,hard,3.11,0.5000,1.0000,5,0.9167,2,8,yes,yes,154,311,2089,7991,yes,yes,2481,all clues truthful; indirect accounts corroborated
-NG-M0820,1,easy,2.89,0.1250,1.0000,3,1.0000,3,8,yes,yes,1622,1408,4787,5293,yes,yes,944,all clues truthful; indirect accounts corroborated
-NG-M0821,2,standard,2.67,1.0000,1.0000,3,1.0000,4,8,yes,yes,569,336,2595,7485,yes,yes,1356,all clues truthful; indirect accounts corroborated
-NG-M0822,3,medium,2.78,1.0000,1.0000,4,1.0000,1,8,yes,yes,652,809,3159,6921,yes,yes,1615,all clues truthful; indirect accounts corroborated
-NG-M0823,4,challenging,3.00,0.5000,1.0000,5,0.9167,2,8,yes,yes,367,240,2298,7782,yes,yes,2044,all clues truthful; indirect accounts corroborated
-NG-M0824,5,hard,3.22,0.2500,1.0000,5,0.9167,2,8,yes,yes,431,1354,3544,6536,yes,yes,2306,all clues truthful; indirect accounts corroborated
-NG-M0825,1,easy,2.67,1.0000,1.0000,3,1.0000,2,8,yes,yes,782,1003,3467,6613,yes,yes,1010,all clues truthful; indirect accounts corroborated
-NG-M0826,2,standard,2.67,1.0000,1.0000,3,1.0000,1,8,yes,yes,553,737,3070,7010,yes,yes,1324,all clues truthful; indirect accounts corroborated
-NG-M0827,3,medium,2.89,1.0000,1.0000,4,1.0000,3,8,yes,yes,167,238,2118,7962,yes,yes,1700,all clues truthful; indirect accounts corroborated
-NG-M0828,4,challenging,3.00,0.5000,1.0000,5,0.9167,1,8,yes,yes,423,290,2479,7601,yes,yes,2026,all clues truthful; indirect accounts corroborated
-NG-M0829,5,hard,3.11,0.3333,1.0000,5,1.0000,3,8,yes,yes,341,289,2344,7736,yes,yes,2446,all clues truthful; indirect accounts corroborated
-NG-M0830,1,easy,2.56,1.0000,1.0000,3,1.0000,1,8,yes,yes,344,841,2942,7138,yes,yes,1034,all clues truthful; indirect accounts corroborated
-NG-M0831,2,standard,2.78,0.5000,1.0000,3,1.0000,4,8,yes,yes,885,1197,3727,6353,yes,yes,1280,all clues truthful; indirect accounts corroborated
-NG-M0832,3,medium,2.78,1.0000,1.0000,4,1.0000,1,8,yes,yes,822,1158,3813,6267,yes,yes,1560,all clues truthful; indirect accounts corroborated
-NG-M0833,4,challenging,3.00,0.5000,1.0000,5,1.0000,3,8,yes,yes,248,272,2151,7929,yes,yes,2062,all clues truthful; indirect accounts corroborated
-NG-M0834,5,hard,3.00,0.5000,1.0000,5,1.0000,2,8,yes,yes,919,829,3447,6633,yes,yes,2320,all clues truthful; indirect accounts corroborated
-NG-M0835,1,easy,2.67,1.0000,1.0000,3,1.0000,2,8,yes,yes,114,258,2114,7966,yes,yes,1076,all clues truthful; indirect accounts corroborated
-NG-M0836,2,standard,2.78,1.0000,1.0000,3,1.0000,3,8,yes,yes,350,805,2890,7190,yes,yes,1336,all clues truthful; indirect accounts corroborated
-NG-M0837,3,medium,2.67,1.0000,1.0000,4,1.0000,4,8,yes,yes,631,1414,3818,6262,yes,yes,1560,all clues truthful; indirect accounts corroborated
-NG-M0838,4,challenging,3.00,0.5000,1.0000,5,1.0000,1,8,yes,yes,911,495,3037,7043,yes,yes,1972,all clues truthful; indirect accounts corroborated
-NG-M0839,5,hard,3.00,0.3333,1.0000,5,0.9167,1,8,yes,yes,263,340,2347,7733,yes,yes,2446,all clues truthful; indirect accounts corroborated
-NG-M0840,1,easy,2.78,1.0000,1.0000,3,1.0000,3,8,yes,yes,432,933,3092,6988,yes,yes,1028,all clues truthful; indirect accounts corroborated
-NG-M0841,2,standard,2.78,1.0000,1.0000,3,1.0000,4,8,yes,yes,922,541,3153,6927,yes,yes,1320,all clues truthful; indirect accounts corroborated
-NG-M0842,3,medium,2.89,1.0000,1.0000,4,1.0000,1,8,yes,yes,663,522,2898,7182,yes,yes,1635,all clues truthful; indirect accounts corroborated
-NG-M0843,4,challenging,3.00,0.1667,1.0000,5,0.9167,1,8,yes,yes,726,932,3364,6716,yes,yes,1936,all clues truthful; indirect accounts corroborated
-NG-M0844,5,hard,3.22,0.2500,1.0000,5,1.0000,4,8,yes,yes,698,697,3169,6911,yes,yes,2355,all clues truthful; indirect accounts corroborated
-NG-M0845,1,easy,2.78,1.0000,1.0000,3,1.0000,3,8,yes,yes,110,1180,2987,7093,yes,yes,1034,all clues truthful; indirect accounts corroborated
-NG-M0846,2,standard,2.78,1.0000,1.0000,3,1.0000,2,8,yes,yes,775,1235,3805,6275,yes,yes,1276,all clues truthful; indirect accounts corroborated
-NG-M0847,3,medium,2.89,1.0000,1.0000,4,1.0000,4,8,yes,yes,898,689,3390,6690,yes,yes,1595,all clues truthful; indirect accounts corroborated
-NG-M0848,4,challenging,3.00,0.2500,1.0000,5,1.0000,1,8,yes,yes,671,955,3422,6658,yes,yes,1930,all clues truthful; indirect accounts corroborated
-NG-M0849,5,hard,3.11,0.5000,1.0000,5,1.0000,4,8,yes,yes,180,168,2017,8063,yes,yes,2488,all clues truthful; indirect accounts corroborated
-NG-M0850,1,easy,2.67,0.2500,1.0000,3,1.0000,2,8,yes,yes,323,1012,3077,7003,yes,yes,1028,all clues truthful; indirect accounts corroborated
-NG-M0851,2,standard,2.56,1.0000,1.0000,3,1.0000,3,8,yes,yes,54,954,2803,7277,yes,yes,1344,all clues truthful; indirect accounts corroborated
-NG-M0852,3,medium,2.78,1.0000,1.0000,4,1.0000,3,8,yes,yes,978,981,3777,6303,yes,yes,1565,all clues truthful; indirect accounts corroborated
-NG-M0853,4,challenging,3.00,0.1667,1.0000,5,1.0000,3,8,yes,yes,305,910,3086,6994,yes,yes,1966,all clues truthful; indirect accounts corroborated
-NG-M0854,5,hard,3.00,0.1667,1.0000,5,1.0000,2,8,yes,yes,534,1085,3423,6657,yes,yes,2320,all clues truthful; indirect accounts corroborated
-NG-M0855,1,easy,2.67,1.0000,1.0000,3,1.0000,3,8,yes,yes,0,315,1952,8128,yes,yes,1085,all clues truthful; indirect accounts corroborated
-NG-M0856,2,standard,2.78,0.5000,1.0000,3,1.0000,2,8,yes,yes,489,786,2980,7100,yes,yes,1332,all clues truthful; indirect accounts corroborated
-NG-M0857,3,medium,2.78,1.0000,1.0000,4,1.0000,3,8,yes,yes,480,675,2898,7182,yes,yes,1635,all clues truthful; indirect accounts corroborated
-NG-M0858,4,challenging,3.00,0.0556,1.0000,5,0.9167,2,8,yes,yes,253,242,2141,7939,yes,yes,2062,all clues truthful; indirect accounts corroborated
-NG-M0859,5,hard,3.11,0.1667,1.0000,5,1.0000,2,8,yes,yes,942,431,3072,7008,yes,yes,2362,all clues truthful; indirect accounts corroborated
-NG-M0860,1,easy,2.56,0.5000,1.0000,3,1.0000,2,8,yes,yes,38,255,2110,7970,yes,yes,1076,all clues truthful; indirect accounts corroborated
-NG-M0861,2,standard,2.78,1.0000,1.0000,3,1.0000,4,8,yes,yes,1388,610,3613,6467,yes,yes,1288,all clues truthful; indirect accounts corroborated
-NG-M0862,3,medium,2.89,0.5000,1.0000,4,1.0000,2,8,yes,yes,0,0,1593,8487,yes,yes,1745,all clues truthful; indirect accounts corroborated
-NG-M0863,4,challenging,3.00,0.2500,1.0000,5,0.9167,1,8,yes,yes,521,415,2822,7258,yes,yes,1990,all clues truthful; indirect accounts corroborated
-NG-M0864,5,hard,3.00,0.2500,1.0000,5,0.9167,3,8,yes,yes,382,1361,3547,6533,yes,yes,2306,all clues truthful; indirect accounts corroborated
-NG-M0865,1,easy,2.67,1.0000,1.0000,3,1.0000,2,8,yes,yes,633,747,3077,7003,yes,yes,1028,all clues truthful; indirect accounts corroborated
-NG-M0866,2,standard,2.67,1.0000,1.0000,3,1.0000,3,8,yes,yes,325,950,3025,7055,yes,yes,1328,all clues truthful; indirect accounts corroborated
-NG-M0867,3,medium,2.78,1.0000,1.0000,4,1.0000,2,8,yes,yes,492,813,3033,7047,yes,yes,1625,all clues truthful; indirect accounts corroborated
-NG-M0868,4,challenging,3.00,0.2500,1.0000,5,1.0000,2,8,yes,yes,1471,1518,4740,5340,yes,yes,1804,all clues truthful; indirect accounts corroborated
-NG-M0869,5,hard,3.00,0.2500,1.0000,5,0.9167,2,8,yes,yes,1012,2138,4984,5096,yes,yes,2138,all clues truthful; indirect accounts corroborated
-NG-M0870,1,easy,2.78,1.0000,1.0000,3,1.0000,3,8,yes,yes,417,2148,4382,5698,yes,yes,962,all clues truthful; indirect accounts corroborated
-NG-M0871,2,standard,2.89,1.0000,1.0000,3,1.0000,1,8,yes,yes,82,263,2005,8075,yes,yes,1396,all clues truthful; indirect accounts corroborated
-NG-M0872,3,medium,2.89,0.5000,1.0000,4,1.0000,3,8,yes,yes,591,1257,3621,6459,yes,yes,1575,all clues truthful; indirect accounts corroborated
-NG-M0873,4,challenging,3.00,0.2500,1.0000,5,0.9167,2,8,yes,yes,124,941,2891,7189,yes,yes,1984,all clues truthful; indirect accounts corroborated
-NG-M0874,5,hard,3.00,0.2500,1.0000,5,1.0000,3,8,yes,yes,674,307,2620,7460,yes,yes,2418,all clues truthful; indirect accounts corroborated
-NG-M0875,1,easy,2.67,0.5000,1.0000,3,1.0000,1,8,yes,yes,462,795,3044,7036,yes,yes,1031,all clues truthful; indirect accounts corroborated
-NG-M0876,2,standard,2.78,0.5000,1.0000,3,1.0000,1,8,yes,yes,166,449,2305,7775,yes,yes,1376,all clues truthful; indirect accounts corroborated
-NG-M0877,3,medium,2.89,1.0000,1.0000,4,1.0000,4,8,yes,yes,872,503,3103,6977,yes,yes,1620,all clues truthful; indirect accounts corroborated
-NG-M0878,4,challenging,3.00,0.2500,1.0000,5,0.7500,2,8,yes,yes,130,230,2036,8044,yes,yes,2074,all clues truthful; indirect accounts corroborated
-NG-M0879,5,hard,3.11,0.3333,1.0000,5,0.9167,4,8,yes,yes,404,121,2329,7751,yes,yes,2453,all clues truthful; indirect accounts corroborated
-NG-M0880,1,easy,2.56,1.0000,1.0000,3,1.0000,1,8,yes,yes,1062,505,3264,6816,yes,yes,1019,all clues truthful; indirect accounts corroborated
-NG-M0881,2,standard,2.78,1.0000,1.0000,3,1.0000,3,8,yes,yes,979,1045,3609,6471,yes,yes,1288,all clues truthful; indirect accounts corroborated
-NG-M0882,3,medium,2.78,0.3333,1.0000,4,1.0000,3,8,yes,yes,428,1206,3347,6733,yes,yes,1600,all clues truthful; indirect accounts corroborated
-NG-M0883,4,challenging,3.00,0.1111,1.0000,5,0.9167,3,8,yes,yes,589,843,3153,6927,yes,yes,1960,all clues truthful; indirect accounts corroborated
-NG-M0884,5,hard,3.00,0.2500,1.0000,5,0.9167,1,8,yes,yes,1418,1177,4354,5726,yes,yes,2215,all clues truthful; indirect accounts corroborated
-NG-M0885,1,easy,2.56,1.0000,1.0000,3,1.0000,2,8,yes,yes,715,425,2942,7138,yes,yes,1034,all clues truthful; indirect accounts corroborated
-NG-M0886,2,standard,2.78,1.0000,1.0000,3,1.0000,1,8,yes,yes,519,300,2539,7541,yes,yes,1360,all clues truthful; indirect accounts corroborated
-NG-M0887,3,medium,3.00,0.2500,1.0000,4,1.0000,4,8,yes,yes,682,518,2898,7182,yes,yes,1635,all clues truthful; indirect accounts corroborated
-NG-M0888,4,challenging,3.00,0.1667,1.0000,5,0.9167,2,8,yes,yes,518,1083,3307,6773,yes,yes,1942,all clues truthful; indirect accounts corroborated
-NG-M0889,5,hard,3.00,0.3333,1.0000,5,1.0000,3,8,yes,yes,629,750,3138,6942,yes,yes,2355,all clues truthful; indirect accounts corroborated
-NG-M0890,1,easy,2.78,1.0000,1.0000,3,1.0000,2,8,yes,yes,802,518,3002,7078,yes,yes,1031,all clues truthful; indirect accounts corroborated
-NG-M0891,2,standard,2.78,0.5000,1.0000,3,1.0000,2,8,yes,yes,681,804,3250,6830,yes,yes,1312,all clues truthful; indirect accounts corroborated
-NG-M0892,3,medium,2.89,1.0000,1.0000,4,1.0000,1,8,yes,yes,124,1781,3423,6657,yes,yes,1590,all clues truthful; indirect accounts corroborated
-NG-M0893,4,challenging,3.00,0.1250,1.0000,5,0.9167,2,8,yes,yes,537,1113,3356,6724,yes,yes,1942,all clues truthful; indirect accounts corroborated
-NG-M0894,5,hard,3.11,0.5000,1.0000,5,0.9167,2,8,yes,yes,172,1089,3035,7045,yes,yes,2369,all clues truthful; indirect accounts corroborated
-NG-M0895,1,easy,2.78,1.0000,1.0000,3,1.0000,1,8,yes,yes,783,417,2942,7138,yes,yes,1034,all clues truthful; indirect accounts corroborated
-NG-M0896,2,standard,2.67,1.0000,1.0000,3,1.0000,3,8,yes,yes,610,889,3324,6756,yes,yes,1308,all clues truthful; indirect accounts corroborated
-NG-M0897,3,medium,3.00,1.0000,1.0000,4,1.0000,4,8,yes,yes,1047,1698,4398,5682,yes,yes,1510,all clues truthful; indirect accounts corroborated
-NG-M0898,4,challenging,3.00,0.1667,1.0000,5,0.9167,2,8,yes,yes,130,405,2271,7809,yes,yes,2050,all clues truthful; indirect accounts corroborated
-NG-M0899,5,hard,3.11,0.1667,1.0000,5,0.8333,2,8,yes,yes,171,169,2069,8011,yes,yes,2481,all clues truthful; indirect accounts corroborated
-NG-M0900,1,easy,2.67,0.5000,1.0000,3,1.0000,2,8,yes,yes,669,741,3137,6943,yes,yes,1025,all clues truthful; indirect accounts corroborated
-NG-M0901,2,standard,2.78,0.2500,1.0000,3,1.0000,0,8,yes,yes,863,1357,3940,6140,yes,yes,1268,all clues truthful; indirect accounts corroborated
-NG-M0902,3,medium,2.67,1.0000,1.0000,4,1.0000,1,8,yes,yes,1051,418,3167,6913,yes,yes,1615,all clues truthful; indirect accounts corroborated
-NG-M0903,4,challenging,3.00,0.2500,1.0000,5,0.9167,3,8,yes,yes,1114,611,3401,6679,yes,yes,1936,all clues truthful; indirect accounts corroborated
-NG-M0904,5,hard,3.11,0.3333,1.0000,5,0.9167,3,8,yes,yes,425,1395,3579,6501,yes,yes,2306,all clues truthful; indirect accounts corroborated
-NG-M0905,1,easy,2.78,1.0000,1.0000,3,1.0000,2,8,yes,yes,442,1448,3662,6418,yes,yes,998,all clues truthful; indirect accounts corroborated
-NG-M0906,2,standard,2.89,1.0000,1.0000,3,1.0000,4,8,yes,yes,1025,1660,4390,5690,yes,yes,1236,all clues truthful; indirect accounts corroborated
-NG-M0907,3,medium,2.67,1.0000,1.0000,4,1.0000,1,8,yes,yes,634,168,2635,7445,yes,yes,1660,all clues truthful; indirect accounts corroborated
-NG-M0908,4,challenging,3.00,0.5000,1.0000,5,0.9167,4,8,yes,yes,503,232,2471,7609,yes,yes,2026,all clues truthful; indirect accounts corroborated
-NG-M0909,5,hard,3.22,0.2500,1.0000,5,1.0000,3,8,yes,yes,518,2422,4729,5351,yes,yes,2173,all clues truthful; indirect accounts corroborated
-NG-M0910,1,easy,2.89,1.0000,1.0000,3,1.0000,3,8,yes,yes,727,1928,4322,5758,yes,yes,965,all clues truthful; indirect accounts corroborated
-NG-M0911,2,standard,2.78,1.0000,1.0000,3,1.0000,1,8,yes,yes,132,166,2063,8017,yes,yes,1392,all clues truthful; indirect accounts corroborated
-NG-M0912,3,medium,2.78,1.0000,1.0000,4,1.0000,3,8,yes,yes,597,840,3150,6930,yes,yes,1615,all clues truthful; indirect accounts corroborated
-NG-M0913,4,challenging,3.00,0.0833,1.0000,5,1.0000,4,8,yes,yes,814,536,3161,6919,yes,yes,1960,all clues truthful; indirect accounts corroborated
-NG-M0914,5,hard,3.11,0.5000,1.0000,5,1.0000,3,8,yes,yes,272,245,2036,8044,yes,yes,2488,all clues truthful; indirect accounts corroborated
-NG-M0915,1,easy,2.67,0.5000,1.0000,3,1.0000,2,8,yes,yes,576,684,2957,7123,yes,yes,1034,all clues truthful; indirect accounts corroborated
-NG-M0916,2,standard,2.78,1.0000,1.0000,3,1.0000,4,8,yes,yes,222,249,2161,7919,yes,yes,1384,all clues truthful; indirect accounts corroborated
-NG-M0917,3,medium,2.78,1.0000,1.0000,4,1.0000,2,8,yes,yes,608,1222,3633,6447,yes,yes,1575,all clues truthful; indirect accounts corroborated
-NG-M0918,4,challenging,3.00,0.1667,1.0000,5,0.9167,2,8,yes,yes,785,580,3161,6919,yes,yes,1960,all clues truthful; indirect accounts corroborated
-NG-M0919,5,hard,3.11,0.1111,1.0000,5,1.0000,4,8,yes,yes,890,730,3289,6791,yes,yes,2341,all clues truthful; indirect accounts corroborated
-NG-M0920,1,easy,2.67,0.3333,1.0000,3,1.0000,4,8,yes,yes,0,465,2177,7903,yes,yes,1073,all clues truthful; indirect accounts corroborated
-NG-M0921,2,standard,2.89,0.5000,1.0000,3,1.0000,0,8,yes,yes,185,341,2171,7909,yes,yes,1384,all clues truthful; indirect accounts corroborated
-NG-M0922,3,medium,2.89,0.5000,1.0000,4,1.0000,1,8,yes,yes,429,51,2223,7857,yes,yes,1690,all clues truthful; indirect accounts corroborated
-NG-M0923,4,challenging,3.00,0.1250,1.0000,5,0.8333,3,8,yes,yes,774,2076,4601,5479,yes,yes,1816,all clues truthful; indirect accounts corroborated
-NG-M0924,5,hard,3.00,0.5000,1.0000,5,1.0000,3,8,yes,yes,557,0,2256,7824,yes,yes,2460,all clues truthful; indirect accounts corroborated
-NG-M0925,1,easy,2.67,1.0000,1.0000,3,1.0000,4,8,yes,yes,158,1454,3429,6651,yes,yes,1010,all clues truthful; indirect accounts corroborated
-NG-M0926,2,standard,2.78,1.0000,1.0000,3,1.0000,4,8,yes,yes,437,988,3055,7025,yes,yes,1328,all clues truthful; indirect accounts corroborated
-NG-M0927,3,medium,2.89,1.0000,1.0000,4,1.0000,2,8,yes,yes,240,1200,3153,6927,yes,yes,1615,all clues truthful; indirect accounts corroborated
-NG-M0928,4,challenging,3.00,0.0833,1.0000,5,1.0000,2,8,yes,yes,86,137,2049,8031,yes,yes,2068,all clues truthful; indirect accounts corroborated
-NG-M0929,5,hard,3.00,0.2500,1.0000,5,0.9167,3,8,yes,yes,227,637,2638,7442,yes,yes,2418,all clues truthful; indirect accounts corroborated
-NG-M0930,1,easy,2.67,1.0000,1.0000,3,1.0000,3,8,yes,yes,269,991,2897,7183,yes,yes,1037,all clues truthful; indirect accounts corroborated
-NG-M0931,2,standard,3.00,1.0000,1.0000,3,1.0000,3,8,yes,yes,581,679,2950,7130,yes,yes,1332,all clues truthful; indirect accounts corroborated
-NG-M0932,3,medium,2.89,0.5000,1.0000,4,1.0000,2,8,yes,yes,540,990,3258,6822,yes,yes,1605,all clues truthful; indirect accounts corroborated
-NG-M0933,4,challenging,3.00,0.2500,1.0000,5,1.0000,1,8,yes,yes,791,8,2610,7470,yes,yes,2014,all clues truthful; indirect accounts corroborated
-NG-M0934,5,hard,3.00,0.0556,1.0000,5,0.9167,3,8,yes,yes,130,1130,3034,7046,yes,yes,2369,all clues truthful; indirect accounts corroborated
-NG-M0935,1,easy,2.78,1.0000,1.0000,3,1.0000,3,8,yes,yes,138,185,2065,8015,yes,yes,1079,all clues truthful; indirect accounts corroborated
-NG-M0936,2,standard,2.67,0.5000,1.0000,3,1.0000,4,8,yes,yes,62,1258,2950,7130,yes,yes,1332,all clues truthful; indirect accounts corroborated
-NG-M0937,3,medium,2.78,0.5000,1.0000,4,1.0000,3,8,yes,yes,871,857,3411,6669,yes,yes,1595,all clues truthful; indirect accounts corroborated
-NG-M0938,4,challenging,3.00,0.5000,1.0000,5,0.8333,4,8,yes,yes,542,568,2906,7174,yes,yes,1984,all clues truthful; indirect accounts corroborated
-NG-M0939,5,hard,3.00,0.2500,1.0000,5,1.0000,3,8,yes,yes,719,863,3176,6904,yes,yes,2355,all clues truthful; indirect accounts corroborated
-NG-M0940,1,easy,2.67,1.0000,1.0000,3,1.0000,3,8,yes,yes,629,23,2319,7761,yes,yes,1067,all clues truthful; indirect accounts corroborated
-NG-M0941,2,standard,2.78,1.0000,1.0000,3,1.0000,3,8,yes,yes,0,330,2140,7940,yes,yes,1388,all clues truthful; indirect accounts corroborated
-NG-M0942,3,medium,2.89,0.5000,1.0000,4,1.0000,2,8,yes,yes,864,1503,4020,6060,yes,yes,1545,all clues truthful; indirect accounts corroborated
-NG-M0943,4,challenging,3.00,0.5000,1.0000,5,0.8333,3,8,yes,yes,200,265,2081,7999,yes,yes,2068,all clues truthful; indirect accounts corroborated
-NG-M0944,5,hard,3.11,0.1667,1.0000,5,0.9167,1,8,yes,yes,706,758,3268,6812,yes,yes,2341,all clues truthful; indirect accounts corroborated
-NG-M0945,1,easy,2.78,1.0000,1.0000,3,1.0000,3,8,yes,yes,365,383,2505,7575,yes,yes,1058,all clues truthful; indirect accounts corroborated
-NG-M0946,2,standard,2.56,1.0000,1.0000,3,1.0000,3,8,yes,yes,819,602,3051,7029,yes,yes,1328,all clues truthful; indirect accounts corroborated
-NG-M0947,3,medium,2.78,1.0000,1.0000,4,1.0000,1,8,yes,yes,550,63,2311,7769,yes,yes,1685,all clues truthful; indirect accounts corroborated
-NG-M0948,4,challenging,3.00,0.5000,1.0000,5,1.0000,3,8,yes,yes,340,0,2061,8019,yes,yes,2068,all clues truthful; indirect accounts corroborated
-NG-M0949,5,hard,3.00,0.2500,1.0000,5,1.0000,2,8,yes,yes,894,629,3267,6813,yes,yes,2341,all clues truthful; indirect accounts corroborated
-NG-M0950,1,easy,2.56,1.0000,1.0000,3,1.0000,3,8,yes,yes,829,1046,3647,6433,yes,yes,1001,all clues truthful; indirect accounts corroborated
-NG-M0951,2,standard,2.89,1.0000,1.0000,3,1.0000,2,8,yes,yes,153,252,2125,7955,yes,yes,1388,all clues truthful; indirect accounts corroborated
-NG-M0952,3,medium,2.89,0.5000,1.0000,4,1.0000,2,8,yes,yes,530,1120,3423,6657,yes,yes,1590,all clues truthful; indirect accounts corroborated
-NG-M0953,4,challenging,3.00,0.1667,1.0000,5,1.0000,1,8,yes,yes,282,257,2275,7805,yes,yes,2050,all clues truthful; indirect accounts corroborated
-NG-M0954,5,hard,3.00,0.1667,1.0000,5,1.0000,2,8,yes,yes,620,520,2914,7166,yes,yes,2383,all clues truthful; indirect accounts corroborated
-NG-M0955,1,easy,2.89,0.5000,1.0000,3,1.0000,2,8,yes,yes,838,1082,3617,6463,yes,yes,1001,all clues truthful; indirect accounts corroborated
-NG-M0956,2,standard,2.67,0.5000,1.0000,3,1.0000,3,8,yes,yes,825,1155,3805,6275,yes,yes,1276,all clues truthful; indirect accounts corroborated
-NG-M0957,3,medium,2.89,1.0000,1.0000,4,1.0000,2,8,yes,yes,124,334,2081,7999,yes,yes,1705,all clues truthful; indirect accounts corroborated
-NG-M0958,4,challenging,3.00,0.2500,1.0000,5,1.0000,3,8,yes,yes,794,126,2611,7469,yes,yes,2014,all clues truthful; indirect accounts corroborated
-NG-M0959,5,hard,3.22,0.1250,1.0000,5,0.9167,2,8,yes,yes,139,305,2233,7847,yes,yes,2460,all clues truthful; indirect accounts corroborated
-NG-M0960,1,easy,2.78,0.3333,1.0000,3,1.0000,3,8,yes,yes,441,1044,3167,6913,yes,yes,1025,all clues truthful; indirect accounts corroborated
-NG-M0961,2,standard,2.67,1.0000,1.0000,3,1.0000,3,8,yes,yes,622,1119,3551,6529,yes,yes,1292,all clues truthful; indirect accounts corroborated
-NG-M0962,3,medium,2.89,1.0000,1.0000,4,1.0000,2,8,yes,yes,476,784,2883,7197,yes,yes,1635,all clues truthful; indirect accounts corroborated
-NG-M0963,4,challenging,3.00,0.5000,1.0000,5,0.9167,2,8,yes,yes,263,1132,3161,6919,yes,yes,1960,all clues truthful; indirect accounts corroborated
-NG-M0964,5,hard,3.11,0.3333,1.0000,5,1.0000,1,8,yes,yes,475,931,3180,6900,yes,yes,2355,all clues truthful; indirect accounts corroborated
-NG-M0965,1,easy,2.67,1.0000,1.0000,3,1.0000,1,8,yes,yes,680,738,3130,6950,yes,yes,1025,all clues truthful; indirect accounts corroborated
-NG-M0966,2,standard,2.78,1.0000,1.0000,3,1.0000,3,8,yes,yes,1037,778,3505,6575,yes,yes,1296,all clues truthful; indirect accounts corroborated
-NG-M0967,3,medium,2.89,0.5000,1.0000,4,1.0000,2,8,yes,yes,668,2047,4398,5682,yes,yes,1510,all clues truthful; indirect accounts corroborated
-NG-M0968,4,challenging,3.00,0.0833,1.0000,5,1.0000,3,8,yes,yes,607,1073,3401,6679,yes,yes,1936,all clues truthful; indirect accounts corroborated
-NG-M0969,5,hard,3.11,0.5000,1.0000,5,1.0000,2,8,yes,yes,258,147,2074,8006,yes,yes,2481,all clues truthful; indirect accounts corroborated
-NG-M0970,1,easy,2.78,1.0000,1.0000,3,1.0000,3,8,yes,yes,542,892,3161,6919,yes,yes,1025,all clues truthful; indirect accounts corroborated
-NG-M0971,2,standard,2.89,1.0000,1.0000,3,1.0000,0,8,yes,yes,698,690,3153,6927,yes,yes,1320,all clues truthful; indirect accounts corroborated
-NG-M0972,3,medium,2.67,0.5000,1.0000,4,1.0000,3,8,yes,yes,286,0,2074,8006,yes,yes,1705,all clues truthful; indirect accounts corroborated
-NG-M0973,4,challenging,3.00,0.2500,1.0000,5,0.8333,3,8,yes,yes,276,102,2024,8056,yes,yes,2074,all clues truthful; indirect accounts corroborated
-NG-M0974,5,hard,3.11,0.2500,1.0000,5,1.0000,4,8,yes,yes,619,746,3094,6986,yes,yes,2362,all clues truthful; indirect accounts corroborated
-NG-M0975,1,easy,2.56,1.0000,1.0000,3,1.0000,2,8,yes,yes,18,267,2042,8038,yes,yes,1079,all clues truthful; indirect accounts corroborated
-NG-M0976,2,standard,2.78,1.0000,1.0000,3,1.0000,4,8,yes,yes,1256,1898,4919,5161,yes,yes,1204,all clues truthful; indirect accounts corroborated
-NG-M0977,3,medium,2.67,0.5000,1.0000,4,1.0000,2,8,yes,yes,65,640,2568,7512,yes,yes,1665,all clues truthful; indirect accounts corroborated
-NG-M0978,4,challenging,3.00,0.3333,1.0000,5,1.0000,1,8,yes,yes,914,931,3581,6499,yes,yes,1918,all clues truthful; indirect accounts corroborated
-NG-M0979,5,hard,3.00,0.1667,1.0000,5,0.8333,3,8,yes,yes,0,345,2014,8066,yes,yes,2488,all clues truthful; indirect accounts corroborated
-NG-M0980,1,easy,2.67,0.5000,1.0000,3,1.0000,3,8,yes,yes,550,695,2942,7138,yes,yes,1034,all clues truthful; indirect accounts corroborated
-NG-M0981,2,standard,2.78,1.0000,1.0000,3,1.0000,0,8,yes,yes,414,2151,4330,5750,yes,yes,1240,all clues truthful; indirect accounts corroborated
-NG-M0982,3,medium,2.78,1.0000,1.0000,4,1.0000,2,8,yes,yes,549,276,2463,7617,yes,yes,1670,all clues truthful; indirect accounts corroborated
-NG-M0983,4,challenging,3.00,0.1250,1.0000,5,1.0000,3,8,yes,yes,433,827,2966,7114,yes,yes,1978,all clues truthful; indirect accounts corroborated
-NG-M0984,5,hard,3.11,0.2500,1.0000,5,0.9167,2,8,yes,yes,89,405,2343,7737,yes,yes,2446,all clues truthful; indirect accounts corroborated
-NG-M0985,1,easy,2.67,1.0000,1.0000,3,1.0000,2,8,yes,yes,1127,1738,4502,5578,yes,yes,956,all clues truthful; indirect accounts corroborated
-NG-M0986,2,standard,2.89,1.0000,1.0000,3,1.0000,4,8,yes,yes,36,264,1885,8195,yes,yes,1404,all clues truthful; indirect accounts corroborated
-NG-M0987,3,medium,2.89,0.2500,1.0000,4,1.0000,2,8,yes,yes,859,1961,4683,5397,yes,yes,1485,all clues truthful; indirect accounts corroborated
-NG-M0988,4,challenging,3.00,0.1250,1.0000,5,1.0000,1,8,yes,yes,517,896,3134,6946,yes,yes,1960,all clues truthful; indirect accounts corroborated
-NG-M0989,5,hard,3.00,0.2500,1.0000,5,0.8333,3,8,yes,yes,1030,1227,4016,6064,yes,yes,2257,all clues truthful; indirect accounts corroborated
-NG-M0990,1,easy,2.67,1.0000,1.0000,3,1.0000,4,8,yes,yes,400,1012,3139,6941,yes,yes,1025,all clues truthful; indirect accounts corroborated
-NG-M0991,2,standard,2.56,1.0000,1.0000,3,1.0000,4,8,yes,yes,137,223,2140,7940,yes,yes,1388,all clues truthful; indirect accounts corroborated
-NG-M0992,3,medium,2.67,1.0000,1.0000,4,1.0000,0,8,yes,yes,1102,258,3073,7007,yes,yes,1620,all clues truthful; indirect accounts corroborated
-NG-M0993,4,challenging,3.00,0.2500,1.0000,5,0.9167,2,8,yes,yes,1012,1598,4436,5644,yes,yes,1834,all clues truthful; indirect accounts corroborated
-NG-M0994,5,hard,3.11,0.5000,1.0000,5,0.9167,2,8,yes,yes,154,720,2693,7387,yes,yes,2411,all clues truthful; indirect accounts corroborated
-NG-M0995,1,easy,2.67,1.0000,1.0000,3,1.0000,4,8,yes,yes,0,1335,3077,7003,yes,yes,1028,all clues truthful; indirect accounts corroborated
-NG-M0996,2,standard,2.89,0.5000,1.0000,3,1.0000,2,8,yes,yes,460,893,3103,6977,yes,yes,1324,all clues truthful; indirect accounts corroborated
-NG-M0997,3,medium,2.67,1.0000,1.0000,4,1.0000,1,8,yes,yes,343,1138,3224,6856,yes,yes,1610,all clues truthful; indirect accounts corroborated
-NG-M0998,4,challenging,3.00,0.2500,1.0000,5,1.0000,4,8,yes,yes,392,403,2441,7639,yes,yes,2032,all clues truthful; indirect accounts corroborated
-NG-M0999,5,hard,3.11,0.2500,1.0000,5,1.0000,4,8,yes,yes,800,1045,3664,6416,yes,yes,2292,all clues truthful; indirect accounts corroborated
-NG-M1000,1,easy,2.56,1.0000,1.0000,3,1.0000,3,8,yes,yes,106,509,2267,7813,yes,yes,1070,all clues truthful; indirect accounts corroborated
+mission_id,difficulty,dossier_fields_collected,dossier_complete,warrant_match,total_case_minutes,remaining_minutes,deadline_pass,estimated_case_award
+NG-M0981,2,8,yes,yes,7345,2735,yes,1320
+NG-M0267,3,8,yes,yes,7548,2532,yes,1570
+NG-M0273,4,8,yes,yes,7571,2509,yes,1876
+NG-M0475,1,8,yes,yes,7487,2593,yes,1049
+NG-M0734,5,8,yes,yes,7594,2486,yes,2237
+NG-M0812,3,8,yes,yes,7503,2577,yes,1570
+NG-M0888,4,8,yes,yes,7511,2569,yes,1882
+NG-M0514,5,8,yes,yes,7429,2651,yes,2258
+NG-M0334,5,8,yes,yes,7444,2636,yes,2251
+NG-M0965,1,8,yes,yes,7487,2593,yes,1049
+NG-M0654,5,8,yes,yes,7504,2576,yes,2244
+NG-M0068,4,8,yes,yes,7451,2629,yes,1888
+NG-M0247,3,8,yes,yes,7608,2472,yes,1565
+NG-M0643,4,8,yes,yes,7556,2524,yes,1882
+NG-M0979,5,8,yes,yes,7414,2666,yes,2258
+NG-M0500,1,8,yes,yes,7427,2653,yes,1052
+NG-M0837,3,8,yes,yes,7473,2607,yes,1575
+NG-M0517,3,8,yes,yes,7608,2472,yes,1565
+NG-M0817,3,8,yes,yes,7638,2442,yes,1560
+NG-M0366,2,8,yes,yes,7465,2615,yes,1312
+NG-M0228,4,8,yes,yes,7556,2524,yes,1882
+NG-M0717,3,8,yes,yes,7503,2577,yes,1570
+NG-M0495,1,8,yes,yes,7517,2563,yes,1046
+NG-M0645,1,8,yes,yes,7502,2578,yes,1046
+NG-M0750,1,8,yes,yes,7532,2548,yes,1046
+NG-M0518,4,8,yes,yes,7496,2584,yes,1888
+NG-M0237,3,8,yes,yes,7503,2577,yes,1570
+NG-M0841,2,8,yes,yes,7540,2540,yes,1308
+NG-M0585,1,8,yes,yes,7367,2713,yes,1055
+NG-M0978,4,8,yes,yes,7571,2509,yes,1876
+NG-M0600,1,8,yes,yes,7397,2683,yes,1052
+NG-M0350,1,8,yes,yes,7352,2728,yes,1055
+NG-M0394,5,8,yes,yes,7639,2441,yes,2230
+NG-M0720,1,8,yes,yes,7322,2758,yes,1055
+NG-M0159,5,8,yes,yes,7519,2561,yes,2244
+NG-M0951,2,8,yes,yes,7615,2465,yes,1304
+NG-M0317,3,8,yes,yes,7503,2577,yes,1570
+NG-M0234,5,8,yes,yes,7414,2666,yes,2258
+NG-M0196,2,8,yes,yes,7600,2480,yes,1304
+NG-M0338,4,8,yes,yes,7451,2629,yes,1888
+NG-M0696,2,8,yes,yes,7435,2645,yes,1316
+NG-M0464,5,8,yes,yes,7594,2486,yes,2237
+NG-M0031,2,8,yes,yes,7360,2720,yes,1320
+NG-M0004,5,8,yes,yes,7429,2651,yes,2258
+NG-M0975,1,8,yes,yes,7457,2623,yes,1049
+NG-M0743,4,8,yes,yes,7511,2569,yes,1882
+NG-M0021,2,8,yes,yes,7435,2645,yes,1316
+NG-M0773,4,8,yes,yes,7526,2554,yes,1882
+NG-M0887,3,8,yes,yes,7548,2532,yes,1570
+NG-M0165,1,8,yes,yes,7487,2593,yes,1049
+NG-M0815,1,8,yes,yes,7532,2548,yes,1046
+NG-M0652,3,8,yes,yes,7563,2517,yes,1565
+NG-M0044,5,8,yes,yes,7399,2681,yes,2258
+NG-M0702,3,8,yes,yes,7623,2457,yes,1560
+NG-M0716,2,8,yes,yes,7555,2525,yes,1308
+NG-M0226,2,8,yes,yes,7465,2615,yes,1312
+NG-M0674,5,8,yes,yes,7624,2456,yes,2230
+NG-M0864,5,8,yes,yes,7504,2576,yes,2244
+NG-M0094,5,8,yes,yes,7594,2486,yes,2237
+NG-M0040,1,8,yes,yes,7472,2608,yes,1049
+NG-M0515,1,8,yes,yes,7472,2608,yes,1049
+NG-M0218,4,8,yes,yes,7601,2479,yes,1876
+NG-M0073,4,8,yes,yes,7526,2554,yes,1882
+NG-M0943,4,8,yes,yes,7496,2584,yes,1888
+NG-M0613,4,8,yes,yes,7526,2554,yes,1882
+NG-M0371,2,8,yes,yes,7555,2525,yes,1308
+NG-M0597,3,8,yes,yes,7443,2637,yes,1575
+NG-M0913,4,8,yes,yes,7556,2524,yes,1882
+NG-M0222,3,8,yes,yes,7353,2727,yes,1585
+NG-M0358,4,8,yes,yes,7481,2599,yes,1888
+NG-M0539,5,8,yes,yes,7549,2531,yes,2244
+NG-M0195,1,8,yes,yes,7412,2668,yes,1052
+NG-M0198,4,8,yes,yes,7376,2704,yes,1900
+NG-M0657,3,8,yes,yes,7473,2607,yes,1575
+NG-M0086,2,8,yes,yes,7540,2540,yes,1308
+NG-M0908,4,8,yes,yes,7556,2524,yes,1882
+NG-M0227,3,8,yes,yes,7608,2472,yes,1565
+NG-M0490,1,8,yes,yes,7562,2518,yes,1043
+NG-M0644,5,8,yes,yes,7459,2621,yes,2251
+NG-M0121,2,8,yes,yes,7390,2690,yes,1316
+NG-M0302,3,8,yes,yes,7593,2487,yes,1565
+NG-M0055,1,8,yes,yes,7427,2653,yes,1052
+NG-M0293,4,8,yes,yes,7541,2539,yes,1882
+NG-M0903,4,8,yes,yes,7481,2599,yes,1888
+NG-M0443,4,8,yes,yes,7601,2479,yes,1876
+NG-M0792,3,8,yes,yes,7428,2652,yes,1580
+NG-M0294,5,8,yes,yes,7504,2576,yes,2244
+NG-M0805,1,8,yes,yes,7532,2548,yes,1046
+NG-M0834,5,8,yes,yes,7504,2576,yes,2244
+NG-M0581,2,8,yes,yes,7555,2525,yes,1308
+NG-M0089,5,8,yes,yes,7549,2531,yes,2244
+NG-M0146,2,8,yes,yes,7450,2630,yes,1312
+NG-M0619,5,8,yes,yes,7564,2516,yes,2237
+NG-M0126,2,8,yes,yes,7405,2675,yes,1316
+NG-M0499,5,8,yes,yes,7534,2546,yes,2244
+NG-M0373,4,8,yes,yes,7556,2524,yes,1882
+NG-M0797,3,8,yes,yes,7383,2697,yes,1580
+NG-M0588,4,8,yes,yes,7526,2554,yes,1882
+NG-M0519,5,8,yes,yes,7549,2531,yes,2244
+NG-M0725,1,8,yes,yes,7397,2683,yes,1052
+NG-M0931,2,8,yes,yes,7510,2570,yes,1308
+NG-M0572,3,8,yes,yes,7518,2562,yes,1570
+NG-M0504,5,8,yes,yes,7414,2666,yes,2258
+NG-M0427,3,8,yes,yes,7473,2607,yes,1575
+NG-M0759,5,8,yes,yes,7489,2591,yes,2251
+NG-M0941,2,8,yes,yes,7615,2465,yes,1304
+NG-M0503,4,8,yes,yes,7316,2764,yes,1906
+NG-M0687,3,8,yes,yes,7458,2622,yes,1575
+NG-M0390,1,8,yes,yes,7562,2518,yes,1043
+NG-M0548,4,8,yes,yes,7541,2539,yes,1882
+NG-M0994,5,8,yes,yes,7594,2486,yes,2237
+NG-M0706,2,8,yes,yes,7540,2540,yes,1308
+NG-M0194,5,8,yes,yes,7594,2486,yes,2237
+NG-M0167,3,8,yes,yes,7503,2577,yes,1570
+NG-M0915,1,8,yes,yes,7502,2578,yes,1046
+NG-M0105,1,8,yes,yes,7322,2758,yes,1055
+NG-M0135,1,8,yes,yes,7502,2578,yes,1046
+NG-M0479,5,8,yes,yes,7504,2576,yes,2244
+NG-M0807,3,8,yes,yes,7548,2532,yes,1570
+NG-M0050,1,8,yes,yes,7412,2668,yes,1052
+NG-M0907,3,8,yes,yes,7428,2652,yes,1580
+NG-M0005,1,8,yes,yes,7487,2593,yes,1049
+NG-M0568,4,8,yes,yes,7391,2689,yes,1894
+NG-M0678,4,8,yes,yes,7286,2794,yes,1906
+NG-M0296,2,8,yes,yes,7510,2570,yes,1308
+NG-M0385,1,8,yes,yes,7592,2488,yes,1043
+NG-M0003,4,8,yes,yes,7481,2599,yes,1888
+NG-M0078,4,8,yes,yes,7496,2584,yes,1888
+NG-M0622,3,8,yes,yes,7443,2637,yes,1575
+NG-M0440,1,8,yes,yes,7337,2743,yes,1055
+NG-M0762,3,8,yes,yes,7608,2472,yes,1565
+NG-M0418,4,8,yes,yes,7466,2614,yes,1888
+NG-M0327,3,8,yes,yes,7548,2532,yes,1570
+NG-M0387,3,8,yes,yes,7473,2607,yes,1575
+NG-M0018,4,8,yes,yes,7496,2584,yes,1888
+NG-M0523,4,8,yes,yes,7421,2659,yes,1894
+NG-M0339,5,8,yes,yes,7474,2606,yes,2251
+NG-M0034,5,8,yes,yes,7354,2726,yes,2265
+NG-M0125,1,8,yes,yes,7367,2713,yes,1055
+NG-M0276,2,8,yes,yes,7480,2600,yes,1312
+NG-M0520,1,8,yes,yes,7397,2683,yes,1052
+NG-M0570,1,8,yes,yes,7592,2488,yes,1043
+NG-M0628,4,8,yes,yes,7481,2599,yes,1888
+NG-M0096,2,8,yes,yes,7465,2615,yes,1312
+NG-M0132,3,8,yes,yes,7473,2607,yes,1575
+NG-M0270,1,8,yes,yes,7367,2713,yes,1055
+NG-M0668,4,8,yes,yes,7496,2584,yes,1888
+NG-M0728,4,8,yes,yes,7631,2449,yes,1870
+NG-M0916,2,8,yes,yes,7555,2525,yes,1308
+NG-M0896,2,8,yes,yes,7525,2555,yes,1308
+NG-M0417,3,8,yes,yes,7548,2532,yes,1570
+NG-M0825,1,8,yes,yes,7487,2593,yes,1049
+NG-M0502,3,8,yes,yes,7338,2742,yes,1585
+NG-M0508,4,8,yes,yes,7586,2494,yes,1876
+NG-M0664,5,8,yes,yes,7639,2441,yes,2230
+NG-M0052,3,8,yes,yes,7383,2697,yes,1580
+NG-M0985,1,8,yes,yes,7532,2548,yes,1046
+NG-M0927,3,8,yes,yes,7473,2607,yes,1575
+NG-M0335,1,8,yes,yes,7637,2443,yes,1040
+NG-M0035,1,8,yes,yes,7382,2698,yes,1052
+NG-M0114,5,8,yes,yes,7444,2636,yes,2251
+NG-M0466,2,8,yes,yes,7600,2480,yes,1304
+NG-M0754,5,8,yes,yes,7609,2471,yes,2237
+NG-M0092,3,8,yes,yes,7578,2502,yes,1565
+NG-M0378,4,8,yes,yes,7481,2599,yes,1888
+NG-M0395,1,8,yes,yes,7562,2518,yes,1043
+NG-M0257,3,8,yes,yes,7488,2592,yes,1575
+NG-M0525,1,8,yes,yes,7562,2518,yes,1043
+NG-M0024,5,8,yes,yes,7219,2861,yes,2279
+NG-M0733,4,8,yes,yes,7571,2509,yes,1876
+NG-M0784,5,8,yes,yes,7534,2546,yes,2244
+NG-M0722,3,8,yes,yes,7593,2487,yes,1565
+NG-M0727,3,8,yes,yes,7578,2502,yes,1565
+NG-M0420,1,8,yes,yes,7412,2668,yes,1052
+NG-M0719,5,8,yes,yes,7549,2531,yes,2244
+NG-M0898,4,8,yes,yes,7481,2599,yes,1888
+NG-M0219,5,8,yes,yes,7609,2471,yes,2237
+NG-M0119,5,8,yes,yes,7669,2411,yes,2230
+NG-M0960,1,8,yes,yes,7442,2638,yes,1049
+NG-M0107,3,8,yes,yes,7428,2652,yes,1580
+NG-M0383,4,8,yes,yes,7526,2554,yes,1882
+NG-M0117,3,8,yes,yes,7338,2742,yes,1585
+NG-M0480,1,8,yes,yes,7532,2548,yes,1046
+NG-M0616,2,8,yes,yes,7570,2510,yes,1304
+NG-M0133,4,8,yes,yes,7391,2689,yes,1894
+NG-M0158,4,8,yes,yes,7496,2584,yes,1888
+NG-M0641,2,8,yes,yes,7555,2525,yes,1308
+NG-M0845,1,8,yes,yes,7487,2593,yes,1049
+NG-M0560,1,8,yes,yes,7607,2473,yes,1043
+NG-M0138,4,8,yes,yes,7586,2494,yes,1876
+NG-M0648,4,8,yes,yes,7481,2599,yes,1888
+NG-M0876,2,8,yes,yes,7540,2540,yes,1308
+NG-M0655,1,8,yes,yes,7592,2488,yes,1043
+NG-M0884,5,8,yes,yes,7474,2606,yes,2251
+NG-M0309,5,8,yes,yes,7579,2501,yes,2237
+NG-M0147,3,8,yes,yes,7548,2532,yes,1570
+NG-M0601,2,8,yes,yes,7405,2675,yes,1316
+NG-M0274,5,8,yes,yes,7579,2501,yes,2237
+NG-M0673,4,8,yes,yes,7496,2584,yes,1888
+NG-M0928,4,8,yes,yes,7631,2449,yes,1870
+NG-M0258,4,8,yes,yes,7466,2614,yes,1888
+NG-M0932,3,8,yes,yes,7518,2562,yes,1570
+NG-M0946,2,8,yes,yes,7465,2615,yes,1312
+NG-M0547,3,8,yes,yes,7638,2442,yes,1560
+NG-M0235,1,8,yes,yes,7382,2698,yes,1052
+NG-M0365,1,8,yes,yes,7457,2623,yes,1049
+NG-M0551,2,8,yes,yes,7525,2555,yes,1308
+NG-M0528,4,8,yes,yes,7466,2614,yes,1888
+NG-M0303,4,8,yes,yes,7421,2659,yes,1894
+NG-M0345,1,8,yes,yes,7637,2443,yes,1040
+NG-M0217,3,8,yes,yes,7383,2697,yes,1580
+NG-M0175,1,8,yes,yes,7622,2458,yes,1040
+NG-M0540,1,8,yes,yes,7367,2713,yes,1055
+NG-M0789,5,8,yes,yes,7549,2531,yes,2244
+NG-M0311,2,8,yes,yes,7450,2630,yes,1312
+NG-M0104,5,8,yes,yes,7429,2651,yes,2258
+NG-M0458,4,8,yes,yes,7631,2449,yes,1870
+NG-M0382,3,8,yes,yes,7563,2517,yes,1565
+NG-M0422,3,8,yes,yes,7368,2712,yes,1585
+NG-M0698,4,8,yes,yes,7496,2584,yes,1888
+NG-M0155,1,8,yes,yes,7457,2623,yes,1049
+NG-M0238,4,8,yes,yes,7586,2494,yes,1876
+NG-M0344,5,8,yes,yes,7489,2591,yes,2251
+NG-M0828,4,8,yes,yes,7526,2554,yes,1882
+NG-M0893,4,8,yes,yes,7526,2554,yes,1882
+NG-M0108,4,8,yes,yes,7316,2764,yes,1906
+NG-M0996,2,8,yes,yes,7465,2615,yes,1312
+NG-M0948,4,8,yes,yes,7286,2794,yes,1906
+NG-M0404,5,8,yes,yes,7459,2621,yes,2251
+NG-M0432,3,8,yes,yes,7623,2457,yes,1560
+NG-M0804,5,8,yes,yes,7699,2381,yes,2223
+NG-M0332,3,8,yes,yes,7383,2697,yes,1580
+NG-M0416,2,8,yes,yes,7450,2630,yes,1312
+NG-M0563,4,8,yes,yes,7541,2539,yes,1882
+NG-M0820,1,8,yes,yes,7412,2668,yes,1052
+NG-M0356,2,8,yes,yes,7540,2540,yes,1308
+NG-M0723,4,8,yes,yes,7646,2434,yes,1870
+NG-M0760,1,8,yes,yes,7562,2518,yes,1043
+NG-M0160,1,8,yes,yes,7397,2683,yes,1052
+NG-M0472,3,8,yes,yes,7548,2532,yes,1570
+NG-M0653,4,8,yes,yes,7526,2554,yes,1882
+NG-M0611,2,8,yes,yes,7315,2765,yes,1324
+NG-M0945,1,8,yes,yes,7457,2623,yes,1049
+NG-M0220,1,8,yes,yes,7367,2713,yes,1055
+NG-M0456,2,8,yes,yes,7495,2585,yes,1312
+NG-M0534,5,8,yes,yes,7699,2381,yes,2223
+NG-M0241,2,8,yes,yes,7375,2705,yes,1320
+NG-M0337,3,8,yes,yes,7398,2682,yes,1580
+NG-M0788,4,8,yes,yes,7571,2509,yes,1876
+NG-M0019,5,8,yes,yes,7459,2621,yes,2251
+NG-M0080,1,8,yes,yes,7352,2728,yes,1055
+NG-M0079,5,8,yes,yes,7564,2516,yes,2237
+NG-M0180,1,8,yes,yes,7322,2758,yes,1055
+NG-M0183,4,8,yes,yes,7646,2434,yes,1870
+NG-M0249,5,8,yes,yes,7549,2531,yes,2244
+NG-M0707,3,8,yes,yes,7503,2577,yes,1570
+NG-M0028,4,8,yes,yes,7421,2659,yes,1894
+NG-M0286,2,8,yes,yes,7585,2495,yes,1304
+NG-M0428,4,8,yes,yes,7496,2584,yes,1888
+NG-M0824,5,8,yes,yes,7534,2546,yes,2244
+NG-M0703,4,8,yes,yes,7451,2629,yes,1888
+NG-M0131,2,8,yes,yes,7450,2630,yes,1312
+NG-M0292,3,8,yes,yes,7683,2397,yes,1555
+NG-M0289,5,8,yes,yes,7414,2666,yes,2258
+NG-M0020,1,8,yes,yes,7427,2653,yes,1052
+NG-M0401,2,8,yes,yes,7450,2630,yes,1312
+NG-M0636,2,8,yes,yes,7465,2615,yes,1312
+NG-M0586,2,8,yes,yes,7450,2630,yes,1312
+NG-M0300,1,8,yes,yes,7442,2638,yes,1049
+NG-M0988,4,8,yes,yes,7451,2629,yes,1888
+NG-M0262,3,8,yes,yes,7563,2517,yes,1565
+NG-M0372,3,8,yes,yes,7563,2517,yes,1565
+NG-M0942,3,8,yes,yes,7533,2547,yes,1570
+NG-M0715,1,8,yes,yes,7622,2458,yes,1040
+NG-M0920,1,8,yes,yes,7532,2548,yes,1046
+NG-M0742,3,8,yes,yes,7548,2532,yes,1570
+NG-M0562,3,8,yes,yes,7683,2397,yes,1555
+NG-M0370,1,8,yes,yes,7457,2623,yes,1049
+NG-M0224,5,8,yes,yes,7354,2726,yes,2265
+NG-M0637,3,8,yes,yes,7428,2652,yes,1580
+NG-M0875,1,8,yes,yes,7562,2518,yes,1043
+NG-M0320,1,8,yes,yes,7412,2668,yes,1052
+NG-M0961,2,8,yes,yes,7540,2540,yes,1308
+NG-M0314,5,8,yes,yes,7399,2681,yes,2258
+NG-M0169,5,8,yes,yes,7579,2501,yes,2237
+NG-M0069,5,8,yes,yes,7474,2606,yes,2251
+NG-M0248,4,8,yes,yes,7496,2584,yes,1888
+NG-M0663,4,8,yes,yes,7511,2569,yes,1882
+NG-M0883,4,8,yes,yes,7466,2614,yes,1888
+NG-M0015,1,8,yes,yes,7442,2638,yes,1049
+NG-M0232,3,8,yes,yes,7338,2742,yes,1585
+NG-M0304,5,8,yes,yes,7354,2726,yes,2265
+NG-M0505,1,8,yes,yes,7382,2698,yes,1052
+NG-M0559,5,8,yes,yes,7414,2666,yes,2258
+NG-M0731,2,8,yes,yes,7390,2690,yes,1316
+NG-M0772,3,8,yes,yes,7638,2442,yes,1560
+NG-M0419,5,8,yes,yes,7534,2546,yes,2244
+NG-M0761,2,8,yes,yes,7570,2510,yes,1304
+NG-M0177,3,8,yes,yes,7503,2577,yes,1570
+NG-M0285,1,8,yes,yes,7487,2593,yes,1049
+NG-M0989,5,8,yes,yes,7369,2711,yes,2265
+NG-M0016,2,8,yes,yes,7480,2600,yes,1312
+NG-M0612,3,8,yes,yes,7428,2652,yes,1580
+NG-M0301,2,8,yes,yes,7360,2720,yes,1320
+NG-M0277,3,8,yes,yes,7638,2442,yes,1560
+NG-M0538,4,8,yes,yes,7571,2509,yes,1876
+NG-M0603,4,8,yes,yes,7496,2584,yes,1888
+NG-M0393,4,8,yes,yes,7511,2569,yes,1882
+NG-M0181,2,8,yes,yes,7435,2645,yes,1316
+NG-M0465,1,8,yes,yes,7412,2668,yes,1052
+NG-M0555,1,8,yes,yes,7487,2593,yes,1049
+NG-M0384,5,8,yes,yes,7504,2576,yes,2244
+NG-M0987,3,8,yes,yes,7473,2607,yes,1575
+NG-M0853,4,8,yes,yes,7586,2494,yes,1876
+NG-M0278,4,8,yes,yes,7541,2539,yes,1882
+NG-M0826,2,8,yes,yes,7585,2495,yes,1304
+NG-M0746,2,8,yes,yes,7540,2540,yes,1308
+NG-M0215,1,8,yes,yes,7397,2683,yes,1052
+NG-M0527,3,8,yes,yes,7488,2592,yes,1575
+NG-M0879,5,8,yes,yes,7474,2606,yes,2251
+NG-M0972,3,8,yes,yes,7533,2547,yes,1570
+NG-M0666,2,8,yes,yes,7420,2660,yes,1316
+NG-M0263,4,8,yes,yes,7511,2569,yes,1882
+NG-M0082,3,8,yes,yes,7443,2637,yes,1575
+NG-M0200,1,8,yes,yes,7412,2668,yes,1052
+NG-M0441,2,8,yes,yes,7405,2675,yes,1316
+NG-M0442,3,8,yes,yes,7383,2697,yes,1580
+NG-M0074,5,8,yes,yes,7489,2591,yes,2251
+NG-M0379,5,8,yes,yes,7444,2636,yes,2251
+NG-M0571,2,8,yes,yes,7540,2540,yes,1308
+NG-M0758,4,8,yes,yes,7496,2584,yes,1888
+NG-M0814,5,8,yes,yes,7579,2501,yes,2237
+NG-M0850,1,8,yes,yes,7457,2623,yes,1049
+NG-M0683,4,8,yes,yes,7511,2569,yes,1882
+NG-M0870,1,8,yes,yes,7517,2563,yes,1046
+NG-M0889,5,8,yes,yes,7579,2501,yes,2237
+NG-M0272,3,8,yes,yes,7503,2577,yes,1570
+NG-M0790,1,8,yes,yes,7487,2593,yes,1049
+NG-M0599,5,8,yes,yes,7624,2456,yes,2230
+NG-M0977,3,8,yes,yes,7563,2517,yes,1565
+NG-M0312,3,8,yes,yes,7518,2562,yes,1570
+NG-M0803,4,8,yes,yes,7511,2569,yes,1882
+NG-M0254,5,8,yes,yes,7654,2426,yes,2230
+NG-M0233,4,8,yes,yes,7316,2764,yes,1906
+NG-M0362,3,8,yes,yes,7578,2502,yes,1565
+NG-M0253,4,8,yes,yes,7421,2659,yes,1894
+NG-M0578,4,8,yes,yes,7451,2629,yes,1888
+NG-M0752,3,8,yes,yes,7443,2637,yes,1575
+NG-M0756,2,8,yes,yes,7435,2645,yes,1316
+NG-M0251,2,8,yes,yes,7345,2735,yes,1320
+NG-M0747,3,8,yes,yes,7548,2532,yes,1570
+NG-M0271,2,8,yes,yes,7465,2615,yes,1312
+NG-M0471,2,8,yes,yes,7540,2540,yes,1308
+NG-M0474,5,8,yes,yes,7534,2546,yes,2244
+NG-M0882,3,8,yes,yes,7503,2577,yes,1570
+NG-M0099,5,8,yes,yes,7519,2561,yes,2244
+NG-M0269,5,8,yes,yes,7549,2531,yes,2244
+NG-M0682,3,8,yes,yes,7653,2427,yes,1560
+NG-M0922,3,8,yes,yes,7563,2517,yes,1565
+NG-M0576,2,8,yes,yes,7495,2585,yes,1312
+NG-M0766,2,8,yes,yes,7495,2585,yes,1312
+NG-M0819,5,8,yes,yes,7429,2651,yes,2258
+NG-M0444,5,8,yes,yes,7444,2636,yes,2251
+NG-M0878,4,8,yes,yes,7481,2599,yes,1888
+NG-M0397,3,8,yes,yes,7458,2622,yes,1575
+NG-M0006,2,8,yes,yes,7420,2660,yes,1316
+NG-M0282,3,8,yes,yes,7518,2562,yes,1570
+NG-M0307,3,8,yes,yes,7398,2682,yes,1580
+NG-M0305,1,8,yes,yes,7382,2698,yes,1052
+NG-M0478,4,8,yes,yes,7496,2584,yes,1888
+NG-M0596,2,8,yes,yes,7420,2660,yes,1316
+NG-M0865,1,8,yes,yes,7457,2623,yes,1049
+NG-M0809,5,8,yes,yes,7549,2531,yes,2244
+NG-M0084,5,8,yes,yes,7624,2456,yes,2230
+NG-M0268,4,8,yes,yes,7571,2509,yes,1876
+NG-M0178,4,8,yes,yes,7481,2599,yes,1888
+NG-M0909,5,8,yes,yes,7519,2561,yes,2244
+NG-M0049,5,8,yes,yes,7654,2426,yes,2230
+NG-M0085,1,8,yes,yes,7637,2443,yes,1040
+NG-M0210,1,8,yes,yes,7472,2608,yes,1049
+NG-M0968,4,8,yes,yes,7496,2584,yes,1888
+NG-M0749,5,8,yes,yes,7504,2576,yes,2244
+NG-M0867,3,8,yes,yes,7443,2637,yes,1575
+NG-M0076,2,8,yes,yes,7570,2510,yes,1304
+NG-M0127,3,8,yes,yes,7443,2637,yes,1575
+NG-M0553,4,8,yes,yes,7511,2569,yes,1882
+NG-M0783,4,8,yes,yes,7496,2584,yes,1888
+NG-M0521,2,8,yes,yes,7345,2735,yes,1320
+NG-M0910,1,8,yes,yes,7457,2623,yes,1049
+NG-M0833,4,8,yes,yes,7541,2539,yes,1882
+NG-M0574,5,8,yes,yes,7564,2516,yes,2237
+NG-M0952,3,8,yes,yes,7653,2427,yes,1560
+NG-M0811,2,8,yes,yes,7465,2615,yes,1312
+NG-M0321,2,8,yes,yes,7540,2540,yes,1308
+NG-M0216,2,8,yes,yes,7435,2645,yes,1316
+NG-M0188,4,8,yes,yes,7631,2449,yes,1870
+NG-M0705,1,8,yes,yes,7487,2593,yes,1049
+NG-M0779,5,8,yes,yes,7579,2501,yes,2237
+NG-M0914,5,8,yes,yes,7459,2621,yes,2251
+NG-M0063,4,8,yes,yes,7496,2584,yes,1888
+NG-M0924,5,8,yes,yes,7504,2576,yes,2244
+NG-M0769,5,8,yes,yes,7534,2546,yes,2244
+NG-M0856,2,8,yes,yes,7450,2630,yes,1312
+NG-M0496,2,8,yes,yes,7495,2585,yes,1312
+NG-M0558,4,8,yes,yes,7526,2554,yes,1882
+NG-M0209,5,8,yes,yes,7534,2546,yes,2244
+NG-M0947,3,8,yes,yes,7488,2592,yes,1575
+NG-M0029,5,8,yes,yes,7579,2501,yes,2237
+NG-M0061,2,8,yes,yes,7405,2675,yes,1316
+NG-M0212,3,8,yes,yes,7503,2577,yes,1570
+NG-M0083,4,8,yes,yes,7571,2509,yes,1876
+NG-M0392,3,8,yes,yes,7518,2562,yes,1570
+NG-M0770,1,8,yes,yes,7517,2563,yes,1046
+NG-M0030,1,8,yes,yes,7487,2593,yes,1049
+NG-M0113,4,8,yes,yes,7511,2569,yes,1882
+NG-M0323,4,8,yes,yes,7436,2644,yes,1894
+NG-M0106,2,8,yes,yes,7390,2690,yes,1316
+NG-M0709,5,8,yes,yes,7579,2501,yes,2237
+NG-M0880,1,8,yes,yes,7367,2713,yes,1055
+NG-M0324,5,8,yes,yes,7474,2606,yes,2251
+NG-M0656,2,8,yes,yes,7525,2555,yes,1308
+NG-M0829,5,8,yes,yes,7414,2666,yes,2258
+NG-M0447,3,8,yes,yes,7503,2577,yes,1570
+NG-M0795,1,8,yes,yes,7487,2593,yes,1049
+NG-M0969,5,8,yes,yes,7504,2576,yes,2244
+NG-M0771,2,8,yes,yes,7480,2600,yes,1312
+NG-M0205,1,8,yes,yes,7442,2638,yes,1049
+NG-M0242,3,8,yes,yes,7308,2772,yes,1590
+NG-M0929,5,8,yes,yes,7489,2591,yes,2251
+NG-M0244,5,8,yes,yes,7429,2651,yes,2258
+NG-M0767,3,8,yes,yes,7413,2667,yes,1580
+NG-M0694,5,8,yes,yes,7504,2576,yes,2244
+NG-M0012,3,8,yes,yes,7413,2667,yes,1580
+NG-M0067,3,8,yes,yes,7398,2682,yes,1580
+NG-M0667,3,8,yes,yes,7458,2622,yes,1575
+NG-M0606,2,8,yes,yes,7495,2585,yes,1312
+NG-M0192,3,8,yes,yes,7518,2562,yes,1570
+NG-M0813,4,8,yes,yes,7571,2509,yes,1876
+NG-M0634,5,8,yes,yes,7594,2486,yes,2237
+NG-M0748,4,8,yes,yes,7496,2584,yes,1888
+NG-M0056,2,8,yes,yes,7465,2615,yes,1312
+NG-M0852,3,8,yes,yes,7593,2487,yes,1565
+NG-M0635,1,8,yes,yes,7457,2623,yes,1049
+NG-M0306,2,8,yes,yes,7315,2765,yes,1324
+NG-M0354,5,8,yes,yes,7624,2456,yes,2230
+NG-M0476,2,8,yes,yes,7540,2540,yes,1308
+NG-M0124,5,8,yes,yes,7459,2621,yes,2251
+NG-M0197,3,8,yes,yes,7473,2607,yes,1575
+NG-M0714,5,8,yes,yes,7444,2636,yes,2251
+NG-M0840,1,8,yes,yes,7592,2488,yes,1043
+NG-M0256,2,8,yes,yes,7540,2540,yes,1308
+NG-M0953,4,8,yes,yes,7511,2569,yes,1882
+NG-M0386,2,8,yes,yes,7525,2555,yes,1308
+NG-M0022,3,8,yes,yes,7503,2577,yes,1570
+NG-M0013,4,8,yes,yes,7466,2614,yes,1888
+NG-M0097,3,8,yes,yes,7428,2652,yes,1580
+NG-M0134,5,8,yes,yes,7459,2621,yes,2251
+NG-M0206,2,8,yes,yes,7255,2825,yes,1328
+NG-M0136,2,8,yes,yes,7375,2705,yes,1320
+NG-M0781,2,8,yes,yes,7510,2570,yes,1308
+NG-M0065,1,8,yes,yes,7637,2443,yes,1040
+NG-M0204,5,8,yes,yes,7519,2561,yes,2244
+NG-M0700,1,8,yes,yes,7412,2668,yes,1052
+NG-M0151,2,8,yes,yes,7345,2735,yes,1320
+NG-M0445,1,8,yes,yes,7622,2458,yes,1040
+NG-M0592,3,8,yes,yes,7473,2607,yes,1575
+NG-M0168,4,8,yes,yes,7586,2494,yes,1876
+NG-M0359,5,8,yes,yes,7549,2531,yes,2244
+NG-M0672,3,8,yes,yes,7533,2547,yes,1570
+NG-M0692,3,8,yes,yes,7458,2622,yes,1575
+NG-M0858,4,8,yes,yes,7526,2554,yes,1882
+NG-M0187,3,8,yes,yes,7578,2502,yes,1565
+NG-M0630,1,8,yes,yes,7427,2653,yes,1052
+NG-M0336,2,8,yes,yes,7495,2585,yes,1312
+NG-M0081,2,8,yes,yes,7420,2660,yes,1316
+NG-M0567,3,8,yes,yes,7473,2607,yes,1575
+NG-M0507,3,8,yes,yes,7503,2577,yes,1570
+NG-M0396,2,8,yes,yes,7420,2660,yes,1316
+NG-M0832,3,8,yes,yes,7683,2397,yes,1555
+NG-M0355,1,8,yes,yes,7637,2443,yes,1040
+NG-M0905,1,8,yes,yes,7457,2623,yes,1049
+NG-M0708,4,8,yes,yes,7586,2494,yes,1876
+NG-M0491,2,8,yes,yes,7570,2510,yes,1304
+NG-M0319,5,8,yes,yes,7654,2426,yes,2230
+NG-M0046,2,8,yes,yes,7405,2675,yes,1316
+NG-M0446,2,8,yes,yes,7555,2525,yes,1308
+NG-M0546,2,8,yes,yes,7480,2600,yes,1312
+NG-M0573,4,8,yes,yes,7526,2554,yes,1882
+NG-M0425,1,8,yes,yes,7457,2623,yes,1049
+NG-M0842,3,8,yes,yes,7518,2562,yes,1570
+NG-M0313,4,8,yes,yes,7331,2749,yes,1900
+NG-M0986,2,8,yes,yes,7405,2675,yes,1316
+NG-M0848,4,8,yes,yes,7451,2629,yes,1888
+NG-M0509,5,8,yes,yes,7444,2636,yes,2251
+NG-M0686,2,8,yes,yes,7555,2525,yes,1308
+NG-M0955,1,8,yes,yes,7472,2608,yes,1049
+NG-M0333,4,8,yes,yes,7496,2584,yes,1888
+NG-M0595,1,8,yes,yes,7457,2623,yes,1049
+NG-M0057,3,8,yes,yes,7548,2532,yes,1570
+NG-M0669,5,8,yes,yes,7474,2606,yes,2251
+NG-M0141,2,8,yes,yes,7300,2780,yes,1324
+NG-M0680,1,8,yes,yes,7562,2518,yes,1043
+NG-M0318,4,8,yes,yes,7481,2599,yes,1888
+NG-M0737,3,8,yes,yes,7473,2607,yes,1575
+NG-M0966,2,8,yes,yes,7435,2645,yes,1316
+NG-M0391,2,8,yes,yes,7510,2570,yes,1308
+NG-M0036,2,8,yes,yes,7315,2765,yes,1324
+NG-M0836,2,8,yes,yes,7510,2570,yes,1308
+NG-M0565,1,8,yes,yes,7547,2533,yes,1046
+NG-M0609,5,8,yes,yes,7474,2606,yes,2251
+NG-M0462,3,8,yes,yes,7518,2562,yes,1570
+NG-M0575,1,8,yes,yes,7487,2593,yes,1049
+NG-M0437,3,8,yes,yes,7503,2577,yes,1570
+NG-M0861,2,8,yes,yes,7570,2510,yes,1304
+NG-M0157,3,8,yes,yes,7473,2607,yes,1575
+NG-M0252,3,8,yes,yes,7443,2637,yes,1575
+NG-M0590,1,8,yes,yes,7517,2563,yes,1046
+NG-M0066,2,8,yes,yes,7495,2585,yes,1312
+NG-M0142,3,8,yes,yes,7398,2682,yes,1580
+NG-M0751,2,8,yes,yes,7600,2480,yes,1304
+NG-M0264,5,8,yes,yes,7699,2381,yes,2223
+NG-M0423,4,8,yes,yes,7361,2719,yes,1900
+NG-M0526,2,8,yes,yes,7540,2540,yes,1308
+NG-M0587,3,8,yes,yes,7503,2577,yes,1570
+NG-M0679,5,8,yes,yes,7564,2516,yes,2237
+NG-M0450,1,8,yes,yes,7322,2758,yes,1055
+NG-M0123,4,8,yes,yes,7496,2584,yes,1888
+NG-M0593,4,8,yes,yes,7601,2479,yes,1876
+NG-M0681,2,8,yes,yes,7615,2465,yes,1304
+NG-M0042,3,8,yes,yes,7518,2562,yes,1570
+NG-M0110,1,8,yes,yes,7427,2653,yes,1052
+NG-M0755,1,8,yes,yes,7457,2623,yes,1049
+NG-M0823,4,8,yes,yes,7511,2569,yes,1882
+NG-M0923,4,8,yes,yes,7526,2554,yes,1882
+NG-M0128,4,8,yes,yes,7496,2584,yes,1888
+NG-M0190,1,8,yes,yes,7442,2638,yes,1049
+NG-M0662,3,8,yes,yes,7518,2562,yes,1570
+NG-M0671,2,8,yes,yes,7615,2465,yes,1304
+NG-M0484,5,8,yes,yes,7609,2471,yes,2237
+NG-M0103,4,8,yes,yes,7526,2554,yes,1882
+NG-M0605,1,8,yes,yes,7637,2443,yes,1040
+NG-M0556,2,8,yes,yes,7585,2495,yes,1304
+NG-M0077,3,8,yes,yes,7503,2577,yes,1570
+NG-M0164,5,8,yes,yes,7609,2471,yes,2237
+NG-M0283,4,8,yes,yes,7511,2569,yes,1882
+NG-M0281,2,8,yes,yes,7525,2555,yes,1308
+NG-M0203,4,8,yes,yes,7481,2599,yes,1888
+NG-M0315,1,8,yes,yes,7442,2638,yes,1049
+NG-M0886,2,8,yes,yes,7540,2540,yes,1308
+NG-M0349,5,8,yes,yes,7564,2516,yes,2237
+NG-M0938,4,8,yes,yes,7496,2584,yes,1888
+NG-M0990,1,8,yes,yes,7487,2593,yes,1049
+NG-M0173,4,8,yes,yes,7601,2479,yes,1876
+NG-M0184,5,8,yes,yes,7564,2516,yes,2237
+NG-M0776,2,8,yes,yes,7495,2585,yes,1312
+NG-M0997,3,8,yes,yes,7443,2637,yes,1575
+NG-M0243,4,8,yes,yes,7571,2509,yes,1876
+NG-M0171,2,8,yes,yes,7405,2675,yes,1316
+NG-M0186,2,8,yes,yes,7495,2585,yes,1312
+NG-M0236,2,8,yes,yes,7495,2585,yes,1312
+NG-M0580,1,8,yes,yes,7457,2623,yes,1049
+NG-M0543,4,8,yes,yes,7571,2509,yes,1876
+NG-M0925,1,8,yes,yes,7592,2488,yes,1043
+NG-M0400,1,8,yes,yes,7427,2653,yes,1052
+NG-M0774,5,8,yes,yes,7519,2561,yes,2244
+NG-M0266,2,8,yes,yes,7480,2600,yes,1312
+NG-M0873,4,8,yes,yes,7481,2599,yes,1888
+NG-M0582,3,8,yes,yes,7593,2487,yes,1565
+NG-M0651,2,8,yes,yes,7540,2540,yes,1308
+NG-M0435,1,8,yes,yes,7487,2593,yes,1049
+NG-M0871,2,8,yes,yes,7645,2435,yes,1300
+NG-M0265,1,8,yes,yes,7532,2548,yes,1046
+NG-M0859,5,8,yes,yes,7504,2576,yes,2244
+NG-M0598,4,8,yes,yes,7481,2599,yes,1888
+NG-M0162,3,8,yes,yes,7623,2457,yes,1560
+NG-M0857,3,8,yes,yes,7503,2577,yes,1570
+NG-M0862,3,8,yes,yes,7473,2607,yes,1575
+NG-M0973,4,8,yes,yes,7421,2659,yes,1894
+NG-M0290,1,8,yes,yes,7607,2473,yes,1043
+NG-M0027,3,8,yes,yes,7368,2712,yes,1585
+NG-M0129,5,8,yes,yes,7609,2471,yes,2237
+NG-M0810,1,8,yes,yes,7367,2713,yes,1055
+NG-M0524,5,8,yes,yes,7654,2426,yes,2230
+NG-M0646,2,8,yes,yes,7555,2525,yes,1308
+NG-M0564,5,8,yes,yes,7504,2576,yes,2244
+NG-M0377,3,8,yes,yes,7473,2607,yes,1575
+NG-M0407,3,8,yes,yes,7548,2532,yes,1570
+NG-M0426,2,8,yes,yes,7555,2525,yes,1308
+NG-M0492,3,8,yes,yes,7608,2472,yes,1565
+NG-M0376,2,8,yes,yes,7555,2525,yes,1308
+NG-M0101,2,8,yes,yes,7465,2615,yes,1312
+NG-M0569,5,8,yes,yes,7534,2546,yes,2244
+NG-M0638,4,8,yes,yes,7556,2524,yes,1882
+NG-M0071,2,8,yes,yes,7315,2765,yes,1324
+NG-M0607,3,8,yes,yes,7398,2682,yes,1580
+NG-M0014,5,8,yes,yes,7339,2741,yes,2265
+NG-M0800,1,8,yes,yes,7322,2758,yes,1055
+NG-M0780,1,8,yes,yes,7547,2533,yes,1046
+NG-M0863,4,8,yes,yes,7601,2479,yes,1876
+NG-M0473,4,8,yes,yes,7511,2569,yes,1882
+NG-M0501,2,8,yes,yes,7480,2600,yes,1312
+NG-M0308,4,8,yes,yes,7541,2539,yes,1882
+NG-M0830,1,8,yes,yes,7607,2473,yes,1043
+NG-M0976,2,8,yes,yes,7570,2510,yes,1304
+NG-M0897,3,8,yes,yes,7488,2592,yes,1575
+NG-M0822,3,8,yes,yes,7518,2562,yes,1570
+NG-M0298,4,8,yes,yes,7391,2689,yes,1894
+NG-M0984,5,8,yes,yes,7579,2501,yes,2237
+NG-M0469,5,8,yes,yes,7519,2561,yes,2244
+NG-M0545,1,8,yes,yes,7532,2548,yes,1046
+NG-M0431,2,8,yes,yes,7300,2780,yes,1324
+NG-M0629,5,8,yes,yes,7549,2531,yes,2244
+NG-M0017,3,8,yes,yes,7383,2697,yes,1580
+NG-M0120,1,8,yes,yes,7472,2608,yes,1049
+NG-M0189,5,8,yes,yes,7609,2471,yes,2237
+NG-M0735,1,8,yes,yes,7412,2668,yes,1052
+NG-M0736,2,8,yes,yes,7600,2480,yes,1304
+NG-M0316,2,8,yes,yes,7405,2675,yes,1316
+NG-M0149,5,8,yes,yes,7534,2546,yes,2244
+NG-M0259,5,8,yes,yes,7579,2501,yes,2237
+NG-M0048,4,8,yes,yes,7481,2599,yes,1888
+NG-M0549,5,8,yes,yes,7429,2651,yes,2258
+NG-M0738,4,8,yes,yes,7376,2704,yes,1900
+NG-M0623,4,8,yes,yes,7571,2509,yes,1876
+NG-M0778,4,8,yes,yes,7451,2629,yes,1888
+NG-M0939,5,8,yes,yes,7474,2606,yes,2251
+NG-M0275,1,8,yes,yes,7532,2548,yes,1046
+NG-M0229,5,8,yes,yes,7534,2546,yes,2244
+NG-M0689,5,8,yes,yes,7489,2591,yes,2251
+NG-M0231,2,8,yes,yes,7480,2600,yes,1312
+NG-M0388,4,8,yes,yes,7631,2449,yes,1870
+NG-M0782,3,8,yes,yes,7653,2427,yes,1560
+NG-M0284,5,8,yes,yes,7534,2546,yes,2244
+NG-M0633,4,8,yes,yes,7481,2599,yes,1888
+NG-M0950,1,8,yes,yes,7562,2518,yes,1043
+NG-M0152,3,8,yes,yes,7368,2712,yes,1585
+NG-M0699,5,8,yes,yes,7504,2576,yes,2244
+NG-M0740,1,8,yes,yes,7562,2518,yes,1043
+NG-M0002,3,8,yes,yes,7368,2712,yes,1585
+NG-M0367,3,8,yes,yes,7428,2652,yes,1580
+NG-M0934,5,8,yes,yes,7639,2441,yes,2230
+NG-M0010,1,8,yes,yes,7457,2623,yes,1049
+NG-M0757,3,8,yes,yes,7398,2682,yes,1580
+NG-M0038,4,8,yes,yes,7541,2539,yes,1882
+NG-M0161,2,8,yes,yes,7300,2780,yes,1324
+NG-M0348,4,8,yes,yes,7496,2584,yes,1888
+NG-M0843,4,8,yes,yes,7526,2554,yes,1882
+NG-M0695,1,8,yes,yes,7487,2593,yes,1049
+NG-M0963,4,8,yes,yes,7541,2539,yes,1882
+NG-M0485,1,8,yes,yes,7457,2623,yes,1049
+NG-M0193,4,8,yes,yes,7571,2509,yes,1876
+NG-M0331,2,8,yes,yes,7405,2675,yes,1316
+NG-M0583,4,8,yes,yes,7586,2494,yes,1876
+NG-M0625,1,8,yes,yes,7637,2443,yes,1040
+NG-M0768,4,8,yes,yes,7406,2674,yes,1894
+NG-M0261,2,8,yes,yes,7360,2720,yes,1320
+NG-M0685,1,8,yes,yes,7472,2608,yes,1049
+NG-M0964,5,8,yes,yes,7504,2576,yes,2244
+NG-M0957,3,8,yes,yes,7458,2622,yes,1575
+NG-M0364,5,8,yes,yes,7594,2486,yes,2237
+NG-M0954,5,8,yes,yes,7519,2561,yes,2244
+NG-M0100,1,8,yes,yes,7427,2653,yes,1052
+NG-M0993,4,8,yes,yes,7571,2509,yes,1876
+NG-M0693,4,8,yes,yes,7541,2539,yes,1882
+NG-M0455,1,8,yes,yes,7397,2683,yes,1052
+NG-M0153,4,8,yes,yes,7361,2719,yes,1900
+NG-M0239,5,8,yes,yes,7444,2636,yes,2251
+NG-M0763,4,8,yes,yes,7541,2539,yes,1882
+NG-M0874,5,8,yes,yes,7534,2546,yes,2244
+NG-M0935,1,8,yes,yes,7562,2518,yes,1043
+NG-M0944,5,8,yes,yes,7624,2456,yes,2230
+NG-M0054,5,8,yes,yes,7474,2606,yes,2251
+NG-M0434,5,8,yes,yes,7609,2471,yes,2237
+NG-M0794,5,8,yes,yes,7504,2576,yes,2244
+NG-M0023,4,8,yes,yes,7421,2659,yes,1894
+NG-M0369,5,8,yes,yes,7519,2561,yes,2244
+NG-M0405,1,8,yes,yes,7502,2578,yes,1046
+NG-M0530,1,8,yes,yes,7322,2758,yes,1055
+NG-M0998,4,8,yes,yes,7361,2719,yes,1900
+NG-M0557,3,8,yes,yes,7578,2502,yes,1565
+NG-M0351,2,8,yes,yes,7420,2660,yes,1316
+NG-M0675,1,8,yes,yes,7457,2623,yes,1049
+NG-M0618,4,8,yes,yes,7496,2584,yes,1888
+NG-M0174,5,8,yes,yes,7444,2636,yes,2251
+NG-M0438,4,8,yes,yes,7586,2494,yes,1876
+NG-M0459,5,8,yes,yes,7609,2471,yes,2237
+NG-M0799,5,8,yes,yes,7489,2591,yes,2251
+NG-M0477,3,8,yes,yes,7548,2532,yes,1570
+NG-M0775,1,8,yes,yes,7472,2608,yes,1049
+NG-M0045,1,8,yes,yes,7442,2638,yes,1049
+NG-M0493,4,8,yes,yes,7541,2539,yes,1882
+NG-M0368,4,8,yes,yes,7556,2524,yes,1882
+NG-M0631,2,8,yes,yes,7390,2690,yes,1316
+NG-M0584,5,8,yes,yes,7579,2501,yes,2237
+NG-M0640,1,8,yes,yes,7457,2623,yes,1049
+NG-M0818,4,8,yes,yes,7541,2539,yes,1882
+NG-M0154,5,8,yes,yes,7489,2591,yes,2251
+NG-M0649,5,8,yes,yes,7444,2636,yes,2251
+NG-M0137,3,8,yes,yes,7548,2532,yes,1570
+NG-M0357,3,8,yes,yes,7533,2547,yes,1570
+NG-M0513,4,8,yes,yes,7571,2509,yes,1876
+NG-M0483,4,8,yes,yes,7481,2599,yes,1888
+NG-M0361,2,8,yes,yes,7390,2690,yes,1316
+NG-M0777,3,8,yes,yes,7488,2592,yes,1575
+NG-M0701,2,8,yes,yes,7300,2780,yes,1324
+NG-M0991,2,8,yes,yes,7480,2600,yes,1312
+NG-M0039,5,8,yes,yes,7579,2501,yes,2237
+NG-M0489,5,8,yes,yes,7489,2591,yes,2251
+NG-M0202,3,8,yes,yes,7383,2697,yes,1580
+NG-M0589,5,8,yes,yes,7504,2576,yes,2244
+NG-M0353,4,8,yes,yes,7571,2509,yes,1876
+NG-M0798,4,8,yes,yes,7481,2599,yes,1888
+NG-M0894,5,8,yes,yes,7534,2546,yes,2244
+NG-M0115,1,8,yes,yes,7277,2803,yes,1058
+NG-M0176,2,8,yes,yes,7555,2525,yes,1308
+NG-M0917,3,8,yes,yes,7473,2607,yes,1575
+NG-M0721,2,8,yes,yes,7435,2645,yes,1316
+NG-M0051,2,8,yes,yes,7540,2540,yes,1308
+NG-M0211,2,8,yes,yes,7495,2585,yes,1312
+NG-M0516,2,8,yes,yes,7465,2615,yes,1312
+NG-M0744,5,8,yes,yes,7534,2546,yes,2244
+NG-M0037,3,8,yes,yes,7398,2682,yes,1580
+NG-M0213,4,8,yes,yes,7271,2809,yes,1906
+NG-M0626,2,8,yes,yes,7540,2540,yes,1308
+NG-M0033,4,8,yes,yes,7421,2659,yes,1894
+NG-M0433,4,8,yes,yes,7451,2629,yes,1888
+NG-M0912,3,8,yes,yes,7563,2517,yes,1565
+NG-M0439,5,8,yes,yes,7579,2501,yes,2237
+NG-M0352,3,8,yes,yes,7443,2637,yes,1575
+NG-M0533,4,8,yes,yes,7511,2569,yes,1882
+NG-M0287,3,8,yes,yes,7578,2502,yes,1565
+NG-M0791,2,8,yes,yes,7495,2585,yes,1312
+NG-M0008,4,8,yes,yes,7481,2599,yes,1888
+NG-M0904,5,8,yes,yes,7594,2486,yes,2237
+NG-M0118,4,8,yes,yes,7406,2674,yes,1894
+NG-M0933,4,8,yes,yes,7511,2569,yes,1882
+NG-M0995,1,8,yes,yes,7502,2578,yes,1046
+NG-M0448,4,8,yes,yes,7481,2599,yes,1888
+NG-M0844,5,8,yes,yes,7564,2516,yes,2237
+NG-M0726,2,8,yes,yes,7495,2585,yes,1312
+NG-M0745,1,8,yes,yes,7487,2593,yes,1049
+NG-M0974,5,8,yes,yes,7444,2636,yes,2251
+NG-M0341,2,8,yes,yes,7315,2765,yes,1324
+NG-M0279,5,8,yes,yes,7429,2651,yes,2258
+NG-M0402,3,8,yes,yes,7473,2607,yes,1575
+NG-M0413,4,8,yes,yes,7376,2704,yes,1900
+NG-M0808,4,8,yes,yes,7571,2509,yes,1876
+NG-M0230,1,8,yes,yes,7427,2653,yes,1052
+NG-M0729,5,8,yes,yes,7609,2471,yes,2237
+NG-M0098,4,8,yes,yes,7556,2524,yes,1882
+NG-M0214,5,8,yes,yes,7324,2756,yes,2265
+NG-M0225,1,8,yes,yes,7427,2653,yes,1052
+NG-M0684,5,8,yes,yes,7519,2561,yes,2244
+NG-M0718,4,8,yes,yes,7481,2599,yes,1888
+NG-M0806,2,8,yes,yes,7480,2600,yes,1312
+NG-M0451,2,8,yes,yes,7435,2645,yes,1316
+NG-M0170,1,8,yes,yes,7337,2743,yes,1055
+NG-M0059,5,8,yes,yes,7609,2471,yes,2237
+NG-M0412,3,8,yes,yes,7398,2682,yes,1580
+NG-M0375,1,8,yes,yes,7502,2578,yes,1046
+NG-M0191,2,8,yes,yes,7390,2690,yes,1316
+NG-M0091,2,8,yes,yes,7390,2690,yes,1316
+NG-M0411,2,8,yes,yes,7300,2780,yes,1324
+NG-M0430,1,8,yes,yes,7397,2683,yes,1052
+NG-M0467,3,8,yes,yes,7473,2607,yes,1575
+NG-M0566,2,8,yes,yes,7510,2570,yes,1308
+NG-M0661,2,8,yes,yes,7510,2570,yes,1308
+NG-M0280,1,8,yes,yes,7412,2668,yes,1052
+NG-M0627,3,8,yes,yes,7533,2547,yes,1570
+NG-M0697,3,8,yes,yes,7488,2592,yes,1575
+NG-M0741,2,8,yes,yes,7540,2540,yes,1308
+NG-M0765,1,8,yes,yes,7517,2563,yes,1046
+NG-M0246,2,8,yes,yes,7465,2615,yes,1312
+NG-M0614,5,8,yes,yes,7489,2591,yes,2251
+NG-M0143,4,8,yes,yes,7376,2704,yes,1900
+NG-M0594,5,8,yes,yes,7504,2576,yes,2244
+NG-M0072,3,8,yes,yes,7428,2652,yes,1580
+NG-M0295,1,8,yes,yes,7547,2533,yes,1046
+NG-M0531,2,8,yes,yes,7360,2720,yes,1320
+NG-M0436,2,8,yes,yes,7540,2540,yes,1308
+NG-M0895,1,8,yes,yes,7502,2578,yes,1046
+NG-M0930,1,8,yes,yes,7562,2518,yes,1043
+NG-M0617,3,8,yes,yes,7503,2577,yes,1570
+NG-M0140,1,8,yes,yes,7532,2548,yes,1046
+NG-M0001,2,8,yes,yes,7525,2555,yes,1308
+NG-M0139,5,8,yes,yes,7489,2591,yes,2251
+NG-M0250,1,8,yes,yes,7397,2683,yes,1052
+NG-M0602,3,8,yes,yes,7383,2697,yes,1580
+NG-M0650,1,8,yes,yes,7532,2548,yes,1046
+NG-M0172,3,8,yes,yes,7383,2697,yes,1580
+NG-M0847,3,8,yes,yes,7533,2547,yes,1570
+NG-M0936,2,8,yes,yes,7420,2660,yes,1316
+NG-M0047,3,8,yes,yes,7503,2577,yes,1570
+NG-M0452,3,8,yes,yes,7593,2487,yes,1565
+NG-M0522,3,8,yes,yes,7443,2637,yes,1575
+NG-M0688,4,8,yes,yes,7481,2599,yes,1888
+NG-M0090,1,8,yes,yes,7427,2653,yes,1052
+NG-M0510,1,8,yes,yes,7397,2683,yes,1052
+NG-M0712,3,8,yes,yes,7383,2697,yes,1580
+NG-M0940,1,8,yes,yes,7562,2518,yes,1043
+NG-M0461,2,8,yes,yes,7390,2690,yes,1316
+NG-M0632,3,8,yes,yes,7578,2502,yes,1565
+NG-M0839,5,8,yes,yes,7534,2546,yes,2244
+NG-M0579,5,8,yes,yes,7474,2606,yes,2251
+NG-M0325,1,8,yes,yes,7427,2653,yes,1052
+NG-M0112,3,8,yes,yes,7338,2742,yes,1585
+NG-M0454,5,8,yes,yes,7564,2516,yes,2237
+NG-M0409,5,8,yes,yes,7489,2591,yes,2251
+NG-M0070,1,8,yes,yes,7442,2638,yes,1049
+NG-M0087,3,8,yes,yes,7533,2547,yes,1570
+NG-M0245,1,8,yes,yes,7472,2608,yes,1049
+NG-M0851,2,8,yes,yes,7555,2525,yes,1308
+NG-M0983,4,8,yes,yes,7451,2629,yes,1888
+NG-M0921,2,8,yes,yes,7540,2540,yes,1308
+NG-M0116,2,8,yes,yes,7270,2810,yes,1324
+NG-M0710,1,8,yes,yes,7337,2743,yes,1055
+NG-M0102,3,8,yes,yes,7458,2622,yes,1575
+NG-M0322,3,8,yes,yes,7383,2697,yes,1580
+NG-M0406,2,8,yes,yes,7375,2705,yes,1320
+NG-M0506,2,8,yes,yes,7495,2585,yes,1312
+NG-M0329,5,8,yes,yes,7609,2471,yes,2237
+NG-M0453,4,8,yes,yes,7646,2434,yes,1870
+NG-M0971,2,8,yes,yes,7585,2495,yes,1304
+NG-M0488,4,8,yes,yes,7496,2584,yes,1888
+NG-M0956,2,8,yes,yes,7555,2525,yes,1308
+NG-M0658,4,8,yes,yes,7631,2449,yes,1870
+NG-M0816,2,8,yes,yes,7480,2600,yes,1312
+NG-M0457,3,8,yes,yes,7578,2502,yes,1565
+NG-M0900,1,8,yes,yes,7442,2638,yes,1049
+NG-M0062,3,8,yes,yes,7383,2697,yes,1580
+NG-M0424,5,8,yes,yes,7489,2591,yes,2251
+NG-M0561,2,8,yes,yes,7540,2540,yes,1308
+NG-M0326,2,8,yes,yes,7465,2615,yes,1312
+NG-M0835,1,8,yes,yes,7547,2533,yes,1046
+NG-M0610,1,8,yes,yes,7442,2638,yes,1049
+NG-M0410,1,8,yes,yes,7532,2548,yes,1046
+NG-M0340,1,8,yes,yes,7442,2638,yes,1049
+NG-M0621,2,8,yes,yes,7420,2660,yes,1316
+NG-M0260,1,8,yes,yes,7322,2758,yes,1055
+NG-M0831,2,8,yes,yes,7540,2540,yes,1308
+NG-M0468,4,8,yes,yes,7376,2704,yes,1900
+NG-M0604,5,8,yes,yes,7444,2636,yes,2251
+NG-M0796,2,8,yes,yes,7495,2585,yes,1312
+NG-M0297,3,8,yes,yes,7473,2607,yes,1575
+NG-M0739,5,8,yes,yes,7519,2561,yes,2244
+NG-M0494,5,8,yes,yes,7519,2561,yes,2244
+NG-M0414,5,8,yes,yes,7384,2696,yes,2258
+NG-M0032,3,8,yes,yes,7593,2487,yes,1565
+NG-M0088,4,8,yes,yes,7481,2599,yes,1888
+NG-M0764,5,8,yes,yes,7519,2561,yes,2244
+NG-M0801,2,8,yes,yes,7360,2720,yes,1320
+NG-M0381,2,8,yes,yes,7540,2540,yes,1308
+NG-M0310,1,8,yes,yes,7472,2608,yes,1049
+NG-M0529,5,8,yes,yes,7579,2501,yes,2237
+NG-M0821,2,8,yes,yes,7525,2555,yes,1308
+NG-M0872,3,8,yes,yes,7563,2517,yes,1565
+NG-M0240,1,8,yes,yes,7397,2683,yes,1052
+NG-M0011,2,8,yes,yes,7495,2585,yes,1312
+NG-M0869,5,8,yes,yes,7624,2456,yes,2230
+NG-M0855,1,8,yes,yes,7367,2713,yes,1055
+NG-M0025,1,8,yes,yes,7352,2728,yes,1055
+NG-M0827,3,8,yes,yes,7578,2502,yes,1565
+NG-M0902,3,8,yes,yes,7578,2502,yes,1565
+NG-M0408,4,8,yes,yes,7586,2494,yes,1876
+NG-M0207,3,8,yes,yes,7383,2697,yes,1580
+NG-M0075,1,8,yes,yes,7637,2443,yes,1040
+NG-M1000,1,8,yes,yes,7427,2653,yes,1052
+NG-M0328,4,8,yes,yes,7616,2464,yes,1876
+NG-M0608,4,8,yes,yes,7451,2629,yes,1888
+NG-M0449,5,8,yes,yes,7549,2531,yes,2244
+NG-M0470,1,8,yes,yes,7562,2518,yes,1043
+NG-M0901,2,8,yes,yes,7390,2690,yes,1316
+NG-M0639,5,8,yes,yes,7519,2561,yes,2244
+NG-M0918,4,8,yes,yes,7481,2599,yes,1888
+NG-M0537,3,8,yes,yes,7548,2532,yes,1570
+NG-M0730,1,8,yes,yes,7442,2638,yes,1049
+NG-M0713,4,8,yes,yes,7601,2479,yes,1876
+NG-M0199,5,8,yes,yes,7519,2561,yes,2244
+NG-M0095,1,8,yes,yes,7457,2623,yes,1049
+NG-M0866,2,8,yes,yes,7420,2660,yes,1316
+NG-M0891,2,8,yes,yes,7510,2570,yes,1308
+NG-M0919,5,8,yes,yes,7444,2636,yes,2251
+NG-M0185,1,8,yes,yes,7397,2683,yes,1052
+NG-M0482,3,8,yes,yes,7443,2637,yes,1575
+NG-M0802,3,8,yes,yes,7563,2517,yes,1565
+NG-M0342,3,8,yes,yes,7428,2652,yes,1580
+NG-M0552,3,8,yes,yes,7518,2562,yes,1570
+NG-M0399,5,8,yes,yes,7474,2606,yes,2251
+NG-M0732,3,8,yes,yes,7518,2562,yes,1570
+NG-M0787,3,8,yes,yes,7548,2532,yes,1570
+NG-M0179,5,8,yes,yes,7549,2531,yes,2244
+NG-M0060,1,8,yes,yes,7442,2638,yes,1049
+NG-M0890,1,8,yes,yes,7517,2563,yes,1046
+NG-M0532,3,8,yes,yes,7563,2517,yes,1565
+NG-M0041,2,8,yes,yes,7450,2630,yes,1312
+NG-M0877,3,8,yes,yes,7518,2562,yes,1570
+NG-M0166,2,8,yes,yes,7540,2540,yes,1308
+NG-M0221,2,8,yes,yes,7510,2570,yes,1308
+NG-M0026,2,8,yes,yes,7450,2630,yes,1312
+NG-M0288,4,8,yes,yes,7526,2554,yes,1882
+NG-M0347,3,8,yes,yes,7503,2577,yes,1570
+NG-M0380,1,8,yes,yes,7532,2548,yes,1046
+NG-M0541,2,8,yes,yes,7465,2615,yes,1312
+NG-M0550,1,8,yes,yes,7412,2668,yes,1052
+NG-M0881,2,8,yes,yes,7450,2630,yes,1312
+NG-M0255,1,8,yes,yes,7562,2518,yes,1043
+NG-M0299,5,8,yes,yes,7534,2546,yes,2244
+NG-M0363,4,8,yes,yes,7481,2599,yes,1888
+NG-M0463,4,8,yes,yes,7571,2509,yes,1876
+NG-M0980,1,8,yes,yes,7442,2638,yes,1049
+NG-M0389,5,8,yes,yes,7489,2591,yes,2251
+NG-M0163,4,8,yes,yes,7451,2629,yes,1888
+NG-M0497,3,8,yes,yes,7413,2667,yes,1580
+NG-M0620,1,8,yes,yes,7352,2728,yes,1055
+NG-M0711,2,8,yes,yes,7405,2675,yes,1316
+NG-M0868,4,8,yes,yes,7481,2599,yes,1888
+NG-M0148,4,8,yes,yes,7466,2614,yes,1888
+NG-M0926,2,8,yes,yes,7525,2555,yes,1308
+NG-M0704,5,8,yes,yes,7609,2471,yes,2237
+NG-M0291,2,8,yes,yes,7540,2540,yes,1308
+NG-M0670,1,8,yes,yes,7562,2518,yes,1043
+NG-M0208,4,8,yes,yes,7511,2569,yes,1882
+NG-M0647,3,8,yes,yes,7473,2607,yes,1575
+NG-M0330,1,8,yes,yes,7442,2638,yes,1049
+NG-M0150,1,8,yes,yes,7412,2668,yes,1052
+NG-M0642,3,8,yes,yes,7563,2517,yes,1565
+NG-M0343,4,8,yes,yes,7526,2554,yes,1882
+NG-M0911,2,8,yes,yes,7555,2525,yes,1308
+NG-M0007,3,8,yes,yes,7413,2667,yes,1580
+NG-M0982,3,8,yes,yes,7518,2562,yes,1570
+NG-M0511,2,8,yes,yes,7375,2705,yes,1320
+NG-M0838,4,8,yes,yes,7391,2689,yes,1894
+NG-M0460,1,8,yes,yes,7442,2638,yes,1049
+NG-M0415,1,8,yes,yes,7442,2638,yes,1049
+NG-M0346,2,8,yes,yes,7570,2510,yes,1304
+NG-M0481,2,8,yes,yes,7600,2480,yes,1304
+NG-M0577,3,8,yes,yes,7533,2547,yes,1570
+NG-M0130,1,8,yes,yes,7502,2578,yes,1046
+NG-M0144,5,8,yes,yes,7384,2696,yes,2258
+NG-M0753,4,8,yes,yes,7481,2599,yes,1888
+NG-M0064,5,8,yes,yes,7444,2636,yes,2251
+NG-M0849,5,8,yes,yes,7474,2606,yes,2251
+NG-M0487,3,8,yes,yes,7398,2682,yes,1580
+NG-M0665,1,8,yes,yes,7562,2518,yes,1043
+NG-M0899,5,8,yes,yes,7399,2681,yes,2258
+NG-M0093,4,8,yes,yes,7481,2599,yes,1888
+NG-M0962,3,8,yes,yes,7458,2622,yes,1575
+NG-M0676,2,8,yes,yes,7465,2615,yes,1312
+NG-M0690,1,8,yes,yes,7442,2638,yes,1049
+NG-M0949,5,8,yes,yes,7564,2516,yes,2237
+NG-M0536,2,8,yes,yes,7480,2600,yes,1312
+NG-M0544,5,8,yes,yes,7579,2501,yes,2237
+NG-M0885,1,8,yes,yes,7502,2578,yes,1046
+NG-M0109,5,8,yes,yes,7534,2546,yes,2244
+NG-M0043,4,8,yes,yes,7331,2749,yes,1900
+NG-M0429,5,8,yes,yes,7519,2561,yes,2244
+NG-M0659,5,8,yes,yes,7489,2591,yes,2251
+NG-M0201,2,8,yes,yes,7420,2660,yes,1316
+NG-M0615,1,8,yes,yes,7637,2443,yes,1040
+NG-M0906,2,8,yes,yes,7465,2615,yes,1312
+NG-M0421,2,8,yes,yes,7345,2735,yes,1320
+NG-M0937,3,8,yes,yes,7458,2622,yes,1575
+NG-M0053,4,8,yes,yes,7436,2644,yes,1894
+NG-M0058,4,8,yes,yes,7616,2464,yes,1876
+NG-M0182,3,8,yes,yes,7593,2487,yes,1565
+NG-M0512,3,8,yes,yes,7308,2772,yes,1590
+NG-M0111,2,8,yes,yes,7330,2750,yes,1320
+NG-M0403,4,8,yes,yes,7391,2689,yes,1894
+NG-M0793,4,8,yes,yes,7556,2524,yes,1882
+NG-M0624,5,8,yes,yes,7624,2456,yes,2230
+NG-M0892,3,8,yes,yes,7443,2637,yes,1575
+NG-M0374,5,8,yes,yes,7459,2621,yes,2251
+NG-M0498,4,8,yes,yes,7406,2674,yes,1894
+NG-M0677,3,8,yes,yes,7488,2592,yes,1575
+NG-M0992,3,8,yes,yes,7488,2592,yes,1575
+NG-M0486,2,8,yes,yes,7435,2645,yes,1316
+NG-M0724,5,8,yes,yes,7564,2516,yes,2237
+NG-M0786,2,8,yes,yes,7405,2675,yes,1316
+NG-M0360,1,8,yes,yes,7427,2653,yes,1052
+NG-M0660,1,8,yes,yes,7562,2518,yes,1043
+NG-M0398,4,8,yes,yes,7496,2584,yes,1888
+NG-M0860,1,8,yes,yes,7517,2563,yes,1046
+NG-M0999,5,8,yes,yes,7459,2621,yes,2251
+NG-M0554,5,8,yes,yes,7534,2546,yes,2244
+NG-M0145,1,8,yes,yes,7442,2638,yes,1049
+NG-M0542,3,8,yes,yes,7503,2577,yes,1570
+NG-M0535,1,8,yes,yes,7532,2548,yes,1046
+NG-M0785,1,8,yes,yes,7547,2533,yes,1046
+NG-M0009,5,8,yes,yes,7489,2591,yes,2251
+NG-M0967,3,8,yes,yes,7488,2592,yes,1575
+NG-M0223,4,8,yes,yes,7436,2644,yes,1894
+NG-M0591,2,8,yes,yes,7570,2510,yes,1304
+NG-M0846,2,8,yes,yes,7495,2585,yes,1312
+NG-M0156,2,8,yes,yes,7555,2525,yes,1308
+NG-M0958,4,8,yes,yes,7481,2599,yes,1888
+NG-M0854,5,8,yes,yes,7579,2501,yes,2237
+NG-M0691,2,8,yes,yes,7540,2540,yes,1308
+NG-M0122,3,8,yes,yes,7443,2637,yes,1575
+NG-M0970,1,8,yes,yes,7532,2548,yes,1046
+NG-M0959,5,8,yes,yes,7489,2591,yes,2251

@@ -1,10 +1,12 @@
 use naijachase_content::{Catalogue, validate_repository};
 use naijachase_contracts::{Command, GameState};
 use naijachase_core::apply;
+use naijachase_storage::MysqlStore;
 use std::{
     collections::{BTreeMap, BTreeSet},
     env, fs,
     path::{Path, PathBuf},
+    time::{SystemTime, UNIX_EPOCH},
 };
 fn root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("../../..")
@@ -72,20 +74,36 @@ fn simulate(root: &Path, out: &Path) {
             career_points: 0,
             dossier: BTreeMap::new(),
             observations: BTreeMap::new(),
+            visited_venues: vec![],
+            warrant_suspect: None,
+            hideout_venue: "market".into(),
             replay: vec![],
             outcome: None,
         };
-        for (k, v) in p.traits() {
-            s = apply(
-                s,
-                Command::VisitVenue {
-                    trait_name: k.into(),
-                    trait_value: v.into(),
-                    minutes: 45,
-                },
-            )
-            .unwrap()
-            .0;
+        let traits = p.traits();
+        for stage in 0..route.len() {
+            let (k, v) = traits[stage];
+            for witness in 0..3 {
+                s = apply(
+                    s,
+                    Command::VisitVenue {
+                        venue_id: format!("venue-{stage}-{witness}"),
+                        trait_name: if witness == 0 {
+                            k.into()
+                        } else {
+                            String::new()
+                        },
+                        trait_value: if witness == 0 {
+                            v.into()
+                        } else {
+                            String::new()
+                        },
+                        minutes: 250,
+                    },
+                )
+                .unwrap()
+                .0;
+            }
             s = apply(
                 s,
                 Command::RecordTrait {
@@ -95,22 +113,19 @@ fn simulate(root: &Path, out: &Path) {
             )
             .unwrap()
             .0;
-        }
-        for destination in &route[1..] {
-            let minutes = if destination == &s.state {
-                90
-            } else {
-                data.travel[&(s.state.clone(), destination.clone())].travel_minutes
-            };
-            s = apply(
-                s,
-                Command::Travel {
-                    destination: destination.clone(),
-                    minutes,
-                },
-            )
-            .unwrap()
-            .0;
+            if stage + 1 < route.len() {
+                let destination = &route[stage + 1];
+                let minutes = data.travel[&(s.state.clone(), destination.clone())].travel_minutes;
+                s = apply(
+                    s,
+                    Command::Travel {
+                        destination: destination.clone(),
+                        minutes,
+                    },
+                )
+                .unwrap()
+                .0;
+            }
         }
         s = apply(
             s,
@@ -120,11 +135,11 @@ fn simulate(root: &Path, out: &Path) {
         )
         .unwrap()
         .0;
-        let before = s.elapsed;
         let (result, events) = apply(
             s,
-            Command::Arrest {
-                suspect_id: m.thief_id.clone(),
+            Command::SearchHideout {
+                venue_id: "market".into(),
+                minutes: 45,
             },
         )
         .unwrap();
@@ -151,7 +166,6 @@ fn simulate(root: &Path, out: &Path) {
                 award,
             ])
             .unwrap();
-        let _ = before;
     }
     writer.flush().unwrap();
     println!(
@@ -202,6 +216,149 @@ fn enrichment(root: &Path) {
         println!("  {domain}: {count}");
     }
 }
+fn mysql() -> MysqlStore {
+    let store = MysqlStore::connect_from_env().unwrap_or_else(|error| {
+        eprintln!("MySQL configuration or connection error: {error}");
+        std::process::exit(2)
+    });
+    store.migrate().unwrap_or_else(|error| {
+        eprintln!("MySQL migration error: {error}");
+        std::process::exit(2)
+    });
+    store
+}
+
+fn verify_database_parity(root: &Path, store: &MysqlStore) {
+    let summary = store.verify_content(root).unwrap_or_else(|error| {
+        eprintln!("MySQL content verification failed: {error}");
+        std::process::exit(2)
+    });
+    let suffix = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .as_nanos();
+    let export_root = env::temp_dir().join(format!("naijachase-db-verify-{suffix}"));
+    store.export_content(&export_root).unwrap();
+    let canonical = Catalogue::load(root).unwrap();
+    let database = Catalogue::load(&export_root).unwrap_or_else(|error| {
+        eprintln!("Database-exported catalogue did not load: {error}");
+        std::process::exit(2)
+    });
+    assert_eq!(canonical.missions.len(), database.missions.len());
+    for (id, mission) in &canonical.missions {
+        let restored = &database.missions[id];
+        assert_eq!(
+            canonical.route(mission).unwrap(),
+            database.route(restored).unwrap(),
+            "{id}"
+        );
+        assert_eq!(mission.thief_id, restored.thief_id, "{id}");
+        assert_eq!(mission.difficulty, restored.difficulty, "{id}");
+    }
+    let solved = solved_outcomes(&database);
+    let _ = fs::remove_dir_all(&export_root);
+    println!(
+        "MySQL parity verified: {} files, {} rows, {} identical mission outcomes",
+        summary.files, summary.rows, solved
+    );
+}
+
+fn solved_outcomes(data: &Catalogue) -> usize {
+    let mut solved = 0;
+    for mission in data.missions.values() {
+        let route = data.route(mission).unwrap();
+        let profile = &data.profiles[&mission.thief_id];
+        let mut state = GameState {
+            version: 1,
+            mission_id: mission.mission_id.clone(),
+            thief_id: mission.thief_id.clone(),
+            difficulty: mission.difficulty,
+            stage: 0,
+            state: route[0].clone(),
+            route: route.clone(),
+            elapsed: 0,
+            score: 1250,
+            career_points: 0,
+            dossier: BTreeMap::new(),
+            observations: BTreeMap::new(),
+            visited_venues: vec![],
+            warrant_suspect: None,
+            hideout_venue: "market".into(),
+            replay: vec![],
+            outcome: None,
+        };
+        let traits = profile.traits();
+        for stage in 0..route.len() {
+            let (field, value) = traits[stage];
+            for witness in 0..3 {
+                state = apply(
+                    state,
+                    Command::VisitVenue {
+                        venue_id: format!("db-{stage}-{witness}"),
+                        trait_name: if witness == 0 {
+                            field.into()
+                        } else {
+                            String::new()
+                        },
+                        trait_value: if witness == 0 {
+                            value.into()
+                        } else {
+                            String::new()
+                        },
+                        minutes: 200,
+                    },
+                )
+                .unwrap()
+                .0;
+            }
+            state = apply(
+                state,
+                Command::RecordTrait {
+                    trait_name: field.into(),
+                    value: value.into(),
+                },
+            )
+            .unwrap()
+            .0;
+            if stage + 1 < route.len() {
+                let destination = route[stage + 1].clone();
+                let minutes =
+                    data.travel[&(state.state.clone(), destination.clone())].travel_minutes;
+                state = apply(
+                    state,
+                    Command::Travel {
+                        destination,
+                        minutes,
+                    },
+                )
+                .unwrap()
+                .0;
+            }
+        }
+        state = apply(
+            state,
+            Command::RequestWarrant {
+                suspect_id: Some(mission.thief_id.clone()),
+            },
+        )
+        .unwrap()
+        .0;
+        state = apply(
+            state,
+            Command::SearchHideout {
+                venue_id: "market".into(),
+                minutes: 45,
+            },
+        )
+        .unwrap()
+        .0;
+        if state.outcome.as_deref() == Some("solved") {
+            solved += 1;
+        }
+    }
+    assert_eq!(solved, data.missions.len());
+    solved
+}
 fn main() {
     let root = root();
     let args = env::args().skip(1).collect::<Vec<_>>();
@@ -218,6 +375,61 @@ fn main() {
         ),
         "editorial" => editorial(&root),
         "enrichment" => enrichment(&root),
+        "migrate-mysql" => {
+            let store = mysql();
+            println!(
+                "MySQL schema is at version {}",
+                store.schema_version().unwrap()
+            );
+        }
+        "import-mysql" => {
+            validate(&root);
+            let summary = mysql().import_content(&root).unwrap();
+            println!(
+                "Imported {} CSV files and {} rows into MySQL",
+                summary.files, summary.rows
+            );
+        }
+        "rebuild-mysql" => {
+            validate(&root);
+            let store = mysql();
+            let summary = store.import_content(&root).unwrap();
+            println!(
+                "Rebuilt MySQL content from {} files and {} rows",
+                summary.files, summary.rows
+            );
+            verify_database_parity(&root, &store);
+        }
+        "verify-mysql" => verify_database_parity(&root, &mysql()),
+        "export-mysql" => {
+            let target = args
+                .get(1)
+                .map(PathBuf::from)
+                .unwrap_or_else(|| root.join("build/mysql-export"));
+            let summary = mysql().export_content(&target).unwrap();
+            println!(
+                "Exported {} MySQL content files and {} rows to {}",
+                summary.files,
+                summary.rows,
+                target.display()
+            );
+        }
+        "backup-mysql" => {
+            let target = args
+                .get(1)
+                .map(PathBuf::from)
+                .unwrap_or_else(|| root.join("build/backups/operational.json"));
+            mysql().backup_operational(&target).unwrap();
+            println!("Backed up mutable MySQL data to {}", target.display());
+        }
+        "restore-mysql" => {
+            let source = args
+                .get(1)
+                .map(PathBuf::from)
+                .unwrap_or_else(|| root.join("build/backups/operational.json"));
+            mysql().restore_operational(&source).unwrap();
+            println!("Restored mutable MySQL data from {}", source.display());
+        }
         "export" => {
             let target = args
                 .get(1)
@@ -229,7 +441,7 @@ fn main() {
         }
         other => {
             eprintln!(
-                "Unknown command {other}. Use validate, simulate, editorial, enrichment, or export."
+                "Unknown command {other}. Use validate, simulate, editorial, enrichment, migrate-mysql, import-mysql, rebuild-mysql, verify-mysql, export-mysql, backup-mysql, restore-mysql, or export."
             );
             std::process::exit(2)
         }

@@ -2,3 +2,4 @@ __pycache__
 archive
 rust/target
 .DS_Store
+.env

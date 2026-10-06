@@ -45,6 +45,9 @@ completed.
 - [x] Automatic saving and case resumption
 - [x] Seven-day case deadline beginning Monday at 07:00
 - [x] Case score, travel penalties, arrest, and failure states
+- [x] Eight-stop cases: opening jurisdiction plus seven successful state/FCT trips
+- [x] Correct playthroughs consume five to six in-game days, leaving at most
+  two days for false leads
 
 ### Travel and time
 
@@ -58,6 +61,9 @@ completed.
 ### Witnesses and clues
 
 - [x] Three witness encounters at every investigation stage
+- [x] Exactly one of the three witnesses at each stop supplies a new dossier clue
+- [x] Travel unlocks as soon as the key witness at the current stop provides
+  that stop's dossier hint; the other two interviews remain optional
 - [x] Different destination evidence from each witness
 - [x] Individual clues remain ambiguous
 - [x] Three-clue intersection resolves to exactly one state
@@ -81,6 +87,9 @@ completed.
 - [x] Completed profile opens a three-suspect comparison led by the player
 - [x] All eight fields are required before a warrant can be issued
 - [x] Correct warrant and capture state required to close a case
+- [x] Warrant candidates display complete eight-trait descriptions
+- [x] A warrant no longer ends the case; the player must locate the final hideout
+- [x] Finding the correct hideout without a warrant causes the suspect to escape
 
 ### Context-aware venues
 
@@ -95,6 +104,8 @@ completed.
 - [x] Lagos favours ports, markets, nightlife, airports, and waterfronts
 - [x] Osun favours sacred groves, palaces, and festival grounds
 - [x] Corrected Ondo's former seaport clue to a waterfront encounter
+- [x] Venue menus report live open/closed status before selection
+- [x] Questioned status is scoped to the current stop and never leaks between cities
 
 ## Current limitations
 
@@ -223,7 +234,7 @@ The production path is deliberately incremental. Rust is the authoritative
 engine, terminal, content-validation, simulation, and test toolchain. The web
 client is a separate concern: it may use TypeScript with WebGL or WebGPU for
 rendering and selectively load Rust through WebAssembly where useful. Use
-SQLite for local work before introducing a hosted database, and prove a usable
+MySQL for local development and hosted persistence, and prove a usable
 web vertical slice before committing to full-scale 3D production.
 
 #### P3.1 — Engine boundaries and contracts
@@ -312,16 +323,25 @@ local replay, or client-side prediction becomes a concrete product requirement.
 
 #### P3.4 — Data model and persistence
 
-- [ ] Inventory CSV schemas, ownership, identifiers, and relationships.
-- [ ] Design a normalised relational schema with foreign keys and constraints.
-- [ ] Separate immutable content from player, career, and live-case data.
-- [ ] Use SQLite first for development, tests, offline play, and content imports.
-- [ ] Write an idempotent CSV importer with row-count and checksum validation;
+- [x] Inventory CSV schemas, ownership, identifiers, and relationships.
+  See `docs/data-model.md`.
+- [x] Design a normalised relational schema with foreign keys and constraints.
+- [x] Separate immutable content from player, career, and live-case data.
+- [x] Use MySQL for development, tests, hosted play, and content imports.
+  - [x] Add the MySQL Rust dependency, environment configuration, and versioned
+    migration runner.
+  - [x] Add optimistic-lock storage for versioned active-case state.
+  - [x] Add SHA-256 content-manifest records.
+  - [x] Move the terminal career save from JSON into MySQL.
+- [x] Write an idempotent CSV importer with row-count and checksum validation;
   retain CSV as an authoring/export format until editorial tools are migrated.
-- [ ] Add schema migrations, backups, restore tests, and seed fixtures.
-- [ ] Choose PostgreSQL or MySQL for hosting only after deployment requirements
-  are known; do not couple engine rules to one database vendor.
-- [ ] Exit criterion: the database rebuilds cleanly from source content and
+- [x] Add schema migrations, backups, restore tests, and seed fixtures.
+  - [x] Add MySQL migration 0001 and automated configuration/checksum coverage.
+  - [x] Add database backup/restore automation and recovery testing.
+  - [x] Add complete content seed fixtures and migration upgrade fixtures.
+- [x] Select MySQL as the persistence backend while keeping database concerns
+  outside the core game engine.
+- [x] Exit criterion: the database rebuilds cleanly from source content and
   produces the same 1,000 mission outcomes as the current dataset.
 
 #### P3.5 — Service API and operational safety
@@ -454,12 +474,11 @@ local replay, or client-side prediction becomes a concrete product requirement.
 Run these checks after changing gameplay data or engine logic:
 
 ```bash
-cargo test --manifest-path rust/Cargo.toml --workspace
-cargo run --manifest-path rust/Cargo.toml -p naijachase-tools
-cargo build --manifest-path rust/Cargo.toml -p naijachase-cli
-rust/target/debug/naijachase-cli validate-content .
-cargo build --manifest-path rust/Cargo.toml --release -p naijachase-cli
-cargo run --release --manifest-path rust/Cargo.toml -p naijachase-core --example benchmark
+make check
+make build
+make release
+make benchmark
+make db-test
 ```
 
 Before considering a content pass complete, confirm:

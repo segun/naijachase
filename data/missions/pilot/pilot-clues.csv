@@ -25,7 +25,7 @@ NG-P006-C3,NG-P006,3,LOC-076,national_park,KN-SE-0077,The next stop is described
 NG-P006-C4,NG-P006,4,LOC-084,warrant_trait,,The final witness describes a suspect who is disciplined and uses the alias The Falcon. Issue the warrant before making the arrest.,LOC-084
 NG-P007-C1,NG-P007,1,LOC-076,industry,KN-S2-0098,The next stop is described by this note: the destination is home to one of West Africa's major commercial markets.,LOC-056
 NG-P007-C2,NG-P007,2,LOC-056,rivers,KN-S2-0081,The next stop is described by this note: the destination stands on the banks of the Benue River.,LOC-063
-NG-P007-C3,NG-P007,3,LOC-063,state_identity,KN-S2-0111,"The next stop is described by this note: the surrounding state combines rainforest, the surrounding state estuary and the city of the destination.",LOC-047
+NG-P007-C3,NG-P007,3,LOC-063,state_identity,KN-S2-0111,"The next stop is described by this note: the surrounding state combines rainforest, the surrounding state river mouth and the city of the destination.",LOC-047
 NG-P007-C4,NG-P007,4,LOC-047,warrant_trait,,The final witness describes a suspect who is persuasive and uses the alias Doctor Eze. Issue the warrant before making the arrest.,LOC-047
 NG-P008-C1,NG-P008,1,LOC-037,national_parks,KN-S2-0074,The next stop is described by this note: Kamuku National Park is in The destination's state.,LOC-048
 NG-P008-C2,NG-P008,2,LOC-048,industry,KN-S2-0096,"The next stop is described by this note: the destination is known for manufacturing, markets and small-scale enterprise.",LOC-057
@@ -43,7 +43,7 @@ NG-P011-C1,NG-P011,1,LOC-040,rail,KN-SE-0093,A torn itinerary gives one cultural
 NG-P011-C2,NG-P011,2,LOC-038,state_identity,KN-S2-0113,The suspect booked passage to the capital of this state: this state is associated with rice farming and mineral resources including salt and limestone.,LOC-011
 NG-P011-C3,NG-P011,3,LOC-011,kingdoms_empires,KN-S2-0020,A torn itinerary gives one cultural or historical marker: The caliphate based at the destination was founded through the jihad led by Usman dan Fodio. Name the destination.,LOC-050
 NG-P011-C4,NG-P011,4,LOC-050,warrant_trait,,The final witness describes a suspect who is nomadic and uses the alias The Drifter. Issue the warrant before making the arrest.,LOC-050
-NG-P012-C1,NG-P012,1,LOC-076,kingdoms_empires,KN-S2-0029,A torn itinerary gives one cultural or historical marker: The old city developed around Efik trading communities near the Cross River estuary. Name the destination.,LOC-047
+NG-P012-C1,NG-P012,1,LOC-076,kingdoms_empires,KN-S2-0029,A torn itinerary gives one cultural or historical marker: The old city developed around Efik trading communities near the mouth of the Cross River. Name the destination.,LOC-047
 NG-P012-C2,NG-P012,2,LOC-047,state_identity,KN-S2-0129,A torn itinerary gives one cultural or historical marker: the surrounding state combines the historic city of the destination with a major industrial corridor. Name the destination.,LOC-044
 NG-P012-C3,NG-P012,3,LOC-044,state_identity,KN-S2-0134,A torn itinerary gives one cultural or historical marker: the surrounding state is a petroleum-producing coastal state centred on the destination. Name the destination.,LOC-043
 NG-P012-C4,NG-P012,4,LOC-043,warrant_trait,,The final witness describes a suspect who is refined and uses the alias The Curator. Issue the warrant before making the arrest.,LOC-043

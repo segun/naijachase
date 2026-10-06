@@ -43,7 +43,9 @@ pub fn apply(mut state: GameState, command: Command) -> Result<(GameState, Vec<E
             state.elapsed += minutes;
             let visit_key = format!("{}|{}|{}", state.stage, state.state, venue_id);
             if state.visited_venues.contains(&visit_key) {
-                return Err(Error::Invalid("venue already questioned at this stop".into()));
+                return Err(Error::Invalid(
+                    "venue already questioned at this stop".into(),
+                ));
             }
             state.visited_venues.push(visit_key);
             if !trait_name.is_empty() {
@@ -78,6 +80,24 @@ pub fn apply(mut state: GameState, command: Command) -> Result<(GameState, Vec<E
             destination,
             minutes,
         } => {
+            const PROFILE_FIELDS: [&str; 8] = [
+                "sex",
+                "height",
+                "skin_tone",
+                "hair",
+                "hobby",
+                "vehicle",
+                "accessory",
+                "feature",
+            ];
+            let key_witness_found = PROFILE_FIELDS
+                .get(state.stage as usize)
+                .is_some_and(|field| state.observations.contains_key(*field));
+            if !key_witness_found {
+                return Err(Error::Invalid(
+                    "find the key witness's dossier hint before travelling".into(),
+                ));
+            }
             state.elapsed += minutes;
             state.state = destination.clone();
             let final_stage = state.route.len().saturating_sub(1);
@@ -101,6 +121,18 @@ pub fn apply(mut state: GameState, command: Command) -> Result<(GameState, Vec<E
             if state.dossier.len() != 8 {
                 return Err(Error::Invalid("incomplete dossier".into()));
             }
+            let visit_prefix = format!("{}|{}|", state.stage, state.state);
+            if state
+                .visited_venues
+                .iter()
+                .filter(|key| key.starts_with(&visit_prefix))
+                .count()
+                < 3
+            {
+                return Err(Error::Invalid(
+                    "question all three local witnesses before requesting a warrant".into(),
+                ));
+            }
             data.insert(
                 "suspect_id".into(),
                 suspect_id
@@ -110,25 +142,29 @@ pub fn apply(mut state: GameState, command: Command) -> Result<(GameState, Vec<E
             state.warrant_suspect = suspect_id.clone();
             "warrant_ready"
         }
-        Command::Arrest { suspect_id } => {
-            state.elapsed += 30;
-            data.insert("suspect_id".into(), suspect_id.clone());
-            if suspect_id == &state.thief_id {
-                let old = rank(state.career_points).to_string();
-                let award = state.score
-                    + (10080 - state.elapsed).saturating_div(60) * (2 + state.difficulty as u32);
-                state.career_points += award;
-                state.outcome = Some("solved".into());
-                data.insert("award".into(), award.to_string());
-                data.insert("old_rank".into(), old);
-                data.insert("new_rank".into(), rank(state.career_points).into());
-                "arrested"
-            } else {
-                state.outcome = Some("escaped".into());
-                "suspect_escaped"
-            }
+        Command::Arrest { .. } => {
+            return Err(Error::Invalid(
+                "an arrest requires a successful hideout search".into(),
+            ));
         }
         Command::SearchHideout { venue_id, minutes } => {
+            if state.stage as usize != state.route.len().saturating_sub(1) {
+                return Err(Error::Invalid(
+                    "suspect search is only available at the final stop".into(),
+                ));
+            }
+            let visit_prefix = format!("{}|{}|", state.stage, state.state);
+            if state
+                .visited_venues
+                .iter()
+                .filter(|key| key.starts_with(&visit_prefix))
+                .count()
+                < 3
+            {
+                return Err(Error::Invalid(
+                    "question all three local witnesses before searching".into(),
+                ));
+            }
             state.elapsed += minutes;
             data.insert("venue_id".into(), venue_id.clone());
             if venue_id != &state.hideout_venue {
@@ -165,6 +201,8 @@ pub fn apply(mut state: GameState, command: Command) -> Result<(GameState, Vec<E
 mod tests {
     use super::*;
     fn state() -> GameState {
+        let mut observations = BTreeMap::new();
+        observations.insert("sex".into(), "male".into());
         GameState {
             version: 1,
             mission_id: "M".into(),
@@ -182,7 +220,14 @@ mod tests {
             score: 800,
             career_points: 0,
             dossier: BTreeMap::new(),
-            observations: BTreeMap::new(),
+            observations,
+            visited_venues: vec![
+                "0|Lagos|one".into(),
+                "0|Lagos|two".into(),
+                "0|Lagos|three".into(),
+            ],
+            warrant_suspect: None,
+            hideout_venue: "market".into(),
             replay: vec![],
             outcome: None,
         }
@@ -250,5 +295,71 @@ mod tests {
                 assert!(after.score >= before)
             }
         }
+    }
+
+    #[test]
+    fn travel_requires_the_key_witness_hint() {
+        let mut s = state();
+        s.observations.clear();
+        let error = apply(
+            s,
+            Command::Travel {
+                destination: "Kano".into(),
+                minutes: 90,
+            },
+        )
+        .unwrap_err();
+        assert_eq!(
+            error,
+            Error::Invalid("find the key witness's dossier hint before travelling".into())
+        );
+    }
+
+    #[test]
+    fn warrant_requires_a_later_hideout_search() {
+        let mut s = state();
+        s.stage = 3;
+        s.state = "Abuja".into();
+        s.visited_venues = vec![
+            "3|Abuja|market".into(),
+            "3|Abuja|hotel".into(),
+            "3|Abuja|museum".into(),
+        ];
+        s.hideout_venue = "market".into();
+        for (index, key) in [
+            "sex",
+            "height",
+            "skin_tone",
+            "hair",
+            "hobby",
+            "vehicle",
+            "accessory",
+            "feature",
+        ]
+        .into_iter()
+        .enumerate()
+        {
+            s.dossier.insert(key.into(), index.to_string());
+        }
+        s = apply(
+            s,
+            Command::RequestWarrant {
+                suspect_id: Some("T".into()),
+            },
+        )
+        .unwrap()
+        .0;
+        assert_eq!(s.outcome, None);
+        assert_eq!(s.warrant_suspect.as_deref(), Some("T"));
+        let (s, events) = apply(
+            s,
+            Command::SearchHideout {
+                venue_id: "market".into(),
+                minutes: 45,
+            },
+        )
+        .unwrap();
+        assert_eq!(events[0].event_type, "arrested");
+        assert_eq!(s.outcome.as_deref(), Some("solved"));
     }
 }
