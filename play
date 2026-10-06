@@ -1,2 +1,4 @@
 #!/bin/sh
-exec python3 "$(dirname "$0")/game.py" "$@"
+set -eu
+ROOT=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+exec cargo run --quiet --manifest-path "$ROOT/rust/Cargo.toml" -p naijachase-terminal -- "$@"

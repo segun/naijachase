@@ -1,0 +1,1 @@
+{"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"https://naijachase.example/schemas/engine-event-v1","title":"Naija Chase event","type":"object","required":["event_type","data"],"properties":{"event_type":{"type":"string"},"data":{"type":"object","additionalProperties":{"type":"string"}}},"additionalProperties":false}

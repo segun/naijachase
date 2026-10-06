@@ -1,0 +1,8 @@
+[package]
+name="naijachase-api"
+version="0.1.0"
+edition="2024"
+[dependencies]
+naijachase-core.workspace=true
+naijachase-contracts.workspace=true
+serde.workspace=true

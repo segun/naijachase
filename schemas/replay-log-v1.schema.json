@@ -1,0 +1,1 @@
+{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"Naija Chase replay log","type":"object","required":["version","mission_id","seed","commands"],"properties":{"version":{"const":1},"mission_id":{"type":"string"},"seed":{"type":"integer","minimum":0},"commands":{"type":"array","items":{"$ref":"engine-command-v1.schema.json"}}},"additionalProperties":false}

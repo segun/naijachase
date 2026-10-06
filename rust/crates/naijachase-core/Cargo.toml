@@ -1,0 +1,9 @@
+[package]
+name="naijachase-core"
+version="0.1.0"
+edition="2024"
+[dependencies]
+naijachase-contracts.workspace=true
+thiserror.workspace=true
+[dev-dependencies]
+naijachase-content={path="../naijachase-content"}

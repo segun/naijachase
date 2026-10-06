@@ -1,4 +1,4 @@
-# Carmen Sandiego: Nigeria — Project Tracker
+# Naija Chase — Project Tracker
 
 Last updated: 6 October 2026
 
@@ -9,6 +9,7 @@ completed.
 ## Current baseline
 
 - [x] 500 Nigerian locations
+- [x] Product name selected: Naija Chase
 - [x] 5,243 knowledge records
 - [x] 12,729 clue formulations
 - [x] 1,000 missions
@@ -31,7 +32,8 @@ completed.
 - [x] 9,324 dialogue variants across three difficulty levels and two registers
 - [x] All 1,000 missions connected to the contextual witness engine
 - [x] Career-level recent clue and dialogue tracking
-- [x] 47 automated tests passing
+- [x] Rust workspace tests pass, including all 1,000 missions and every
+  mission-stage venue combination
 
 ## Completed game systems
 
@@ -217,10 +219,12 @@ completed.
 
 ### P3 — Production readiness roadmap
 
-The production path is deliberately incremental. Keep the proven Python engine
-until measurements justify replacing a component, use SQLite for local work
-before introducing a hosted database, and build a usable 2D web vertical slice
-before committing to expensive 3D production.
+The production path is deliberately incremental. Rust is the authoritative
+engine, terminal, content-validation, simulation, and test toolchain. The web
+client is a separate concern: it may use TypeScript with WebGL or WebGPU for
+rendering and selectively load Rust through WebAssembly where useful. Use
+SQLite for local work before introducing a hosted database, and prove a usable
+web vertical slice before committing to full-scale 3D production.
 
 #### P3.1 — Engine boundaries and contracts
 
@@ -250,7 +254,63 @@ before committing to expensive 3D production.
 - [x] Exit criterion: automated scenarios cover correct, incomplete,
   contradictory, and wrong-suspect paths at every difficulty.
 
-#### P3.3 — Data model and persistence
+#### P3.3 — Rust engine migration
+
+Migration audit completed 6 October 2026: the active repository contains zero
+`.py`, `.pyc`, `.pyo`, or `__pycache__` artifacts; `./play`, content validation,
+editorial checks, enrichment reporting, simulations, exports, save migration,
+benchmarks, and tests all run through the Cargo workspace. The obsolete save
+from the retired runtime was removed as authorised.
+
+- [x] Freeze the Python command/state/event behaviour as the migration
+  specification; make no silent rule changes during the port.
+- [x] Define language-neutral, versioned JSON Schemas for commands, events,
+  game state, content input, replay logs, and errors.
+- [x] Create a Cargo workspace with `naijachase-core`, `naijachase-contracts`,
+  `naijachase-content`, `naijachase-storage`, `naijachase-api`,
+  and `naijachase-cli` crates.
+- [x] Enforce one-way dependencies: clients call `naijachase-api`,
+  `naijachase-api` calls `naijachase-core`, and `naijachase-core` never imports API, storage, HTTP,
+  authentication, rendering, or platform code.
+- [x] Keep `naijachase-core` deterministic and independent of terminals, browsers,
+  databases, networking, clocks, and operating-system services.
+- [x] Model career, case, investigation, venue visit, evidence, dossier, travel,
+  warrant, arrest, scoring, deadline, and rank rules with explicit Rust types.
+- [x] Parse and validate the canonical checked-in content with the Rust content
+  and tools crates.
+- [x] Port one complete case first, including every success and failure path.
+- [x] Build Rust integration coverage for identical seeded commands and state.
+- [x] Expand parity testing to all 1,000 missions, every difficulty level,
+  incomplete and contradictory dossiers, false travel, wrong warrants,
+  deadlines, scoring, promotions, saving, and replay.
+- [x] Add property, fuzz, malformed-content, deterministic-replay, and benchmark
+  tests around the Rust core.
+- [x] Define save migration from historical versioned state into Rust-owned
+  state; retain fixtures for every historical save version.
+- [x] Expose a stable native Rust interface for the service layer.
+- [x] Keep authoritative multiplayer decisions in the server-side Rust engine.
+- [x] Benchmark realistic concurrent case workloads before choosing the service
+  process model; Rust improves per-process efficiency but scaling also depends
+  on database, network, caching, and deployment architecture.
+- [x] Switch all runtime authority to Rust after parity, performance,
+  replay, save migration, and all 1,000 mission gates pass.
+- [x] Port the terminal client, clue engine, content validation, editorial
+  review, imports, simulations, balance reports, migrations, and test suite to
+  Rust with equivalent coverage.
+- [x] Replace `./play` with a Rust entrypoint and remove the former runtime,
+  `clue_engine.py`, every Python script, and the Python test suite only after
+  their Rust replacements pass.
+- [x] Add a repository guard that fails when a `.py` file or legacy-runtime invocation
+  is introduced outside explicitly archived historical material.
+- [x] Exit criterion: Rust is authoritative, passes every integration
+  test, loads migrated saves, reproduces replay logs, and meets documented load
+  and latency targets without changing case outcomes; the active repository
+  contains no legacy source or runtime dependency.
+
+WebAssembly is not a P3.3 requirement. Evaluate it later only if offline play,
+local replay, or client-side prediction becomes a concrete product requirement.
+
+#### P3.4 — Data model and persistence
 
 - [ ] Inventory CSV schemas, ownership, identifiers, and relationships.
 - [ ] Design a normalised relational schema with foreign keys and constraints.
@@ -264,12 +324,25 @@ before committing to expensive 3D production.
 - [ ] Exit criterion: the database rebuilds cleanly from source content and
   produces the same 1,000 mission outcomes as the current dataset.
 
-#### P3.4 — Service API and operational safety
+#### P3.5 — Service API and operational safety
 
-- [ ] Define a versioned HTTP API around engine commands and event responses.
+- [ ] Implement `naijachase-api` as an application layer around
+  `naijachase-core`, not
+  as part of the core game engine.
+- [ ] Define versioned HTTP endpoints around engine commands and event responses;
+  add WebSockets only for features that genuinely require server push.
+- [ ] Convert validated API requests into typed core commands and convert core
+  results into client-safe response DTOs without leaking hidden case answers.
+- [ ] Load the active case, enforce ownership, execute one core command, and
+  persist new state plus events within a single transaction.
+- [ ] Keep database repositories and transaction handling behind
+  `naijachase-storage`; the core receives explicit inputs and returns state
+  changes.
 - [ ] Add authentication, authorisation, validation, rate limiting, and secure
   session handling before public access.
 - [ ] Make state-changing requests idempotent and protect concurrent updates.
+- [ ] Require a client-generated command ID and state version so retries are
+  safe and stale or duplicate commands cannot advance a case twice.
 - [ ] Add structured logs, error reporting, health checks, metrics, and audit
   trails without recording private data or unrevealed answers.
 - [ ] Add unit, integration, contract, load, security, and recovery tests.
@@ -277,7 +350,7 @@ before committing to expensive 3D production.
 - [ ] Exit criterion: restarts, duplicate requests, invalid commands, and
   concurrent updates cannot corrupt a case.
 
-#### P3.5 — Web vertical slice
+#### P3.6 — Web vertical slice
 
 - [ ] Build one responsive, accessible 2D web case before expanding the scope.
 - [ ] Implement onboarding, case selection, interviews, notebook, manual dossier,
@@ -285,12 +358,18 @@ before committing to expensive 3D production.
 - [ ] Add a usable Nigeria map with keyboard and screen-reader alternatives.
 - [ ] Create a reusable visual system for states, venues, witnesses, suspects,
   evidence, travel, warrants, and ranks.
+- [ ] Use TypeScript for the application layer and evaluate Three.js, Babylon.js,
+  or another WebGL/WebGPU renderer through a focused prototype rather than
+  coupling browser rendering to the server implementation language.
+- [ ] Use the Rust WebAssembly build only for suitable client-side engine work;
+  keep DOM, accessibility, asset loading, and 3D scene presentation in the web
+  technology best suited to those tasks.
 - [ ] Start with lightweight route, arrival, dossier, warrant, and arrest motion.
 - [ ] Test on low-bandwidth connections and modest mobile devices.
 - [ ] Exit criterion: new players finish the case unaided and accessibility,
   performance, and usability targets pass.
 
-#### P3.6 — Identity, progression, and home base
+#### P3.7 — Identity, progression, and home base
 
 - [ ] Add an optional profile with display name, pronouns or sex if the player
   chooses, avatar, uniform, and home state/FCT.
@@ -306,7 +385,7 @@ before committing to expensive 3D production.
 - [ ] Exit criterion: progression remains understandable, balanced, and fully
   playable without purchases.
 
-#### P3.7 — Cooperative investigations
+#### P3.8 — Cooperative investigations
 
 - [ ] Specify eligibility, online presence, home-base status, time costs,
   response windows, and rewards before implementation.
@@ -320,7 +399,7 @@ before committing to expensive 3D production.
 - [ ] Exit criterion: help adds value without making a second account optimal
   or enabling harassment and answer leakage.
 
-#### P3.8 — Economy and monetisation guardrails
+#### P3.9 — Economy and monetisation guardrails
 
 - [ ] Define currencies, earning rates, spending sinks, refunds, regional
   pricing, parental controls, and spending limits before adding purchases.
@@ -335,7 +414,7 @@ before committing to expensive 3D production.
 - [ ] Exit criterion: every case is equally solvable without spending money and
   economy simulations show no coercive progression bottleneck.
 
-#### P3.9 — Visual expansion and 3D decision gate
+#### P3.10 — Visual expansion and 3D decision gate
 
 - [ ] Measure whether the 2D slice meets retention, comprehension, performance,
   and cost goals before commissioning 3D work.
@@ -349,8 +428,10 @@ before committing to expensive 3D production.
 - [ ] Exit criterion: the go/no-go decision documents performance, production
   time, accessibility, and total asset cost.
 
-#### P3.10 — Release readiness
+#### P3.11 — Release readiness
 
+- [ ] Complete trademark, company-name, domain, app-store, package-name, and
+  social-handle clearance for Naija Chase before public branding or launch.
 - [ ] Complete outstanding source-line, sensitivity, Nigerian English, Pidgin,
   spelling, name, and diacritic reviews from P2.
 - [ ] Define supported devices, performance budgets, uptime objectives, data
@@ -365,8 +446,6 @@ before committing to expensive 3D production.
 
 #### Deferred technical decisions
 
-- [ ] Reassess Rust only after profiling identifies a performance, portability,
-  or sandboxing problem Python cannot reasonably meet.
 - [ ] Reassess native desktop and mobile clients after the web client and engine
   API are stable; do not maintain multiple interfaces prematurely.
 
@@ -375,14 +454,12 @@ before committing to expensive 3D production.
 Run these checks after changing gameplay data or engine logic:
 
 ```bash
-python3 scripts/build_gameplay_data.py
-python3 scripts/build_state_clue_atoms.py
-python3 scripts/editorial_review_clues.py
-python3 scripts/build_location_coordinates.py
-python3 scripts/build_location_investigations.py
-python3 scripts/build_mission_narratives.py
-python3 scripts/simulate_game_balance.py
-python3 -m unittest discover -s tests -v
+cargo test --manifest-path rust/Cargo.toml --workspace
+cargo run --manifest-path rust/Cargo.toml -p naijachase-tools
+cargo build --manifest-path rust/Cargo.toml -p naijachase-cli
+rust/target/debug/naijachase-cli validate-content .
+cargo build --manifest-path rust/Cargo.toml --release -p naijachase-cli
+cargo run --release --manifest-path rust/Cargo.toml -p naijachase-core --example benchmark
 ```
 
 Before considering a content pass complete, confirm:

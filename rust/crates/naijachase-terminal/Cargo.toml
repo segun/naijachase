@@ -1,0 +1,10 @@
+[package]
+name="naijachase-terminal"
+version="0.1.0"
+edition="2024"
+[dependencies]
+naijachase-core.workspace=true
+naijachase-contracts.workspace=true
+naijachase-content={path="../naijachase-content"}
+serde={workspace=true,features=["derive"]}
+serde_json.workspace=true

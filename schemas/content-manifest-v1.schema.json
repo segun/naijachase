@@ -1,0 +1,1 @@
+{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"Naija Chase content manifest","type":"object","required":["version","missions","jurisdictions","thieves","checksum"],"properties":{"version":{"const":1},"missions":{"const":1000},"jurisdictions":{"const":37},"thieves":{"const":100},"checksum":{"type":"string","minLength":32}},"additionalProperties":false}

@@ -1,0 +1,11 @@
+[workspace]
+resolver = "2"
+members = ["crates/naijachase-contracts", "crates/naijachase-core", "crates/naijachase-content", "crates/naijachase-storage", "crates/naijachase-api", "crates/naijachase-cli", "crates/naijachase-terminal", "crates/naijachase-tools"]
+
+[workspace.dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+csv = "1"
+thiserror = "2"
+naijachase-contracts = { path = "crates/naijachase-contracts" }
+naijachase-core = { path = "crates/naijachase-core" }
