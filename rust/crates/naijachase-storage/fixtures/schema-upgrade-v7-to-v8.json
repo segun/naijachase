@@ -1,0 +1,5 @@
+{
+  "from_version": 7,
+  "to_version": 8,
+  "reason": "Add device sessions, progression metrics, state visits, and rank history."
+}

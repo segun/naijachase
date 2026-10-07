@@ -48,15 +48,25 @@ data without mixing it into the replaceable content catalogue. See
 ## Service API
 
 The Rust HTTP service is available with `make api`. It exposes versioned
-`/v1` case and command endpoints while keeping hidden routes, thief identities,
-answer keys, timing rules, and hideouts on the server. Configure
-`NAIJACHASE_API_TOKENS`, `NAIJACHASE_API_BIND`,
-`NAIJACHASE_RATE_LIMIT_PER_MINUTE`, and `NAIJACHASE_ENV` in the repository
-`.env`. Environment-specific examples live in `config/environments/`.
+`/v1` authentication, case, and command endpoints while keeping hidden routes,
+thief identities, answer keys, timing rules, and hideouts on the server.
+Configure `NAIJACHASE_API_BIND`, `NAIJACHASE_RATE_LIMIT_PER_MINUTE`,
+`NAIJACHASE_ENV`, and the Cloudflare email settings in the repository `.env`.
+Registration uses verified email/password accounts; browser sessions are
+opaque, revocable, HttpOnly cookies. Environment-specific examples live in
+`config/environments/`.
 
 Run `make p35` for the complete service-safety gate. API contracts, status
 codes, authentication, deployment requirements, health checks, metrics, and
 recovery behaviour are documented in `docs/api-v1.md`.
+
+## Web client
+
+Install the pinned web dependencies with `cd web && pnpm install`. Run
+`make api` and `make web` in separate terminals, then open
+`http://127.0.0.1:4173`. Run `make p36` for the complete web vertical-slice
+gate. The architecture, accessibility checks, mobile budget, and 2D/3D/Wasm
+decision are documented in `docs/web-vertical-slice.md`.
 
 ## Mission pilot
 
@@ -167,9 +177,9 @@ tests are Rust-only. WebAssembly is not required for the server engine.
 
 The ambiguity-aware Nigerian witness catalogue covers all 36 states and the FCT in six confusable
 regional groups, with a validated three-clue solution for every jurisdiction.
-The P0 depth pass gives every state and the FCT 14 distinct atoms. The
-catalogue currently contains 518 atoms and covers the complete P0 thematic
-checklist. The dialogue layer contains 9,324
+The P0 depth pass and state-identity enrichment give every state and the FCT
+at least 18 distinct atoms. The catalogue currently contains 707 atoms and covers the complete P0 thematic
+checklist. The dialogue layer contains 12,726
 formulations: three variants for each clue,
 difficulty level, and speech register. Career saves retain the 60 most recent
 clue atoms and 120 most recent dialogue variants so later cases prefer unused

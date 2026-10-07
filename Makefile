@@ -1,6 +1,13 @@
 SHELL := /bin/sh
 
 CARGO ?= cargo
+CODEX_NODE_BIN := $(HOME)/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin
+CODEX_PNPM := $(HOME)/.cache/codex-runtimes/codex-primary-runtime/dependencies/bin/fallback/pnpm
+ifneq ($(wildcard $(CODEX_PNPM)),)
+PNPM ?= env PATH="$(CODEX_NODE_BIN):$(PATH)" "$(CODEX_PNPM)"
+else
+PNPM ?= pnpm
+endif
 MANIFEST := rust/Cargo.toml
 TOOLS := $(CARGO) run --quiet --manifest-path $(MANIFEST) -p naijachase-tools --
 SIMULATION_OUTPUT ?= data/gameplay/mission-balance-report.csv
@@ -11,7 +18,8 @@ ARGS ?=
 
 .PHONY: help play test test-storage check fmt fmt-check build release benchmark \
 	validate editorial enrichment simulate export db-migrate db-import db-rebuild \
-	db-verify db-export db-backup db-restore db-test api api-test p34 p35 audit
+	db-verify db-export db-backup db-restore db-test api api-test web web-build enrich-state-clues \
+	web-mock web-mock-ui web-test p34 p35 p36 audit
 
 help: ## Show the common project commands
 	@awk 'BEGIN {FS = ":.*## "} /^[a-zA-Z0-9_-]+:.*## / {printf "  %-16s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -51,6 +59,9 @@ editorial: ## Run automated clue editorial checks
 enrichment: ## Report semantic knowledge coverage
 	@$(TOOLS) enrichment
 
+enrich-state-clues: ## Rebuild state motto, city, landmark, and economy witness clues
+	@$(TOOLS) enrich-state-clues
+
 simulate: ## Simulate all missions; override with SIMULATION_OUTPUT=path
 	@$(TOOLS) simulate $(SIMULATION_OUTPUT)
 
@@ -87,9 +98,26 @@ api: ## Start the versioned HTTP API using .env configuration
 api-test: ## Run API unit, contract, load, and security tests
 	@$(CARGO) test --manifest-path $(MANIFEST) -p naijachase-api
 
+web: ## Start the responsive web client at http://127.0.0.1:4173
+	@cd web && $(PNPM) dev
+
+web-build: ## Type-check and build the optimized web client
+	@cd web && $(PNPM) build
+
+web-mock: ## Start the in-memory mock API on port 8081 (UI development without MySQL)
+	@cd web && node dev/mock-api.mjs
+
+web-mock-ui: ## Start the web client against the mock API
+	@cd web && API_TARGET=http://127.0.0.1:8081 $(PNPM) dev
+
+web-test: ## Run web accessibility, privacy, mobile, and weight guards
+	@cd web && $(PNPM) test
+
 p34: check db-rebuild db-test ## Run the complete P3.4 persistence gate
 
 p35: check db-test api-test ## Run the complete P3.5 service-safety gate
+
+p36: check api-test web-test web-build ## Run the complete P3.6 web-slice gate
 
 audit: ## Reject legacy runtime artifacts and malformed patches
 	@test -z "$$(find . -type f \( -name '*.py' -o -name '*.pyc' -o -name '*.pyo' \) \

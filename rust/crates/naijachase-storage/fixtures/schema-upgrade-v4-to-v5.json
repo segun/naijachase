@@ -1,0 +1,5 @@
+{
+  "from_version": 4,
+  "to_version": 5,
+  "reason": "Replace bootstrap bearer tokens with verified player accounts and revocable sessions."
+}

@@ -1,0 +1,52 @@
+{
+  "openapi": "3.1.0",
+  "info": {"title": "Naija Chase API", "version": "1.0.0"},
+  "servers": [{"url": "http://127.0.0.1:8080"}],
+  "components": {
+    "securitySchemes": {"sessionCookie": {"type": "apiKey", "in": "cookie", "name": "nc_session"}},
+    "schemas": {
+      "Message": {"type":"object","required":["message"],"properties":{"message":{"type":"string"}}},
+      "Error": {"type":"object","required":["error","message"],"properties":{"error":{"type":"string"},"message":{"type":"string"}}},
+      "Player": {"type":"object","required":["player_id","email","username","home_base","email_verified","leaderboard_opt_in"],"properties":{"player_id":{"type":"string"},"email":{"type":"string","format":"email"},"username":{"type":"string"},"home_base":{"type":"string"},"email_verified":{"type":"boolean"},"display_name":{"type":["string","null"]},"pronouns":{"type":["string","null"]},"sex":{"type":["string","null"]},"avatar_id":{"type":["string","null"]},"uniform_id":{"type":["string","null"]},"leaderboard_opt_in":{"type":"boolean"}}},
+      "AuthResponse": {"type":"object","required":["player"],"properties":{"player":{"$ref":"#/components/schemas/Player"}}},
+      "Register": {"type":"object","required":["email","username","home_base","password","confirm_password"],"properties":{"email":{"type":"string","format":"email"},"username":{"type":"string"},"home_base":{"type":"string"},"password":{"type":"string","format":"password"},"confirm_password":{"type":"string","format":"password"}}},
+      "Login": {"type":"object","required":["email","password"],"properties":{"email":{"type":"string","format":"email"},"password":{"type":"string","format":"password"}}},
+      "Token": {"type":"object","required":["token"],"properties":{"token":{"type":"string"}}},
+      "RecoveryRequest": {"type":"object","required":["email"],"properties":{"email":{"type":"string","format":"email"}}},
+      "RecoveryComplete": {"type":"object","required":["token","password","confirm_password"],"properties":{"token":{"type":"string"},"password":{"type":"string","format":"password"},"confirm_password":{"type":"string","format":"password"}}},
+      "ProfileUpdate": {"type":"object","required":["home_base"],"properties":{"display_name":{"type":["string","null"]},"pronouns":{"type":["string","null"]},"sex":{"type":["string","null"]},"avatar_id":{"type":["string","null"]},"uniform_id":{"type":["string","null"]},"home_base":{"type":"string"},"leaderboard_opt_in":{"type":"boolean"}}},
+      "Session": {"type":"object","required":["session_id","created_at","last_seen_at","expires_at","current"],"properties":{"session_id":{"type":"string"},"device_label":{"type":["string","null"]},"created_at":{"type":"string"},"last_seen_at":{"type":"string"},"expires_at":{"type":"string"},"current":{"type":"boolean"}}},
+      "Achievement": {"type":"object","required":["achievement_id","earned_at"],"properties":{"achievement_id":{"type":"string"},"earned_at":{"type":"string"}}},
+      "RankHistory": {"type":"object","required":["old_rank","new_rank","points","earned_at"],"properties":{"old_rank":{"type":"string"},"new_rank":{"type":"string"},"points":{"type":"integer"},"earned_at":{"type":"string"}}},
+      "Progression": {"type":"object","required":["points","rank","solved_cases","visited_states","correct_travels","wrong_travels","correct_deductions","wrong_deductions","achievements","rank_history"],"properties":{"points":{"type":"integer"},"rank":{"type":"string"},"solved_cases":{"type":"integer"},"visited_states":{"type":"array","items":{"type":"string"}},"correct_travels":{"type":"integer"},"wrong_travels":{"type":"integer"},"correct_deductions":{"type":"integer"},"wrong_deductions":{"type":"integer"},"achievements":{"type":"array","items":{"$ref":"#/components/schemas/Achievement"}},"rank_history":{"type":"array","items":{"$ref":"#/components/schemas/RankHistory"}}}},
+      "ArchiveEntry": {"type":"object","required":["case_id","mission_id","thief_id","outcome","score","elapsed_minutes","completed_at","states_visited","correct_travels","wrong_travels","correct_deductions","wrong_deductions"],"properties":{"case_id":{"type":"string"},"mission_id":{"type":"string"},"thief_id":{"type":"string"},"outcome":{"type":"string"},"score":{"type":"integer"},"elapsed_minutes":{"type":"integer"},"completed_at":{"type":"string"},"states_visited":{"type":"array","items":{"type":"string"}},"correct_travels":{"type":"integer"},"wrong_travels":{"type":"integer"},"correct_deductions":{"type":"integer"},"wrong_deductions":{"type":"integer"}}}
+      ,"CreateCase": {"type":"object","required":["case_id","mission_id"],"properties":{"case_id":{"type":"string"},"mission_id":{"type":"string"},"seed":{"type":"integer","minimum":0}}}
+      ,"CommandRequest": {"$ref":"./api-command-request-v1.schema.json"}
+      ,"CaseResponse": {"$ref":"./api-case-response-v1.schema.json"}
+    }
+  },
+  "paths": {
+    "/health/live":{"get":{"responses":{"200":{"description":"Live"}}}},
+    "/health/ready":{"get":{"responses":{"200":{"description":"Ready"}}}},
+    "/metrics":{"get":{"responses":{"200":{"description":"Prometheus metrics"}}}},
+    "/v1/auth/register":{"post":{"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/Register"}}}},"responses":{"201":{"description":"Confirmation sent","content":{"application/json":{"schema":{"$ref":"#/components/schemas/Message"}}}}}}},
+    "/v1/auth/confirm":{"post":{"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/Token"}}}},"responses":{"200":{"description":"Confirmed"}}}},
+    "/v1/auth/login":{"post":{"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/Login"}}}},"responses":{"200":{"description":"Authenticated","headers":{"Set-Cookie":{"schema":{"type":"string"}}},"content":{"application/json":{"schema":{"$ref":"#/components/schemas/AuthResponse"}}}}}}},
+    "/v1/auth/refresh":{"post":{"security":[{"sessionCookie":[]}],"responses":{"200":{"description":"Rotated session"}}}},
+    "/v1/auth/logout":{"post":{"security":[{"sessionCookie":[]}],"responses":{"200":{"description":"Logged out"}}}},
+    "/v1/auth/logout-all":{"post":{"security":[{"sessionCookie":[]}],"responses":{"200":{"description":"All sessions revoked"}}}},
+    "/v1/auth/sessions":{"get":{"security":[{"sessionCookie":[]}],"responses":{"200":{"description":"Active sessions","content":{"application/json":{"schema":{"type":"array","items":{"$ref":"#/components/schemas/Session"}}}}}}}},
+    "/v1/auth/sessions/{session_id}":{"delete":{"security":[{"sessionCookie":[]}],"parameters":[{"name":"session_id","in":"path","required":true,"schema":{"type":"string"}}],"responses":{"200":{"description":"Session revoked"},"404":{"description":"Not found"}}}},
+    "/v1/auth/recovery/request":{"post":{"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/RecoveryRequest"}}}},"responses":{"200":{"description":"Generic recovery response"}}}},
+    "/v1/auth/recovery/complete":{"post":{"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/RecoveryComplete"}}}},"responses":{"200":{"description":"Password replaced"}}}},
+    "/v1/auth/me":{"get":{"security":[{"sessionCookie":[]}],"responses":{"200":{"description":"Current player","content":{"application/json":{"schema":{"$ref":"#/components/schemas/AuthResponse"}}}}}}},
+    "/v1/profile":{"get":{"security":[{"sessionCookie":[]}],"responses":{"200":{"description":"Profile"}}},"put":{"security":[{"sessionCookie":[]}],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ProfileUpdate"}}}},"responses":{"200":{"description":"Updated profile"}}}},
+    "/v1/progression/summary":{"get":{"security":[{"sessionCookie":[]}],"responses":{"200":{"description":"Progression summary","content":{"application/json":{"schema":{"$ref":"#/components/schemas/Progression"}}}}}}},
+    "/v1/progression/archive":{"get":{"security":[{"sessionCookie":[]}],"responses":{"200":{"description":"Case archive","content":{"application/json":{"schema":{"type":"array","items":{"$ref":"#/components/schemas/ArchiveEntry"}}}}}}}},
+    "/v1/progression/achievements":{"get":{"security":[{"sessionCookie":[]}],"responses":{"200":{"description":"Earned achievements"}}}},
+    "/v1/progression/achievement-catalog":{"get":{"responses":{"200":{"description":"Achievement definitions"}}}},
+    "/v1/cases":{"post":{"security":[{"sessionCookie":[]}],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/CreateCase"}}}},"responses":{"201":{"description":"Case created","content":{"application/json":{"schema":{"$ref":"#/components/schemas/CaseResponse"}}}}}}},
+    "/v1/cases/{case_id}":{"get":{"security":[{"sessionCookie":[]}],"parameters":[{"name":"case_id","in":"path","required":true,"schema":{"type":"string"}}],"responses":{"200":{"description":"Case state","content":{"application/json":{"schema":{"$ref":"#/components/schemas/CaseResponse"}}}}}}},
+    "/v1/cases/{case_id}/commands":{"post":{"security":[{"sessionCookie":[]}],"parameters":[{"name":"case_id","in":"path","required":true,"schema":{"type":"string"}}],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/CommandRequest"}}}},"responses":{"200":{"description":"Command result","content":{"application/json":{"schema":{"$ref":"#/components/schemas/CaseResponse"}}}}}}}
+  }
+}

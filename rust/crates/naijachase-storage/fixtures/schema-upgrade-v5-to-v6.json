@@ -1,0 +1,5 @@
+{
+  "from_version": 5,
+  "to_version": 6,
+  "reason": "Add hardened session lifecycle, account recovery, optional profiles, case archives, and achievements."
+}

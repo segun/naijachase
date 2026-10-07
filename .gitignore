@@ -1,5 +1,8 @@
 __pycache__
 archive
 rust/target
+web/node_modules
+web/dist
+.pnpm-store
 .DS_Store
 .env

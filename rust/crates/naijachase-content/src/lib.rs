@@ -20,6 +20,25 @@ pub enum Error {
 fn count(path: &Path) -> Result<usize, csv::Error> {
     Ok(csv::Reader::from_path(path)?.records().count())
 }
+
+fn contains_place_name(text: &str, name: &str) -> bool {
+    let lower = text.to_lowercase();
+    let needle = name.to_lowercase();
+    lower.match_indices(&needle).any(|(index, value)| {
+        let end = index + value.len();
+        let before_ok = index == 0
+            || !lower[..index]
+                .chars()
+                .next_back()
+                .is_some_and(char::is_alphanumeric);
+        let after_ok = end == lower.len()
+            || !lower[end..]
+                .chars()
+                .next()
+                .is_some_and(char::is_alphanumeric);
+        before_ok && after_ok
+    })
+}
 pub fn row_count(path: &Path) -> Result<usize, Error> {
     Ok(count(path)?)
 }
@@ -36,11 +55,11 @@ pub fn validate_repository(root: &Path) -> Result<(), Vec<String>> {
         ("thieves", "data/thieves/thieves.csv", 100),
         ("state hubs", "data/gameplay/state-hubs.csv", 37),
         ("travel edges", "data/gameplay/state-travel.csv", 1332),
-        ("clue atoms", "data/gameplay/state-clue-atoms.csv", 518),
+        ("clue atoms", "data/gameplay/state-clue-atoms.csv", 707),
         (
             "dialogue variants",
             "data/gameplay/clue-dialogue-variants.csv",
-            9324,
+            12726,
         ),
         (
             "mission narratives",
@@ -111,6 +130,46 @@ pub fn validate_repository(root: &Path) -> Result<(), Vec<String>> {
                             atom.atom_id
                         ))
                     }
+                    for hub in c.hubs.values() {
+                        for forbidden in [&hub.state, &hub.hub_city] {
+                            if contains_place_name(&atom.dialogue, forbidden) {
+                                errors.push(format!(
+                                    "{}: witness dialogue reveals place name {}",
+                                    atom.atom_id, forbidden
+                                ));
+                            }
+                            for variant in
+                                c.dialogue_variants.get(&atom.atom_id).into_iter().flatten()
+                            {
+                                if contains_place_name(&variant.dialogue, forbidden) {
+                                    errors.push(format!(
+                                        "{}: dialogue variant reveals place name {}",
+                                        variant.variant_id, forbidden
+                                    ));
+                                }
+                            }
+                        }
+                    }
+                    for location in c.locations.values().filter(|location| {
+                        location.location_type.contains("city")
+                            || location.location_type.contains("capital")
+                    }) {
+                        if contains_place_name(&atom.dialogue, &location.name) {
+                            errors.push(format!(
+                                "{}: witness dialogue reveals city name {}",
+                                atom.atom_id, location.name
+                            ));
+                        }
+                        for variant in c.dialogue_variants.get(&atom.atom_id).into_iter().flatten()
+                        {
+                            if contains_place_name(&variant.dialogue, &location.name) {
+                                errors.push(format!(
+                                    "{}: dialogue variant reveals city name {}",
+                                    variant.variant_id, location.name
+                                ));
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -176,6 +235,7 @@ pub struct Travel {
 pub struct Location {
     pub location_id: String,
     pub name: String,
+    pub location_type: String,
     pub state_or_territory: String,
 }
 #[derive(Debug, Deserialize, Clone)]
@@ -424,7 +484,7 @@ impl Catalogue {
                 .values()
                 .map(Vec::len)
                 .sum::<usize>()
-                != 9324
+                != 12726
         {
             return Err(Error::Incomplete(CatalogueSummary {
                 missions: value.missions.len(),
@@ -452,6 +512,43 @@ mod tests {
             ),
             (1000, 100, 37, 1332, 500)
         );
+        assert_eq!(c.atoms.values().map(Vec::len).sum::<usize>(), 707);
+        for (state, atoms) in &c.atoms {
+            let spotlight = ["Lagos", "Kano", "Niger", "Oyo", "Rivers"].contains(&state.as_str());
+            assert_eq!(
+                atoms.len(),
+                if state == "Federal Capital Territory" {
+                    18
+                } else if spotlight {
+                    20
+                } else {
+                    19
+                },
+                "{state}"
+            );
+            assert_eq!(
+                atoms
+                    .iter()
+                    .filter(|atom| atom.atom_id.starts_with("SCA-ENRICH-"))
+                    .count(),
+                4,
+                "{state}"
+            );
+            assert_eq!(
+                atoms
+                    .iter()
+                    .filter(|atom| atom.atom_id.starts_with("SCA-DEEP-"))
+                    .count(),
+                if state == "Federal Capital Territory" {
+                    0
+                } else if spotlight {
+                    2
+                } else {
+                    1
+                },
+                "{state}"
+            );
+        }
     }
     #[test]
     fn malformed_or_missing_content_is_rejected() {
@@ -494,5 +591,66 @@ mod tests {
         let mut findings = vec![];
         scan(&root, &mut findings);
         assert!(findings.is_empty(), "{findings:#?}");
+    }
+
+    #[test]
+    fn gameplay_content_uses_no_audited_real_transport_brands() {
+        let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../..");
+        let brands = [
+            "ibom air",
+            "air peace",
+            "arik air",
+            "gigm",
+            "guo transport",
+            "abc transport",
+            "bolt ride",
+            "uber ride",
+            "toyota",
+            "mercedes-benz",
+            "volkswagen",
+            "peugeot",
+            "hyundai",
+            "honda civic",
+            "kia motors",
+        ];
+        let mut findings = Vec::new();
+        for relative in [
+            "data/gameplay",
+            "data/missions",
+            "data/clues",
+            "data/locations",
+            "data/knowledge",
+        ] {
+            let path = root.join(relative);
+            for entry in walk_csv(&path) {
+                let text = std::fs::read_to_string(&entry)
+                    .unwrap_or_default()
+                    .to_lowercase();
+                for brand in brands {
+                    if text.contains(brand) {
+                        findings.push(format!("{}: {brand}", entry.display()));
+                    }
+                }
+            }
+        }
+        assert!(
+            findings.is_empty(),
+            "real transport brands require review: {findings:#?}"
+        );
+    }
+
+    fn walk_csv(path: &Path) -> Vec<std::path::PathBuf> {
+        let mut result = Vec::new();
+        if let Ok(entries) = std::fs::read_dir(path) {
+            for entry in entries.flatten() {
+                let child = entry.path();
+                if child.is_dir() {
+                    result.extend(walk_csv(&child));
+                } else if child.extension().is_some_and(|value| value == "csv") {
+                    result.push(child);
+                }
+            }
+        }
+        result
     }
 }

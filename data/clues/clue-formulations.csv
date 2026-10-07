@@ -2090,9 +2090,9 @@ CF-02088,KN-0696,route_hint,2,Use this route intelligence to choose the next des
 CF-02089,KN-0697,witness_statement,3,"A witness recalls this detail: Uyo carries the game tags ['culture', 'commerce'].","['culture', 'commerce']",tag_context
 CF-02090,KN-0697,question,3,"Which answer fits this lead: Uyo carries the game tags ['culture', 'commerce'].","['culture', 'commerce']",tag_context
 CF-02091,KN-0697,route_hint,3,"Use this route intelligence to choose the next destination: Uyo carries the game tags ['culture', 'commerce'].","['culture', 'commerce']",tag_context
-CF-02092,KN-0698,witness_statement,3,"A witness recalls this detail: Uyo carries the knowledge hooks ['Ibom Air', 'Ibom culture'].","['Ibom Air', 'Ibom culture']",knowledge_hook
-CF-02093,KN-0698,question,3,"Which answer fits this lead: Uyo carries the knowledge hooks ['Ibom Air', 'Ibom culture'].","['Ibom Air', 'Ibom culture']",knowledge_hook
-CF-02094,KN-0698,route_hint,3,"Use this route intelligence to choose the next destination: Uyo carries the knowledge hooks ['Ibom Air', 'Ibom culture'].","['Ibom Air', 'Ibom culture']",knowledge_hook
+CF-02092,KN-0698,witness_statement,3,"A witness recalls this detail: Uyo carries the knowledge hooks ['regional aviation', 'Ibom culture'].","['regional aviation', 'Ibom culture']",knowledge_hook
+CF-02093,KN-0698,question,3,"Which answer fits this lead: Uyo carries the knowledge hooks ['regional aviation', 'Ibom culture'].","['regional aviation', 'Ibom culture']",knowledge_hook
+CF-02094,KN-0698,route_hint,3,"Use this route intelligence to choose the next destination: Uyo carries the knowledge hooks ['regional aviation', 'Ibom culture'].","['regional aviation', 'Ibom culture']",knowledge_hook
 CF-02095,KN-0699,witness_statement,2,A witness recalls this detail: The state-level capital associated with Akwa Ibom is Uyo.,Uyo,state_capital_context
 CF-02096,KN-0699,question,2,Which answer fits this lead: The state-level capital associated with Akwa Ibom is Uyo.,Uyo,state_capital_context
 CF-02097,KN-0699,route_hint,2,Use this route intelligence to choose the next destination: The state-level capital associated with Akwa Ibom is Uyo.,Uyo,state_capital_context

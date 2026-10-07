@@ -216,6 +216,334 @@ fn enrichment(root: &Path) {
         println!("  {domain}: {count}");
     }
 }
+
+fn replace_place_name(text: &str, name: &str, replacement: &str) -> String {
+    let mut output = String::new();
+    let mut remaining = text;
+    let needle = name.to_lowercase();
+    loop {
+        let lower = remaining.to_lowercase();
+        let Some(index) = lower.find(&needle) else {
+            output.push_str(remaining);
+            break;
+        };
+        let end = index + name.len();
+        let before_ok = index == 0
+            || !remaining[..index]
+                .chars()
+                .next_back()
+                .is_some_and(char::is_alphanumeric);
+        let after_ok = end == remaining.len()
+            || !remaining[end..]
+                .chars()
+                .next()
+                .is_some_and(char::is_alphanumeric);
+        output.push_str(&remaining[..index]);
+        if before_ok && after_ok {
+            output.push_str(replacement);
+        } else {
+            output.push_str(&remaining[index..end]);
+        }
+        remaining = &remaining[end..];
+    }
+    output
+}
+
+fn remove_place_names(text: &str, places: &[(String, &'static str)]) -> String {
+    places
+        .iter()
+        .fold(text.to_owned(), |value, (name, replacement)| {
+            replace_place_name(&value, name, replacement)
+        })
+}
+
+fn enrich_state_clues(root: &Path) {
+    let seed_path = root.join("data/gameplay/state-enrichment-seeds.psv");
+    let atom_path = root.join("data/gameplay/state-clue-atoms.csv");
+    let variant_path = root.join("data/gameplay/clue-dialogue-variants.csv");
+    let seeds = fs::read_to_string(&seed_path).unwrap();
+    let mut places = csv::Reader::from_path(root.join("data/gameplay/state-hubs.csv"))
+        .unwrap()
+        .records()
+        .map(|row| row.unwrap())
+        .flat_map(|row| {
+            [
+                (row[2].to_owned(), "the state capital"),
+                (row[0].to_owned(), "another state"),
+            ]
+        })
+        .collect::<Vec<_>>();
+    places.extend(
+        csv::Reader::from_path(root.join("data/locations/locations.csv"))
+            .unwrap()
+            .records()
+            .map(|row| row.unwrap())
+            .filter(|row| row[2].contains("city") || row[2].contains("capital"))
+            .map(|row| (row[1].to_owned(), "a city")),
+    );
+    places.sort();
+    places.dedup_by(|left, right| left.0 == right.0);
+    places.sort_by(|left, right| right.0.len().cmp(&left.0.len()));
+    let mut rows = csv::Reader::from_path(&atom_path)
+        .unwrap()
+        .records()
+        .map(|row| row.unwrap())
+        .collect::<Vec<_>>();
+    rows.retain(|row| !row[0].starts_with("SCA-ENRICH-") && !row[0].starts_with("SCA-DEEP-"));
+    let mut variants = csv::Reader::from_path(&variant_path)
+        .unwrap()
+        .records()
+        .map(|row| row.unwrap())
+        .collect::<Vec<_>>();
+    variants.retain(|row| !row[0].starts_with("SCA-ENRICH-") && !row[0].starts_with("SCA-DEEP-"));
+    for (index, line) in seeds.lines().skip(1).enumerate() {
+        let values = line.split('|').collect::<Vec<_>>();
+        assert_eq!(values.len(), 10, "invalid state enrichment row: {line}");
+        let state = values[0];
+        let candidates = format!("{}|{}|{}", values[1], values[2], values[3]);
+        let records = [
+            (
+                "motto",
+                "library",
+                "Library",
+                "librarian|researcher",
+                format!(
+                    "The traveller asked for a state whose official slogan is ‘{}’, but carefully avoided saying its name.",
+                    values[4]
+                ),
+                format!(
+                    "The person dey ask for the state wey dem dey call ‘{}’, but e no mention the state name.",
+                    values[4]
+                ),
+            ),
+            (
+                "city_identity",
+                "motor_park",
+                "Motor park",
+                "driver|ticket clerk|agbero",
+                format!(
+                    "The traveller asked for a vehicle heading to {}, referring to the city as ‘{}’.",
+                    values[5], values[6]
+                ),
+                format!(
+                    "The person ask which motor dey go {}, and na ‘{}’ e call the city.",
+                    values[5], values[6]
+                ),
+            ),
+            (
+                "landmark",
+                "museum",
+                "Museum",
+                "museum guide|heritage researcher",
+                format!(
+                    "The traveller was researching {}: {}.",
+                    values[7], values[8]
+                ),
+                format!(
+                    "The person dey find {}—the place wey get {}.",
+                    values[7], values[8]
+                ),
+            ),
+            (
+                "economy",
+                "market",
+                "Market",
+                "trader|loader|produce seller",
+                format!(
+                    "The traveller's list linked the destination with {}.",
+                    values[9]
+                ),
+                format!(
+                    "The list wey the person carry join that place with {}.",
+                    values[9]
+                ),
+            ),
+        ];
+        for (offset, (dimension, venue, venue_name, roles, dialogue, pidgin)) in
+            records.into_iter().enumerate()
+        {
+            let id = format!("SCA-ENRICH-{:03}-{}", index + 1, offset + 1);
+            rows.push(csv::StringRecord::from(vec![
+                id.clone(), state.into(), "national_enrichment".into(), dimension.into(), candidates.clone(),
+                venue.into(), venue_name.into(), roles.into(), dialogue.clone(), "2".into(),
+                "User-supplied Nigerian state enrichment; source verification required".into(),
+                "User-supplied Nigerian state enrichment".into(), String::new(), String::new(),
+                "user_contributed".into(), "editorial_verification_required".into(), "1".into(),
+                "mixed_stable_and_current".into(), "none".into(), "automated_pass".into(),
+                "required".into(), "Verify against authoritative state, heritage, and economic sources before publication.".into(),
+            ]));
+            for (difficulty, english_prefixes, pidgin_prefixes) in [
+                (
+                    "easy",
+                    ["", "The clearest detail was this: ", "I wrote this down: "],
+                    ["", "Na this one clear pass: ", "I write this one down: "],
+                ),
+                (
+                    "medium",
+                    [
+                        "The destination was not named. ",
+                        "What stayed with me was this: ",
+                        "One useful detail remains: ",
+                    ],
+                    [
+                        "E no call the place name. ",
+                        "Na this detail remain for my mind: ",
+                        "One useful thing be say: ",
+                    ],
+                ),
+                (
+                    "hard",
+                    [
+                        "No place name was used; the useful fragment was this: ",
+                        "The indirect reference was this: ",
+                        "The only trace I could confirm was this: ",
+                    ],
+                    [
+                        "No place name enter the talk; na only this clue remain: ",
+                        "The person bend the talk, but this one show: ",
+                        "Na only this part I fit confirm: ",
+                    ],
+                ),
+            ] {
+                for number in 0..3 {
+                    for (register, prefix, text) in [
+                        ("English", english_prefixes[number], dialogue.as_str()),
+                        ("Pidgin", pidgin_prefixes[number], pidgin.as_str()),
+                    ] {
+                        variants.push(csv::StringRecord::from(vec![
+                            format!(
+                                "{id}-{}-{}-{}",
+                                &difficulty[..1].to_uppercase(),
+                                &register[..1],
+                                number + 1
+                            ),
+                            id.clone(),
+                            difficulty.into(),
+                            register.into(),
+                            (number + 1).to_string(),
+                            format!("{prefix}{text}"),
+                        ]));
+                    }
+                }
+            }
+        }
+    }
+    let deep_seeds =
+        fs::read_to_string(root.join("data/gameplay/deep-state-fact-seeds.psv")).unwrap();
+    for (index, line) in deep_seeds.lines().skip(1).enumerate() {
+        let values = line.split('|').collect::<Vec<_>>();
+        assert_eq!(values.len(), 8, "invalid deep state fact row: {line}");
+        let id = format!("SCA-DEEP-{:03}", index + 1);
+        let roles = values[5].replace(';', "|");
+        rows.push(csv::StringRecord::from(vec![
+            id.clone(), values[0].into(), "deep_state_facts".into(), "specific_fact".into(),
+            format!("{}|{}|{}", values[1], values[2], values[3]), values[4].into(),
+            values[4].replace('_', " "), roles, values[6].into(), "3".into(),
+            "User-supplied deep Nigerian state facts; source verification required".into(),
+            "User-supplied deep Nigerian state facts".into(), String::new(), String::new(),
+            "user_contributed".into(), "editorial_verification_required".into(), "1".into(),
+            "mixed_historical_and_stable".into(), "none".into(), "automated_pass".into(),
+            "required".into(), "Verify the precise historical or cultural claim against an authoritative source before publication.".into(),
+        ]));
+        for (difficulty, english_prefixes, pidgin_prefixes) in [
+            (
+                "easy",
+                ["", "The clearest detail was this: ", "I wrote this down: "],
+                ["", "Na this one clear pass: ", "I write this one down: "],
+            ),
+            (
+                "medium",
+                [
+                    "The destination was not named. ",
+                    "What stayed with me was this: ",
+                    "One useful detail remains: ",
+                ],
+                [
+                    "E no call the place name. ",
+                    "Na this detail remain for my mind: ",
+                    "One useful thing be say: ",
+                ],
+            ),
+            (
+                "hard",
+                [
+                    "No place name was used; the useful fragment was this: ",
+                    "The indirect reference was this: ",
+                    "The only trace I could confirm was this: ",
+                ],
+                [
+                    "No place name enter the talk; na only this clue remain: ",
+                    "The person bend the talk, but this one show: ",
+                    "Na only this part I fit confirm: ",
+                ],
+            ),
+        ] {
+            for number in 0..3 {
+                for (register, prefix, text) in [
+                    ("English", english_prefixes[number], values[6]),
+                    ("Pidgin", pidgin_prefixes[number], values[7]),
+                ] {
+                    variants.push(csv::StringRecord::from(vec![
+                        format!(
+                            "{id}-{}-{}-{}",
+                            &difficulty[..1].to_uppercase(),
+                            &register[..1],
+                            number + 1
+                        ),
+                        id.clone(),
+                        difficulty.into(),
+                        register.into(),
+                        (number + 1).to_string(),
+                        format!("{prefix}{text}"),
+                    ]));
+                }
+            }
+        }
+    }
+    for row in &mut rows {
+        let mut fields = row.iter().map(str::to_owned).collect::<Vec<_>>();
+        fields[8] = remove_place_names(&fields[8], &places);
+        *row = csv::StringRecord::from(fields);
+    }
+    let states_by_atom = rows
+        .iter()
+        .map(|row| (row[0].to_owned(), row[1].to_owned()))
+        .collect::<BTreeMap<_, _>>();
+    for row in &mut variants {
+        if states_by_atom.contains_key(&row[1]) {
+            let mut fields = row.iter().map(str::to_owned).collect::<Vec<_>>();
+            fields[5] = remove_place_names(&fields[5], &places);
+            *row = csv::StringRecord::from(fields);
+        }
+    }
+    let temporary = atom_path.with_extension("csv.tmp");
+    let headers = csv::Reader::from_path(&atom_path)
+        .unwrap()
+        .headers()
+        .unwrap()
+        .clone();
+    let mut writer = csv::Writer::from_path(&temporary).unwrap();
+    writer.write_record(&headers).unwrap();
+    for row in rows {
+        writer.write_record(&row).unwrap();
+    }
+    writer.flush().unwrap();
+    fs::rename(temporary, atom_path).unwrap();
+    let variant_temporary = variant_path.with_extension("csv.tmp");
+    let variant_headers = csv::Reader::from_path(&variant_path)
+        .unwrap()
+        .headers()
+        .unwrap()
+        .clone();
+    let mut variant_writer = csv::Writer::from_path(&variant_temporary).unwrap();
+    variant_writer.write_record(&variant_headers).unwrap();
+    for row in variants {
+        variant_writer.write_record(&row).unwrap();
+    }
+    variant_writer.flush().unwrap();
+    fs::rename(variant_temporary, variant_path).unwrap();
+    println!("Added 189 state clue atoms and 3,402 English/Pidgin dialogue variants.");
+}
 fn mysql() -> MysqlStore {
     let store = MysqlStore::connect_from_env().unwrap_or_else(|error| {
         eprintln!("MySQL configuration or connection error: {error}");
@@ -375,6 +703,7 @@ fn main() {
         ),
         "editorial" => editorial(&root),
         "enrichment" => enrichment(&root),
+        "enrich-state-clues" => enrich_state_clues(&root),
         "migrate-mysql" => {
             let store = mysql();
             println!(
@@ -441,7 +770,7 @@ fn main() {
         }
         other => {
             eprintln!(
-                "Unknown command {other}. Use validate, simulate, editorial, enrichment, migrate-mysql, import-mysql, rebuild-mysql, verify-mysql, export-mysql, backup-mysql, restore-mysql, or export."
+                "Unknown command {other}. Use validate, simulate, editorial, enrichment, enrich-state-clues, migrate-mysql, import-mysql, rebuild-mysql, verify-mysql, export-mysql, backup-mysql, restore-mysql, or export."
             );
             std::process::exit(2)
         }

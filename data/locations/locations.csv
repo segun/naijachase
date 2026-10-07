@@ -57,7 +57,7 @@ LOC-055,Awka,major_city,Anambra,South East,,,"['government', 'culture', 'craft']
 LOC-056,Onitsha,commercial_city,Anambra,South East,,,"['commerce', 'river', 'markets']","['Onitsha Main Market', 'Niger River']",Curated game knowledge; verify current operational details before publishing
 LOC-057,Aba,commercial_city,Abia,South East,,,"['manufacturing', 'commerce', 'craft']","['Ariaria Market', 'Aba manufacturing']",Curated game knowledge; verify current operational details before publishing
 LOC-058,Owerri,major_city,Imo,South East,,,"['culture', 'education']",['Imo capital'],Curated game knowledge; verify current operational details before publishing
-LOC-059,Uyo,major_city,Akwa Ibom,South South,,,"['culture', 'commerce']","['Ibom Air', 'Ibom culture']",Curated game knowledge; verify current operational details before publishing
+LOC-059,Uyo,major_city,Akwa Ibom,South South,,,"['culture', 'commerce']","['regional aviation', 'Ibom culture']",Curated game knowledge; verify current operational details before publishing
 LOC-060,Warri,major_city,Delta,South South,,,"['oil', 'delta', 'commerce']",['Niger Delta'],Curated game knowledge; verify current operational details before publishing
 LOC-061,Yenagoa,major_city,Bayelsa,South South,,,"['delta', 'oil', 'waterways']",['Niger Delta'],Curated game knowledge; verify current operational details before publishing
 LOC-062,Lokoja,historic_city,Kogi,North Central,,,"['history', 'rivers']","['confluence', 'colonial history']",Curated game knowledge; verify current operational details before publishing

@@ -23,6 +23,16 @@ pub fn rank(points: u32) -> &'static str {
     .unwrap()
     .1
 }
+
+pub fn investigation_minutes(base_minutes: u32, is_home_base: bool) -> u32 {
+    if is_home_base {
+        base_minutes
+            .saturating_sub((base_minutes / 5).max(5))
+            .max(1)
+    } else {
+        base_minutes
+    }
+}
 pub fn apply(mut state: GameState, command: Command) -> Result<(GameState, Vec<Event>), Error> {
     if state.elapsed >= 10080 || state.outcome.as_deref() == Some("deadline") {
         state.outcome = Some("deadline".into());
@@ -231,6 +241,13 @@ mod tests {
             replay: vec![],
             outcome: None,
         }
+    }
+
+    #[test]
+    fn home_base_reduces_but_never_removes_investigation_time() {
+        assert_eq!(investigation_minutes(60, false), 60);
+        assert_eq!(investigation_minutes(60, true), 48);
+        assert_eq!(investigation_minutes(5, true), 1);
     }
     #[test]
     fn deterministic() {

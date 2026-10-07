@@ -1,0 +1,23 @@
+{
+  "name": "naijachase-web",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "check": "svelte-check --tsconfig ./tsconfig.json",
+    "build": "svelte-check --tsconfig ./tsconfig.json && vite build && node dev/check-budget.mjs",
+    "test": "svelte-check --tsconfig ./tsconfig.json && node --test tests/*.test.mjs",
+    "preview": "vite preview",
+    "mock": "node dev/mock-api.mjs"
+  },
+  "dependencies": {
+    "svelte": "^5.0.0"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^6.0.0",
+    "svelte-check": "^4.0.0",
+    "typescript": "^5.9.3",
+    "vite": "^7.1.12"
+  }
+}

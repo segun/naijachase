@@ -1,0 +1,5 @@
+{
+  "from_version": 6,
+  "to_version": 7,
+  "reason": "Make authentication throttling durable and consistent across API instances."
+}

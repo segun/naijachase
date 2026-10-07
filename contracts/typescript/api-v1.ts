@@ -1,0 +1,19 @@
+// Generated from schemas/openapi-v1.json. Do not edit by hand.
+export type Player={player_id:string;email:string;username:string;home_base:string;email_verified:boolean;display_name:string|null;pronouns:string|null;sex:string|null;avatar_id:string|null;uniform_id:string|null;leaderboard_opt_in:boolean};
+export type AuthResponse={player:Player};
+export type PlayerSession={session_id:string;device_label:string|null;created_at:string;last_seen_at:string;expires_at:string;current:boolean};
+export type Achievement={achievement_id:string;earned_at:string};
+export type RankHistoryEntry={old_rank:string;new_rank:string;points:number;earned_at:string};
+export type ProgressionSummary={points:number;rank:string;solved_cases:number;visited_states:string[];correct_travels:number;wrong_travels:number;correct_deductions:number;wrong_deductions:number;achievements:Achievement[];rank_history:RankHistoryEntry[]};
+export type CaseArchiveEntry={case_id:string;mission_id:string;thief_id:string;outcome:string;score:number;elapsed_minutes:number;completed_at:string;states_visited:string[];correct_travels:number;wrong_travels:number;correct_deductions:number;wrong_deductions:number};
+export type RegisterRequest={email:string;username:string;home_base:string;password:string;confirm_password:string};
+export type LoginRequest={email:string;password:string};
+export type ProfileUpdate={display_name?:string|null;pronouns?:string|null;sex?:string|null;avatar_id?:string|null;uniform_id?:string|null;home_base:string;leaderboard_opt_in:boolean};
+export type RecoveryRequest={email:string};
+export type RecoveryCompleteRequest={token:string;password:string;confirm_password:string};
+export type ClientCommand={type:"visit_venue";venue_id:string}|{type:"wait";minutes:number}|{type:"record_trait";trait_name:string;value:string}|{type:"travel";destination:string}|{type:"request_warrant";suspect_id:string}|{type:"search_hideout";venue_id:string};
+export type ExecuteRequest={command_id:string;expected_version:number;command:ClientCommand};
+export type CreateCaseRequest={case_id:string;mission_id:string;seed?:number};
+export type PublicGameState={mission_id:string;difficulty:number;stage:number;current_state:string;elapsed:number;score:number;career_points:number;dossier:Record<string,string>;visited_venues:string[];warrant_suspect:string|null;outcome:string|null};
+export type GameEvent={event_type:string;data:Record<string,string>};
+export type CaseResponse={api_version:"v1";case_id:string;state_version:number;duplicate:boolean;state:PublicGameState;events:GameEvent[]};

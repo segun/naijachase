@@ -1,0 +1,31 @@
+<script lang="ts">
+  import type { AppController } from "../lib/app.svelte";
+  import { clockParts } from "../model.ts";
+  import Icon from "./Icon.svelte";
+
+  let { app }: { app: AppController } = $props();
+  const gs = $derived(app.game!.state);
+  const solved = $derived(gs.outcome === "solved");
+  const parts = $derived(clockParts(gs.elapsed));
+</script>
+
+<div class="results" class:solved>
+  <div class="results-card card rise">
+    <div class="verdict-mark" aria-hidden="true"><Icon name={solved ? "trophy" : "x"} /></div>
+    <p class="eyebrow">Case closed · {gs.mission_id}</p>
+    <h1>{solved ? "Thief caught." : "The trail went cold."}</h1>
+    <p class="muted lead">{solved ? "Your dossier held up and the warrant stuck." : "The suspect slipped away. Study your notes and try again with a sharper eye."}</p>
+    <div class="stamp-mark" role="img" aria-label={solved ? "Arrested" : "Escaped"}>{solved ? "Arrested" : "Escaped"}</div>
+    {#if app.promotion}<p class="badge badge-gold promotion" role="status"><Icon name="star" />Promoted to {app.promotion}</p>{/if}
+    <dl class="facts big">
+      <div><dt>Final score</dt><dd>{gs.score.toLocaleString()}</dd></div>
+      <div><dt>Rank</dt><dd>{app.summary?.rank ?? "—"}</dd></div>
+      <div><dt>Ended</dt><dd>{parts.day} {parts.time}</dd></div>
+      <div><dt>Career points</dt><dd>{app.summary ? app.summary.points.toLocaleString() : "—"}</dd></div>
+    </dl>
+    <div class="row-actions">
+      <button class="btn btn-primary btn-lg" type="button" onclick={() => app.newDesk()}>Return to case desk <Icon name="arrow" /></button>
+      <button class="btn btn-lg" type="button" onclick={() => { app.newDesk(); app.go("archive"); }}>View archive</button>
+    </div>
+  </div>
+</div>
