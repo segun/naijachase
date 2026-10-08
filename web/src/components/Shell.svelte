@@ -1,7 +1,8 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
   import type { AppController } from "../lib/app.svelte";
-  import { dossierCount, initials, type Screen } from "../model.ts";
+  import { coopActions, dossierCount, initials, type Screen } from "../model.ts";
+  import AvatarSilhouette from "./AvatarSilhouette.svelte";
   import Brand from "./Brand.svelte";
   import Hud from "./Hud.svelte";
   import Icon from "./Icon.svelte";
@@ -10,8 +11,10 @@
   let { app, children }: { app: AppController; children: Snippet } = $props();
 
   const inCase = $derived(app.game !== null && app.screen !== "results");
-  const rail = $derived(app.signedIn && app.screen !== "welcome");
+  // The rooms (the desk and the archive) are full-screen: their own menus replace the side rail.
+  const rail = $derived(app.signedIn && app.screen !== "welcome" && app.screen !== "cases" && app.screen !== "archive" && !app.needsAvatar);
 
+  const waiting = $derived(app.coop.requests.filter(r => coopActions(r, app.player?.username ?? "").length).length);
   type Item = { id: Screen; label: string; icon: string; count?: string };
   const items = $derived<Item[]>(
     inCase
@@ -24,7 +27,10 @@
         ]
       : [
           { id: "cases", label: "Case desk", icon: "home" },
-          { id: "archive", label: "Case archive", icon: "archive", count: app.archive.length ? String(app.archive.length) : undefined }
+          { id: "archive", label: "Case archive", icon: "archive", count: app.archive.length ? String(app.archive.length) : undefined },
+          { id: "groups", label: "Groups", icon: "users", count: app.groups.invitations.length ? String(app.groups.invitations.length) : undefined },
+          { id: "weekly", label: "Weekly", icon: "trophy" },
+          { id: "helpers", label: "Helpers", icon: "helper", count: waiting ? String(waiting) : undefined }
         ]
   );
 </script>
@@ -46,7 +52,7 @@
       <div class="nav-spacer"></div>
       <div class="profile">
         <div class="profile-head">
-          <span class="avatar" aria-hidden="true">{initials(app.investigator)}</span>
+          <span class="avatar" class:has-avatar={app.avatar !== null} aria-hidden="true">{#if app.avatar}<AvatarSilhouette preset={app.avatar} crop="bust" />{:else}{initials(app.investigator)}{/if}</span>
           <div><strong>{app.investigator}</strong><small>{app.summary?.rank ?? "Investigator"}</small></div>
         </div>
         <small class="hint">{app.summary ? `${app.summary.points.toLocaleString()} career points` : "Career points loading…"}</small>

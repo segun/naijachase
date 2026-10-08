@@ -1,0 +1,13 @@
+# P3.8.1 frontend handoff
+
+Weekly challenges are private to group members and use authoritative server time. They run Monday 07:00 WAT to the following Monday 07:00 WAT, or close on the first valid capture. Never calculate eligibility, arrival, closure, or winners in the browser.
+
+Group endpoints are `POST /v1/groups`, `GET /v1/groups/{group_id}`, invitation creation/response, member role/removal, leave, ownership transfer, and soft deletion. Rosters are returned only to members.
+
+`GET /v1/groups/{group_id}/weekly/current` idempotently returns the shared challenge. `POST /v1/weekly/{challenge_id}/attempt` creates or resumes the caller's independent attempt. `GET /v1/weekly/attempts/{attempt_id}` returns state, countdown boundaries, winner status, and current transit.
+
+Commands use `POST /v1/weekly/attempts/{attempt_id}/commands` with the ordinary command envelope. Movement responds with `status: in_transit`, `transit_id`, and `duration_seconds`. While in transit all commands are rejected. At or after arrival, any attempt read or command completes arrival idempotently from persisted server state. The player may continue an ordinary case in parallel.
+
+`GET /v1/weekly/{challenge_id}` returns private standings and the database-selected winner. `GET /v1/weekly/history` returns prior group challenges. `GET/PUT /v1/weekly/notifications` controls web/email opt-in. Renderer events include scheduling, start, departure, arrival, finish, first capture, closure, and reward; animations and music cannot accelerate them.
+
+The winner receives five separate challenge tokens. Every entrant begins with three challenge-only bribe tokens; storefront or personal balances never affect competition.

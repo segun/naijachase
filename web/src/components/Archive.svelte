@@ -1,10 +1,11 @@
 <script lang="ts">
   import type { AppController } from "../lib/app.svelte";
-  import { duration, ratio } from "../model.ts";
+  import { ATTEMPT_LABEL, duration, ratio, replayTargets } from "../model.ts";
   import Icon from "./Icon.svelte";
 
   let { app }: { app: AppController } = $props();
   const solved = (outcome: string) => outcome === "solved";
+  const replayable = $derived(replayTargets(app.archive));
   const date = (iso: string) => new Date(iso).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
 </script>
 
@@ -12,7 +13,7 @@
   <header class="page-head rise">
     <p class="eyebrow">Case archive</p>
     <h1>Closed cases</h1>
-    <p>Every case you have finished and the thief behind it.</p>
+    <p>Every case you have finished and the thief behind it. Replay a solved case any time; replays award no points or achievements.</p>
   </header>
 
   {#if app.archive.length === 0}
@@ -28,7 +29,11 @@
         <li class="card rise" style:animation-delay="{Math.min(i, 8) * 0.04}s">
           <div class="archive-head">
             <span class="mono">{entry.mission_id}</span>
-            <span class="badge" class:badge-green={solved(entry.outcome)} class:badge-red={!solved(entry.outcome)}>{entry.outcome.replaceAll("_", " ")}</span>
+            <span class="badge-row">
+              {#if entry.first_completion}<span class="badge badge-green">First solve</span>{/if}
+              {#if entry.attempt_kind !== "ordinary"}<span class="badge badge-gold">{ATTEMPT_LABEL[entry.attempt_kind]}</span>{/if}
+              <span class="badge" class:badge-green={solved(entry.outcome)} class:badge-red={!solved(entry.outcome)}>{entry.outcome.replaceAll("_", " ")}</span>
+            </span>
           </div>
           <h2>Thief {entry.thief_id}</h2>
           <dl class="facts">
@@ -38,6 +43,9 @@
             <div><dt>Travels</dt><dd>{ratio(entry.correct_travels, entry.wrong_travels)}</dd></div>
           </dl>
           <p class="muted route">{entry.states_visited.join(" → ")}</p>
+          {#if replayable.has(entry.case_id)}
+            <button class="btn" type="button" disabled={app.busy} onclick={() => app.replayCase(entry.mission_id)}>Replay case <Icon name="arrow" /></button>
+          {/if}
           <small class="muted">Closed {date(entry.completed_at)} · deductions {ratio(entry.correct_deductions, entry.wrong_deductions)} correct</small>
         </li>
       {/each}

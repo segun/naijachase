@@ -67,7 +67,8 @@ test("sign-in screens fit the viewport on desktop and the chase scene is decorat
   assert.match(css, /\.form-grid/);
   const scene = read("components/ChaseScene.svelte");
   assert.match(scene, /aria-hidden="true"/);
-  assert.match(read("components/AuthPanel.svelte"), /<ChaseScene \/>/);
+  assert.match(read("components/AuthPanel.svelte"), /<ChaseStage \/>/);
+  assert.match(read("components/ChaseStage.svelte"), /<ChaseScene \/>/, "the 2D scene is always the base and the fallback");
   assert.match(css, /prefers-reduced-motion/);
 });
 

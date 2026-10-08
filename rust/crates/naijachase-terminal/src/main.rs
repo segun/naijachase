@@ -333,6 +333,7 @@ fn main() {
         hideout_venue: String::new(),
         replay: vec![],
         outcome: None,
+        economy: Default::default(),
     };
     let mut state = career
         .active

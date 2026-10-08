@@ -1,0 +1,5 @@
+{
+  "from_version": 9,
+  "to_version": 10,
+  "reason": "Add role-controlled mission lifecycle, scheduled live publication, audit history, and exhausted-player release notifications."
+}

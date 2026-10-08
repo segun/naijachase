@@ -1,0 +1,5 @@
+{
+  "from_version": 8,
+  "to_version": 9,
+  "reason": "Add published catalogue lifecycle, unique player mission completions, unseen assignment, and explicit replay metadata."
+}

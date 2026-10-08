@@ -1,9 +1,11 @@
+import { untrack } from "svelte";
 import { Api, ApiError } from "../api";
 import { MenuMusic } from "./music.svelte.ts";
+import { GroupsController } from "./groups.svelte.ts";
 import {
   FIELDS, RATE_LIMIT_MESSAGE, errorKind, groupNotes, nearestHomeBase, parseNotes,
-  type AchievementDef, type CaseArchiveEntry, type CaseResponse, type ClientCommand, type Note,
-  type Player, type PlayerSession, type ProfileUpdate, type ProgressionSummary, type Screen
+  catalogueView, unreadReleases, type ReportCategory, type AchievementDef, type CaseArchiveEntry, type CaseResponse, type CatalogueProgress, type ClientCommand, type Note,
+  type AvatarCatalogue, type AvatarPreset, type CooperationPreferences, type CooperationRequest, type Player, type PlayerSession, type ReleaseNotification, type TransportLedgerEntry, type TransportQuote, type ProfileUpdate, type ProgressionSummary, type Screen
 } from "../model.ts";
 
 export type Toast = { id: number; kind: "info" | "error" | "success"; text: string };
@@ -24,8 +26,9 @@ function readSettings(): Settings {
 }
 
 export class AppController {
-  private api = new Api();
+  readonly api = new Api();
   readonly music = new MenuMusic();
+  readonly groups = new GroupsController(this);
   private toastId = 0;
   private refreshTimer: ReturnType<typeof setInterval> | undefined;
 
@@ -47,11 +50,30 @@ export class AppController {
   archive = $state<CaseArchiveEntry[]>([]);
   catalog = $state<AchievementDef[]>([]);
   sessions = $state<PlayerSession[]>([]);
+  /** The player's chosen preset, as the server describes it; null until loaded or chosen. */
+  avatar = $state<AvatarPreset | null>(null);
+  catalogueStatus = $state<CatalogueProgress | null>(null);
+  /** Set when the server reports that every published case is complete; a milestone, not an error. */
+  exhausted = $state(false);
+  /** Server quotes for every journey the case currently offers. Never calculated in the browser. */
+  releases = $state<ReleaseNotification[]>([]);
+  coop = $state<{ prefs: CooperationPreferences | null; requests: CooperationRequest[]; blocks: [string, string][]; reputation: number; loaded: boolean }>({ prefs: null, requests: [], blocks: [], reputation: 0, loaded: false });
+  quotes = $state<TransportQuote[]>([]);
+  quotesLoaded = $state(false);
+  ledger = $state<TransportLedgerEntry[]>([]);
+
+  /** A case has just been opened: the desk shows its dossier and the local leads before the investigation screen. */
+  briefing = $state(false);
+  /** The local lead chosen in the briefing; the investigation opens its travel options so the server still confirms the fare. */
+  pendingLead = $state("");
 
   signedIn = $derived(this.player !== null);
+  /** First login: the avatar picker comes before the case desk and nothing else is reachable. */
+  needsAvatar = $derived(this.player !== null && !this.player.avatar_setup_complete);
   investigator = $derived(this.player?.display_name || this.player?.username || "");
   groupedNotes = $derived(groupNotes(this.notes));
-  playedMissions = $derived(this.archive.map(entry => entry.mission_id));
+  catalogue = $derived(this.catalogueStatus ? catalogueView(this.catalogueStatus) : null);
+  isReplay = $derived(this.game?.attempt_kind === "replay");
   promotion = $derived(
     this.rankAtStart && this.summary && this.game?.state.outcome && this.summary.rank !== this.rankAtStart ? this.summary.rank : null
   );
@@ -66,6 +88,12 @@ export class AppController {
     this.settings = { ...this.settings, ...patch };
     localStorage.setItem("nc-settings", JSON.stringify(this.settings));
     this.applySettings();
+  }
+
+  /** The content dashboard is reached only by URL (#/content); no player-facing link points to it. */
+  syncRoute() {
+    if (location.hash === "#/content" && this.signedIn) this.go("content");
+    else if (this.screen === "content" && location.hash !== "#/content") this.go("cases");
   }
 
   go(next: Screen) {
@@ -98,8 +126,11 @@ export class AppController {
         return;
       case "rate_limited": this.toast(RATE_LIMIT_MESSAGE, "error"); return;
       case "conflict":
-        this.toast("This case changed in another tab or device. Reloading the latest state.", "error");
-        void this.reloadCase();
+        // Only a stale state version means the case changed elsewhere; other conflicts carry their own safe message.
+        if (value.code === "stale_version") {
+          this.toast("This case changed in another tab or device. Reloading the latest state.", "error");
+          void this.reloadCase();
+        } else this.toast(value.message, "error");
         return;
       default: this.toast(value.message, "error");
     }
@@ -107,8 +138,8 @@ export class AppController {
 
   private endSession(message?: string) {
     clearInterval(this.refreshTimer);
-    this.player = null; this.game = null; this.caseId = "";
-    this.summary = null; this.archive = []; this.sessions = []; this.notes = []; this.trail = []; this.rankAtStart = null;
+    this.player = null; this.game = null; this.caseId = ""; this.briefing = false; this.pendingLead = "";
+    this.summary = null; this.archive = []; this.sessions = []; this.avatar = null; this.catalogueStatus = null; this.exhausted = false; this.quotes = []; this.ledger = []; this.notes = []; this.trail = []; this.rankAtStart = null;
     sessionStorage.clear();
     this.screen = "cases";
     if (message) this.toast(message, "info");
@@ -121,12 +152,13 @@ export class AppController {
     if (this.rankAtStart) sessionStorage.setItem("nc-rank", this.rankAtStart);
   }
 
-  private async run<T>(label: string, work: () => Promise<T>): Promise<T | undefined> {
+  /** `handle` may claim an ApiError (return true) so it is not reported as a generic failure. */
+  async run<T>(label: string, work: () => Promise<T>, handle?: (e: ApiError) => boolean): Promise<T | undefined> {
     this.busy = true;
     this.busyLabel = label;
     this.toasts = this.toasts.filter(t => t.kind !== "error");
     try { return await work(); }
-    catch (e) { this.fail(e); }
+    catch (e) { if (!(e instanceof ApiError && handle?.(e))) this.fail(e); }
     finally { this.busy = false; this.busyLabel = ""; }
   }
 
@@ -153,12 +185,16 @@ export class AppController {
         this.screen = "cases";
       } else {
         this.player = (await this.api.me()).player;
+        void this.loadAvatar();
         this.screen = "cases";
+        this.syncRoute();
         this.startRefresh();
-        await Promise.all([this.api.refresh().catch(() => undefined), this.loadProgression()]);
+        await this.api.refresh().catch(() => undefined);
+        await this.loadProgression();
         if (this.caseId) {
           this.game = await this.api.load(this.caseId);
           this.ensureTrail();
+          void this.refreshQuotes();
           this.screen = "investigate";
         }
       }
@@ -173,7 +209,9 @@ export class AppController {
     const out = await this.run("Signing in", () => this.api.login({ email, password }));
     if (!out) return false;
     this.player = out.player;
+    void this.loadAvatar();
     this.startRefresh();
+    this.syncRoute();
     this.toast(`Welcome back, ${this.investigator}.`, "success");
     await this.loadProgression();
     return true;
@@ -233,6 +271,36 @@ export class AppController {
     return Boolean(out);
   }
 
+  /** Quietly loads the chosen preset for display. Transient failures (such as a rate limit) are retried with a back-off, because the room needs it. */
+  async loadAvatar() {
+    for (let attempt = 0; attempt < 4; attempt++) {
+      if (!this.player?.avatar_setup_complete || this.avatar) return;
+      try { this.avatar = (await this.api.avatarProfile()).selected; return; }
+      catch (e) {
+        if (e instanceof ApiError && e.status === 401) { this.fail(e); return; }
+        await new Promise(resolve => setTimeout(resolve, 1000 * 2 ** attempt));
+      }
+    }
+  }
+
+  /** Always fetched fresh so a catalogue version change is never masked by a stale copy. `handle` claims inline-shown errors. */
+  loadAvatarOptions(handle: (e: ApiError) => boolean): Promise<AvatarCatalogue | undefined> {
+    return this.run("Loading avatars", () => this.api.avatarOptions(), handle);
+  }
+
+  /** Setup only counts as complete when the server says so; the PUT is idempotent, so re-selecting is safe. */
+  async chooseAvatar(avatarId: string, handle: (e: ApiError) => boolean): Promise<boolean> {
+    const out = await this.run("Saving avatar", () => this.api.selectAvatar(avatarId), handle);
+    if (!out) return false;
+    if (!out.setup_complete || out.selected_avatar_id !== avatarId || !out.selected) {
+      handle(new ApiError(0, "avatar_incomplete", "The server did not confirm your avatar. Please try again."));
+      return false;
+    }
+    this.avatar = out.selected;
+    if (this.player) this.player = { ...this.player, avatar_id: out.selected_avatar_id, avatar_setup_complete: true };
+    return true;
+  }
+
   async loadSessions() {
     const list = await this.run("Loading devices", () => this.api.sessions());
     if (list) this.sessions = list;
@@ -243,15 +311,82 @@ export class AppController {
     if (out) { this.toast("Device signed out.", "success"); await this.loadSessions(); }
   }
 
-  /** Progression is server-derived; the client only displays it. */
-  async loadProgression() {
+  private progressionLoad: Promise<void> | undefined;
+
+  /** Progression is server-derived; the client only displays it. Concurrent calls (login, boot and the desk) share one load. */
+  loadProgression(): Promise<void> {
+    return (this.progressionLoad ??= this.fetchProgression().finally(() => { this.progressionLoad = undefined; }));
+  }
+
+  private async fetchProgression() {
     try {
-      const [summary, archive, catalog] = await Promise.all([
+      // Read untracked: this runs inside the desk's effect and must not re-trigger itself when the catalogue is stored.
+      const known = untrack(() => this.catalog);
+      const [summary, archive, catalog, status] = await Promise.all([
         this.api.progression(), this.api.archive(),
-        this.catalog.length ? Promise.resolve(this.catalog) : this.api.achievementCatalog()
+        known.length ? Promise.resolve(known) : this.api.achievementCatalog(),
+        this.api.catalogueStatus()
       ]);
-      this.summary = summary; this.archive = archive; this.catalog = catalog;
+      this.summary = summary; this.archive = archive; this.catalog = catalog; this.catalogueStatus = status;
+      this.exhausted = status.exhausted;
+      void this.loadReleases();
+      void this.loadCoop();
+      void this.groups.load();
     } catch (e) { if (e instanceof ApiError && e.status === 401) this.fail(e); }
+  }
+
+  /** "New case available" notices; they never carry hidden case data. */
+  async loadReleases() {
+    try { this.releases = unreadReleases(await this.api.releaseNotifications()); }
+    catch (e) { if (e instanceof ApiError && e.status === 401) this.fail(e); }
+  }
+
+  async dismissRelease(id: number) {
+    this.releases = this.releases.filter(n => n.notification_id !== id);
+    try { await this.api.readRelease(id); } catch (e) { void this.loadReleases(); if (e instanceof ApiError && e.status === 401) this.fail(e); }
+  }
+
+  /** Following the notice opens a new case, so every unread notice is considered seen. */
+  async followRelease() {
+    const seen = [...this.releases];
+    await this.openCase();
+    if (this.game) for (const n of seen) void this.dismissRelease(n.notification_id);
+  }
+
+  // ---- Cooperative investigations -------------------------------------------------------------------------
+  // Server state is authoritative, so everything is reloaded after every mutation.
+
+  async loadCoop() {
+    try {
+      const prefs = await this.api.coopPreferences();
+      if (prefs.age_assurance_status !== "adult") { this.coop = { prefs, requests: [], blocks: [], reputation: 0, loaded: true }; return; }
+      const [requests, blocks, rep] = await Promise.all([this.api.coopRequests(), this.api.blocks(), this.api.reputation()]);
+      this.coop = { prefs, requests, blocks, reputation: rep.reputation, loaded: true };
+    } catch (e) { this.coop = { ...this.coop, loaded: true }; if (e instanceof ApiError && e.status === 401) this.fail(e); else if (e instanceof ApiError) this.toast(e.message, "error"); }
+  }
+
+  private async coopStep(label: string, work: () => Promise<unknown>, done: string) {
+    const ok = await this.run(label, async () => { await work(); return true; });
+    await this.loadCoop();
+    if (ok) this.toast(done, "success");
+    return Boolean(ok);
+  }
+  setCoopPreferences(enabled: boolean, emailEnabled: boolean) { return this.coopStep("Saving preferences", () => this.api.setCoopPreferences({ enabled, email_enabled: emailEnabled }), "Preferences saved."); }
+  askForHelp(venueId: string, helper: string) {
+    if (!this.game) return Promise.resolve(false);
+    const caseId = this.game.case_id;
+    return this.coopStep("Sending request", () => this.api.askForHelp({ command_id: crypto.randomUUID(), case_id: caseId, venue_id: venueId, helper_username: helper.trim() }), "Request sent. They have 12 hours to reply.");
+  }
+  coopAct(id: string, action: "accept" | "decline" | "acknowledge") {
+    const done = { accept: "Request accepted.", decline: "Request declined.", acknowledge: "Thanks sent." }[action];
+    const call = { accept: this.api.coopAccept, decline: this.api.coopDecline, acknowledge: this.api.coopAcknowledge }[action];
+    return this.coopStep("Updating request", () => call(id), done);
+  }
+  coopComplete(id: string, recommendation: string) { return this.coopStep("Sending recommendation", () => this.api.coopComplete(id, { recommendation: recommendation.trim() }), "Recommendation sent."); }
+  blockPlayer(username: string) { return this.coopStep("Blocking", () => this.api.block(username.trim()), `${username} is blocked. Pending requests between you were cancelled.`); }
+  unblockPlayer(id: string) { return this.coopStep("Unblocking", () => this.api.unblock(id), "Player unblocked."); }
+  reportPlayer(username: string, category: ReportCategory, details: string) {
+    return this.coopStep("Sending report", () => this.api.report({ username, category, details: details.trim() || null }), "Report sent privately. Thank you.");
   }
 
   // ---- Cases ---------------------------------------------------------------
@@ -260,15 +395,44 @@ export class AppController {
     if (this.game && this.trail.length === 0) this.trail = [this.game.state.current_state];
   }
 
-  async openCase(mission: string) {
-    const id = `web-${crypto.randomUUID()}`;
-    const created = await this.run("Opening case file", () => this.api.create(id, mission));
-    if (!created) return;
-    this.caseId = id; this.game = created;
+  private begin(created: CaseResponse) {
+    this.caseId = created.case_id; this.game = created;
     this.notes = []; this.trail = [created.state.current_state];
     this.rankAtStart = this.summary?.rank ?? null;
+    this.quotes = []; this.quotesLoaded = false; this.ledger = [];
     this.persist();
-    this.go("investigate");
+    void this.refreshQuotes();
+    this.briefing = true; this.pendingLead = "";
+    this.go("cases");
+  }
+
+  /** Leaves the briefing for the investigation, optionally heading straight for the chosen lead. */
+  finishBriefing(lead = "") {
+    this.briefing = false; this.pendingLead = lead;
+    this.go(this.game?.state.outcome ? "results" : "investigate");
+  }
+
+  /** Ordinary assignment: the server picks an unseen mission and returns the case id. */
+  async openCase() {
+    const created = await this.run("Opening case file", () => this.api.assign(), e => {
+      if (e.code === "catalogue_exhausted") { this.exhausted = true; return true; }
+      if (e.code === "mission_already_completed") { void this.loadProgression(); this.toast(e.message, "info"); return true; }
+      return false;
+    });
+    if (created) this.begin(created);
+  }
+
+  /** Explicit replay of a solved mission. The server suppresses points, achievements and completion credit. */
+  async replayCase(missionId: string) {
+    const created = await this.run("Opening replay", () => this.api.replay(missionId), e => {
+      if (e.code === "replay_not_available") {
+        void this.loadProgression();
+        this.toast("That case can't be replayed yet. Solve it first.", "error");
+        return true;
+      }
+      return false;
+    });
+    if (created) { this.toast("Replay started. Replays award no points or achievements.", "info"); this.begin(created); }
   }
 
   async resume() {
@@ -276,12 +440,31 @@ export class AppController {
     if (!loaded) return;
     this.game = loaded;
     this.ensureTrail();
+    this.briefing = false; this.pendingLead = "";
+    this.quotes = []; this.quotesLoaded = false; this.ledger = [];
+    void this.refreshQuotes();
     this.go(loaded.state.outcome ? "results" : "investigate");
   }
 
   private async reloadCase() {
     if (!this.caseId) return;
-    try { this.game = await this.api.load(this.caseId); } catch (e) { this.fail(e); }
+    try { this.game = await this.api.load(this.caseId); void this.refreshQuotes(); } catch (e) { this.fail(e); }
+  }
+
+  /** Quotes depend on case state, venues and balance, so they are refreshed after every state change. */
+  async refreshQuotes() {
+    const id = this.caseId;
+    if (!id || !this.game || this.game.state.outcome) { this.quotes = []; this.quotesLoaded = true; return; }
+    try {
+      const quotes = await this.api.quotes(id);
+      if (id === this.caseId) this.quotes = quotes;
+    } catch (e) { if (e instanceof ApiError && e.status === 401) this.fail(e); else this.quotes = []; }
+    finally { this.quotesLoaded = true; }
+  }
+
+  async refreshLedger() {
+    if (!this.caseId) return;
+    try { this.ledger = await this.api.ledger(this.caseId); } catch (e) { if (e instanceof ApiError && e.status === 401) this.fail(e); }
   }
 
   async command(payload: ClientCommand, message: string, label = "Working", quiet = false): Promise<boolean> {
@@ -302,6 +485,7 @@ export class AppController {
       this.trail = [...this.trail, next.state.current_state];
     }
     this.persist();
+    if (!next.state.outcome && payload.type !== "record_trait") void this.refreshQuotes();
     if (!quiet) this.toast(account?.message ? "Witness account added to your notebook." : message, "success");
     if (next.state.outcome) {
       await this.loadProgression();

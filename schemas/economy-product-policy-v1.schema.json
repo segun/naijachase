@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://naijachase.example/schemas/economy-product-policy-v1.schema.json",
+  "title": "Naija Chase commerce product policy",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["product_id", "kind", "gameplay_effect", "sponsorship_disclosed"],
+  "properties": {
+    "product_id": { "type": "string", "minLength": 1 },
+    "kind": {
+      "enum": [
+        "cosmetic", "visual_theme", "cosmetic_vehicle", "cosmetic_uniform",
+        "animation", "story_pack", "supporter_edition", "sponsored_cosmetic"
+      ]
+    },
+    "gameplay_effect": { "const": "none" },
+    "sponsorship_disclosed": { "type": "boolean" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "kind": { "const": "sponsored_cosmetic" } } },
+      "then": { "properties": { "sponsorship_disclosed": { "const": true } } }
+    }
+  ]
+}

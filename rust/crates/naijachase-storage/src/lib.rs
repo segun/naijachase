@@ -9,6 +9,10 @@ use std::{
     path::{Path, PathBuf},
 };
 use thiserror::Error;
+mod weekly;
+pub use weekly::*;
+mod pressure;
+pub use pressure::*;
 
 const MIGRATION_1: &str = include_str!("../migrations/0001_initial.sql");
 const MIGRATION_2: &str = include_str!("../migrations/0002_content_and_terminal.sql");
@@ -18,6 +22,13 @@ const MIGRATION_5: &str = include_str!("../migrations/0005_player_auth.sql");
 const MIGRATION_6: &str = include_str!("../migrations/0006_identity_progression.sql");
 const MIGRATION_7: &str = include_str!("../migrations/0007_auth_rate_limits.sql");
 const MIGRATION_8: &str = include_str!("../migrations/0008_progression_sessions.sql");
+const MIGRATION_9: &str = include_str!("../migrations/0009_case_assignment.sql");
+const MIGRATION_10: &str = include_str!("../migrations/0010_continuous_catalogue.sql");
+const MIGRATION_11: &str = include_str!("../migrations/0011_active_case_content_version.sql");
+const MIGRATION_12: &str = include_str!("../migrations/0012_cooperative_investigations.sql");
+const MIGRATION_13: &str = include_str!("../migrations/0013_groups_weekly_challenges.sql");
+const MIGRATION_14: &str = include_str!("../migrations/0014_witness_pressure.sql");
+const MIGRATION_15: &str = include_str!("../migrations/0015_avatar_selection.sql");
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum CaseCommandResult {
@@ -57,6 +68,7 @@ pub struct PlayerAccount {
     pub sex: Option<String>,
     pub avatar_id: Option<String>,
     pub uniform_id: Option<String>,
+    pub avatar_setup_complete: bool,
     pub leaderboard_opt_in: bool,
 }
 
@@ -74,6 +86,8 @@ pub struct CaseArchiveEntry {
     pub wrong_travels: u32,
     pub correct_deductions: u32,
     pub wrong_deductions: u32,
+    pub attempt_kind: String,
+    pub first_completion: bool,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
@@ -114,6 +128,75 @@ pub struct ProgressionSummary {
     pub rank_history: Vec<RankHistoryEntry>,
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
+pub struct CatalogueProgress {
+    pub published_cases: u64,
+    pub completed_cases: u64,
+    pub unseen_cases: u64,
+    pub exhausted: bool,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
+pub struct RuntimeMission {
+    pub mission_id: String,
+    pub difficulty: u8,
+    pub thief_id: String,
+    pub start_location_id: String,
+    pub stop_2_location_id: String,
+    pub stop_3_location_id: String,
+    pub capture_location_id: String,
+    pub content_version: u32,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
+pub struct CatalogueHealth {
+    pub draft: u64,
+    pub editorial_review: u64,
+    pub validated: u64,
+    pub scheduled: u64,
+    pub published: u64,
+    pub retired: u64,
+    pub exhausted_players: u64,
+    pub minimum_unseen_cases: u64,
+    pub reserve_below_target: bool,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
+pub struct ReleaseNotification {
+    pub notification_id: u64,
+    pub mission_id: String,
+    pub published_at: String,
+    pub read: bool,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
+pub struct CooperationPreferences {
+    pub enabled: bool,
+    pub email_enabled: bool,
+    pub age_assurance_status: String,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
+pub struct CooperationRequest {
+    pub request_id: String,
+    pub owner_username: String,
+    pub helper_username: String,
+    pub case_id: String,
+    pub venue_id: String,
+    pub status: String,
+    pub public_scene: serde_json::Value,
+    pub recommendation: Option<serde_json::Value>,
+    pub reward_granted: bool,
+    pub expires_at: String,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
+pub struct MissionValidation {
+    pub mission_id: String,
+    pub valid: bool,
+    pub issues: Vec<String>,
+}
+
 type PreparedCsv = (String, String, Vec<String>, Vec<Vec<String>>);
 
 fn rank_name(points: u64) -> &'static str {
@@ -141,6 +224,39 @@ fn rank_achievement(rank: &str) -> Option<&'static str> {
         "Master Detective" => Some("master_detective"),
         _ => None,
     }
+}
+
+fn award_achievement_tokens(
+    transaction: &mut mysql::Transaction<'_>,
+    player_id: &str,
+    achievement_id: &str,
+    requested: u32,
+    awards: &mut Vec<TokenAward>,
+) -> Result<(), StorageError> {
+    let balance: u32 = transaction
+        .exec_first(
+            "SELECT bribe_tokens FROM players WHERE player_id=:player FOR UPDATE",
+            params! {"player"=>player_id},
+        )?
+        .unwrap_or(0);
+    let amount = requested
+        .min(naijachase_contracts::economy::BRIBE_TOKEN_BALANCE_CAP.saturating_sub(balance));
+    if amount == 0 {
+        return Ok(());
+    }
+    let after = balance + amount;
+    transaction.exec_drop(
+        "UPDATE players SET bribe_tokens=:balance WHERE player_id=:player",
+        params! {"balance"=>after,"player"=>player_id},
+    )?;
+    transaction.exec_drop("INSERT IGNORE INTO bribe_token_ledger(player_id,amount,balance_after,reason,reference_id) VALUES (:player,:amount,:balance,'achievement',:reference)",params!{"player"=>player_id,"amount"=>amount,"balance"=>after,"reference"=>achievement_id})?;
+    awards.push(TokenAward {
+        reason: "achievement".into(),
+        amount,
+        balance_after: after,
+        components: vec![achievement_id.into()],
+    });
+    Ok(())
 }
 
 fn case_metrics(state: &GameState) -> (Vec<String>, u32, u32, u32, u32) {
@@ -235,6 +351,34 @@ struct OperationalBackup {
         Option<String>,
         Option<String>,
     )>,
+    #[serde(default)]
+    active_case_kinds: Vec<(String, String)>,
+    #[serde(default)]
+    active_case_content_versions: Vec<(String, u32)>,
+    #[serde(default)]
+    archive_completion_metadata: Vec<(String, String, bool)>,
+    #[serde(default)]
+    mission_completions: Vec<(String, String, String, String, u32, u32, u32)>,
+    #[serde(default)]
+    active_mission_assignments: Vec<(String, String, String)>,
+    #[serde(default)]
+    content_roles: Vec<(String, String)>,
+    #[serde(default)]
+    mission_lifecycle: Vec<(
+        String,
+        String,
+        u32,
+        Option<String>,
+        Option<String>,
+        Option<String>,
+        Option<String>,
+    )>,
+    #[serde(default)]
+    mission_lifecycle_audit: Vec<(String, String, Option<String>, String, u32, String, String)>,
+    #[serde(default)]
+    release_notifications: Vec<(String, String, String, Option<String>)>,
+    #[serde(default)]
+    avatar_profiles: Vec<(String, Option<String>, Option<String>)>,
 }
 
 pub trait StateStore {
@@ -309,6 +453,12 @@ pub enum StorageError {
     Command(String),
     #[error("email or username is already registered")]
     DuplicateAccount,
+    #[error("mission was already completed")]
+    MissionAlreadyCompleted,
+    #[error("mission is not completed and cannot be replayed")]
+    ReplayNotAvailable,
+    #[error("no unseen published missions remain")]
+    CatalogueExhausted,
 }
 
 pub fn repository_dotenv_path() -> Option<PathBuf> {
@@ -337,7 +487,9 @@ pub fn load_repository_dotenv() -> Result<Option<PathBuf>, StorageError> {
     let Some(path) = repository_dotenv_path() else {
         return Ok(None);
     };
-    dotenvy::from_path(&path)?;
+    // The repository .env is the application's explicit configuration source.
+    // Override stale values inherited from an IDE or parent shell.
+    dotenvy::from_path_override(&path)?;
     Ok(Some(path))
 }
 
@@ -400,6 +552,52 @@ impl MysqlStore {
             .unwrap_or(0);
         if version < 8 {
             apply_migration(&mut connection, MIGRATION_8)?;
+        }
+        let version: u32 = connection
+            .query_first("SELECT COALESCE(MAX(version),0) FROM schema_migrations")?
+            .unwrap_or(0);
+        if version < 9 {
+            apply_migration(&mut connection, MIGRATION_9)?;
+        }
+        let version: u32 = connection
+            .query_first("SELECT COALESCE(MAX(version),0) FROM schema_migrations")?
+            .unwrap_or(0);
+        if version < 10 {
+            apply_migration(&mut connection, MIGRATION_10)?;
+        }
+        let version: u32 = connection
+            .query_first("SELECT COALESCE(MAX(version),0) FROM schema_migrations")?
+            .unwrap_or(0);
+        if version < 11 {
+            let has_content_version:u64=connection.exec_first("SELECT COUNT(*) FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name='active_cases' AND column_name='content_version'",())?.unwrap_or(0);
+            if has_content_version == 0 {
+                connection.query_drop("ALTER TABLE active_cases ADD COLUMN content_version INT UNSIGNED NOT NULL DEFAULT 1")?;
+            }
+            apply_migration(&mut connection, MIGRATION_11)?;
+        }
+        let version: u32 = connection
+            .query_first("SELECT COALESCE(MAX(version),0) FROM schema_migrations")?
+            .unwrap_or(0);
+        if version < 12 {
+            apply_migration(&mut connection, MIGRATION_12)?;
+        }
+        let version: u32 = connection
+            .query_first("SELECT COALESCE(MAX(version),0) FROM schema_migrations")?
+            .unwrap_or(0);
+        if version < 13 {
+            apply_migration(&mut connection, MIGRATION_13)?;
+        }
+        let version: u32 = connection
+            .query_first("SELECT COALESCE(MAX(version),0) FROM schema_migrations")?
+            .unwrap_or(0);
+        if version < 14 {
+            apply_migration(&mut connection, MIGRATION_14)?;
+        }
+        let version: u32 = connection
+            .query_first("SELECT COALESCE(MAX(version),0) FROM schema_migrations")?
+            .unwrap_or(0);
+        if version < 15 {
+            apply_migration(&mut connection, MIGRATION_15)?;
         }
         Ok(())
     }
@@ -487,11 +685,12 @@ impl MysqlStore {
             Option<String>,
             Option<String>,
             Option<String>,
-            bool,
+            u8,
         );
         let row: Option<LoginRow> = self.pool.get_conn()?.exec_first(
             "SELECT player_id,email,username,home_base,password_hash,email_verified_at IS NOT NULL,
-                        display_name,pronouns,sex,avatar_id,uniform_id,leaderboard_opt_in
+                        display_name,pronouns,sex,avatar_id,uniform_id,
+                        ((avatar_setup_completed_at IS NOT NULL) * 2 + leaderboard_opt_in)
              FROM players WHERE email=:email",
             params! {"email"=>email},
         )?;
@@ -508,7 +707,7 @@ impl MysqlStore {
                 sex,
                 avatar_id,
                 uniform_id,
-                leaderboard_opt_in,
+                profile_flags,
             )| {
                 (
                     PlayerAccount {
@@ -522,7 +721,8 @@ impl MysqlStore {
                         sex,
                         avatar_id,
                         uniform_id,
-                        leaderboard_opt_in,
+                        avatar_setup_complete: profile_flags & 2 != 0,
+                        leaderboard_opt_in: profile_flags & 1 != 0,
                     },
                     password_hash,
                 )
@@ -561,11 +761,12 @@ impl MysqlStore {
             Option<String>,
             Option<String>,
             bool,
+            bool,
         );
         let mut connection = self.pool.get_conn()?;
         let row: Option<AccountRow> = connection.exec_first(
             "SELECT p.player_id,p.email,p.username,p.home_base,TRUE,p.display_name,
-                        p.pronouns,p.sex,p.avatar_id,p.uniform_id,p.leaderboard_opt_in
+                        p.pronouns,p.sex,p.avatar_id,p.uniform_id,p.avatar_setup_completed_at IS NOT NULL,p.leaderboard_opt_in
              FROM player_sessions s JOIN players p ON p.player_id=s.player_id
              WHERE s.token_hash=:token AND s.revoked_at IS NULL
                AND s.expires_at>UTC_TIMESTAMP() AND p.email_verified_at IS NOT NULL",
@@ -589,6 +790,7 @@ impl MysqlStore {
                 sex,
                 avatar_id,
                 uniform_id,
+                avatar_setup_complete,
                 leaderboard_opt_in,
             )| PlayerAccount {
                 player_id,
@@ -601,6 +803,7 @@ impl MysqlStore {
                 sex,
                 avatar_id,
                 uniform_id,
+                avatar_setup_complete,
                 leaderboard_opt_in,
             },
         ))
@@ -751,27 +954,100 @@ impl MysqlStore {
         Ok(())
     }
 
+    pub fn select_avatar(&self, player_id: &str, avatar_id: &str) -> Result<(), StorageError> {
+        let mut connection = self.pool.get_conn()?;
+        connection.exec_drop("UPDATE players SET avatar_id=:avatar,avatar_setup_completed_at=COALESCE(avatar_setup_completed_at,UTC_TIMESTAMP()) WHERE player_id=:player",params!{"avatar"=>avatar_id,"player"=>player_id})?;
+        Ok(())
+    }
+
     pub fn record_case_completion(
         &self,
         player_id: &str,
         case_id: &str,
         state: &GameState,
-    ) -> Result<(), StorageError> {
+    ) -> Result<Vec<TokenAward>, StorageError> {
         let Some(outcome) = state.outcome.as_deref() else {
-            return Ok(());
+            return Ok(vec![]);
         };
+        let mut token_awards = Vec::new();
         let mut connection = self.pool.get_conn()?;
         let mut transaction = connection.start_transaction(TxOpts::default())?;
+        let attempt_kind: String = transaction
+            .exec_first(
+                "SELECT attempt_kind FROM active_cases WHERE case_id=:case_id AND player_id=:player FOR UPDATE",
+                params!{"case_id"=>case_id,"player"=>player_id},
+            )?
+            .ok_or(StorageError::CaseNotFound)?;
         let (states, correct_travels, wrong_travels, correct_deductions, wrong_deductions) =
             case_metrics(state);
         let states_json = serde_json::to_string(&states)?;
         transaction.exec_drop(
-            "INSERT IGNORE INTO case_archive(player_id,case_id,mission_id,thief_id,outcome,score,elapsed_minutes,states_visited_json,correct_travels,wrong_travels,correct_deductions,wrong_deductions) VALUES (:player,:case_id,:mission,:thief,:outcome,:score,:elapsed,:states,:correct_travels,:wrong_travels,:correct_deductions,:wrong_deductions)",
-            params!{"player"=>player_id,"case_id"=>case_id,"mission"=>&state.mission_id,"thief"=>&state.thief_id,"outcome"=>outcome,"score"=>state.score,"elapsed"=>state.elapsed,"states"=>&states_json,"correct_travels"=>correct_travels,"wrong_travels"=>wrong_travels,"correct_deductions"=>correct_deductions,"wrong_deductions"=>wrong_deductions})?;
-        for state_name in &states {
-            transaction.exec_drop("INSERT IGNORE INTO player_state_visits(player_id,state_name) VALUES (:player,:state)",params!{"player"=>player_id,"state"=>state_name})?;
-        }
+            "INSERT IGNORE INTO case_archive(player_id,case_id,mission_id,thief_id,outcome,score,elapsed_minutes,states_visited_json,correct_travels,wrong_travels,correct_deductions,wrong_deductions,attempt_kind) VALUES (:player,:case_id,:mission,:thief,:outcome,:score,:elapsed,:states,:correct_travels,:wrong_travels,:correct_deductions,:wrong_deductions,:attempt_kind)",
+            params!{"player"=>player_id,"case_id"=>case_id,"mission"=>&state.mission_id,"thief"=>&state.thief_id,"outcome"=>outcome,"score"=>state.score,"elapsed"=>state.elapsed,"states"=>&states_json,"correct_travels"=>correct_travels,"wrong_travels"=>wrong_travels,"correct_deductions"=>correct_deductions,"wrong_deductions"=>wrong_deductions,"attempt_kind"=>&attempt_kind})?;
+        let first_completion = if outcome == "solved" && attempt_kind != "replay" {
+            transaction.exec_drop(
+                "INSERT IGNORE INTO player_mission_completions(player_id,mission_id,first_case_id,best_score,best_elapsed_minutes) VALUES (:player,:mission,:case_id,:score,:elapsed)",
+                params!{"player"=>player_id,"mission"=>&state.mission_id,"case_id"=>case_id,"score"=>state.score,"elapsed"=>state.elapsed},
+            )?;
+            transaction.affected_rows() == 1
+        } else {
+            false
+        };
         if outcome == "solved" {
+            transaction.exec_drop(
+                "UPDATE player_mission_completions SET best_score=GREATEST(best_score,:score),best_elapsed_minutes=LEAST(best_elapsed_minutes,:elapsed),replay_count=replay_count+:replay WHERE player_id=:player AND mission_id=:mission",
+                params!{"score"=>state.score,"elapsed"=>state.elapsed,"replay"=>u8::from(attempt_kind=="replay"),"player"=>player_id,"mission"=>&state.mission_id},
+            )?;
+        }
+        transaction.exec_drop(
+            "UPDATE case_archive SET first_completion=:first WHERE case_id=:case_id",
+            params! {"first"=>first_completion,"case_id"=>case_id},
+        )?;
+        transaction.exec_drop(
+            "DELETE FROM active_mission_assignments WHERE case_id=:case_id",
+            params! {"case_id"=>case_id},
+        )?;
+        if first_completion {
+            let token_balance: u32 = transaction
+                .exec_first(
+                    "SELECT bribe_tokens FROM players WHERE player_id=:player FOR UPDATE",
+                    params! {"player"=>player_id},
+                )?
+                .unwrap_or(0);
+            let earned_today:u32=transaction.exec_first("SELECT COALESCE(SUM(GREATEST(amount,0)),0) FROM bribe_token_ledger WHERE player_id=:player AND reason IN ('first_completion','case_completion') AND created_at>=UTC_DATE()",params!{"player"=>player_id})?.unwrap_or(0);
+            let pressure_attempts: u32 = transaction
+                .exec_first(
+                    "SELECT COUNT(*) FROM witness_pressure_attempts WHERE case_id=:case",
+                    params! {"case"=>case_id},
+                )?
+                .unwrap_or(0);
+            let components = naijachase_contracts::economy::case_award_components(
+                state.difficulty,
+                wrong_travels,
+                pressure_attempts,
+            );
+            let award = naijachase_contracts::economy::capped_case_award(
+                components.len() as u32,
+                earned_today,
+                token_balance,
+            );
+            if award > 0 {
+                let after = token_balance + award;
+                transaction.exec_drop(
+                    "UPDATE players SET bribe_tokens=:balance WHERE player_id=:player",
+                    params! {"balance"=>after,"player"=>player_id},
+                )?;
+                transaction.exec_drop("INSERT IGNORE INTO bribe_token_ledger(player_id,amount,balance_after,reason,reference_id) VALUES (:player,:amount,:balance,'case_completion',:reference)",params!{"player"=>player_id,"amount"=>award,"balance"=>after,"reference"=>&state.mission_id})?;
+                token_awards.push(TokenAward {
+                    reason: "case_completion".into(),
+                    amount: award,
+                    balance_after: after,
+                    components,
+                });
+            }
+            for state_name in &states {
+                transaction.exec_drop("INSERT IGNORE INTO player_state_visits(player_id,state_name) VALUES (:player,:state)",params!{"player"=>player_id,"state"=>state_name})?;
+            }
             let old_points: u64 = transaction
                 .exec_first(
                     "SELECT points FROM careers WHERE player_id=:player FOR UPDATE",
@@ -783,7 +1059,12 @@ impl MysqlStore {
             if state.elapsed <= 7200 {
                 transaction.exec_drop("INSERT IGNORE INTO player_achievements(player_id,achievement_id) VALUES (:player,'swift_investigator')",params!{"player"=>player_id})?;
             }
-            let solved:u64=transaction.exec_first("SELECT COUNT(*) FROM case_archive WHERE player_id=:player AND outcome='solved'",params!{"player"=>player_id})?.unwrap_or(0);
+            let solved: u64 = transaction
+                .exec_first(
+                    "SELECT COUNT(*) FROM player_mission_completions WHERE player_id=:player",
+                    params! {"player"=>player_id},
+                )?
+                .unwrap_or(0);
             if solved >= 5 {
                 transaction.exec_drop("INSERT IGNORE INTO player_achievements(player_id,achievement_id) VALUES (:player,'five_cases')",params!{"player"=>player_id})?;
             }
@@ -804,9 +1085,27 @@ impl MysqlStore {
                 .unwrap_or(0);
             if visited >= 10 {
                 transaction.exec_drop("INSERT IGNORE INTO player_achievements(player_id,achievement_id) VALUES (:player,'state_explorer')",params!{"player"=>player_id})?;
+                if transaction.affected_rows() == 1 {
+                    award_achievement_tokens(
+                        &mut transaction,
+                        player_id,
+                        "state_explorer",
+                        naijachase_contracts::economy::STATE_EXPLORER_TOKEN_AWARD,
+                        &mut token_awards,
+                    )?;
+                }
             }
             if visited >= 37 {
                 transaction.exec_drop("INSERT IGNORE INTO player_achievements(player_id,achievement_id) VALUES (:player,'national_investigator')",params!{"player"=>player_id})?;
+                if transaction.affected_rows() == 1 {
+                    award_achievement_tokens(
+                        &mut transaction,
+                        player_id,
+                        "national_investigator",
+                        naijachase_contracts::economy::NATIONAL_INVESTIGATOR_TOKEN_AWARD,
+                        &mut token_awards,
+                    )?;
+                }
             }
             let old_rank = rank_name(old_points);
             let new_rank = rank_name(state.career_points as u64);
@@ -818,7 +1117,7 @@ impl MysqlStore {
             }
         }
         transaction.commit()?;
-        Ok(())
+        Ok(token_awards)
     }
 
     pub fn case_archive(&self, player_id: &str) -> Result<Vec<CaseArchiveEntry>, StorageError> {
@@ -836,7 +1135,8 @@ impl MysqlStore {
             u32,
             u32,
         );
-        let rows:Vec<Row>=self.pool.get_conn()?.exec("SELECT case_id,mission_id,thief_id,outcome,score,elapsed_minutes,CAST(completed_at AS CHAR),CAST(states_visited_json AS CHAR),correct_travels,wrong_travels,correct_deductions,wrong_deductions FROM case_archive WHERE player_id=:player ORDER BY completed_at DESC",params!{"player"=>player_id})?;
+        let mut connection = self.pool.get_conn()?;
+        let rows:Vec<Row>=connection.exec("SELECT case_id,mission_id,thief_id,outcome,score,elapsed_minutes,CAST(completed_at AS CHAR),CAST(states_visited_json AS CHAR),correct_travels,wrong_travels,correct_deductions,wrong_deductions FROM case_archive WHERE player_id=:player ORDER BY completed_at DESC",params!{"player"=>player_id})?;
         Ok(rows
             .into_iter()
             .map(
@@ -853,7 +1153,13 @@ impl MysqlStore {
                     wrong_travels,
                     correct_deductions,
                     wrong_deductions,
-                )| CaseArchiveEntry {
+                )| {
+                    let metadata: Option<(String,bool)> = connection.exec_first(
+                        "SELECT attempt_kind,first_completion FROM case_archive WHERE case_id=:case_id",
+                        params!{"case_id"=>&case_id},
+                    ).unwrap_or(None);
+                    let (attempt_kind, first_completion) = metadata.unwrap_or_else(|| ("ordinary".into(), false));
+                    CaseArchiveEntry {
                     case_id,
                     mission_id,
                     thief_id,
@@ -868,7 +1174,9 @@ impl MysqlStore {
                     wrong_travels,
                     correct_deductions,
                     wrong_deductions,
-                },
+                    attempt_kind,
+                    first_completion,
+                }},
             )
             .collect())
     }
@@ -898,12 +1206,12 @@ impl MysqlStore {
             .unwrap_or(0);
         let solved_cases: u64 = connection
             .exec_first(
-                "SELECT COUNT(*) FROM case_archive WHERE player_id=:player AND outcome='solved'",
+                "SELECT COUNT(*) FROM player_mission_completions WHERE player_id=:player",
                 params! {"player"=>player_id},
             )?
             .unwrap_or(0);
         let visited_states:Vec<String>=connection.exec_map("SELECT state_name FROM player_state_visits WHERE player_id=:player ORDER BY state_name",params!{"player"=>player_id},|state|state)?;
-        let totals:Option<(u64,u64,u64,u64)>=connection.exec_first("SELECT COALESCE(SUM(correct_travels),0),COALESCE(SUM(wrong_travels),0),COALESCE(SUM(correct_deductions),0),COALESCE(SUM(wrong_deductions),0) FROM case_archive WHERE player_id=:player",params!{"player"=>player_id})?;
+        let totals:Option<(u64,u64,u64,u64)>=connection.exec_first("SELECT COALESCE(SUM(correct_travels),0),COALESCE(SUM(wrong_travels),0),COALESCE(SUM(correct_deductions),0),COALESCE(SUM(wrong_deductions),0) FROM case_archive WHERE player_id=:player AND first_completion=TRUE",params!{"player"=>player_id})?;
         let (correct_travels, wrong_travels, correct_deductions, wrong_deductions) =
             totals.unwrap_or_default();
         let rank_history=connection.exec_map("SELECT old_rank,new_rank,points,CAST(earned_at AS CHAR) FROM rank_history WHERE player_id=:player ORDER BY earned_at",params!{"player"=>player_id},|(old_rank,new_rank,points,earned_at)|RankHistoryEntry{old_rank,new_rank,points,earned_at})?;
@@ -936,9 +1244,29 @@ impl MysqlStore {
         mission_id: &str,
         state: &GameState,
     ) -> Result<u64, StorageError> {
+        self.create_case_with_kind(case_id, player_id, mission_id, state, "ordinary")
+    }
+
+    pub fn create_case_with_kind(
+        &self,
+        case_id: &str,
+        player_id: &str,
+        mission_id: &str,
+        state: &GameState,
+        attempt_kind: &str,
+    ) -> Result<u64, StorageError> {
         let data = serde_json::to_vec(state)?;
         let mut connection = self.pool.get_conn()?;
         let mut transaction = connection.start_transaction(TxOpts::default())?;
+        let jailed: Option<u8> = transaction.exec_first(
+            "SELECT 1 FROM players WHERE player_id=:player AND jailed_until>UTC_TIMESTAMP()",
+            params! { "player" => player_id },
+        )?;
+        if jailed.is_some() {
+            return Err(StorageError::Command(
+                "player is jailed and cannot start a mission".into(),
+            ));
+        }
         let existing: Option<String> = transaction.exec_first(
             "SELECT player_id FROM active_cases WHERE case_id=:case_id FOR UPDATE",
             params! { "case_id" => case_id },
@@ -948,16 +1276,38 @@ impl MysqlStore {
             Some(_) => return Err(StorageError::Forbidden),
             None => {}
         }
+        let completed: Option<u8> = transaction.exec_first(
+            "SELECT 1 FROM player_mission_completions WHERE player_id=:player AND mission_id=:mission",
+            params!{"player"=>player_id,"mission"=>mission_id},
+        )?;
+        let content_version: u32 = transaction
+            .exec_first(
+                "SELECT content_version FROM missions WHERE mission_id=:mission",
+                params! {"mission"=>mission_id},
+            )?
+            .ok_or(StorageError::CaseNotFound)?;
+        match attempt_kind {
+            "replay" if completed.is_none() => return Err(StorageError::ReplayNotAvailable),
+            "ordinary" if completed.is_some() => return Err(StorageError::MissionAlreadyCompleted),
+            "ordinary" | "replay" | "weekly" => {}
+            _ => return Err(StorageError::InvalidContent("invalid attempt kind".into())),
+        }
         transaction.exec_drop(
             "INSERT INTO players(player_id,display_name) VALUES (:player,:player)
              ON DUPLICATE KEY UPDATE player_id=VALUES(player_id)",
             params! { "player" => player_id },
         )?;
         transaction.exec_drop(
-            "INSERT INTO active_cases(case_id,player_id,mission_id,version,state_json)
-             VALUES (:case_id,:player,:mission,1,:state)",
-            params! { "case_id"=>case_id,"player"=>player_id,"mission"=>mission_id,"state"=>data },
+            "INSERT INTO active_cases(case_id,player_id,mission_id,version,state_json,attempt_kind,content_version)
+             VALUES (:case_id,:player,:mission,1,:state,:attempt_kind,:content_version)",
+            params! { "case_id"=>case_id,"player"=>player_id,"mission"=>mission_id,"state"=>data,"attempt_kind"=>attempt_kind,"content_version"=>content_version },
         )?;
+        if attempt_kind == "ordinary" {
+            transaction.exec_drop(
+                "INSERT INTO active_mission_assignments(player_id,mission_id,case_id) VALUES (:player,:mission,:case_id)",
+                params!{"player"=>player_id,"mission"=>mission_id,"case_id"=>case_id},
+            )?;
+        }
         transaction.exec_drop(
             "INSERT INTO service_audit(player_id,case_id,command_id,outcome)
              VALUES (:player,:case_id,'case-created','created')",
@@ -965,6 +1315,341 @@ impl MysqlStore {
         )?;
         transaction.commit()?;
         Ok(1)
+    }
+
+    pub fn unseen_published_missions(&self, player_id: &str) -> Result<Vec<String>, StorageError> {
+        self.publish_due_missions()?;
+        self.pool.get_conn()?.exec_map(
+            "SELECT m.mission_id FROM missions m LEFT JOIN player_mission_completions c ON c.player_id=:player AND c.mission_id=m.mission_id LEFT JOIN active_mission_assignments a ON a.player_id=:player AND a.mission_id=m.mission_id WHERE m.lifecycle_status='published' AND c.mission_id IS NULL AND a.mission_id IS NULL ORDER BY m.published_at DESC,m.mission_id",
+            params!{"player"=>player_id},
+            |mission_id:String| mission_id,
+        ).map_err(Into::into)
+    }
+
+    pub fn catalogue_progress(&self, player_id: &str) -> Result<CatalogueProgress, StorageError> {
+        self.publish_due_missions()?;
+        let mut connection = self.pool.get_conn()?;
+        let published_cases: u64 = connection
+            .exec_first(
+                "SELECT COUNT(*) FROM missions WHERE lifecycle_status='published'",
+                (),
+            )?
+            .unwrap_or(0);
+        let completed_cases: u64 = connection.exec_first(
+            "SELECT COUNT(*) FROM player_mission_completions c JOIN missions m ON m.mission_id=c.mission_id WHERE c.player_id=:player AND m.lifecycle_status='published'",
+            params!{"player"=>player_id},
+        )?.unwrap_or(0);
+        let unseen_cases = published_cases.saturating_sub(completed_cases);
+        Ok(CatalogueProgress {
+            published_cases,
+            completed_cases,
+            unseen_cases,
+            exhausted: unseen_cases == 0,
+        })
+    }
+
+    pub fn runtime_mission(&self, mission_id: &str) -> Result<RuntimeMission, StorageError> {
+        type Row = (String, u8, String, String, String, String, String, u32);
+        let row: Option<Row> = self.pool.get_conn()?.exec_first(
+            "SELECT mission_id,difficulty,thief_id,start_location_id,stop_2_location_id,stop_3_location_id,capture_location_id,content_version FROM missions WHERE mission_id=:mission",
+            params!{"mission"=>mission_id},
+        )?;
+        row.map(
+            |(
+                mission_id,
+                difficulty,
+                thief_id,
+                start_location_id,
+                stop_2_location_id,
+                stop_3_location_id,
+                capture_location_id,
+                content_version,
+            )| RuntimeMission {
+                mission_id,
+                difficulty,
+                thief_id,
+                start_location_id,
+                stop_2_location_id,
+                stop_3_location_id,
+                capture_location_id,
+                content_version,
+            },
+        )
+        .ok_or(StorageError::CaseNotFound)
+    }
+
+    pub fn publish_due_missions(&self) -> Result<u64, StorageError> {
+        let mut connection = self.pool.get_conn()?;
+        let mut transaction = connection.start_transaction(TxOpts::default())?;
+        let due: Vec<(String,String,u32)> = transaction.query(
+            "SELECT mission_id,lifecycle_updated_by,content_version FROM missions WHERE lifecycle_status='scheduled' AND scheduled_for<=UTC_TIMESTAMP() FOR UPDATE"
+        )?;
+        for (mission, actor, version) in &due {
+            transaction.exec_drop(
+                "INSERT IGNORE INTO catalogue_release_notifications(player_id,mission_id,published_at) SELECT p.player_id,:mission,UTC_TIMESTAMP() FROM players p WHERE NOT EXISTS (SELECT 1 FROM missions m LEFT JOIN player_mission_completions c ON c.player_id=p.player_id AND c.mission_id=m.mission_id WHERE m.lifecycle_status='published' AND c.mission_id IS NULL)",
+                params!{"mission"=>mission},
+            )?;
+            transaction.exec_drop("UPDATE missions SET lifecycle_status='published',published_at=UTC_TIMESTAMP(),scheduled_for=NULL WHERE mission_id=:mission",params!{"mission"=>mission})?;
+            transaction.exec_drop("INSERT INTO mission_lifecycle_audit(mission_id,actor_player_id,from_status,to_status,content_version,reason) VALUES (:mission,:actor,'scheduled','published',:version,'scheduled publication became due')",params!{"mission"=>mission,"actor"=>actor,"version"=>version})?;
+        }
+        transaction.commit()?;
+        Ok(due.len() as u64)
+    }
+
+    pub fn content_role(&self, player_id: &str) -> Result<String, StorageError> {
+        self.pool
+            .get_conn()?
+            .exec_first(
+                "SELECT content_role FROM players WHERE player_id=:player",
+                params! {"player"=>player_id},
+            )?
+            .ok_or(StorageError::Forbidden)
+    }
+
+    pub fn transition_mission(
+        &self,
+        player_id: &str,
+        mission_id: &str,
+        target: &str,
+        scheduled_for: Option<&str>,
+        reason: &str,
+    ) -> Result<(), StorageError> {
+        let role = self.content_role(player_id)?;
+        let editor_transition = role == "editor" && matches!(target, "draft" | "editorial_review");
+        if !editor_transition && !matches!(role.as_str(), "publisher" | "admin") {
+            return Err(StorageError::Forbidden);
+        }
+        if matches!(target, "validated" | "scheduled" | "published") {
+            let validation = self.validate_mission(mission_id)?;
+            if !validation.valid {
+                return Err(StorageError::Command(format!(
+                    "mission validation failed: {}",
+                    validation.issues.join("; ")
+                )));
+            }
+        }
+        let mut connection = self.pool.get_conn()?;
+        let mut transaction = connection.start_transaction(TxOpts::default())?;
+        let current: Option<(String,u32)> = transaction.exec_first("SELECT lifecycle_status,content_version FROM missions WHERE mission_id=:mission FOR UPDATE",params!{"mission"=>mission_id})?;
+        let Some((from, version)) = current else {
+            return Err(StorageError::CaseNotFound);
+        };
+        let allowed = matches!(
+            (from.as_str(), target),
+            ("draft", "editorial_review")
+                | ("editorial_review", "draft")
+                | ("editorial_review", "validated")
+                | ("validated", "editorial_review")
+                | ("validated", "scheduled")
+                | ("validated", "published")
+                | ("scheduled", "validated")
+                | ("published", "retired")
+                | ("retired", "draft")
+        );
+        if !allowed {
+            return Err(StorageError::Command(format!(
+                "invalid mission lifecycle transition {from} -> {target}"
+            )));
+        }
+        if target == "scheduled" && scheduled_for.is_none() {
+            return Err(StorageError::Command("scheduled_for is required".into()));
+        }
+        if target == "published" {
+            transaction.exec_drop("INSERT IGNORE INTO catalogue_release_notifications(player_id,mission_id,published_at) SELECT p.player_id,:mission,UTC_TIMESTAMP() FROM players p WHERE NOT EXISTS (SELECT 1 FROM missions m LEFT JOIN player_mission_completions c ON c.player_id=p.player_id AND c.mission_id=m.mission_id WHERE m.lifecycle_status='published' AND c.mission_id IS NULL)",params!{"mission"=>mission_id})?;
+        }
+        transaction.exec_drop(
+            "UPDATE missions SET content_version=IF(:target='draft' AND lifecycle_status='retired',content_version+1,content_version),lifecycle_status=:target,scheduled_for=IF(:target='scheduled',:scheduled,NULL),published_at=IF(:target='published',UTC_TIMESTAMP(),published_at),retired_at=IF(:target='retired',UTC_TIMESTAMP(),NULL),lifecycle_updated_by=:actor WHERE mission_id=:mission",
+            params!{"target"=>target,"scheduled"=>scheduled_for,"actor"=>player_id,"mission"=>mission_id},
+        )?;
+        let audit_version = if from == "retired" && target == "draft" {
+            version + 1
+        } else {
+            version
+        };
+        transaction.exec_drop("INSERT INTO mission_lifecycle_audit(mission_id,actor_player_id,from_status,to_status,content_version,reason) VALUES (:mission,:actor,:from,:target,:version,:reason)",params!{"mission"=>mission_id,"actor"=>player_id,"from"=>from,"target"=>target,"version"=>audit_version,"reason"=>reason})?;
+        transaction.commit()?;
+        Ok(())
+    }
+
+    pub fn validate_mission(&self, mission_id: &str) -> Result<MissionValidation, StorageError> {
+        type Row = (u8, String, String, String, String, String, String, String);
+        let mut connection = self.pool.get_conn()?;
+        let row:Option<Row>=connection.exec_first("SELECT difficulty,thief_id,start_location_id,stop_2_location_id,stop_3_location_id,capture_location_id,CAST(content_json AS CHAR),CAST(narrative_json AS CHAR) FROM missions WHERE mission_id=:mission",params!{"mission"=>mission_id})?;
+        let Some((difficulty, thief, start, stop2, stop3, capture, content, narrative)) = row
+        else {
+            return Err(StorageError::CaseNotFound);
+        };
+        let mut issues = Vec::new();
+        if !(1..=5).contains(&difficulty) {
+            issues.push("difficulty must be between 1 and 5".into())
+        }
+        let thief_exists: Option<u8> = connection.exec_first(
+            "SELECT 1 FROM thieves WHERE thief_id=:thief",
+            params! {"thief"=>thief},
+        )?;
+        if thief_exists.is_none() {
+            issues.push("thief does not exist".into())
+        }
+        if content.trim().is_empty() || narrative.trim().is_empty() {
+            issues.push("content and narrative are required".into())
+        }
+        for (label, location) in [
+            ("start", start),
+            ("stop 2", stop2),
+            ("stop 3", stop3),
+            ("capture", capture),
+        ] {
+            let state: Option<String> = connection.exec_first(
+                "SELECT state_or_territory FROM locations WHERE location_id=:location",
+                params! {"location"=>&location},
+            )?;
+            let Some(state) = state else {
+                issues.push(format!("{label} location does not exist"));
+                continue;
+            };
+            let state = if state.split('/').next() == Some("FCT") {
+                "Federal Capital Territory".to_string()
+            } else {
+                state.split('/').next().unwrap_or(&state).to_string()
+            };
+            let atoms: u64 = connection
+                .exec_first(
+                    "SELECT COUNT(*) FROM clue_atoms WHERE state=:state",
+                    params! {"state"=>state},
+                )?
+                .unwrap_or(0);
+            if atoms < 3 {
+                issues.push(format!(
+                    "{label} jurisdiction has fewer than three clue atoms"
+                ))
+            }
+        }
+        Ok(MissionValidation {
+            mission_id: mission_id.into(),
+            valid: issues.is_empty(),
+            issues,
+        })
+    }
+
+    pub fn mission_admin_details(
+        &self,
+        mission_id: &str,
+    ) -> Result<serde_json::Value, StorageError> {
+        type MissionRow = (
+            String,
+            u8,
+            String,
+            String,
+            String,
+            String,
+            String,
+            String,
+            u32,
+            Option<String>,
+            Option<String>,
+            Option<String>,
+        );
+        let mut connection = self.pool.get_conn()?;
+        let row:Option<MissionRow>=connection.exec_first("SELECT mission_id,difficulty,thief_id,start_location_id,stop_2_location_id,stop_3_location_id,capture_location_id,lifecycle_status,content_version,CAST(published_at AS CHAR),CAST(scheduled_for AS CHAR),CAST(retired_at AS CHAR) FROM missions WHERE mission_id=:mission",params!{"mission"=>mission_id})?;
+        let Some((
+            mission_id,
+            difficulty,
+            thief_id,
+            start,
+            stop2,
+            stop3,
+            capture,
+            status,
+            content_version,
+            published_at,
+            scheduled_for,
+            retired_at,
+        )) = row
+        else {
+            return Err(StorageError::CaseNotFound);
+        };
+        type AuditRow = (String, Option<String>, String, u32, String, String);
+        let history:Vec<AuditRow>=connection.exec("SELECT actor_player_id,from_status,to_status,content_version,reason,CAST(created_at AS CHAR) FROM mission_lifecycle_audit WHERE mission_id=:mission ORDER BY audit_id",params!{"mission"=>&mission_id})?;
+        Ok(
+            serde_json::json!({"mission_id":mission_id,"difficulty":difficulty,"thief_id":thief_id,"anchors":[start,stop2,stop3,capture],"lifecycle_status":status,"content_version":content_version,"published_at":published_at,"scheduled_for":scheduled_for,"retired_at":retired_at,"history":history.into_iter().map(|(actor,from,to,version,reason,created_at)|serde_json::json!({"actor_player_id":actor,"from_status":from,"to_status":to,"content_version":version,"reason":reason,"created_at":created_at})).collect::<Vec<_>>() }),
+        )
+    }
+
+    pub fn catalogue_health(&self, reserve_target: u64) -> Result<CatalogueHealth, StorageError> {
+        self.publish_due_missions()?;
+        let mut connection = self.pool.get_conn()?;
+        let count =
+            |connection: &mut mysql::PooledConn, status: &str| -> Result<u64, StorageError> {
+                Ok(connection
+                    .exec_first(
+                        "SELECT COUNT(*) FROM missions WHERE lifecycle_status=:status",
+                        params! {"status"=>status},
+                    )?
+                    .unwrap_or(0))
+            };
+        let draft = count(&mut connection, "draft")?;
+        let editorial_review = count(&mut connection, "editorial_review")?;
+        let validated = count(&mut connection, "validated")?;
+        let scheduled = count(&mut connection, "scheduled")?;
+        let published = count(&mut connection, "published")?;
+        let retired = count(&mut connection, "retired")?;
+        let per_player: Vec<u64> = connection.query("SELECT COUNT(m.mission_id) FROM players p LEFT JOIN missions m ON m.lifecycle_status='published' LEFT JOIN player_mission_completions c ON c.player_id=p.player_id AND c.mission_id=m.mission_id WHERE c.mission_id IS NULL GROUP BY p.player_id")?;
+        let minimum_unseen_cases = per_player.iter().copied().min().unwrap_or(published);
+        let exhausted_players = per_player.iter().filter(|&&n| n == 0).count() as u64;
+        Ok(CatalogueHealth {
+            draft,
+            editorial_review,
+            validated,
+            scheduled,
+            published,
+            retired,
+            exhausted_players,
+            minimum_unseen_cases,
+            reserve_below_target: validated + scheduled < reserve_target,
+        })
+    }
+
+    pub fn release_notifications(
+        &self,
+        player_id: &str,
+    ) -> Result<Vec<ReleaseNotification>, StorageError> {
+        type Row = (u64, String, String, Option<String>);
+        let rows:Vec<Row>=self.pool.get_conn()?.exec("SELECT notification_id,mission_id,CAST(published_at AS CHAR),CAST(read_at AS CHAR) FROM catalogue_release_notifications WHERE player_id=:player ORDER BY published_at DESC",params!{"player"=>player_id})?;
+        Ok(rows
+            .into_iter()
+            .map(
+                |(notification_id, mission_id, published_at, read_at)| ReleaseNotification {
+                    notification_id,
+                    mission_id,
+                    published_at,
+                    read: read_at.is_some(),
+                },
+            )
+            .collect())
+    }
+
+    pub fn read_release_notification(
+        &self,
+        player_id: &str,
+        notification_id: u64,
+    ) -> Result<(), StorageError> {
+        let mut connection = self.pool.get_conn()?;
+        connection.exec_drop("UPDATE catalogue_release_notifications SET read_at=COALESCE(read_at,UTC_TIMESTAMP()) WHERE notification_id=:id AND player_id=:player",params!{"id"=>notification_id,"player"=>player_id})?;
+        if connection.affected_rows() == 0 {
+            return Err(StorageError::CaseNotFound);
+        }
+        Ok(())
+    }
+
+    pub fn case_attempt_kind(
+        &self,
+        case_id: &str,
+        player_id: &str,
+    ) -> Result<String, StorageError> {
+        self.pool.get_conn()?.exec_first(
+            "SELECT attempt_kind FROM active_cases WHERE case_id=:case_id AND player_id=:player",
+            params!{"case_id"=>case_id,"player"=>player_id},
+        )?.ok_or(StorageError::CaseNotFound)
     }
 
     pub fn load_owned_case(
@@ -1338,7 +2023,7 @@ impl MysqlStore {
     pub fn backup_operational(&self, path: &Path) -> Result<(), StorageError> {
         let mut connection = self.pool.get_conn()?;
         let backup = OperationalBackup {
-            format_version: 4,
+            format_version: 7,
             players: connection.query("SELECT player_id, display_name FROM players")?,
             careers: connection
                 .query("SELECT player_id, points, solved_missions_json, version FROM careers")?,
@@ -1361,6 +2046,16 @@ impl MysqlStore {
             state_visits: connection.query("SELECT player_id,state_name,CAST(first_visited_at AS CHAR) FROM player_state_visits")?,
             rank_history: connection.query("SELECT player_id,old_rank,new_rank,points,CAST(earned_at AS CHAR) FROM rank_history")?,
             session_details: connection.query("SELECT token_hash,session_id,device_label,family_id,rotated_from,CAST(replaced_at AS CHAR) FROM player_sessions")?,
+            active_case_kinds: connection.query("SELECT case_id,attempt_kind FROM active_cases")?,
+            active_case_content_versions: connection.query("SELECT case_id,content_version FROM active_cases")?,
+            archive_completion_metadata: connection.query("SELECT case_id,attempt_kind,first_completion FROM case_archive")?,
+            mission_completions: connection.query("SELECT player_id,mission_id,first_case_id,CAST(first_completed_at AS CHAR),best_score,best_elapsed_minutes,replay_count FROM player_mission_completions")?,
+            active_mission_assignments: connection.query("SELECT player_id,mission_id,case_id FROM active_mission_assignments")?,
+            content_roles: connection.query("SELECT player_id,content_role FROM players")?,
+            mission_lifecycle: connection.query("SELECT mission_id,lifecycle_status,content_version,CAST(published_at AS CHAR),CAST(scheduled_for AS CHAR),CAST(retired_at AS CHAR),lifecycle_updated_by FROM missions")?,
+            mission_lifecycle_audit: connection.query("SELECT mission_id,actor_player_id,from_status,to_status,content_version,reason,CAST(created_at AS CHAR) FROM mission_lifecycle_audit")?,
+            release_notifications: connection.query("SELECT player_id,mission_id,CAST(published_at AS CHAR),CAST(read_at AS CHAR) FROM catalogue_release_notifications")?,
+            avatar_profiles: connection.query("SELECT player_id,avatar_id,CAST(avatar_setup_completed_at AS CHAR) FROM players")?,
         };
         if let Some(parent) = path.parent() {
             fs::create_dir_all(parent)?;
@@ -1371,7 +2066,7 @@ impl MysqlStore {
 
     pub fn restore_operational(&self, path: &Path) -> Result<(), StorageError> {
         let backup: OperationalBackup = serde_json::from_slice(&fs::read(path)?)?;
-        if !matches!(backup.format_version, 1 | 2 | 3 | 4) {
+        if !matches!(backup.format_version, 1 | 2 | 3 | 4 | 5 | 6 | 7) {
             return Err(StorageError::InvalidContent(
                 "unsupported backup version".into(),
             ));
@@ -1471,8 +2166,247 @@ impl MysqlStore {
         for (token, session, device, family, rotated, replaced) in backup.session_details {
             transaction.exec_drop("UPDATE player_sessions SET session_id=:session,device_label=:device,family_id=:family,rotated_from=:rotated,replaced_at=:replaced WHERE token_hash=:token",params!{"token"=>token,"session"=>session,"device"=>device,"family"=>family,"rotated"=>rotated,"replaced"=>replaced})?;
         }
+        for (case_id, attempt_kind) in backup.active_case_kinds {
+            transaction.exec_drop(
+                "UPDATE active_cases SET attempt_kind=:kind WHERE case_id=:case_id",
+                params! {"case_id"=>case_id,"kind"=>attempt_kind},
+            )?;
+        }
+        for (case_id, content_version) in backup.active_case_content_versions {
+            transaction.exec_drop(
+                "UPDATE active_cases SET content_version=:version WHERE case_id=:case_id",
+                params! {"case_id"=>case_id,"version"=>content_version},
+            )?;
+        }
+        for (case_id, attempt_kind, first_completion) in backup.archive_completion_metadata {
+            transaction.exec_drop("UPDATE case_archive SET attempt_kind=:kind,first_completion=:first WHERE case_id=:case_id",params!{"case_id"=>case_id,"kind"=>attempt_kind,"first"=>first_completion})?;
+        }
+        for (player, mission, first_case, completed, best_score, best_elapsed, replay_count) in
+            backup.mission_completions
+        {
+            transaction.exec_drop("INSERT INTO player_mission_completions(player_id,mission_id,first_case_id,first_completed_at,best_score,best_elapsed_minutes,replay_count) VALUES (:player,:mission,:first_case,:completed,:best_score,:best_elapsed,:replay_count) ON DUPLICATE KEY UPDATE first_case_id=VALUES(first_case_id),first_completed_at=VALUES(first_completed_at),best_score=VALUES(best_score),best_elapsed_minutes=VALUES(best_elapsed_minutes),replay_count=VALUES(replay_count)",params!{"player"=>player,"mission"=>mission,"first_case"=>first_case,"completed"=>completed,"best_score"=>best_score,"best_elapsed"=>best_elapsed,"replay_count"=>replay_count})?;
+        }
+        for (player, mission, case_id) in backup.active_mission_assignments {
+            transaction.exec_drop("INSERT INTO active_mission_assignments(player_id,mission_id,case_id) VALUES (:player,:mission,:case_id) ON DUPLICATE KEY UPDATE case_id=VALUES(case_id)",params!{"player"=>player,"mission"=>mission,"case_id"=>case_id})?;
+        }
+        for (player, role) in backup.content_roles {
+            transaction.exec_drop(
+                "UPDATE players SET content_role=:role WHERE player_id=:player",
+                params! {"player"=>player,"role"=>role},
+            )?;
+        }
+        for (mission, status, version, published, scheduled, retired, actor) in
+            backup.mission_lifecycle
+        {
+            transaction.exec_drop("UPDATE missions SET lifecycle_status=:status,content_version=:version,published_at=:published,scheduled_for=:scheduled,retired_at=:retired,lifecycle_updated_by=:actor WHERE mission_id=:mission",params!{"mission"=>mission,"status"=>status,"version"=>version,"published"=>published,"scheduled"=>scheduled,"retired"=>retired,"actor"=>actor})?;
+        }
+        for (mission, actor, from_status, to_status, version, reason, created) in
+            backup.mission_lifecycle_audit
+        {
+            transaction.exec_drop("INSERT INTO mission_lifecycle_audit(mission_id,actor_player_id,from_status,to_status,content_version,reason,created_at) VALUES (:mission,:actor,:from_status,:to_status,:version,:reason,:created)",params!{"mission"=>mission,"actor"=>actor,"from_status"=>from_status,"to_status"=>to_status,"version"=>version,"reason"=>reason,"created"=>created})?;
+        }
+        for (player, mission, published, read_at) in backup.release_notifications {
+            transaction.exec_drop("INSERT INTO catalogue_release_notifications(player_id,mission_id,published_at,read_at) VALUES (:player,:mission,:published,:read_at) ON DUPLICATE KEY UPDATE published_at=VALUES(published_at),read_at=VALUES(read_at)",params!{"player"=>player,"mission"=>mission,"published"=>published,"read_at"=>read_at})?;
+        }
+        for (player, avatar, completed) in backup.avatar_profiles {
+            transaction.exec_drop("UPDATE players SET avatar_id=:avatar,avatar_setup_completed_at=:completed WHERE player_id=:player",params!{"player"=>player,"avatar"=>avatar,"completed"=>completed})?;
+        }
         transaction.commit()?;
         Ok(())
+    }
+
+    pub fn cooperation_preferences(
+        &self,
+        player: &str,
+    ) -> Result<CooperationPreferences, StorageError> {
+        self.pool.get_conn()?.exec_first(
+            "SELECT cooperation_enabled,cooperation_email_enabled,age_assurance_status FROM players WHERE player_id=:player",
+            params!{"player"=>player},
+        )?.map(|(enabled,email,age):(bool,bool,String)| CooperationPreferences{enabled,email_enabled:email,age_assurance_status:age}).ok_or(StorageError::Forbidden)
+    }
+
+    pub fn set_cooperation_preferences(
+        &self,
+        player: &str,
+        enabled: bool,
+        email: bool,
+    ) -> Result<CooperationPreferences, StorageError> {
+        self.pool.get_conn()?.exec_drop(
+            "UPDATE players SET cooperation_enabled=:enabled,cooperation_email_enabled=:email WHERE player_id=:player AND age_assurance_status='adult'",
+            params!{"player"=>player,"enabled"=>enabled,"email"=>email},
+        )?;
+        self.cooperation_preferences(player)
+    }
+
+    pub fn cooperation_block(&self, actor: &str, username: &str) -> Result<(), StorageError> {
+        let mut connection = self.pool.get_conn()?;
+        let mut tx = connection.start_transaction(TxOpts::default())?;
+        let target: Option<String> = tx.exec_first(
+            "SELECT player_id FROM players WHERE username=:username",
+            params! {"username"=>username},
+        )?;
+        let target = target.ok_or(StorageError::Forbidden)?;
+        if target == actor {
+            return Err(StorageError::Command("cannot block yourself".into()));
+        }
+        tx.exec_drop(
+            "INSERT IGNORE INTO cooperation_blocks(blocker_id,blocked_id) VALUES (:actor,:target)",
+            params! {"actor"=>actor,"target"=>&target},
+        )?;
+        tx.exec_drop("UPDATE cooperation_requests SET status='cancelled' WHERE status IN ('pending','accepted') AND ((owner_id=:actor AND helper_id=:target) OR (owner_id=:target AND helper_id=:actor))",params!{"actor"=>actor,"target"=>&target})?;
+        tx.exec_drop("INSERT INTO cooperation_audit(actor_id,event_type,metadata_json) VALUES (:actor,'player_blocked',JSON_OBJECT('blocked_id',:target))",params!{"actor"=>actor,"target"=>target})?;
+        tx.commit()?;
+        Ok(())
+    }
+
+    pub fn cooperation_report(
+        &self,
+        actor: &str,
+        username: &str,
+        category: &str,
+        details: Option<&str>,
+    ) -> Result<String, StorageError> {
+        if !matches!(
+            category,
+            "spam" | "harassment" | "abusive_username" | "cheating" | "other"
+        ) || details.is_some_and(|v| v.len() > 500)
+        {
+            return Err(StorageError::Command("invalid report".into()));
+        }
+        let mut connection = self.pool.get_conn()?;
+        let target: Option<String> = connection.exec_first(
+            "SELECT player_id FROM players WHERE username=:username",
+            params! {"username"=>username},
+        )?;
+        let id = uuid::Uuid::new_v4().to_string();
+        connection.exec_drop("INSERT INTO cooperation_reports(report_id,reporter_id,reported_id,category,details) VALUES (:id,:actor,:target,:category,:details)",params!{"id"=>&id,"actor"=>actor,"target"=>target.ok_or(StorageError::Forbidden)?,"category"=>category,"details"=>details})?;
+        Ok(id)
+    }
+
+    pub fn create_cooperation_request(
+        &self,
+        owner: &str,
+        helper_username: &str,
+        case_id: &str,
+        venue_id: &str,
+        command_id: &str,
+        public_scene: &serde_json::Value,
+    ) -> Result<String, StorageError> {
+        let mut connection = self.pool.get_conn()?;
+        let mut tx = connection.start_transaction(TxOpts::default())?;
+        let helper:Option<String>=tx.exec_first("SELECT player_id FROM players WHERE username=:username AND email_verified_at IS NOT NULL AND cooperation_enabled=TRUE AND age_assurance_status='adult' AND (SELECT COUNT(*) FROM player_mission_completions WHERE player_id=players.player_id)>=3",params!{"username"=>helper_username})?;
+        let helper = helper.ok_or(StorageError::Command("helper is not eligible".into()))?;
+        let owns:u64=tx.exec_first("SELECT COUNT(*) FROM active_cases WHERE case_id=:case AND player_id=:owner AND attempt_kind='ordinary'",params!{"case"=>case_id,"owner"=>owner})?.unwrap_or(0);
+        let blocked:u64=tx.exec_first("SELECT COUNT(*) FROM cooperation_blocks WHERE (blocker_id=:owner AND blocked_id=:helper) OR (blocker_id=:helper AND blocked_id=:owner)",params!{"owner"=>owner,"helper"=>&helper})?.unwrap_or(0);
+        if owns != 1 || owner == helper || blocked > 0 {
+            return Err(StorageError::Forbidden);
+        }
+        let id = uuid::Uuid::new_v4().to_string();
+        let scene = serde_json::to_string(public_scene)?;
+        tx.exec_drop("INSERT INTO cooperation_requests(request_id,command_id,owner_id,helper_id,case_id,venue_id,public_scene_json,expires_at) VALUES (:id,:command,:owner,:helper,:case,:venue,:scene,DATE_ADD(UTC_TIMESTAMP(),INTERVAL 12 HOUR))",params!{"id"=>&id,"command"=>command_id,"owner"=>owner,"helper"=>helper,"case"=>case_id,"venue"=>venue_id,"scene"=>scene})?;
+        tx.exec_drop("INSERT INTO cooperation_audit(request_id,actor_id,event_type,metadata_json) VALUES (:id,:owner,'request_created',JSON_OBJECT())",params!{"id"=>&id,"owner"=>owner})?;
+        tx.commit()?;
+        Ok(id)
+    }
+
+    pub fn transition_cooperation_request(
+        &self,
+        actor: &str,
+        request_id: &str,
+        action: &str,
+        recommendation: Option<&serde_json::Value>,
+    ) -> Result<(), StorageError> {
+        let (from, to, role) = match action {
+            "accept" => ("pending", "accepted", "helper"),
+            "decline" => ("pending", "declined", "helper"),
+            "complete" => ("accepted", "completed", "helper"),
+            "acknowledge" => ("completed", "acknowledged", "owner"),
+            _ => return Err(StorageError::Command("invalid cooperation action".into())),
+        };
+        let mut connection = self.pool.get_conn()?;
+        let mut tx = connection.start_transaction(TxOpts::default())?;
+        tx.exec_drop("UPDATE cooperation_requests SET status=:to,recommendation_json=COALESCE(:recommendation,recommendation_json) WHERE request_id=:id AND status=:from AND expires_at>UTC_TIMESTAMP() AND ((:role='helper' AND helper_id=:actor) OR (:role='owner' AND owner_id=:actor))",params!{"to"=>to,"from"=>from,"id"=>request_id,"actor"=>actor,"role"=>role,"recommendation"=>recommendation.map(serde_json::to_string).transpose()?})?;
+        if tx.affected_rows() != 1 {
+            return Err(StorageError::Forbidden);
+        }
+        if action == "acknowledge" {
+            let eligible:u64=tx.exec_first("SELECT COUNT(*) FROM cooperation_requests r WHERE r.request_id=:id AND (SELECT COUNT(*) FROM cooperation_audit a WHERE a.actor_id=r.helper_id AND a.event_type='reputation_awarded' AND a.created_at>=UTC_DATE())<3 AND (SELECT COUNT(*) FROM cooperation_requests p WHERE p.helper_id=r.helper_id AND p.owner_id=r.owner_id AND p.reward_granted=TRUE AND p.updated_at>=DATE_SUB(UTC_TIMESTAMP(),INTERVAL 7 DAY))=0",params!{"id"=>request_id})?.unwrap_or(0);
+            if eligible == 1 {
+                tx.exec_drop(
+                    "UPDATE cooperation_requests SET reward_granted=TRUE WHERE request_id=:id",
+                    params! {"id"=>request_id},
+                )?;
+                tx.exec_drop("UPDATE players SET cooperation_reputation=cooperation_reputation+1 WHERE player_id=(SELECT helper_id FROM cooperation_requests WHERE request_id=:id)",params!{"id"=>request_id})?;
+                tx.exec_drop("INSERT INTO cooperation_audit(request_id,actor_id,event_type,metadata_json) SELECT request_id,helper_id,'reputation_awarded',JSON_OBJECT('amount',1) FROM cooperation_requests WHERE request_id=:id",params!{"id"=>request_id})?;
+            }
+        }
+        tx.exec_drop("INSERT INTO cooperation_audit(request_id,actor_id,event_type,metadata_json) VALUES (:id,:actor,:action,JSON_OBJECT())",params!{"id"=>request_id,"actor"=>actor,"action"=>action})?;
+        tx.commit()?;
+        Ok(())
+    }
+
+    pub fn cooperation_requests(
+        &self,
+        player: &str,
+    ) -> Result<Vec<CooperationRequest>, StorageError> {
+        let mut connection = self.pool.get_conn()?;
+        connection.exec_drop("UPDATE cooperation_requests SET status='expired' WHERE status IN ('pending','accepted') AND expires_at<=UTC_TIMESTAMP()",())?;
+        let rows:Vec<(String,String,String,String,String,String,String,Option<String>,bool,String)>=connection.exec(
+            "SELECT r.request_id,o.username,h.username,r.case_id,r.venue_id,r.status,CAST(r.public_scene_json AS CHAR),CAST(r.recommendation_json AS CHAR),r.reward_granted,DATE_FORMAT(r.expires_at,'%Y-%m-%dT%H:%i:%sZ') FROM cooperation_requests r JOIN players o ON o.player_id=r.owner_id JOIN players h ON h.player_id=r.helper_id WHERE r.owner_id=:player OR r.helper_id=:player ORDER BY r.created_at DESC LIMIT 100",
+            params!{"player"=>player})?;
+        rows.into_iter()
+            .map(
+                |(
+                    request_id,
+                    owner_username,
+                    helper_username,
+                    case_id,
+                    venue_id,
+                    status,
+                    scene,
+                    recommendation,
+                    reward_granted,
+                    expires_at,
+                )| {
+                    Ok(CooperationRequest {
+                        request_id,
+                        owner_username,
+                        helper_username,
+                        case_id,
+                        venue_id,
+                        status,
+                        public_scene: serde_json::from_str(&scene)?,
+                        recommendation: recommendation
+                            .map(|v| serde_json::from_str(&v))
+                            .transpose()?,
+                        reward_granted,
+                        expires_at,
+                    })
+                },
+            )
+            .collect()
+    }
+
+    pub fn cooperation_reputation(&self, player: &str) -> Result<u64, StorageError> {
+        self.pool
+            .get_conn()?
+            .exec_first(
+                "SELECT cooperation_reputation FROM players WHERE player_id=:player",
+                params! {"player"=>player},
+            )?
+            .ok_or(StorageError::Forbidden)
+    }
+
+    pub fn cooperation_unblock(&self, actor: &str, blocked: &str) -> Result<(), StorageError> {
+        self.pool.get_conn()?.exec_drop(
+            "DELETE FROM cooperation_blocks WHERE blocker_id=:actor AND blocked_id=:blocked",
+            params! {"actor"=>actor,"blocked"=>blocked},
+        )?;
+        Ok(())
+    }
+
+    pub fn cooperation_blocks(&self, actor: &str) -> Result<Vec<(String, String)>, StorageError> {
+        Ok(self.pool.get_conn()?.exec("SELECT p.player_id,p.username FROM cooperation_blocks b JOIN players p ON p.player_id=b.blocked_id WHERE b.blocker_id=:actor ORDER BY p.username",params!{"actor"=>actor})?)
     }
 }
 
@@ -1699,6 +2633,7 @@ mod tests {
             hideout_venue: "market".into(),
             replay: vec![],
             outcome: None,
+            economy: Default::default(),
         };
         game.observations.insert("hair".into(), "braided".into());
         game.replay.push(naijachase_contracts::Command::Travel {
@@ -1749,6 +2684,26 @@ mod tests {
             serde_json::from_str(include_str!("../fixtures/schema-upgrade-v6-to-v7.json")).unwrap();
         let metrics_upgrade: serde_json::Value =
             serde_json::from_str(include_str!("../fixtures/schema-upgrade-v7-to-v8.json")).unwrap();
+        let assignment_upgrade: serde_json::Value =
+            serde_json::from_str(include_str!("../fixtures/schema-upgrade-v8-to-v9.json")).unwrap();
+        let catalogue_upgrade: serde_json::Value =
+            serde_json::from_str(include_str!("../fixtures/schema-upgrade-v9-to-v10.json"))
+                .unwrap();
+        let pinning_upgrade: serde_json::Value =
+            serde_json::from_str(include_str!("../fixtures/schema-upgrade-v10-to-v11.json"))
+                .unwrap();
+        let cooperation_upgrade: serde_json::Value =
+            serde_json::from_str(include_str!("../fixtures/schema-upgrade-v11-to-v12.json"))
+                .unwrap();
+        let weekly_upgrade: serde_json::Value =
+            serde_json::from_str(include_str!("../fixtures/schema-upgrade-v12-to-v13.json"))
+                .unwrap();
+        let discipline_upgrade: serde_json::Value =
+            serde_json::from_str(include_str!("../fixtures/schema-upgrade-v13-to-v14.json"))
+                .unwrap();
+        let avatar_upgrade: serde_json::Value =
+            serde_json::from_str(include_str!("../fixtures/schema-upgrade-v14-to-v15.json"))
+                .unwrap();
         assert_eq!(career["name"], "Fixture Detective");
         assert_eq!(upgrade["from_version"], 2);
         assert_eq!(upgrade["to_version"], 3);
@@ -1762,6 +2717,19 @@ mod tests {
         assert_eq!(throttle_upgrade["to_version"], 7);
         assert_eq!(metrics_upgrade["from_version"], 7);
         assert_eq!(metrics_upgrade["to_version"], 8);
+        assert_eq!(assignment_upgrade["from_version"], 8);
+        assert_eq!(assignment_upgrade["to_version"], 9);
+        assert_eq!(catalogue_upgrade["from_version"], 9);
+        assert_eq!(catalogue_upgrade["to_version"], 10);
+        assert_eq!(pinning_upgrade["from_version"], 10);
+        assert_eq!(pinning_upgrade["to_version"], 11);
+        assert_eq!(cooperation_upgrade["from_version"], 11);
+        assert_eq!(cooperation_upgrade["to_version"], 12);
+        assert_eq!(weekly_upgrade["from_version"], 12);
+        assert_eq!(weekly_upgrade["to_version"], 13);
+        assert_eq!(discipline_upgrade["to_version"], 14);
+        assert_eq!(avatar_upgrade["from_version"], 14);
+        assert_eq!(avatar_upgrade["to_version"], 15);
     }
 
     #[test]
@@ -1770,9 +2738,9 @@ mod tests {
             return;
         }
         let _guard = MYSQL_TEST_LOCK.lock().unwrap();
-        let store = MysqlStore::connect_from_env().unwrap();
+        let store = std::sync::Arc::new(MysqlStore::connect_from_env().unwrap());
         store.migrate().unwrap();
-        assert_eq!(store.schema_version().unwrap(), 8);
+        assert_eq!(store.schema_version().unwrap(), 15);
         let id = "storage-integration-test";
         let next = store.state_version(id).unwrap().unwrap_or(0) + 1;
         store.save(id, next, b"test-state").unwrap();
@@ -1853,6 +2821,7 @@ mod tests {
             hideout_venue: "market".into(),
             replay: vec![],
             outcome: None,
+            economy: Default::default(),
         };
         store
             .create_case(case_id, "p35-owner", "NG-M0001", &state)
@@ -1927,6 +2896,273 @@ mod tests {
             restarted.load_owned_case(case_id, "p35-owner").unwrap().0,
             3
         );
+    }
+
+    #[test]
+    fn live_mysql_pressure_is_idempotent_and_charges_once_when_enabled() {
+        if env::var("NAIJACHASE_MYSQL_TEST").ok().as_deref() != Some("1") {
+            return;
+        }
+        let _guard = MYSQL_TEST_LOCK.lock().unwrap();
+        let store = std::sync::Arc::new(MysqlStore::connect_from_env().unwrap());
+        store.migrate().unwrap();
+        let suffix = uuid::Uuid::new_v4().simple().to_string();
+        let player = format!("p391-{suffix}");
+        let case_id = format!("p391-case-{suffix}");
+        let command = format!("p391-command-{suffix}");
+        store.pool.get_conn().unwrap().exec_drop("INSERT INTO players(player_id,display_name,bribe_tokens) VALUES (:player,'Pressure test',2)",params!{"player"=>&player}).unwrap();
+        let state = GameState {
+            version: 1,
+            mission_id: "NG-M0001".into(),
+            thief_id: "TH-001".into(),
+            difficulty: 1,
+            stage: 0,
+            state: "LOC-001".into(),
+            route: vec!["LOC-001".into(), "LOC-002".into()],
+            elapsed: 0,
+            score: 500,
+            career_points: 0,
+            dossier: Default::default(),
+            observations: Default::default(),
+            visited_venues: vec!["0|LOC-001|VEN-MARKET".into()],
+            warrant_suspect: None,
+            hideout_venue: "VEN-MARKET".into(),
+            replay: vec![],
+            outcome: None,
+            economy: Default::default(),
+        };
+        store
+            .create_case(&case_id, &player, "NG-M0001", &state)
+            .unwrap();
+        let barrier = std::sync::Arc::new(std::sync::Barrier::new(3));
+        let mut workers = vec![];
+        for has_extra in [true, false] {
+            let store = store.clone();
+            let barrier = barrier.clone();
+            let player = player.clone();
+            let case_id = case_id.clone();
+            let command = command.clone();
+            workers.push(std::thread::spawn(move || {
+                barrier.wait();
+                store
+                    .pressure_witness(
+                        &player,
+                        &case_id,
+                        &command,
+                        1,
+                        "VEN-MARKET",
+                        "bribe",
+                        has_extra,
+                        has_extra.then_some("A corroborating clue."),
+                    )
+                    .unwrap()
+            }));
+        }
+        barrier.wait();
+        let first = workers.remove(0).join().unwrap();
+        let duplicate = workers.remove(0).join().unwrap();
+        assert_eq!(first, duplicate);
+        assert_eq!(first.token_balance, 1);
+        assert_eq!(store.load_owned_case(&case_id, &player).unwrap().0, 2);
+        let ledger:u64=store.pool.get_conn().unwrap().exec_first("SELECT COUNT(*) FROM bribe_token_ledger WHERE player_id=:player AND reference_id=:reference",params!{"player"=>&player,"reference"=>&command}).unwrap().unwrap();
+        assert_eq!(ledger, 1);
+    }
+
+    #[test]
+    fn live_mysql_completed_missions_are_excluded_and_replays_do_not_reward_twice() {
+        if env::var("NAIJACHASE_MYSQL_TEST").ok().as_deref() != Some("1") {
+            return;
+        }
+        let _guard = MYSQL_TEST_LOCK.lock().unwrap();
+        use std::collections::BTreeMap;
+        let store = MysqlStore::connect_from_env().unwrap();
+        store.migrate().unwrap();
+        let player = "p371-assignment-owner";
+        let mission = "NG-M0002";
+        let first_case = "p371-first";
+        let replay_case = "p371-replay";
+        {
+            let mut connection = store.pool.get_conn().unwrap();
+            connection
+                .exec_drop(
+                    "DELETE FROM bribe_token_ledger WHERE player_id=:player",
+                    params! {"player"=>player},
+                )
+                .unwrap();
+            connection
+                .exec_drop(
+                    "DELETE FROM active_cases WHERE player_id=:player",
+                    params! {"player"=>player},
+                )
+                .unwrap();
+            connection
+                .exec_drop(
+                    "DELETE FROM case_archive WHERE player_id=:player",
+                    params! {"player"=>player},
+                )
+                .unwrap();
+            connection
+                .exec_drop(
+                    "DELETE FROM player_mission_completions WHERE player_id=:player",
+                    params! {"player"=>player},
+                )
+                .unwrap();
+            connection
+                .exec_drop(
+                    "DELETE FROM careers WHERE player_id=:player",
+                    params! {"player"=>player},
+                )
+                .unwrap();
+            connection
+                .exec_drop(
+                    "DELETE FROM players WHERE player_id=:player",
+                    params! {"player"=>player},
+                )
+                .unwrap();
+        }
+        let mut solved = GameState {
+            version: 1,
+            mission_id: mission.into(),
+            thief_id: "NG-T001".into(),
+            difficulty: 1,
+            stage: 0,
+            state: "Abia".into(),
+            route: vec!["Abia".into(), "Kano".into()],
+            elapsed: 100,
+            score: 500,
+            career_points: 500,
+            dossier: BTreeMap::new(),
+            observations: BTreeMap::new(),
+            visited_venues: vec![],
+            warrant_suspect: None,
+            hideout_venue: "market".into(),
+            replay: vec![],
+            outcome: None,
+            economy: Default::default(),
+        };
+        store
+            .create_case_with_kind(first_case, player, mission, &solved, "ordinary")
+            .unwrap();
+        solved.outcome = Some("solved".into());
+        let first_awards = store
+            .record_case_completion(player, first_case, &solved)
+            .unwrap();
+        assert_eq!(first_awards.len(), 1);
+        assert_eq!(first_awards[0].amount, 3);
+        assert_eq!(
+            first_awards[0].components,
+            vec!["first_completion", "clean_route", "ethical_investigation"]
+        );
+        assert!(
+            !store
+                .unseen_published_missions(player)
+                .unwrap()
+                .contains(&mission.to_string())
+        );
+        assert!(matches!(
+            store.create_case_with_kind("p371-repeat", player, mission, &solved, "ordinary"),
+            Err(StorageError::MissionAlreadyCompleted)
+        ));
+        store
+            .create_case_with_kind(replay_case, player, mission, &solved, "replay")
+            .unwrap();
+        let replay_awards = store
+            .record_case_completion(player, replay_case, &solved)
+            .unwrap();
+        assert!(replay_awards.is_empty());
+        assert_eq!(store.bribe_token_balance(player).unwrap().balance, 3);
+        let archive = store.case_archive(player).unwrap();
+        assert_eq!(
+            archive
+                .iter()
+                .filter(|entry| entry.first_completion)
+                .count(),
+            1
+        );
+        assert_eq!(
+            archive
+                .iter()
+                .filter(|entry| entry.attempt_kind == "replay")
+                .count(),
+            1
+        );
+        assert_eq!(store.progression_summary(player).unwrap().solved_cases, 1);
+    }
+
+    #[test]
+    fn live_mysql_continuous_catalogue_validates_schedules_and_publishes() {
+        if env::var("NAIJACHASE_MYSQL_TEST").ok().as_deref() != Some("1") {
+            return;
+        }
+        let _guard = MYSQL_TEST_LOCK.lock().unwrap();
+        let store = MysqlStore::connect_from_env().unwrap();
+        store.migrate().unwrap();
+        let player = "p372-content-admin";
+        let mission = "NG-MTEST1";
+        let mut connection = store.pool.get_conn().unwrap();
+        connection
+            .exec_drop(
+                "DELETE FROM mission_lifecycle_audit WHERE mission_id=:mission",
+                params! {"mission"=>mission},
+            )
+            .unwrap();
+        connection
+            .exec_drop(
+                "DELETE FROM catalogue_release_notifications WHERE mission_id=:mission",
+                params! {"mission"=>mission},
+            )
+            .unwrap();
+        connection
+            .exec_drop(
+                "DELETE FROM missions WHERE mission_id=:mission",
+                params! {"mission"=>mission},
+            )
+            .unwrap();
+        connection.exec_drop("INSERT INTO players(player_id,display_name,content_role) VALUES (:player,:player,'admin') ON DUPLICATE KEY UPDATE content_role='admin'",params!{"player"=>player}).unwrap();
+        connection.exec_drop("INSERT INTO missions(mission_id,difficulty,thief_id,start_location_id,stop_2_location_id,stop_3_location_id,capture_location_id,content_json,narrative_json,lifecycle_status,published_at) SELECT :mission,difficulty,thief_id,start_location_id,stop_2_location_id,stop_3_location_id,capture_location_id,content_json,narrative_json,'draft',NULL FROM missions WHERE mission_id='NG-M0003'",params!{"mission"=>mission}).unwrap();
+        drop(connection);
+        assert!(store.validate_mission(mission).unwrap().valid);
+        store
+            .transition_mission(player, mission, "editorial_review", None, "editor review")
+            .unwrap();
+        store
+            .transition_mission(player, mission, "validated", None, "validation passed")
+            .unwrap();
+        store
+            .transition_mission(
+                player,
+                mission,
+                "scheduled",
+                Some("2000-01-01 00:00:00"),
+                "release test",
+            )
+            .unwrap();
+        assert_eq!(store.publish_due_missions().unwrap(), 1);
+        assert_eq!(store.runtime_mission(mission).unwrap().mission_id, mission);
+        assert_eq!(
+            store.mission_admin_details(mission).unwrap()["lifecycle_status"],
+            "published"
+        );
+        assert!(store.catalogue_health(50).unwrap().published >= 1000);
+        let mut connection = store.pool.get_conn().unwrap();
+        connection
+            .exec_drop(
+                "DELETE FROM mission_lifecycle_audit WHERE mission_id=:mission",
+                params! {"mission"=>mission},
+            )
+            .unwrap();
+        connection
+            .exec_drop(
+                "DELETE FROM catalogue_release_notifications WHERE mission_id=:mission",
+                params! {"mission"=>mission},
+            )
+            .unwrap();
+        connection
+            .exec_drop(
+                "DELETE FROM missions WHERE mission_id=:mission",
+                params! {"mission"=>mission},
+            )
+            .unwrap();
     }
 
     #[test]
@@ -2084,7 +3320,17 @@ mod tests {
             hideout_venue: "market".into(),
             replay: vec![],
             outcome: Some("solved".into()),
+            economy: Default::default(),
         };
+        store
+            .create_case_with_kind(
+                "p37-archive-case",
+                player,
+                "NG-M0001",
+                &completed,
+                "ordinary",
+            )
+            .unwrap();
         store
             .record_case_completion(player, "p37-archive-case", &completed)
             .unwrap();
@@ -2123,6 +3369,201 @@ mod tests {
                 .allow_auth_attempt("integration-subject", "login", 2)
                 .unwrap()
         );
+    }
+
+    #[test]
+    fn live_mysql_cooperation_enforces_privacy_abuse_and_idempotency_when_enabled() {
+        if env::var("NAIJACHASE_MYSQL_TEST").ok().as_deref() != Some("1") {
+            return;
+        }
+        let _guard = MYSQL_TEST_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+        let store = MysqlStore::connect_from_env().unwrap();
+        store.migrate().unwrap();
+        let mut db = store.pool.get_conn().unwrap();
+        db.query_drop("SET FOREIGN_KEY_CHECKS=0").unwrap();
+        db.query_drop("DELETE FROM cooperation_audit WHERE actor_id IN ('coop-owner','coop-helper','coop-outsider')").unwrap();
+        db.query_drop("DELETE FROM cooperation_requests WHERE case_id='coop-case'")
+            .unwrap();
+        db.query_drop("DELETE FROM cooperation_blocks WHERE blocker_id IN ('coop-owner','coop-helper','coop-outsider') OR blocked_id IN ('coop-owner','coop-helper','coop-outsider')").unwrap();
+        for (id, name) in [
+            ("coop-owner", "CoopOwner"),
+            ("coop-helper", "CoopHelper"),
+            ("coop-outsider", "CoopOutsider"),
+        ] {
+            db.exec_drop("INSERT INTO players(player_id,display_name,email,username,home_base,password_hash,email_verified_at,age_assurance_status,cooperation_enabled) VALUES (:id,:name,CONCAT(:id,'@example.test'),:name,'Lagos','x',UTC_TIMESTAMP(),'adult',TRUE) ON DUPLICATE KEY UPDATE username=VALUES(username),email_verified_at=UTC_TIMESTAMP(),age_assurance_status='adult',cooperation_enabled=TRUE",params!{"id"=>id,"name"=>name}).unwrap();
+        }
+        let missions: Vec<String> = db.query("SELECT mission_id FROM missions LIMIT 3").unwrap();
+        for (index, mission) in missions.iter().enumerate() {
+            db.exec_drop("INSERT IGNORE INTO player_mission_completions(player_id,mission_id,first_case_id,first_completed_at,best_score,best_elapsed_minutes) VALUES ('coop-helper',:mission,:case,UTC_TIMESTAMP(),500,100)",params!{"mission"=>mission,"case"=>format!("coop-finished-{index}")}).unwrap();
+        }
+        let mission = missions.first().unwrap();
+        db.exec_drop("INSERT INTO active_cases(case_id,player_id,mission_id,version,state_json,attempt_kind,content_version) VALUES ('coop-case','coop-owner',:mission,1,'{}','ordinary',1) ON DUPLICATE KEY UPDATE player_id='coop-owner'",params!{"mission"=>mission}).unwrap();
+        db.query_drop("SET FOREIGN_KEY_CHECKS=1").unwrap();
+        drop(db);
+        let id = store
+            .create_cooperation_request(
+                "coop-owner",
+                "CoopHelper",
+                "coop-case",
+                "market",
+                "coop-command",
+                &serde_json::json!({"venue_id":"market"}),
+            )
+            .unwrap();
+        assert!(
+            store
+                .create_cooperation_request(
+                    "coop-owner",
+                    "CoopHelper",
+                    "coop-case",
+                    "market",
+                    "coop-command-2",
+                    &serde_json::json!({})
+                )
+                .is_err()
+        );
+        assert!(
+            store
+                .transition_cooperation_request("coop-outsider", &id, "accept", None)
+                .is_err()
+        );
+        store
+            .transition_cooperation_request("coop-helper", &id, "accept", None)
+            .unwrap();
+        assert!(
+            store
+                .transition_cooperation_request("coop-helper", &id, "accept", None)
+                .is_err()
+        );
+        store.cooperation_block("coop-owner", "CoopHelper").unwrap();
+        assert_eq!(
+            store.cooperation_requests("coop-owner").unwrap()[0].status,
+            "cancelled"
+        );
+        assert!(
+            store
+                .cooperation_report(
+                    "coop-owner",
+                    "CoopHelper",
+                    "harassment",
+                    Some(&"x".repeat(501))
+                )
+                .is_err()
+        );
+    }
+
+    #[test]
+    fn live_mysql_weekly_schedule_transit_and_single_winner_when_enabled() {
+        if env::var("NAIJACHASE_MYSQL_TEST").ok().as_deref() != Some("1") {
+            return;
+        }
+        let _guard = MYSQL_TEST_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+        let store = MysqlStore::connect_from_env().unwrap();
+        store.migrate().unwrap();
+        let mut db = store.pool.get_conn().unwrap();
+        let suffix = uuid::Uuid::new_v4().simple().to_string();
+        let owner = format!("wo-{}", &suffix[..12]);
+        let helper = format!("wh-{}", &suffix[..12]);
+        let owner_name = format!("WO{}", &suffix[..8]);
+        let helper_name = format!("WH{}", &suffix[..8]);
+        for (id, name) in [(&owner, &owner_name), (&helper, &helper_name)] {
+            db.exec_drop("INSERT INTO players(player_id,display_name,email,username,home_base,password_hash,email_verified_at,age_assurance_status) VALUES(:id,:name,CONCAT(:id,'@test.invalid'),:name,'Lagos','x',UTC_TIMESTAMP(),'adult')",params!{"id"=>id,"name"=>name}).unwrap();
+        }
+        drop(db);
+        let group = store
+            .create_group(&owner, &format!("Weekly {}", &suffix[..8]), 4)
+            .unwrap();
+        let invite = store
+            .invite_group_member(&owner, &group, &helper_name)
+            .unwrap();
+        store
+            .respond_group_invitation(&helper, &invite, true)
+            .unwrap();
+        let mission: String = store
+            .pool
+            .get_conn()
+            .unwrap()
+            .query_first("SELECT mission_id FROM missions LIMIT 1")
+            .unwrap()
+            .unwrap();
+        let state = GameState {
+            version: 1,
+            mission_id: mission.clone(),
+            thief_id: "T".into(),
+            difficulty: 1,
+            stage: 0,
+            state: "Lagos".into(),
+            route: vec!["Lagos".into(), "Kano".into()],
+            elapsed: 0,
+            score: 500,
+            career_points: 0,
+            dossier: Default::default(),
+            observations: [("sex".into(), "male".into())].into(),
+            visited_venues: vec![],
+            warrant_suspect: None,
+            hideout_venue: "market".into(),
+            replay: vec![],
+            outcome: None,
+            economy: naijachase_contracts::CaseEconomy {
+                rules_version: 1,
+                opening_budget: 5000,
+                balance: 5000,
+                ledger: vec![],
+            },
+        };
+        let now = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_secs();
+        let challenge = store
+            .schedule_weekly_challenge(&group, now - 60, now + 3600, &mission, 1, 7, &state)
+            .unwrap();
+        assert_eq!(
+            challenge,
+            store
+                .schedule_weekly_challenge(&group, now - 60, now + 3600, &mission, 1, 7, &state)
+                .unwrap()
+        );
+        let first = store.start_weekly_attempt(&owner, &challenge).unwrap();
+        let second = store.start_weekly_attempt(&helper, &challenge).unwrap();
+        assert!(store.weekly_attempt("intruder", &first).is_err());
+        let mut arrival = state.clone();
+        arrival.economy.balance = 4900;
+        arrival.state = "Kano".into();
+        let transit = store
+            .depart_weekly(
+                &owner,
+                &first,
+                "weekly-travel",
+                "Kano",
+                "drive",
+                100,
+                1,
+                &arrival,
+            )
+            .unwrap();
+        assert!(store.execute_weekly(&owner, &first, 2, |s| Ok(s)).is_err());
+        store.pool.get_conn().unwrap().exec_drop("UPDATE weekly_transits SET arrives_at=DATE_SUB(UTC_TIMESTAMP(),INTERVAL 1 SECOND) WHERE transit_id=:id",params!{"id"=>transit}).unwrap();
+        assert!(store.complete_weekly_arrival(&owner, &first).unwrap());
+        assert_eq!(
+            store.weekly_attempt(&owner, &first).unwrap().state.state,
+            "Kano"
+        );
+        let won = store
+            .execute_weekly(&owner, &first, 3, |mut s| {
+                s.outcome = Some("solved".into());
+                Ok(s)
+            })
+            .unwrap();
+        assert!(won.winner);
+        assert!(
+            store
+                .execute_weekly(&helper, &second, 1, |s| Ok(s))
+                .is_err()
+        );
+        let details = store.weekly_challenge_details(&owner, &challenge).unwrap();
+        assert_eq!(details["winner_attempt_id"], first);
+        assert_eq!(store.expire_weekly_challenges().unwrap(), 0);
     }
 
     fn test_execute(

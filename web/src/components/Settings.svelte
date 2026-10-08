@@ -2,6 +2,7 @@
   import { untrack } from "svelte";
   import type { AppController } from "../lib/app.svelte";
   import { HOME_BASES, STATES } from "../model.ts";
+  import AvatarPicker from "./AvatarPicker.svelte";
   import Icon from "./Icon.svelte";
 
   let { app }: { app: AppController } = $props();
@@ -21,7 +22,6 @@
     if (!current) return;
     await app.saveProfile({
       display_name: blank(displayName), pronouns: blank(pronouns), sex: blank(sex),
-      avatar_id: current.avatar_id, uniform_id: current.uniform_id,
       home_base: homeBase, leaderboard_opt_in: current.leaderboard_opt_in
     });
   }
@@ -73,6 +73,8 @@
         <button class="btn btn-primary" disabled={app.busy}>Save profile</button>
       </form>
     </section>
+
+    <section class="card settings rise"><AvatarPicker {app} /></section>
 
     <section class="card settings rise" aria-labelledby="devices-title">
       <h2 id="devices-title">Devices</h2>

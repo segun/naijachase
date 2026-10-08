@@ -1,12 +1,19 @@
 <script lang="ts">
   import type { AppController } from "../lib/app.svelte";
   import { MAP_H, MAP_W, outlinePath, percentPoint, statePoint } from "../map.ts";
-  import { STATES, ZONES, zoneOf } from "../model.ts";
+  import { STATES, ZONES, groupQuotes, money, zoneOf, type TransportQuote } from "../model.ts";
   import Icon from "./Icon.svelte";
+  import MoveOptions from "./MoveOptions.svelte";
 
   let { app }: { app: AppController } = $props();
-  const here = $derived(app.game!.state.current_state);
   let selected = $state<string | null>(null);
+  const gs = $derived(app.game!.state);
+  const here = $derived(gs.current_state);
+  // Which destinations exist, and what each journey costs, is entirely the server's call.
+  const groups = $derived(groupQuotes(app.quotes, "interstate"));
+  const quoted = $derived(new Map(groups.map(g => [g.id, g])));
+  const reachable = (s: string) => quoted.has(s);
+  const group = $derived(selected ? quoted.get(selected) ?? null : null);
   let view = $state<"map" | "list">("map");
   let query = $state("");
 
@@ -20,10 +27,10 @@
       .filter(([, members]) => members.length > 0)
   );
 
-  async function go() {
+  async function go(quote: TransportQuote) {
     if (!selected) return;
     const destination = selected;
-    if (await app.command({ type: "travel", destination }, `Arrived in ${destination}.`, `Travelling to ${destination}`)) {
+    if (await app.command({ type: "travel", destination, mode: quote.mode }, `Arrived in ${destination}.`, `Travelling to ${destination}`)) {
       selected = null;
       app.go("investigate");
     }
@@ -34,7 +41,7 @@
   <header class="page-head rise">
     <p class="eyebrow">Air and road desk</p>
     <h1>Choose your destination</h1>
-    <p>Use the witness clues. A wrong state costs time and score, so confirm before you travel.</p>
+    <p>Use the witness clues. A wrong state costs time, money and score, so check the fare and confirm before you travel. Funds: <strong>{money(gs.balance)}</strong>.</p>
   </header>
 
   <div class="segmented" role="group" aria-label="Destination view">
@@ -56,7 +63,7 @@
             {#if p}
               <button
                 type="button" class="node" class:current={s === here} class:visited={app.trail.includes(s) && s !== here} class:selected={s === selected}
-                style:left={p.left} style:top={p.top} disabled={s === here || app.busy} aria-pressed={s === selected}
+                style:left={p.left} style:top={p.top} disabled={s === here || app.busy || (app.quotesLoaded && !reachable(s))} aria-pressed={s === selected}
                 aria-label={s === here ? `${s}, current location` : s} onclick={() => (selected = s)}
               ><span class="node-label">{s === "Federal Capital Territory" ? "FCT" : s}</span></button>
             {/if}
@@ -71,7 +78,7 @@
               <h3>{zone}</h3>
               <ul>
                 {#each members as s}
-                  <li><button type="button" class="state-row" class:selected={s === selected} disabled={s === here || app.busy} aria-pressed={s === selected} onclick={() => (selected = s)}>
+                  <li><button type="button" class="state-row" class:selected={s === selected} disabled={s === here || app.busy || (app.quotesLoaded && !reachable(s))} aria-pressed={s === selected} onclick={() => (selected = s)}>
                     <span>{s}</span>{#if s === here}<span class="badge badge-gold">Here</span>{:else if app.trail.includes(s)}<span class="badge">Visited</span>{/if}
                   </button></li>
                 {/each}
@@ -86,12 +93,14 @@
       <section class="card boarding rise" aria-live="polite">
         <p class="eyebrow">Boarding pass</p>
         <div class="route"><div><small>From</small><strong>{here}</strong></div><Icon name="plane" /><div><small>To</small><strong>{selected ?? "—"}</strong></div></div>
-        {#if selected}
-          <p class="muted">{zoneOf(selected) ?? "Nigeria"}. Duration is set by the distance between state hubs.</p>
-          <button class="btn btn-primary btn-lg btn-block" type="button" disabled={app.busy} onclick={go}>
-            {#if app.busy}<span class="spinner"></span> {app.busyLabel}…{:else}Travel to {selected}{/if}
-          </button>
-          <button class="btn btn-ghost btn-block" type="button" onclick={() => (selected = null)}>Clear selection</button>
+        {#if selected && group}
+          <p class="muted">{zoneOf(selected) ?? "Nigeria"}. Fares and journey times are quoted by the service.</p>
+          {#key selected}
+            <MoveOptions {group} elapsed={gs.elapsed} balance={gs.balance} busy={app.busy} confirmLabel={`Travel to ${selected}`} working={app.busyLabel || "Travelling"} onconfirm={go} />
+          {/key}
+          <button class="btn btn-ghost btn-block" type="button" disabled={app.busy} onclick={() => (selected = null)}>Clear selection</button>
+        {:else if selected}
+          <p class="muted">{app.quotesLoaded ? "No journey to this destination is available right now." : "Fetching fares…"}</p>
         {:else}
           <p class="muted">Select a destination on the map or in the list.</p>
         {/if}

@@ -12,10 +12,11 @@
 <div class="results" class:solved>
   <div class="results-card card rise">
     <div class="verdict-mark" aria-hidden="true"><Icon name={solved ? "trophy" : "x"} /></div>
-    <p class="eyebrow">Case closed · {gs.mission_id}</p>
+    <p class="eyebrow">{app.isReplay ? "Replay finished" : "Case closed"} · {gs.mission_id}</p>
     <h1>{solved ? "Thief caught." : "The trail went cold."}</h1>
     <p class="muted lead">{solved ? "Your dossier held up and the warrant stuck." : "The suspect slipped away. Study your notes and try again with a sharper eye."}</p>
     <div class="stamp-mark" role="img" aria-label={solved ? "Arrested" : "Escaped"}>{solved ? "Arrested" : "Escaped"}</div>
+    {#if app.isReplay}<p class="badge badge-gold promotion" role="status">Replay: no points, achievements or completion credit awarded</p>{/if}
     {#if app.promotion}<p class="badge badge-gold promotion" role="status"><Icon name="star" />Promoted to {app.promotion}</p>{/if}
     <dl class="facts big">
       <div><dt>Final score</dt><dd>{gs.score.toLocaleString()}</dd></div>

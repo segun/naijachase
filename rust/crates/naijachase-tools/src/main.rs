@@ -58,7 +58,9 @@ fn simulate(root: &Path, out: &Path) {
             "estimated_case_award",
         ])
         .unwrap();
-    for m in data.missions.values() {
+    let mut missions = data.missions.values().collect::<Vec<_>>();
+    missions.sort_by_key(|mission| &mission.mission_id);
+    for m in missions {
         let route = data.route(m).unwrap();
         let p = &data.profiles[&m.thief_id];
         let mut s = GameState {
@@ -79,6 +81,7 @@ fn simulate(root: &Path, out: &Path) {
             hideout_venue: "market".into(),
             replay: vec![],
             outcome: None,
+            economy: Default::default(),
         };
         let traits = p.traits();
         for stage in 0..route.len() {
@@ -614,6 +617,7 @@ fn solved_outcomes(data: &Catalogue) -> usize {
             hideout_venue: "market".into(),
             replay: vec![],
             outcome: None,
+            economy: Default::default(),
         };
         let traits = profile.traits();
         for stage in 0..route.len() {

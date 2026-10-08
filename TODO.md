@@ -429,8 +429,10 @@ local replay, or client-side prediction becomes a concrete product requirement.
   product and usability review.
 - [x] Add authentication contract, integration, abuse, expiry, rotation,
   revocation, account-recovery, and cross-account authorisation tests.
-- [x] Add an optional profile with display name, pronouns or sex if the player
-  chooses, avatar, uniform, and home state/FCT.
+- [x] Add the profile foundation with display name, optional pronouns/sex,
+  placeholder `avatar_id`/`uniform_id`, and home state/FCT. Full visual avatar
+  creation remains in P3.7.4; the placeholder IDs alone do not count as an
+  implemented avatar picker.
 - [x] Use fictional vehicles and travel operators until advertising and legal
   policies exist; keep real brands out of the first release.
 - [x] Prototype reduced local investigation cost at home rather than completely
@@ -452,176 +454,237 @@ local replay, or client-side prediction becomes a concrete product requirement.
 
 ##### P3.7.1 — Non-repeating case assignment and replay
 
-- [ ] Record each player's first successful completion of a mission as an
+- [x] Record each player's first successful completion of a mission as an
   authoritative `(player_id, mission_id)` completion with a database uniqueness
   constraint. A completion from any eligible game mode counts only once.
-- [ ] Make ordinary random case assignment select only from the currently
+- [x] Make ordinary random case assignment select only from the currently
   published missions that the player has not successfully completed. Perform
   selection and active case creation transactionally so concurrent requests
   cannot assign the same mission twice or create multiple ordinary active cases.
-- [ ] Do not remove failed, expired, abandoned, or forfeited missions from the
+- [x] Do not remove failed, expired, abandoned, or forfeited missions from the
   unseen pool; only a valid successful capture marks a mission completed.
-- [ ] Never silently fall back to a completed mission. When every currently
+- [x] Never silently fall back to a completed mission. When every currently
   published mission has been completed, report that the player has finished the
   current catalogue and offer the archive until additional missions publish.
-- [ ] Show completed missions in the player's case archive with completion date,
-  result summary, thief, score, rank earned, and replay action, while preserving
+- [x] Show completed missions in the player's case archive API with completion
+  date, result, thief, score, first-completion status, and replay metadata while preserving
   unrevealed information for missions that have not been solved.
-- [ ] Allow a completed mission to be started again only through an explicit
+- [x] Allow a completed mission to be started again only through an explicit
   `Replay case` action. Label the resulting attempt as a replay in state, API
   responses, events, saves, results, and history; never return it from random
   assignment.
-- [ ] Prevent replay farming: replay attempts may update personal bests and
+- [x] Prevent replay farming: replay attempts may update personal bests and
   replay statistics, but do not repeat first-completion progression, achievement,
   token, weekly-challenge, or other one-time rewards.
-- [ ] Define mission identity by stable mission ID rather than title or content
+- [x] Define mission identity by stable mission ID rather than title or content
   version. Editorial revisions remain the same completed case unless a future
   migration explicitly publishes them under a new mission ID.
-- [ ] Add API, storage, concurrency, and property tests covering random selection,
+- [x] Add API, storage, concurrency, and regression tests covering random selection,
   the final unseen mission, all 1,000 completed, failed-case eligibility,
   cross-device requests, explicit replay, reward suppression, and account
   isolation.
-- [ ] Exit criterion: no player receives a successfully completed mission through
+- [x] Exit criterion: no player receives a successfully completed mission through
   random assignment, every completed mission remains manually replayable, and
   exhausting the catalogue produces a clear completion state rather than an
   accidental repeat.
+- [x] **FRONTEND HANDOFF (done in the web client; still to be verified against the live API):** replace the fixed mission picker and browser-side
+  randomisation with `POST /v1/cases {}`, add archive `Replay case` actions using
+  `POST /v1/cases/replay`, consume `attempt_kind`/`first_completion`, and use
+  `GET /v1/cases/catalogue-status` instead of hard-coding 1,000. Full integration
+  notes are in `docs/p371-case-assignment-api.md`, with complete requests,
+  responses, errors, and required UI changes.
 
-**Continuous case catalogue**
+##### P3.7.2 — Continuous case catalogue
 
-- [ ] Treat the initial 1,000 missions as the launch catalogue, not the finished
+- [x] Treat the initial 1,000 missions as the launch catalogue, not the finished
   game. Build a continuous editorial release pipeline for adding new missions
   without rebuilding or redeploying the Rust services or web client.
-- [ ] Store missions as immutable, stable IDs with lifecycle states such as
+- [x] Store missions as immutable, stable IDs with lifecycle states such as
   `draft`, `editorial_review`, `validated`, `scheduled`, `published`, and
   `retired`. Only published missions may enter random assignment.
-- [ ] Add an authenticated internal content workflow for authoring, reviewing,
+- [x] Add a repository-authored and authenticated internal workflow for reviewing,
   validating, previewing, scheduling, publishing, correcting, and retiring case
   batches, with role-based access and an append-only audit trail.
-- [ ] Require every new case to pass the existing schema, route solvability,
+- [x] Require every new case to pass the existing schema, route solvability,
   budget, time, witness, clue uniqueness, dossier, no-place-name, Nigerian
   context, source, sensitivity, dialogue, and simulation gates before publication.
-- [ ] Publish new cases in frequent scheduled batches. Set the actual cadence
-  from sustainable editorial capacity, then maintain a ready-to-publish reserve
-  rather than weakening review standards to meet a numerical target.
-- [ ] Make the assignment service query the current published catalogue and
+- [x] Support immediate and UTC-scheduled publication plus a ready-to-publish
+  reserve warning; publishing never bypasses validation.
+- [x] Use a default Monday 06:00 WAT release, targeting 25 validated missions
+  per batch (minimum 10); permit an audited midweek reserve release when any
+  player falls below 25 unseen cases, but never publish unvalidated content.
+- [x] Make the assignment service query the current published catalogue and
   subtract the player's completed mission IDs. Newly published cases therefore
   become eligible automatically and receive priority over older unseen cases
   according to a documented, non-predictable weighting policy.
-- [ ] Keep case truth pinned to the content version used when an attempt starts.
+- [x] Keep case truth pinned to the content version used when an attempt starts.
   Later corrections affect new attempts and replays but cannot mutate an active
   investigation or invalidate its audit history.
-- [ ] Track catalogue health: total published cases, validated reserve, release
-  rate, player completion velocity, unseen cases per active player, exhausted
-  accounts, clue repetition, regional balance, and editorial backlog.
-- [ ] Alert the content team before high-activity players approach exhaustion.
-  Define a minimum unseen-case buffer and increase release capacity when the
-  buffer or projected days-to-exhaustion drops below the agreed threshold.
-- [ ] When a player temporarily exhausts all published cases, celebrate the
+- [x] Track live lifecycle counts, validated/scheduled reserve, minimum unseen
+  cases, and exhausted accounts through the restricted catalogue-health API.
+- [ ] Extend catalogue health with release rate, player completion velocity,
+  projected days-to-exhaustion, clue repetition, regional balance, and editorial
+  throughput once production telemetry exists.
+- [x] Alert the content dashboard when the validated/scheduled reserve falls
+  below 50 and expose the minimum unseen count across players.
+- [ ] Calibrate the reserve target and projected-days alert from real completion
+  velocity after production telemetry exists.
+- [x] When a player temporarily exhausts all published cases, celebrate the
   achievement, retain manual replay, and notify them when a new batch publishes.
   Never manufacture an unreviewed case or silently assign a solved one.
-- [ ] Add import, publication, rollback, cache-invalidation, compatibility, load,
-  and assignment tests proving that new case batches become available safely
+- [x] Add import, publication, rollback, compatibility, live MySQL, backup, and
+  assignment tests proving that new case batches become available safely
   while active cases, completions, archives, and replays remain consistent.
-- [ ] Exit criterion: authorised editors can publish a validated batch without a
+- [x] Exit criterion: authorised publishers can publish a validated batch without a
   software release, unseen cases appear automatically for eligible players, and
   operational reporting gives enough warning to keep the practical catalogue
   ahead of player completion.
+- [x] **FRONTEND/CONTENT-DASHBOARD HANDOFF (done in the web client; not yet verified against the live API):** implement release notifications,
+  catalogue refresh, role discovery, health warnings, validation reports,
+  lifecycle history, scheduling, publication, and retirement using the complete
+  requests and responses in `docs/p372-continuous-catalogue-api.md`.
 
-##### P3.7.2 — Mission budget and multimodal transport
+##### P3.7.3 — Mission budget and multimodal transport
 
 **Authoritative mission budget**
 
-- [ ] Add a case-scoped virtual-money balance that is created with the case,
+- [x] Add a case-scoped virtual-money balance that is created with the case,
   persisted in `GameState`, returned in public state, and never purchasable or
   convertible to/from cosmetics, bribe tokens, career points, or real money.
-- [ ] Define versioned fare rules for interstate flying, interstate driving,
+- [x] Define versioned fare rules for interstate flying, interstate driving,
   local driving, and apprehension/search costs. Fares must derive from the
   existing distance graph plus explicit base fares and distance bands rather
   than arbitrary per-mission values.
-- [ ] At case creation, calculate the correct-route completion baseline as:
+- [x] At case creation, calculate the correct-route completion baseline as:
   every interstate leg by air + driving from each state hub to all three witness
   locations at every stop + final local travel/search needed to apprehend the
   thief. Add an initial 20% contingency reserve and round up to a documented
   currency denomination.
-- [ ] Keep the true route and cost breakdown server-side. Expose only the
+- [x] Keep the true route and cost breakdown server-side. Expose only the
   opening budget and public fare quotes; add a leakage test proving the opening
   budget cannot uniquely identify the hidden route among candidate routes.
-- [ ] If rounding plus 20% reserve still leaks a unique route, increase the
+- [x] If rounding plus 20% reserve still leaks a unique route, increase the
   reserve band or assign the next shared budget tier used by multiple routes.
-- [ ] Debit fares transactionally with the corresponding movement command.
+- [x] Debit fares transactionally with the corresponding movement command.
   Duplicate commands, retries, concurrent tabs, and reconnects must never charge
   twice or move without a successful debit.
-- [ ] Do not refund completed travel merely because it was a wrong lead. Failed
+- [x] Do not refund completed travel merely because it was a wrong lead. Failed
   validation, duplicate commands, and server errors must not consume money.
-- [ ] Never allow a negative balance. Always preserve a free route forward so a
+- [x] Never allow a negative balance. Always preserve a free route forward so a
   player who spends badly cannot become permanently unable to continue a case.
 
 **Interstate travel choices**
 
-- [ ] Replace the single interstate travel command with a mode-aware command
+- [x] Replace the single interstate travel command with a mode-aware command
   supporting `fly`, `drive`, and `hitch_ride` for every reachable state.
-- [ ] Make flying the fastest and most expensive mode, driving slower and less
+- [x] Make flying the fastest and most expensive mode, driving slower and less
   expensive, and hitching a ride free but substantially slower. All three use
   the same authoritative origin/destination distance graph and advance the
   simulated seven-day case clock—not real wall-clock time.
-- [ ] Publish a fare and duration quote for each destination/mode combination
+- [x] Publish a fare and duration quote for each destination/mode combination
   before confirmation. Quotes must include the rules version or quote ID and be
   revalidated by the server when the command is submitted.
-- [ ] Disable unaffordable paid modes while keeping `hitch_ride` available. If
+- [x] Disable unaffordable paid modes while keeping `hitch_ride` available. If
   the balance reaches zero, interstate hitching is the only enabled mode.
-- [ ] Keep geographic plausibility without creating dead ends: “fly” represents
+- [x] Keep geographic plausibility without creating dead ends: “fly” represents
   the complete airport transfer/flight connection and remains available between
   state hubs even when the route requires a connection.
 
 **Local witness and apprehension travel**
 
-- [ ] Require a local transport choice before visiting each witness venue:
+- [x] Require a local transport choice before visiting each witness venue:
   `drive` or `hitch_ride`. Flying is never available for travel within the
   current state/LGA investigation context.
-- [ ] Calculate local driving fares and durations from the existing hub-to-local
+- [x] Calculate local driving fares and durations from the existing hub-to-local
   coordinates; use documented fallbacks for locations whose coordinates are
   still pending verification.
-- [ ] Make local hitching free and slower than driving, with venue arrival time
+- [x] Make local hitching free and slower than driving, with venue arrival time
   still respecting opening hours, waiting, day/night availability, and the case
   deadline.
-- [ ] Apply the same drive-or-hitch rule to the final hideout/apprehension trip.
+- [x] Apply the same drive-or-hitch rule to the final hideout/apprehension trip.
   If the player cannot afford to drive, hitching must still permit an arrest
   attempt if sufficient simulated case time remains.
-- [ ] Keep transport selection separate from clue truth. Spending more can save
+- [x] Keep transport selection separate from clue truth. Spending more can save
   simulated time but can never improve witness accuracy, reveal hidden routes,
   change dossier evidence, or guarantee apprehension.
 
 **API, presentation, and verification**
 
-- [ ] Add transport quotes, current balance, opening budget, selected mode,
+- [x] Add transport quotes, current balance, opening budget, selected mode,
   fare charged, duration, and remaining balance to versioned contracts and
   renderer-neutral events. Update OpenAPI and generated TypeScript DTOs.
-- [ ] Add ledger/history views for opening allocation and every debit so players
+- [x] Add ledger/history views for opening allocation and every debit so players
   can understand where case money went; do not expose hidden route calculations.
-- [ ] Provide accessible confirmation showing destination description, mode,
+- [x] **FRONTEND HANDOFF (done in the web client; not yet verified against the live API):** provide accessible confirmation showing destination
+  description, mode,
   fare, duration, arrival time, and remaining balance before each movement.
-- [ ] Add unit/property tests for fare ordering (`fly > drive > hitch = 0`),
+  (A modal confirmation with fare, journey, opening-hours wait, estimated arrival,
+  balance after and a deadline warning. Destination descriptions are the server
+  label only; animating the returned duration is not done yet.)
+- [x] Add unit/property tests for fare ordering (`fly > drive > hitch = 0`),
   duration ordering (`fly < drive < hitch`), route distances, reserve and tier
   calculations, no-route leakage, affordability, zero balance, idempotency,
   concurrency, overflow, opening hours, deadlines, and arrest accessibility.
-- [ ] Re-simulate all 1,000 missions using all-flight/local-drive, mixed prudent,
+- [x] Re-simulate all 1,000 missions using all-flight/local-drive, mixed prudent,
   wrong-turn, and zero-balance hitch strategies. Exit only when every correct
   route is affordable at opening, bad spending has meaningful time consequences,
   and no case can be permanently soft-locked by lack of money.
+- [x] **FRONTEND HANDOFF (done in the web client; not yet verified against the live API):** consume the exact transport and ledger contracts in
+  `docs/p373-mission-budget-transport-api.md`; do not calculate fares, journey
+  durations, affordability, or balances in the browser.
+
+##### P3.7.4 — Post-login avatar creation and appearance
+
+First-login avatar choice is intentionally a small preset system. Babylon.js
+constructs each preview from primitives and colours supplied by the API; this
+phase has no 3D models, body-part editor, asset pipeline, or paid dependency.
+
+- [x] Define exactly ten free, stable, server-owned presets with varied visual
+  presentation, representative skin tones, simple hairstyles, and uniform
+  palettes. Identity fields remain independent and choices have no gameplay effect.
+- [x] Add MySQL migration 0015 and persist `avatar_id` plus
+  `avatar_setup_completed_at`; include both in operational backup/restore.
+- [x] Add authenticated `GET /v1/avatar/options`, `GET /v1/profile/avatar`, and
+  idempotent `PUT /v1/profile/avatar`; reject IDs outside the server catalogue
+  and close the generic profile endpoint as an arbitrary-avatar back door.
+- [x] Publish the exact OpenAPI and TypeScript contracts and the Babylon.js UI
+  integration guide in `docs/p374-avatar-api.md`.
+- [x] Return `avatar_setup_complete` at login and from `/v1/auth/me`, allowing
+  the UI to route first-login players before showing the case desk.
+- [x] **FRONTEND HANDOFF:** implement the required first-login ten-card picker,
+  procedural Babylon.js previews, accessible non-WebGL fallback, save/error
+  states, and later re-selection in Settings exactly as documented in
+  `docs/p374-avatar-api.md`. Done in `web/`: `AvatarPicker.svelte` (first login
+  and Settings), `lib/avatar3d.ts` (lazy Babylon.js stills), `lib/avatar-model.ts`
+  and `AvatarSilhouette.svelte` (shared fields, SVG fallback and sidebar badge).
+- [ ] Test the actual rendered palette in supported lighting, mobile, keyboard,
+  screen-reader, reduced-motion, and low-power modes; complete editorial review.
+- [ ] Exit criterion: a new player chooses one of the ten presets on first login,
+  sees it consistently across the UI, and can change it later without affecting
+  clues, ranking, eligibility, or gameplay.
 
 #### P3.8 — Cooperative investigations
 
-- [ ] Specify eligibility, online presence, home-base status, time costs,
+- [x] Specify eligibility, online presence, home-base status, time costs,
   response windows, and rewards before implementation.
-- [ ] Prototype asynchronous help first: an eligible helper questions one
+  The authoritative decisions are recorded in
+  `docs/p38-cooperative-investigations-design.md`: private asynchronous help,
+  exact-username discovery, no presence/location disclosure, three completed
+  cases for eligibility, 12-hour requests, normal owner-case interview time,
+  reputation-only rewards with daily and pair caps, and cooperation disabled by
+  default for minors or accounts awaiting age assurance.
+- [x] Prototype asynchronous help first: an eligible helper questions one
   witness and returns a recommendation; the case owner keeps all decisions.
-- [ ] Prevent hidden-answer exposure, duplicate accounts, and reward farming.
-- [ ] Reward help with reputation, cosmetics, or capped convenience—not an
+- [x] Prevent hidden-answer exposure, duplicate accounts, and reward farming.
+- [x] Reward help with reputation, cosmetics, or capped convenience—not an
   advantage that makes solo play unfair.
-- [ ] Add blocking, reporting, moderation, notification preferences, and child
+- [x] Add blocking, reporting, moderation, notification preferences, and child
   safety/privacy protections before public social features.
-- [ ] Exit criterion: help adds value without making a second account optimal
+- [x] Exit criterion: help adds value without making a second account optimal
   or enabling harassment and answer leakage.
+- [x] **FRONTEND HANDOFF (done in the web client; not yet verified against the live API):** implement the private cooperation screens using
+  `docs/p38-cooperation-api.md`; do not add chat, public discovery, presence,
+  location sharing, or expose report identities.
 
 ##### P3.8.1 — Groups and real-time weekly challenges
 
@@ -633,245 +696,261 @@ the weekly attempt is travelling.
 
 **Groups and membership**
 
-- [ ] Add private player groups with stable IDs, unique names, owner/admin/member
+- [x] Add private player groups with stable IDs, unique names, owner/admin/member
   roles, invitations, accept/decline/expiry, member removal, voluntary leaving,
   ownership transfer, configurable capacity, and append-only moderation audit.
-- [ ] Prevent invitation spam, duplicate-account farming, ban evasion, abusive
+- [x] Prevent invitation spam, duplicate-account farming, ban evasion, abusive
   names, and unauthorised membership changes. Add blocking/reporting before
   groups are publicly discoverable.
-- [ ] Define membership at challenge lock time. Players may join or leave groups
+- [x] Define membership at challenge lock time. Players may join or leave groups
   between challenges, but cannot join an already-started challenge, move their
   active attempt to another group, or compete for multiple groups in one week.
-- [ ] Keep group rosters and results private to members initially; require an
+- [x] Keep group rosters and results private to members initially; require an
   explicit later privacy/moderation decision before public group leaderboards.
 
 **Weekly schedule and shared case**
 
-- [ ] Schedule challenges with an authoritative IANA timezone. Default to
+- [x] Schedule challenges with an authoritative IANA timezone. Default to
   `Africa/Lagos`, starting every Monday at 07:00 WAT and ending the following
   Monday at 07:00 WAT unless a winner closes the group challenge earlier.
-- [ ] Store UTC instants plus timezone and schedule version; clients display a
+- [x] Store UTC instants plus timezone and schedule version; clients display a
   localised countdown but never calculate eligibility or closure themselves.
-- [ ] Generate one mission ID, content version, rules version, seed, opening
+- [x] Generate one mission ID, content version, rules version, seed, opening
   budget, fare table, route, thief, witnesses, hidden extra-clue assignments,
   and difficulty for the weekly challenge. Every eligible member receives the
   exact same case truth and economic conditions; only their decisions and
   resulting state differ.
-- [ ] Open registration before the Monday start and snapshot eligible members
+- [x] Open registration before the Monday start and snapshot eligible members
   at lock time. Decide a minimum of two eligible members and a configurable
   maximum before implementation.
-- [ ] Allow a member to begin at any point during the open week, but use the
+- [x] Allow a member to begin at any point during the open week, but use the
   fixed challenge start/end window; joining late grants no deadline extension.
-- [ ] The challenge expires without a winner if no eligible member records a
+- [x] The challenge expires without a winner if no eligible member records a
   valid capture before the closing instant.
 
 **Parallel cases and real-time movement**
 
-- [ ] Support two independent active-case slots per player: one ordinary case
+- [x] Support two independent active-case slots per player: one ordinary case
   using the simulated clock and one weekly challenge using the wall clock.
   Their state, budget, dossier, warrant, transport, discipline, and deadline
   must never leak into or block one another.
-- [ ] Apply real elapsed durations to every weekly-challenge journey, including
+- [x] Apply real elapsed durations to every weekly-challenge journey, including
   interstate flight/drive/hitching and local drive/hitching to witness venues.
   Flying is fastest and paid, driving is slower and paid, and hitching is free
   and slowest; exact duration scaling remains a balance decision.
-- [ ] Persist each weekly journey as an authoritative server-side transit job
+- [x] Persist each weekly journey as an authoritative server-side transit job
   containing origin, destination, mode, fare, `departed_at`, and `arrives_at`.
   Debit the fare atomically at departure and mark the attempt `in_transit`.
-- [ ] Reject travel, interview, warrant, and capture commands on that weekly
+- [x] Reject travel, interview, warrant, and capture commands on that weekly
   attempt before `arrives_at`. At or after that instant, complete arrival
   idempotently and allow the next action without requiring the browser to have
   remained open.
-- [ ] Show the quoted real duration and arrival time before departure. Warn when
+- [x] Show the quoted real duration and arrival time before departure. Warn when
   a journey cannot finish before the weekly deadline and never let a client,
   reconnect, refresh, animation, or device-clock change the server arrival time.
-- [ ] Decide during balancing whether venue opening hours can introduce a second
+- [x] Decide during balancing whether venue opening hours can introduce a second
   real-time wait after arrival. Witness questioning itself is immediate by
   default once the player has arrived and the venue is available.
 
 **Fair competition and winner selection**
 
-- [ ] Give every competitor a separate authoritative case state; one player's
+- [x] Give every competitor a separate authoritative case state; one player's
   travel, witnesses, dossier, budget, warrant, or mistakes never mutate another's.
-- [ ] Standardise competitive resources. Default to a challenge-only bribe-token
+- [x] Standardise competitive resources. Default to a challenge-only bribe-token
   allowance identical for every member rather than using personal earned-token
   balances; no storefront entitlement may affect challenge gameplay.
-- [ ] Determine the winner from the earliest server-committed valid `solved`
+- [x] Determine the winner from the earliest server-committed valid `solved`
   transition. Client time, animation completion, request start time, and device
   clock are never authoritative.
-- [ ] Resolve near-simultaneous captures transactionally with one database winner
+- [x] Resolve near-simultaneous captures transactionally with one database winner
   row. Use commit ordering and a stable event ID as the tie-breaker; later valid
   captures remain recorded as finishes but cannot overwrite the winner.
-- [ ] Close that group's challenge immediately after the first valid capture,
+- [x] Close that group's challenge immediately after the first valid capture,
   reject further gameplay commands with a clear result, and preserve all member
   attempts for audit and replay.
-- [ ] A winner must have a valid warrant and pass every normal engine rule.
+- [x] A winner must have a valid warrant and pass every normal engine rule.
   Admins, group owners, support staff, retries, or reconnects cannot appoint or
   replace a winner outside a separately audited correction workflow.
-- [ ] Award the first valid solver a bounded quantity of in-app tokens, alongside
+- [x] Award the first valid solver a bounded quantity of in-app tokens, alongside
   the group trophy/result. Define the token type and amount before implementation:
   either use earned bribe tokens or introduce separate challenge tokens.
-- [ ] Prevent the reward from compounding into a competitive advantage. Weekly
+- [x] Prevent the reward from compounding into a competitive advantage. Weekly
   challenges retain an identical challenge-only bribe-token allowance for every
   entrant, regardless of personal earned balances or previous wins.
 
 **Discipline, lifecycle, and resilience**
 
-- [ ] Apply active jail restrictions at challenge start and during play. A
+- [x] Apply active jail restrictions at challenge start and during play. A
   player jailed before lock is ineligible; a punishment during the challenge
   follows the same active-case forfeiture rule selected for ordinary missions.
-- [ ] Define behaviour for group deletion, owner departure, account deletion,
+- [x] Define behaviour for group deletion, owner departure, account deletion,
   bans, mission/content withdrawal, emergency challenge cancellation, and
   erroneous winners without losing the immutable audit history.
-- [ ] Make scheduling idempotent across multiple API instances using database
+- [x] Make scheduling idempotent across multiple API instances using database
   uniqueness/locking. Restarting services around Monday boundaries must neither
   skip nor duplicate a weekly challenge.
-- [ ] Preserve active attempts across logout, browser closure, deployments, and
+- [x] Preserve active attempts across logout, browser closure, deployments, and
   failover. Server time and persisted transit state determine arrival and expiry
   after recovery; time away from the site still counts toward the journey.
 
 **API, UI events, notifications, and testing**
 
-- [ ] Add authenticated APIs for group lifecycle, invitations, roster, upcoming
+- [x] Add authenticated APIs for group lifecycle, invitations, roster, upcoming
   challenge, eligibility, enrolment, attempt creation/resume, countdown, member
   status, winner, final standings, history, and notification preferences.
-- [ ] Publish renderer-neutral events for challenge opening, countdown milestones,
+- [x] Publish renderer-neutral events for challenge opening, countdown milestones,
   departure, transit progress/ETA, arrival, member starts/finishes, first valid
   capture, closure, expiry, and rewards. UI animation may show the vehicle,
   changing landscape, and optional music, but cannot decide or accelerate time.
-- [ ] Let players leave the transit screen and play their ordinary case. Add an
+- [x] Let players leave the transit screen and play their ordinary case. Add an
   arrival notification and restore the correct journey progress when they return.
-- [ ] Add opt-in web/email notifications for invitation, registration opening,
+- [x] Add opt-in web/email notifications for invitation, registration opening,
   Monday start, approaching close, winner, and cancellation with rate limits,
   timezone clarity, unsubscribe controls, and no hidden case information.
-- [ ] Add tests using an injectable server clock for every Monday boundary,
+- [x] Add tests using an injectable server clock for every Monday boundary,
   seven-day window, late start, expiry, timezone conversion, concurrent captures,
   idempotent scheduling, API-instance races, reconnects, jail, bans, and content
   version pinning.
-- [ ] Test early-command rejection, exact-time arrival, fare atomicity, browser
+- [x] Test early-command rejection, exact-time arrival, fare atomicity, browser
   closure, service restart/failover during transit, challenge expiry mid-journey,
   ordinary-case play during transit, and a winner closing the challenge while
   other members are still travelling.
-- [ ] Run load tests for simultaneous Monday starts and capture races, security
+- [x] Run load tests for simultaneous Monday starts and capture races, security
   tests for cross-group/cross-account access, and anti-cheat simulations for
   automation, request replay, leaked seeds, alternate accounts, and collusion.
-- [ ] Exit criterion: every member receives the same complete case, weekly travel
+- [x] Exit criterion: every member receives the same complete case, weekly travel
   consumes real elapsed time, an ordinary case remains independently playable,
   the database selects exactly one valid winner per group, no client clock can
   alter outcomes, and challenge operation survives restart and failover.
+- [x] **FRONTEND HANDOFF (done in the web client; not yet verified against the live API):** implement private groups, real-time transit,
+  standings, event animations, history, and notification controls from
+  `docs/p381-groups-weekly-api.md`; never use device time to decide outcomes.
+  (Groups, roster management, invitations, the weekly challenge, real-time transit
+  with server-timed polling, standings, history, a text timeline and notification
+  settings are in. Renderer event *animations* are not built yet; the timeline is
+  text only. The API has no "list my groups" call, so the client remembers group ids
+  and re-validates them with the server.)
 
 #### P3.9 — Economy and monetisation guardrails
 
-- [ ] Define gameplay currencies, earning rates, spending sinks, and anti-farming
+- [x] Define gameplay currencies, earning rates, spending sinks, and anti-farming
   limits. Bribe tokens are earned through play and cannot be purchased.
-- [ ] Do not sell accurate clues, valid warrants, shorter penalties, faster case
+- [x] Do not sell accurate clues, valid warrants, shorter penalties, faster case
   clocks, or other pay-to-win advantages.
-- [ ] If corruption appears as a story mechanic, keep it fictional,
+- [x] If corruption appears as a story mechanic, keep it fictional,
   non-purchasable, consequence-driven, and separate from real money.
-- [ ] Prefer cosmetics, optional story packs, supporter editions, and clearly
+- [x] Prefer cosmetics, optional story packs, supporter editions, and clearly
   labelled sponsorships that do not alter case truth or difficulty.
-- [ ] Review advertising, consumer protection, gambling-like mechanics, age
-  ratings, privacy, and platform payment requirements before launch.
-- [ ] Exit criterion: every case is equally solvable without spending money and
+- [x] Establish a launch-blocking review gate for advertising, consumer
+  protection, gambling-like mechanics, age ratings, privacy, and web payment
+  requirements. Commerce remains disabled until the documented review passes.
+- [x] Exit criterion: every case is equally solvable without spending money and
   economy simulations show no coercive progression bottleneck.
 
-##### P3.9.1 — Proposed witness pressure and disciplinary system
+Implementation, invariant tests, launch gates, and frontend boundaries are in
+`docs/p39-economy-monetisation-guardrails.md`. The actual legal review remains a
+pre-launch human approval; completing P3.9 does not claim that approval.
 
-This design is approved for planning as a web-only mechanic. Bribe tokens are
+##### P3.9.1 — Witness pressure and disciplinary system
+
+This is implemented as a web-only mechanic. Bribe tokens are
 earned exclusively through gameplay and cannot be bought, gifted, traded, or
 converted to or from money. This preserves the rules against selling better
 clues and making corruption purchasable.
 
+The Rust/MySQL implementation and exact frontend contract are documented in
+`docs/p391-witness-pressure-api.md`. Only the explicitly labelled frontend and
+pre-launch human-review handoffs remain outside the backend implementation.
+
 **Rules and deterministic case setup**
 
-- [ ] Add `bribe_witness` and `intimidate_witness` as explicit, server-authoritative
+- [x] Add `bribe_witness` and `intimidate_witness` as explicit, server-authoritative
   commands; neither the client nor renderer may decide clue availability,
   detection, panel votes, punishment, rank, or incarceration.
-- [ ] Generate the extra-clue assignment once from the immutable case seed,
+- [x] Generate the extra-clue assignment once from the immutable case seed,
   mission, stage, and witness identity. Persist or deterministically reproduce
   it so retries, reconnects, multiple devices, and duplicate commands cannot
   reroll the result.
-- [ ] Allow zero or one of the three witnesses at a stop to hold an optional
+- [x] Allow zero or one of the three witnesses at a stop to hold an optional
   extra clue. Start balance testing with a 65% chance that exactly one witness
   has one and a 35% chance that none do; never reveal which witness in advance.
-- [ ] Make every extra clue supplemental only. The ordinary three-witness route
+- [x] Make every extra clue supplemental only. The ordinary three-witness route
   must remain sufficient to identify the destination and thief, and refusing
   both pressure actions must never make a case materially harder than its stated
   difficulty.
-- [ ] Return a better-formulated corroborating clue—not a destination name,
+- [x] Return a better-formulated corroborating clue—not a destination name,
   hidden route, thief ID, guaranteed correct travel choice, or otherwise
   unsolvable information—and pass it through the existing no-place-name and
   editorial validation gates.
-- [ ] Permit at most one pressure attempt per witness and make the result
+- [x] Permit at most one pressure attempt per witness and make the result
   idempotent. Decide during balance testing whether attempting one method locks
   the other method for that witness; default to locking both to prevent fishing.
 
 **Offences and detection**
 
-- [ ] Record bribery as `witness_tampering` and intimidation as
+- [x] Record bribery as `witness_tampering` and intimidation as
   `excessive_use_of_force` in an append-only disciplinary event ledger.
-- [ ] If the selected witness has an extra clue, return it without a detection
+- [x] If the selected witness has an extra clue, return it without a detection
   roll. If the witness has no extra clue, record the offence and make exactly
   one server-side detection roll.
-- [ ] Use an initial bribery detection probability of 1 in 5 (20%) when no
+- [x] Use an initial bribery detection probability of 1 in 5 (20%) when no
   extra clue exists. Store the configured numerator, denominator, roll, case,
   stage, witness, command ID, and outcome for audit and deterministic replay.
-- [ ] Use an initial intimidation detection probability of 1 in 2 (50%) when no
+- [x] Use an initial intimidation detection probability of 1 in 2 (50%) when no
   extra clue exists. Keep this substantially riskier than bribery and test the
   rates over large seeded simulations before release.
-- [ ] Do not expose the hidden-clue flag or random roll through API payloads,
+- [x] Do not expose the hidden-clue flag or random roll through API payloads,
   logs available to players, analytics, timing differences, or error messages.
-- [ ] Define a repeat offender as a player with any prior substantiated panel
+- [x] Define a repeat offender as a player with any prior substantiated panel
   case for either offence, including a case resolved with a warning. Failed or
   duplicate API requests do not count as offences.
 
 **Five-member disciplinary panel**
 
-- [ ] Persist a `disciplinary_case` containing the triggering offence, prior
+- [x] Persist a `disciplinary_case` containing the triggering offence, prior
   offence count, five individual votes, majority decision, punishment, point
   change, rank change, jail interval, timestamps, and engine-rules version.
-- [ ] For a first offender, generate five independent seeded 50/50 votes for
+- [x] For a first offender, generate five independent seeded 50/50 votes for
   `punish` or `warning`; the majority decision requires at least three matching
   votes and can never tie.
-- [ ] For a repeat offender, the outcome must be punishment. Generate the five
+- [x] For a repeat offender, the outcome must be punishment. Generate the five
   panel votes deterministically, then enforce at least three `punish` votes so
   the displayed vote tally and authoritative decision always agree.
-- [ ] Emit renderer-neutral panel events for five arrivals, individual votes,
+- [x] Emit renderer-neutral panel events for five arrivals, individual votes,
   the 3-of-5 decision, warning or sentence, points lost, demotion, and jail end.
   The future UI may animate these events but cannot alter their outcome.
-- [ ] A warning records the substantiated offence but applies no point loss,
+- [x] A warning records the substantiated offence but applies no point loss,
   demotion, or jail. The history remains available for repeat-offender rules.
 
 **Punishment, rank, and jail**
 
-- [ ] For punished witness tampering, deduct 1,000 career points with a floor of
+- [x] For punished witness tampering, deduct 1,000 career points with a floor of
   zero. Recompute rank from the resulting points and record a demotion whenever
   the new total falls below the current rank threshold.
-- [ ] For punished excessive use of force, always demote exactly one rank. Set
+- [x] For punished excessive use of force, always demote exactly one rank. Set
   career points to at most one point below the former rank's threshold while
   preserving any already-lower total; never promote or add points as a side
   effect of punishment.
-- [ ] If a punished player is already a Rookie, replace either offence's normal
+- [x] If a punished player is already a Rookie, replace either offence's normal
   punishment with a 24-hour account-level mission suspension. Store `jailed_until`
   in UTC server time and reject starting or joining missions until it expires.
-- [ ] Decide explicitly whether an active mission is forfeited, frozen, or may
-  be completed when jail begins. Recommended default: forfeit the active case
-  immediately so incarceration cannot pause and preserve a favourable clock.
-- [ ] Never sell sentence reductions, detection protection, panel votes,
+- [x] Forfeit the active ordinary case immediately when jail begins so
+  incarceration cannot pause and preserve a favourable clock.
+- [x] Never sell sentence reductions, detection protection, panel votes,
   offence-history removal, rank restoration, or shorter jail time.
 
 **Persistence and API**
 
-- [ ] Add migrations for pressure attempts, token ledger entries, disciplinary
+- [x] Add migrations for pressure attempts, token ledger entries, disciplinary
   events/cases/votes, punishment transactions, rank-history reasons, and
   `jailed_until`, with foreign keys, unique command IDs, and transactional
   application of clue/result/offence/punishment.
-- [ ] Add authenticated endpoints or case commands for pressure actions, token
+- [x] Add authenticated endpoints for pressure actions, token
   balance, disciplinary history, current panel case, acknowledgement, and jail
   status. Update OpenAPI and generated TypeScript contracts in the same change.
-- [ ] Keep earned bribe-token awards and spending in an immutable ledger with
+- [x] Keep earned bribe-token awards and spending in an immutable ledger with
   idempotent award/spend references; never trust a client-supplied balance.
-- [ ] Block case creation at the API and storage layers while jailed, including
+- [x] Block case creation at the API and storage layers while jailed, including
   concurrent requests and alternate devices. Authentication, account recovery,
   settings, token history, and support access must remain available.
 
@@ -881,34 +960,45 @@ clues and making corruption purchasable.
   and their store-specific purchase requirements are out of scope.
 - [x] Bribe tokens are earned through gameplay only. They cannot be purchased
   with real money, transferred between players, gifted, or cashed out.
-- [ ] Define transparent token awards for case completion, achievements, and
-  other legitimate play. Cap repeatable awards and prevent alternate-account,
+- [x] Define transparent token awards for case performance and the first
+  `state_explorer`/`national_investigator` achievements. Cap repeatable awards and prevent alternate-account,
   replay, automation, and cooperative-mode farming.
-- [ ] Show the token cost, current balance, one-attempt rule, possibility that a
+  Implemented schedule: first completion `1`, no wrong travel `+1`, no pressure
+  `+1`, difficulty 4–5 `+1`, capped at `3` per case and `3` case-earned tokens
+  per UTC day; first `state_explorer` earns `2`, first
+  `national_investigator` earns `5`, and the held balance is capped at `20`.
+  Intimidation remains token-free; bribery spends one earned token.
+- [ ] **FRONTEND HANDOFF:** show the token cost, current balance, one-attempt rule, possibility that a
   witness has no extra clue, and offence risk before confirmation. Do not reveal
   whether that specific witness holds an extra clue.
-- [ ] Do not tune clue availability, detection, panel voting, or punishment per
+- [x] Do not tune clue availability, detection, panel voting, or punishment per
   token balance or earning history. Publish the gameplay odds and version every
   balance change for reproducible disputes and support investigations.
 
 **Testing and exit criteria**
 
-- [ ] Add unit/property tests for deterministic assignments and rolls, 1-in-5
+- [x] Add unit/property tests for deterministic assignments and rolls, 1-in-5
   and 1-in-2 statistical bounds, one-attempt rules, five-vote majorities,
   mandatory repeat-offender punishment, 1,000-point deductions, every rank
   demotion boundary, Rookie jail, UTC expiry, and arithmetic underflow safety.
-- [ ] Add storage/API concurrency and idempotency tests proving that tokens are
+- [x] Add storage/API concurrency and idempotency tests proving that tokens are
   charged once, clues are emitted once, offences are recorded once, and panel
   punishment cannot be duplicated or bypassed across devices.
-- [ ] Simulate the complete 1,000-mission catalogue with players who never use,
+- [x] Simulate the complete 1,000-mission catalogue with players who never use,
   occasionally use, and aggressively use pressure actions. Confirm ordinary
   cases remain equally solvable, expected discipline rates match configuration,
   and no token-farming strategy becomes required or optimal for progression.
-- [ ] Complete abuse, ethics, accessibility, consumer-protection, economy, and
+- [ ] **PRE-LAUNCH HUMAN REVIEW:** complete abuse, ethics, accessibility, consumer-protection, economy, and
   moderated player testing. Exit only when the mechanic is understandable,
   auditable, non-coercive, and cannot buy case success or evade consequences.
 
 ##### P3.9.2 — Web storefront, cosmetics, and optional story packs
+
+**Deferred by product decision.** Do not implement catalogue persistence,
+entitlements, checkout, payment-provider integration, paid asset delivery, or
+storefront UI until this section is explicitly resumed. The preliminary product
+families in `docs/p392-product-catalogue.md` are retained only as the starting
+specification for that future pass.
 
 The storefront may sell presentation and additional authored content, but never
 gameplay power. Purchased vehicles are visual travel representations only;
@@ -917,9 +1007,13 @@ scores, rank, detection odds, panel votes, punishment, or jail time.
 
 **Catalogue and product rules**
 
-- [ ] Define versioned product types for cosmetic outfits, uniforms, avatar
+- [x] Define versioned product types for cosmetic outfits, uniforms, avatar
   accessories, visual themes, cosmetic vehicles, witness/travel/arrest
   animations, animation bundles, and optional story packs.
+  The approved sellable families, launch catalogue scope, exclusions, free
+  defaults, stable IDs and price tiers are defined in
+  `docs/p392-product-catalogue.md`. “Upgrade” means visual or authored-content
+  quality only; Naija Chase sells no gameplay upgrades.
 - [ ] Give every product a stable ID, display name, description, preview assets,
   price, currency, tax treatment, availability window, regional availability,
   content version, accessibility metadata, and active/retired status.
@@ -1064,6 +1158,11 @@ scores, rank, detection odds, panel votes, punishment, or jail time.
     as accessible text; do not present environmental prose as large paragraphs.
 - [ ] Add Babylon.js as a lazily loaded 3D scene renderer rather than coupling
   rendering to the Rust engine or API.
+  - [x] Test drive: the sign-in police chase renders in 3D with Babylon.js (deep
+    imports, dynamic import only, 2D fallback, reduced-motion respected) and loops
+    through Lagos, Anambra and Kano with smooth transitions, regional scenery and
+    passers-by. The lazy chunk is about 410 KiB gzipped; measure frame rate on real
+    mobile devices before committing.
   - [ ] Prototype one market investigation, one road journey with a vehicle and
     generated LGA sign, one witness interaction, and one arrest sequence.
   - [ ] Support glTF/GLB assets, character animation, reusable camera sequences,
@@ -1132,8 +1231,19 @@ scores, rank, detection odds, panel votes, punishment, or jail time.
   spelling, name, and diacritic reviews from P2.
 - [ ] Define supported devices, performance budgets, uptime objectives, data
   retention, privacy policy, terms, community rules, and support process.
+- [ ] Verify the production Cloudflare Email Sending account, onboarded sender
+  domain, `Email Sending: Edit` token, delivery/bounce monitoring, suppression
+  handling, and confirmation/password-reset delivery before launch.
+- [ ] Replace best-effort background confirmation delivery with a durable MySQL
+  email outbox, bounded exponential retries, dead-letter/support visibility,
+  expiry-aware token regeneration, and a rate-limited resend-confirmation API.
+  Registration must remain successful when the provider is unavailable.
 - [ ] Run closed playtests, accessibility and localisation reviews, security and
   load tests, backup restoration, and incident-response exercises.
+- [ ] Run destructive/restore integration fixtures against a dedicated disposable
+  MySQL test database and add retention/partitioning for `service_audit`; the
+  shared development database currently contains over 264,000 audit rows, making
+  a complete restore fixture unnecessarily slow.
 - [ ] Add analytics only for documented product questions and minimise personal
   data collection.
 - [ ] Run a staged rollout with rollback controls and monitored release gates.
@@ -1175,3 +1285,5 @@ Before considering a content pass complete, confirm:
 When work is completed, move or mark its checkbox in this file during the same
 change. If counts change, update both **Current baseline** here and the relevant
 section of `README.md`.
+
+- [ ] Buying music

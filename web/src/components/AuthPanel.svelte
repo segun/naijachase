@@ -2,7 +2,7 @@
   import type { AppController } from "../lib/app.svelte";
   import { HOME_BASES } from "../model.ts";
   import Brand from "./Brand.svelte";
-  import ChaseScene from "./ChaseScene.svelte";
+  import ChaseStage from "./ChaseStage.svelte";
   import MusicToggle from "./MusicToggle.svelte";
   import Icon from "./Icon.svelte";
 
@@ -41,7 +41,7 @@
 <div class="auth">
   <aside class="auth-side">
     <Brand onclick={() => app.go("welcome")} />
-    <div class="chase-wrap"><ChaseScene /></div>
+    <div class="chase-wrap"><ChaseStage /></div>
     <div class="auth-quote">
       <Icon name="shield" />
       <p>“Every witness knows something. Your job is to know which part matters.”</p>

@@ -19,7 +19,7 @@ ARGS ?=
 .PHONY: help play test test-storage check fmt fmt-check build release benchmark \
 	validate editorial enrichment simulate export db-migrate db-import db-rebuild \
 	db-verify db-export db-backup db-restore db-test api api-test web web-build enrich-state-clues \
-	web-mock web-mock-ui web-test p34 p35 p36 audit
+	web-mock web-mock-ui web-test p34 p35 p36 p39 p391 audit
 
 help: ## Show the common project commands
 	@awk 'BEGIN {FS = ":.*## "} /^[a-zA-Z0-9_-]+:.*## / {printf "  %-16s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -71,10 +71,10 @@ export: ## Export canonical content; override with EXPORT_DIR=path
 db-migrate: ## Apply pending MySQL migrations using the repository .env
 	@$(TOOLS) migrate-mysql
 
-db-import: ## Import every canonical CSV into MySQL transactionally
+db-import: validate simulate ## Validate, simulate, then import every canonical CSV into MySQL transactionally
 	@$(TOOLS) import-mysql
 
-db-rebuild: ## Rebuild MySQL content and verify all mission outcomes
+db-rebuild: validate simulate ## Validate and simulate before rebuilding MySQL content
 	@$(TOOLS) rebuild-mysql
 
 db-verify: ## Verify MySQL checksums, row counts, export, and mission parity
@@ -90,7 +90,7 @@ db-restore: ## Restore mutable MySQL data from EXPORT_DIR backup
 	@$(TOOLS) restore-mysql $(EXPORT_DIR)/operational-backup.json
 
 db-test: ## Run live MySQL migration, recovery, concurrency, and idempotency tests
-	@NAIJACHASE_MYSQL_TEST=1 $(CARGO) test --manifest-path $(MANIFEST) -p naijachase-storage
+	@NAIJACHASE_MYSQL_TEST=1 $(CARGO) test --manifest-path $(MANIFEST) -p naijachase-storage -- --test-threads=1
 
 api: ## Start the versioned HTTP API using .env configuration
 	@$(CARGO) run --manifest-path $(MANIFEST) -p naijachase-api
@@ -118,6 +118,10 @@ p34: check db-rebuild db-test ## Run the complete P3.4 persistence gate
 p35: check db-test api-test ## Run the complete P3.5 service-safety gate
 
 p36: check api-test web-test web-build ## Run the complete P3.6 web-slice gate
+
+p39: check simulate ## Run economy guardrails and full catalogue solvability checks
+
+p391: check db-test api-test simulate ## Run witness-pressure, discipline, persistence, and solvability gates
 
 audit: ## Reject legacy runtime artifacts and malformed patches
 	@test -z "$$(find . -type f \( -name '*.py' -o -name '*.pyc' -o -name '*.pyo' \) \

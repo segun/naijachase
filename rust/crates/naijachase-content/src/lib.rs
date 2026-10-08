@@ -75,8 +75,11 @@ pub fn validate_repository(root: &Path) -> Result<(), Vec<String>> {
     let mut errors = vec![];
     for (name, relative, want) in checks {
         match row_count(&root.join(relative)) {
-            Ok(got) if got == want => {}
-            Ok(got) => errors.push(format!("{name}: expected {want}, found {got}")),
+            Ok(got)
+                if (matches!(name, "missions" | "mission narratives" | "balance rows")
+                    && got >= want)
+                    || got == want => {}
+            Ok(got) => errors.push(format!("{name}: expected at least {want}, found {got}")),
             Err(e) => errors.push(format!("{name}: {e}")),
         }
     }
@@ -195,7 +198,7 @@ impl CatalogueSummary {
         }
     }
     pub fn is_complete(&self) -> bool {
-        self.missions == 1000 && self.states == 37 && self.thieves == 100
+        self.missions >= 1000 && self.states == 37 && self.thieves == 100
     }
 }
 #[derive(Debug, Deserialize)]
@@ -472,7 +475,8 @@ impl Catalogue {
             location_venues,
             dialogue_variants,
         };
-        if value.missions.len() != 1000
+        if value.missions.len() < 1000
+            || value.narratives.len() != value.missions.len()
             || value.profiles.len() != 100
             || value.hubs.len() != 37
             || value.travel.len() != 1332

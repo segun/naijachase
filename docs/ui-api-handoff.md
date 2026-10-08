@@ -1,5 +1,11 @@
 # UI API handoff
 
+Private groups and real-time weekly challenges are documented in [`p381-groups-weekly-api.md`](p381-groups-weekly-api.md).
+
+Cooperative-investigation requests, responses, privacy rules, and UI acceptance criteria are in [`p38-cooperation-api.md`](p38-cooperation-api.md).
+
+Mission budgets and fly/drive/hitch transport have complete requests and responses in [`p373-mission-budget-transport-api.md`](p373-mission-budget-transport-api.md). The frontend must consume server quotes and must not calculate fares or durations.
+
 The authoritative contract is `schemas/openapi-v1.json`. Stable TypeScript
 DTOs generated from that contract are in `contracts/typescript/api-v1.ts`.
 The UI may copy or import those types, but must not redefine response shapes.
@@ -51,6 +57,32 @@ cases. `/achievement-catalog` supplies display names and descriptions.
 Progression is server-derived from committed command replay. The browser must
 never calculate or submit points, achievements, travel accuracy, deductions,
 rank changes or home-base discounts.
+
+## P3.7.1 frontend handoff — assignment and replay
+
+Complete copy-ready request and response examples are documented in
+`docs/p371-case-assignment-api.md`. Use that guide for implementation and this
+section only as the architectural summary.
+
+The continuous-release player notifications and restricted editorial dashboard
+contract are documented separately in `docs/p372-continuous-catalogue-api.md`.
+
+The old mission picker is no longer authoritative. Replace calls that send
+`case_id`, `mission_id`, or `seed` to `POST /v1/cases` with an empty JSON object;
+the server returns the generated case ID and an unseen mission. Remove the fixed
+1–1,000 picker, client-side `randomMission`, and client-side exhaustion logic.
+
+Add a `Replay case` action to successfully solved archive entries. It calls
+`POST /v1/cases/replay` with `{ "mission_id": "NG-M0001" }`. Display replay
+attempts using `attempt_kind === "replay"` and use `first_completion` to mark the
+original solve. Replays may update personal-best history but never award the
+first-completion rewards again.
+
+Handle `409 catalogue_exhausted` as a positive catalogue-completion state with
+links to the archive and notification settings—not as a generic error. The
+catalogue is dynamic, so never hard-code 1,000 as its permanent size.
+Use `GET /v1/cases/catalogue-status` for the case-desk totals and exhaustion
+state; refresh it after a first completion and when returning to the case desk.
 
 ## Errors
 

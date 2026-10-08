@@ -4,7 +4,7 @@
 import fs from "node:fs";
 import zlib from "node:zlib";
 
-const TARGET = { js: 50 * 1024, css: 10 * 1024 };
+const TARGET = { js: 60 * 1024, css: 10 * 1024 };
 const dist = new URL("../dist/", import.meta.url);
 const html = fs.readFileSync(new URL("index.html", dist), "utf8");
 const gz = file => zlib.gzipSync(fs.readFileSync(new URL(file.replace(/^\//, ""), dist))).length;

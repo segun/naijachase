@@ -1,5 +1,22 @@
 # Naija Chase service API v1
 
+## First-login avatar selection
+
+Authenticated clients read the ten procedural presets from
+`GET /v1/avatar/options`, inspect the current choice with
+`GET /v1/profile/avatar`, and save one stable preset ID with
+`PUT /v1/profile/avatar`. Login and `/v1/auth/me` include
+`player.avatar_setup_complete`; the frontend uses it to show the first-login
+picker before the case desk. Exact payloads and Babylon.js guidance are in
+[`p374-avatar-api.md`](p374-avatar-api.md).
+
+Mission economy and transport use `GET /v1/cases/{case_id}/transport-quotes` for authoritative choices and `GET /v1/cases/{case_id}/ledger` for read-only spending history. Movement commands choose a mode but never submit a fare or duration. Complete examples are in [`p373-mission-budget-transport-api.md`](p373-mission-budget-transport-api.md).
+
+Witness pressure, earned bribe tokens, disciplinary panels, and jail use the
+authoritative endpoints documented in
+[`p391-witness-pressure-api.md`](p391-witness-pressure-api.md). The client never
+submits hidden assignments, random rolls, votes, punishment, or balance changes.
+
 The Rust API keeps hidden routes, thief identities, answer keys, hideouts, and
 timing rules on the server. Clients send player intent only.
 
@@ -24,11 +41,22 @@ NAIJACHASE_ALLOWED_ORIGINS=http://localhost:4173,http://127.0.0.1:4173
 ```
 
 The sender must be authorized in Cloudflare. The public web URL becomes the
-base of each one-time confirmation link. Registration remains unavailable
-until the three Cloudflare email values are filled.
+base of each one-time confirmation link. Registration commits before delivery
+and returns immediately; email is attempted asynchronously. A provider outage
+is logged but does not delete the account or turn registration into a 502. The
+account remains unable to log in until its confirmation token is consumed.
+
+`CLOUDFLARE_ACCOUNT_ID` must be the Cloudflare **account ID**, not a zone ID.
+In Compute → Email Service → Email Sending, onboard the sender domain and wait
+for its SPF/DKIM status to become active. The API token needs the account-level
+`Email Sending: Edit` permission. Email Sending must be available on the
+account; Email Routing alone does not activate this REST endpoint. Restart the
+API after changing `.env`; repository `.env` values override stale variables
+inherited from an IDE or parent shell.
 
 - `POST /v1/auth/register`: `email`, `username`, `home_base`, `password`, and
-  `confirm_password`.
+  `confirm_password`; returns after the account and confirmation token are
+  persisted, without waiting for Cloudflare delivery.
 - `POST /v1/auth/confirm`: consumes the one-time `token` from the email link.
 - `POST /v1/auth/login`: `email` and `password`; email must be confirmed.
 - `POST /v1/auth/logout`: revokes the current session.
@@ -69,7 +97,18 @@ examples in `docs/ui-api-handoff.md`.
 - `GET /health/live` reports process liveness.
 - `GET /health/ready` checks MySQL readiness.
 - `GET /metrics` exposes aggregate counters without private labels.
-- `POST /v1/cases` creates an owned case.
+- `POST /v1/cases` accepts `{}` and assigns a server-selected, published mission
+  the player has never solved. It returns `catalogue_exhausted` when none remain.
+- `POST /v1/cases/replay` accepts `mission_id` and starts a completed mission as
+  an explicit replay. Replays are labelled and cannot repeat progression or
+  first-completion rewards.
+- `GET /v1/cases/catalogue-status` returns the live published, completed, and
+  unseen counts plus the per-player exhaustion flag.
+- `GET /v1/cases/catalogue-notifications` lists new releases for players who had
+  exhausted the catalogue; `POST .../{notification_id}/read` acknowledges one.
+- Restricted content-role endpoints under `/v1/admin/catalogue` expose health,
+  mission validation, lifecycle history, scheduling, publication, and retirement.
+  See `docs/p372-continuous-catalogue-api.md` for complete examples.
 - `GET /v1/cases/{case_id}` returns its public state to its owner.
 - `POST /v1/cases/{case_id}/commands` executes one validated command.
 
@@ -78,6 +117,11 @@ client-generated `command_id` and the last observed `expected_version`. MySQL
 locks the case, verifies ownership and version, and atomically commits state,
 events, audit data, and the new version. Retrying the same command returns its
 original response; competing commands cannot both commit.
+
+Mission IDs and random seeds for ordinary cases are server-selected. Clients
+must not manufacture them. Every response includes `attempt_kind`; archive
+entries additionally identify `first_completion`. A mission enters the solved
+set exactly once, regardless of devices or retries.
 
 Request bodies are limited to 32 KiB. Logs and metrics exclude passwords,
 tokens, private player data, hidden routes, clues, and answers. Run `make p35`

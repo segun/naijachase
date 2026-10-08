@@ -2,6 +2,7 @@
   import type { AppController } from "../lib/app.svelte";
   import { FIELDS, FIELD_META, dossierCount } from "../model.ts";
   import Icon from "./Icon.svelte";
+  import Ledger from "./Ledger.svelte";
 
   let { app }: { app: AppController } = $props();
   const gs = $derived(app.game!.state);
@@ -41,6 +42,7 @@
           {/each}
         </ol>
       </section>
+      <Ledger {app} />
       <section class="card">
         <h2>Suspect profile</h2>
         <p class="muted">{dossierCount(gs.dossier)} of 8 details recorded.</p>

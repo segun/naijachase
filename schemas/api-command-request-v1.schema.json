@@ -8,11 +8,14 @@
     "command_id": {"type": "string", "minLength": 2, "maxLength": 64, "pattern": "^[A-Za-z0-9._-]+$"},
     "expected_version": {"type": "integer", "minimum": 1},
     "command": {
-      "type": "object",
-      "required": ["type"],
-      "properties": {
-        "type": {"enum": ["visit_venue", "wait", "record_trait", "travel", "request_warrant", "search_hideout"]}
-      }
+      "oneOf": [
+        {"type":"object","required":["type","venue_id","mode"],"properties":{"type":{"const":"visit_venue"},"venue_id":{"type":"string"},"mode":{"enum":["drive","hitch_ride"]}},"additionalProperties":false},
+        {"type":"object","required":["type","minutes"],"properties":{"type":{"const":"wait"},"minutes":{"type":"integer","minimum":1,"maximum":720}},"additionalProperties":false},
+        {"type":"object","required":["type","trait_name","value"],"properties":{"type":{"const":"record_trait"},"trait_name":{"type":"string"},"value":{"type":"string"}},"additionalProperties":false},
+        {"type":"object","required":["type","destination","mode"],"properties":{"type":{"const":"travel"},"destination":{"type":"string"},"mode":{"enum":["fly","drive","hitch_ride"]}},"additionalProperties":false},
+        {"type":"object","required":["type","suspect_id"],"properties":{"type":{"const":"request_warrant"},"suspect_id":{"type":"string"}},"additionalProperties":false},
+        {"type":"object","required":["type","venue_id","mode"],"properties":{"type":{"const":"search_hideout"},"venue_id":{"type":"string"},"mode":{"enum":["drive","hitch_ride"]}},"additionalProperties":false}
+      ]
     }
   },
   "additionalProperties": false

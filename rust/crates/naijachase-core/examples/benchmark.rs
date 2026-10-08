@@ -25,6 +25,7 @@ fn state() -> GameState {
         hideout_venue: "market".into(),
         replay: vec![],
         outcome: None,
+        economy: Default::default(),
     }
 }
 fn main() {

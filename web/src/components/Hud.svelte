@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { AppController } from "../lib/app.svelte";
-  import { clockParts, dayPart, timeLeft, zoneOf } from "../model.ts";
+  import { clockParts, dayPart, money, timeLeft, zoneOf } from "../model.ts";
   import Icon from "./Icon.svelte";
 
   let { app }: { app: AppController } = $props();
@@ -13,7 +13,7 @@
 <section class="hud" aria-label="Case status">
   <div class="hud-item">
     <Icon name="pin" />
-    <div><span class="hud-label">Location</span><span class="hud-value">{gs.current_state}</span></div>
+    <div><span class="hud-label">{app.isReplay ? "Replay · Location" : "Location"}</span><span class="hud-value">{gs.current_state}</span></div>
     {#if zoneOf(gs.current_state)}<span class="badge hide-sm">{zoneOf(gs.current_state)}</span>{/if}
   </div>
   <div class="hud-item hud-clock">
@@ -29,5 +29,6 @@
       <span style:width="{left.percentUsed}%"></span>
     </div>
   </div>
+  <div class="hud-funds"><span class="hud-label">Funds</span><span class="hud-value">{money(gs.balance)}</span></div>
   <div class="hud-score"><span class="hud-label">Score</span><span class="hud-value">{gs.score.toLocaleString()}</span></div>
 </section>

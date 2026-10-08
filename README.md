@@ -68,12 +68,6 @@ Install the pinned web dependencies with `cd web && pnpm install`. Run
 gate. The architecture, accessibility checks, mobile budget, and 2D/3D/Wasm
 decision are documented in `docs/web-vertical-slice.md`.
 
-## Mission pilot
-
-`data/missions/pilot/` contains 30 playtest missions: ten easy, ten medium, and
-ten hard. Every route step uses a distinct knowledge record associated with its
-destination. The pilot data is validated with the rest of the catalogue.
-
 ## Play in the terminal
 
 The terminal edition requires Rust and Cargo. Run:

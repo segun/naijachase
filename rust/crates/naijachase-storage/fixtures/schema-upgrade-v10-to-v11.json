@@ -1,0 +1,5 @@
+{
+  "from_version": 10,
+  "to_version": 11,
+  "reason": "Pin each active attempt to the mission content version used when the case started."
+}

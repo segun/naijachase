@@ -27,6 +27,7 @@ fn all_missions_complete_in_rust() {
             hideout_venue: "market".into(),
             replay: vec![],
             outcome: None,
+            economy: Default::default(),
         };
         let traits = p.traits();
         for stage in 0..route.len() {

@@ -1,7 +1,10 @@
 <script lang="ts">
   import type { AppController } from "../lib/app.svelte";
-  import { TOTAL_STOPS, VENUES, clockParts, dayPart, dossierCount, questionedHere, zoneOf } from "../model.ts";
+  import { TOTAL_STOPS, cheapest, clockParts, dayPart, cooperationAvailable, dossierCount, duration, groupQuotes, money, questionedHere, venueInfo, zoneOf, type QuoteGroup, type TransportQuote } from "../model.ts";
+  import AskForHelp from "./AskForHelp.svelte";
   import Icon from "./Icon.svelte";
+  import MoveDialog from "./MoveDialog.svelte";
+  import MoveOptions from "./MoveOptions.svelte";
   import Stepper from "./Stepper.svelte";
 
   let { app }: { app: AppController } = $props();
@@ -9,23 +12,47 @@
   const done = $derived(questionedHere(gs));
   const here = $derived(app.notes.filter(n => n.stop === gs.current_state).slice(-3));
   const part = $derived(dayPart(clockParts(gs.elapsed).hour));
-  const pendingVenue = $state({ id: "" });
-  const venueIcon = (name: string) => VENUES.find(v => v.name === name)?.icon ?? "chat";
+  const venueIcon = (name: string) => venueInfo(name.toLowerCase().replaceAll(" ", "_")).icon;
 
-  async function question(id: string) {
-    pendingVenue.id = id;
-    await app.command({ type: "visit_venue", venue_id: id }, "Witness interviewed.", "Interviewing witness");
-    pendingVenue.id = "";
+  // Venues come from the server's local quotes; one already questioned here may no longer be quoted.
+  const venues = $derived.by(() => {
+    const quoted = groupQuotes(app.quotes, "local");
+    const ids = new Set(quoted.map(g => g.id));
+    const extra: QuoteGroup[] = done.filter(id => !ids.has(id)).map(id => ({ id, label: id.replaceAll("_", " "), options: [] }));
+    return [...quoted, ...extra];
+  });
+  let choosing = $state<QuoteGroup | null>(null);
+
+  // Arriving from the briefing with a lead already chosen: go straight to its travel options (the server still confirms the fare).
+  $effect(() => {
+    if (!app.pendingLead || !app.quotesLoaded) return;
+    const lead = venues.find(v => v.id === app.pendingLead);
+    app.pendingLead = "";
+    if (lead && lead.options.length && !done.includes(lead.id)) choosing = lead;
+  });
+  let pendingVenue = $state("");
+
+  async function question(group: QuoteGroup, quote: TransportQuote) {
+    pendingVenue = group.id;
+    const ok = await app.command({ type: "visit_venue", venue_id: group.id, mode: quote.mode as "drive" | "hitch_ride" }, "Witness interviewed.", "Interviewing witness");
+    pendingVenue = "";
+    if (ok) choosing = null;
   }
 </script>
+
+{#if choosing}
+  <MoveDialog title="Visit the {choosing.label.toLowerCase()}" subtitle="Choose how to get there. The server confirms the fare and time." onclose={() => (choosing = null)}>
+    <MoveOptions group={choosing} elapsed={gs.elapsed} balance={gs.balance} busy={app.busy} confirmLabel="Go and question witnesses" working="Interviewing witness" onconfirm={(q) => question(choosing!, q)} oncancel={() => (choosing = null)} />
+  </MoveDialog>
+{/if}
 
 <div class="page investigate">
   {#key gs.current_state}
     <section class="scene-banner rise">
       <div>
-        <p class="eyebrow">Stop {Math.min(gs.stage + 1, TOTAL_STOPS)} of {TOTAL_STOPS} · {part}</p>
+        <p class="eyebrow">{#if app.isReplay}<span class="badge badge-gold replay-banner">Replay · no points</span> {/if}Stop {Math.min(gs.stage + 1, TOTAL_STOPS)} of {TOTAL_STOPS} · {part}</p>
         <h1>{gs.current_state}</h1>
-        <p class="muted">{zoneOf(gs.current_state) ?? "Nigeria"} · {done.length} of {VENUES.length} witnesses questioned</p>
+        <p class="muted">{zoneOf(gs.current_state) ?? "Nigeria"} · {done.length} of {venues.length || "…"} witnesses questioned</p>
       </div>
       <Stepper stage={gs.stage} />
     </section>
@@ -36,20 +63,28 @@
       <h2 id="leads-title">Local leads</h2>
       <p class="muted">Listen for a destination clue and a detail about the suspect. One witness here knows where the thief went next.</p>
       <div class="venues">
-        {#each VENUES as venue, i}
+        {#if !app.quotesLoaded}
+          {#each [1, 2, 3] as n}<div class="venue skeleton-card" aria-hidden="true"></div>{/each}
+        {:else if venues.length === 0}
+          <p class="muted">No one is available to question right now.</p>
+        {/if}
+        {#each venues as venue, i (venue.id)}
+          {@const info = venueInfo(venue.id)}
           {@const seen = done.includes(venue.id)}
-          {@const working = app.busy && pendingVenue.id === venue.id}
-          <button class="venue rise" class:seen type="button" disabled={app.busy || seen} style:animation-delay="{i * 0.08}s" onclick={() => question(venue.id)}>
-            <span class="venue-icon"><Icon name={venue.icon} /></span>
+          {@const best = cheapest(venue.options.filter(o => o.affordable))}
+          {@const working = app.busy && pendingVenue === venue.id}
+          <button class="venue rise" class:seen type="button" disabled={app.busy || seen || venue.options.length === 0} style:animation-delay="{i * 0.08}s" onclick={() => (choosing = venue)}>
+            <span class="venue-icon"><Icon name={info.icon} /></span>
             <span class="venue-body">
-              <strong>{venue.name}</strong>
-              <span class="muted">{venue.who}</span>
-              <span class="venue-blurb">{venue.blurb}</span>
+              <strong>{venue.label}</strong>
+              <span class="muted">{info.who}</span>
+              <span class="venue-blurb">{info.blurb}</span>
             </span>
             <span class="venue-status">
               {#if working}<span class="spinner"></span> Questioning
               {:else if seen}<Icon name="check" /> Questioned
-              {:else}Question <Icon name="arrow" />{/if}
+              {:else if best}{best.cost === 0 ? "Free" : money(best.cost)} · {duration(best.travel_minutes + best.wait_minutes)} <Icon name="arrow" />
+              {:else}Unavailable{/if}
             </span>
           </button>
         {/each}
@@ -73,9 +108,9 @@
         <h2>Case snapshot</h2>
         <dl class="facts">
           <div><dt>Score</dt><dd>{gs.score.toLocaleString()}</dd></div>
+          <div><dt>Funds</dt><dd>{money(gs.balance)}</dd></div>
           <div><dt>Dossier</dt><dd>{dossierCount(gs.dossier)}/8</dd></div>
           <div><dt>Notes</dt><dd>{app.notes.length}</dd></div>
-          <div><dt>Mission</dt><dd class="mono">{gs.mission_id}</dd></div>
         </dl>
       </section>
       <section class="card next-step">
@@ -85,6 +120,7 @@
         {:else}
           <p class="muted">Compare what you've heard. When a destination stands out, book your trip.</p>
           <div class="row-actions">
+            {#if cooperationAvailable(app.coop.prefs) && app.coop.prefs?.enabled && app.game?.attempt_kind === "ordinary"}<AskForHelp {app} />{/if}
             <button class="btn" type="button" onclick={() => app.go("notebook")}><Icon name="notebook" />Notebook</button>
             <button class="btn" type="button" onclick={() => app.go("dossier")}><Icon name="id" />Dossier</button>
             <button class="btn btn-primary" type="button" onclick={() => app.go("travel")}><Icon name="plane" />Travel</button>

@@ -31,6 +31,28 @@ test("no mission, suspect-rank or progression values are hard-coded in the UI", 
   assert.doesNotMatch(read("src/model.ts"), /Master Detective|Chief Inspector/);
 });
 
+test("case assignment follows the P3.7.1 handoff", () => {
+  const api = read("src/api.ts"), app = read("src/lib/app.svelte.ts"), desk = read("src/components/CaseDesk.svelte"), archive = read("src/components/Archive.svelte");
+  assert.match(api, /"\/v1\/cases", "POST", \{\} satisfies AssignCaseRequest/, "ordinary cases are requested with an empty body");
+  assert.match(api, /"\/v1\/cases\/replay"/);
+  assert.match(api, /"\/v1\/cases\/catalogue-status"/);
+  const apiCode = api.replace(/\/\*\*[\s\S]*?\*\//g, "");
+  assert.doesNotMatch(apiCode, /seed/, "no browser seed");
+  assert.doesNotMatch(apiCode, /case_id:/, "no browser-generated case id");
+  assert.doesNotMatch(app, /web-\$\{crypto|case_id: id|caseId = id/, "the case id comes from the server");
+  assert.match(app, /this\.caseId = created\.case_id/);
+  assert.match(app, /catalogue_exhausted/);
+  assert.match(app, /replay_not_available/);
+  assert.match(app, /stale_version/);
+  assert.match(desk, /app\.openCase\(\)/);
+  assert.doesNotMatch(desk, /input|1000|MISSION/i, "no mission picker or hard-coded catalogue size");
+  assert.match(desk, /app\.exhausted/);
+  assert.match(archive, /Replay case/);
+  assert.match(archive, /replayTargets/);
+  assert.match(archive, /first_completion/);
+  assert.match(read("src/components/Results.svelte"), /isReplay/);
+});
+
 test("credentials never reach browser storage", () => {
   const code = ["src/lib/app.svelte.ts", "src/api.ts", ...fs.readdirSync(new URL("src/components/", root)).map(f => `src/components/${f}`)].map(read).join("\n");
   assert.doesNotMatch(code, /(localStorage|sessionStorage)\.setItem\([^)]*(password|token)/i);
@@ -55,12 +77,18 @@ test("the dev mock API honours the contract shapes the UI relies on", async () =
     assert.deepEqual([wrong.status, Object.keys(wrong.data).sort()], [401, ["error", "message"]]);
     const login = await call("/v1/auth/login", "POST", { email: "a@x.com", password: "right" });
     for (const key of ["player_id", "email", "username", "home_base", "email_verified", "display_name", "leaderboard_opt_in"]) assert.ok(key in login.data.player, key);
-    const created = await call("/v1/cases", "POST", { case_id: "t-1", mission_id: "NG-M0003" });
+    const status = await call("/v1/cases/catalogue-status");
+    for (const key of ["published_cases", "completed_cases", "unseen_cases", "exhausted"]) assert.ok(key in status.data, key);
+    assert.equal((await call("/v1/cases/replay", "POST", { mission_id: "NG-M0003" })).data.error, "replay_not_available");
+    assert.equal((await call("/v1/cases", "POST", { mission_id: "NG-M0003" })).status, 400, "the body must be empty");
+    const created = await call("/v1/cases", "POST", {});
     assert.equal(created.status, 201);
+    assert.equal(created.data.attempt_kind, "ordinary");
+    assert.match(created.data.case_id, /^case-/);
+    const caseId = created.data.case_id;
     const stateKeys = contract.match(/PublicGameState=\{([^}]*)\}/)[1].split(";").map(s => s.split(":")[0]).filter(Boolean);
     for (const key of stateKeys) assert.ok(key in created.data.state, `state.${key}`);
-    assert.equal((await call("/v1/cases", "POST", { case_id: "t-2", mission_id: "NG-M9999" })).status, 400);
-    const stale = await call("/v1/cases/t-1/commands", "POST", { command_id: "c1", expected_version: 99, command: { type: "wait", minutes: 5 } });
+    const stale = await call(`/v1/cases/${caseId}/commands`, "POST", { command_id: "c1", expected_version: 99, command: { type: "wait", minutes: 5 } });
     assert.equal(stale.status, 409);
     const summary = await call("/v1/progression/summary");
     for (const key of ["points", "rank", "solved_cases", "visited_states", "achievements", "rank_history"]) assert.ok(key in summary.data, key);

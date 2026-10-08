@@ -12,6 +12,7 @@
     "mock": "node dev/mock-api.mjs"
   },
   "dependencies": {
+    "@babylonjs/core": "^9.29.0",
     "svelte": "^5.0.0"
   },
   "devDependencies": {

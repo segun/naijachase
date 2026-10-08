@@ -7,11 +7,12 @@ use axum::{
     routing::{get, post},
 };
 use base64::{Engine, engine::general_purpose::URL_SAFE_NO_PAD};
-use naijachase_content::Catalogue;
+use naijachase_content::{Catalogue, Mission};
 use naijachase_contracts::{Command, Event, GameState};
 use naijachase_storage::{
-    Achievement, CaseArchiveEntry, CaseCommandResult, MysqlStore, PlayerAccount, PlayerSession,
-    ProgressionSummary, StorageError,
+    Achievement, CaseArchiveEntry, CaseCommandResult, CatalogueHealth, CatalogueProgress,
+    MissionValidation, MysqlStore, PlayerAccount, PlayerSession, ProgressionSummary,
+    ReleaseNotification, StorageError,
 };
 use rand::RngCore;
 use serde::{Deserialize, Serialize};
@@ -30,20 +31,65 @@ pub const API_VERSION: &str = "v1";
 #[derive(Clone, Debug, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum ClientCommand {
-    VisitVenue { venue_id: String },
-    Wait { minutes: u32 },
-    RecordTrait { trait_name: String, value: String },
-    Travel { destination: String },
-    RequestWarrant { suspect_id: String },
-    SearchHideout { venue_id: String },
+    VisitVenue {
+        venue_id: String,
+        #[serde(default = "default_drive")]
+        mode: String,
+    },
+    Wait {
+        minutes: u32,
+    },
+    RecordTrait {
+        trait_name: String,
+        value: String,
+    },
+    Travel {
+        destination: String,
+        #[serde(default = "default_fly")]
+        mode: String,
+    },
+    RequestWarrant {
+        suspect_id: String,
+    },
+    SearchHideout {
+        venue_id: String,
+        #[serde(default = "default_drive")]
+        mode: String,
+    },
+}
+fn default_drive() -> String {
+    "drive".into()
+}
+fn default_fly() -> String {
+    "fly".into()
+}
+
+#[derive(Debug, Default, Deserialize)]
+pub struct AssignCaseRequest {}
+
+#[derive(Debug, Deserialize)]
+pub struct ReplayCaseRequest {
+    pub mission_id: String,
 }
 
 #[derive(Debug, Deserialize)]
-pub struct CreateCaseRequest {
-    pub case_id: String,
-    pub mission_id: String,
-    #[serde(default)]
-    pub seed: u64,
+pub struct MissionTransitionRequest {
+    pub target_status: String,
+    pub scheduled_for: Option<String>,
+    pub reason: String,
+}
+
+#[derive(Clone, Debug, Serialize)]
+pub struct TransportQuote {
+    pub scope: String,
+    pub destination_id: String,
+    pub label: String,
+    pub mode: String,
+    pub cost: u32,
+    pub travel_minutes: u32,
+    pub wait_minutes: u32,
+    pub affordable: bool,
+    pub rules_version: u16,
 }
 
 #[derive(Debug, Deserialize)]
@@ -51,6 +97,71 @@ pub struct ExecuteRequest {
     pub command_id: String,
     pub expected_version: u64,
     pub command: ClientCommand,
+}
+#[derive(Debug, Deserialize)]
+pub struct PressureWitnessRequest {
+    pub command_id: String,
+    pub expected_version: u64,
+    pub venue_id: String,
+    pub method: String,
+}
+#[derive(Debug, Deserialize)]
+pub struct CooperationPreferencesRequest {
+    enabled: bool,
+    #[serde(default)]
+    email_enabled: bool,
+}
+#[derive(Debug, Deserialize)]
+pub struct CooperationCreateRequest {
+    command_id: String,
+    case_id: String,
+    venue_id: String,
+    helper_username: String,
+}
+#[derive(Debug, Deserialize)]
+pub struct CooperationCompleteRequest {
+    recommendation: String,
+}
+#[derive(Debug, Deserialize)]
+pub struct CooperationUsernameRequest {
+    username: String,
+}
+#[derive(Debug, Deserialize)]
+pub struct CooperationReportRequest {
+    username: String,
+    category: String,
+    details: Option<String>,
+}
+#[derive(Debug, Deserialize)]
+pub struct CreateGroupRequest {
+    name: String,
+    capacity: Option<u16>,
+}
+#[derive(Debug, Deserialize)]
+pub struct InviteGroupRequest {
+    username: String,
+}
+#[derive(Debug, Deserialize)]
+pub struct InvitationResponseRequest {
+    accept: bool,
+}
+#[derive(Debug, Deserialize)]
+pub struct TransferOwnerRequest {
+    player_id: String,
+}
+#[derive(Debug, Deserialize)]
+pub struct ManageMemberRequest {
+    player_id: String,
+    role: Option<String>,
+}
+#[derive(Debug, Deserialize)]
+pub struct WeeklyNotificationRequest {
+    web: bool,
+    email: bool,
+}
+#[derive(Debug, Deserialize)]
+pub struct CancelChallengeRequest {
+    reason: String,
 }
 
 #[derive(Deserialize)]
@@ -91,6 +202,169 @@ pub struct ProfileRequest {
     #[serde(default)]
     leaderboard_opt_in: bool,
 }
+#[derive(Debug, Deserialize)]
+pub struct AvatarSelectionRequest {
+    avatar_id: String,
+}
+
+#[derive(Clone, Copy, Debug, Serialize, PartialEq, Eq)]
+pub struct AvatarPreset {
+    pub avatar_id: &'static str,
+    pub label: &'static str,
+    pub presentation: &'static str,
+    pub skin_tone: &'static str,
+    pub skin_color: &'static str,
+    pub hair_style: &'static str,
+    pub hair_color: &'static str,
+    pub uniform_primary: &'static str,
+    pub uniform_secondary: &'static str,
+    pub uniform_accent: &'static str,
+}
+
+#[derive(Debug, Serialize)]
+pub struct AvatarCatalogueResponse {
+    catalogue_version: u16,
+    renderer: &'static str,
+    options: &'static [AvatarPreset],
+}
+
+#[derive(Debug, Serialize)]
+pub struct AvatarProfileResponse {
+    catalogue_version: u16,
+    setup_complete: bool,
+    selected_avatar_id: Option<String>,
+    selected: Option<AvatarPreset>,
+}
+
+const AVATAR_PRESETS: [AvatarPreset; 10] = [
+    AvatarPreset {
+        avatar_id: "avatar-01",
+        label: "Emerald Braids",
+        presentation: "feminine",
+        skin_tone: "deep",
+        skin_color: "#4A2B20",
+        hair_style: "braided_bun",
+        hair_color: "#18120F",
+        uniform_primary: "#176B4D",
+        uniform_secondary: "#F4E8C1",
+        uniform_accent: "#E5B94B",
+    },
+    AvatarPreset {
+        avatar_id: "avatar-02",
+        label: "Midnight Low Cut",
+        presentation: "masculine",
+        skin_tone: "rich_deep",
+        skin_color: "#5A3325",
+        hair_style: "low_cut",
+        hair_color: "#17120F",
+        uniform_primary: "#172B4D",
+        uniform_secondary: "#E8EDF2",
+        uniform_accent: "#D8A83D",
+    },
+    AvatarPreset {
+        avatar_id: "avatar-03",
+        label: "Burgundy Wrap",
+        presentation: "feminine",
+        skin_tone: "medium_deep",
+        skin_color: "#704735",
+        hair_style: "head_wrap",
+        hair_color: "#241815",
+        uniform_primary: "#762A45",
+        uniform_secondary: "#F4E6D4",
+        uniform_accent: "#DCA94A",
+    },
+    AvatarPreset {
+        avatar_id: "avatar-04",
+        label: "Forest Coils",
+        presentation: "masculine",
+        skin_tone: "deep",
+        skin_color: "#3E251D",
+        hair_style: "short_coils",
+        hair_color: "#15110F",
+        uniform_primary: "#244B36",
+        uniform_secondary: "#E8DFC9",
+        uniform_accent: "#CB8E3B",
+    },
+    AvatarPreset {
+        avatar_id: "avatar-05",
+        label: "Cobalt Bob",
+        presentation: "feminine",
+        skin_tone: "medium",
+        skin_color: "#8B5A43",
+        hair_style: "bob",
+        hair_color: "#211714",
+        uniform_primary: "#2457A6",
+        uniform_secondary: "#F2E9D8",
+        uniform_accent: "#F0B84B",
+    },
+    AvatarPreset {
+        avatar_id: "avatar-06",
+        label: "Copper Fade",
+        presentation: "masculine",
+        skin_tone: "medium_light",
+        skin_color: "#A96F50",
+        hair_style: "fade",
+        hair_color: "#2A1D18",
+        uniform_primary: "#A64B2A",
+        uniform_secondary: "#F3E7D1",
+        uniform_accent: "#243B53",
+    },
+    AvatarPreset {
+        avatar_id: "avatar-07",
+        label: "Teal Twists",
+        presentation: "feminine",
+        skin_tone: "rich_deep",
+        skin_color: "#593426",
+        hair_style: "shoulder_twists",
+        hair_color: "#191310",
+        uniform_primary: "#167A7A",
+        uniform_secondary: "#E9F1E8",
+        uniform_accent: "#D7A83E",
+    },
+    AvatarPreset {
+        avatar_id: "avatar-08",
+        label: "Gold Crop",
+        presentation: "masculine",
+        skin_tone: "light",
+        skin_color: "#C88968",
+        hair_style: "close_crop",
+        hair_color: "#33231D",
+        uniform_primary: "#A87916",
+        uniform_secondary: "#FFF1CE",
+        uniform_accent: "#283B62",
+    },
+    AvatarPreset {
+        avatar_id: "avatar-09",
+        label: "Plum Locs",
+        presentation: "feminine",
+        skin_tone: "medium_deep",
+        skin_color: "#704632",
+        hair_style: "short_locs",
+        hair_color: "#1D1512",
+        uniform_primary: "#65345F",
+        uniform_secondary: "#F1E5EC",
+        uniform_accent: "#D7A33F",
+    },
+    AvatarPreset {
+        avatar_id: "avatar-10",
+        label: "Slate Waves",
+        presentation: "masculine",
+        skin_tone: "medium",
+        skin_color: "#8C5B43",
+        hair_style: "short_waves",
+        hair_color: "#211713",
+        uniform_primary: "#465568",
+        uniform_secondary: "#E8EDF0",
+        uniform_accent: "#B88A35",
+    },
+];
+
+fn avatar_preset(avatar_id: &str) -> Option<AvatarPreset> {
+    AVATAR_PRESETS
+        .iter()
+        .copied()
+        .find(|preset| preset.avatar_id == avatar_id)
+}
 #[derive(Serialize)]
 pub struct AuthResponse {
     player: PlayerAccount,
@@ -109,6 +383,9 @@ pub struct PublicGameState {
     pub visited_venues: Vec<String>,
     pub warrant_suspect: Option<String>,
     pub outcome: Option<String>,
+    pub opening_budget: u32,
+    pub balance: u32,
+    pub transport_rules_version: u16,
 }
 
 impl From<&GameState> for PublicGameState {
@@ -125,6 +402,9 @@ impl From<&GameState> for PublicGameState {
             visited_venues: state.visited_venues.clone(),
             warrant_suspect: state.warrant_suspect.clone(),
             outcome: state.outcome.clone(),
+            opening_budget: state.economy.opening_budget,
+            balance: state.economy.balance,
+            transport_rules_version: state.economy.rules_version,
         }
     }
 }
@@ -135,6 +415,7 @@ pub struct CaseResponse {
     pub case_id: String,
     pub state_version: u64,
     pub duplicate: bool,
+    pub attempt_kind: String,
     pub state: PublicGameState,
     pub events: Vec<Event>,
 }
@@ -196,6 +477,21 @@ impl From<StorageError> for ApiError {
                 StatusCode::CONFLICT,
                 "account_exists",
                 "email or username is already registered",
+            ),
+            StorageError::MissionAlreadyCompleted => Self::new(
+                StatusCode::CONFLICT,
+                "mission_already_completed",
+                "this mission is available from the case archive as a replay",
+            ),
+            StorageError::ReplayNotAvailable => Self::new(
+                StatusCode::CONFLICT,
+                "replay_not_available",
+                "only successfully completed missions can be replayed",
+            ),
+            StorageError::CatalogueExhausted => Self::new(
+                StatusCode::CONFLICT,
+                "catalogue_exhausted",
+                "all currently published missions are complete; replay an archived case or return when new cases publish",
             ),
             other => {
                 tracing::error!(error = %other, "storage operation failed");
@@ -423,15 +719,131 @@ pub fn router(state: Arc<AppState>) -> Router {
         .route("/v1/auth/recovery/complete", post(complete_recovery))
         .route("/v1/auth/me", get(me))
         .route("/v1/profile", get(me).put(update_profile))
+        .route("/v1/avatar/options", get(avatar_options))
+        .route("/v1/profile/avatar", get(get_avatar).put(select_avatar))
         .route("/v1/progression/archive", get(case_archive))
         .route("/v1/progression/achievements", get(achievements))
         .route("/v1/progression/summary", get(progression_summary))
         .route(
+            "/v1/cooperation/preferences",
+            get(cooperation_preferences).put(update_cooperation_preferences),
+        )
+        .route(
+            "/v1/cooperation/requests",
+            get(cooperation_requests).post(create_cooperation_request),
+        )
+        .route(
+            "/v1/cooperation/requests/{request_id}/accept",
+            post(accept_cooperation_request),
+        )
+        .route(
+            "/v1/cooperation/requests/{request_id}/decline",
+            post(decline_cooperation_request),
+        )
+        .route(
+            "/v1/cooperation/requests/{request_id}/complete",
+            post(complete_cooperation_request),
+        )
+        .route(
+            "/v1/cooperation/requests/{request_id}/acknowledge",
+            post(acknowledge_cooperation_request),
+        )
+        .route(
+            "/v1/cooperation/blocks",
+            get(cooperation_blocks).post(cooperation_block),
+        )
+        .route(
+            "/v1/cooperation/blocks/{player_id}",
+            axum::routing::delete(cooperation_unblock),
+        )
+        .route("/v1/cooperation/reports", post(cooperation_report))
+        .route("/v1/cooperation/reputation", get(cooperation_reputation))
+        .route("/v1/groups", post(create_group))
+        .route("/v1/groups/{group_id}", get(group_details))
+        .route("/v1/groups/{group_id}/delete", post(delete_group))
+        .route("/v1/groups/{group_id}/members", post(manage_group_member))
+        .route(
+            "/v1/groups/{group_id}/invitations",
+            post(invite_group_member),
+        )
+        .route(
+            "/v1/groups/invitations/{invitation_id}",
+            post(respond_group_invitation),
+        )
+        .route("/v1/group-invitations", get(group_invitations))
+        .route("/v1/groups/{group_id}/leave", post(leave_group))
+        .route(
+            "/v1/groups/{group_id}/transfer-ownership",
+            post(transfer_group_ownership),
+        )
+        .route(
+            "/v1/groups/{group_id}/weekly/current",
+            get(current_weekly_challenge),
+        )
+        .route(
+            "/v1/weekly/{challenge_id}/attempt",
+            post(start_weekly_attempt),
+        )
+        .route("/v1/weekly/attempts/{attempt_id}", get(get_weekly_attempt))
+        .route(
+            "/v1/weekly/attempts/{attempt_id}/commands",
+            post(execute_weekly_command),
+        )
+        .route("/v1/weekly/{challenge_id}", get(weekly_challenge_details))
+        .route("/v1/weekly/{challenge_id}/events", get(weekly_events))
+        .route(
+            "/v1/weekly/{challenge_id}/cancel",
+            post(cancel_weekly_challenge),
+        )
+        .route("/v1/weekly/history", get(weekly_history))
+        .route(
+            "/v1/weekly/notifications",
+            get(weekly_notifications).put(update_weekly_notifications),
+        )
+        .route(
             "/v1/progression/achievement-catalog",
             get(achievement_catalog),
         )
-        .route("/v1/cases", post(create_case))
+        .route("/v1/cases", post(assign_case))
+        .route("/v1/cases/replay", post(replay_case))
+        .route("/v1/cases/catalogue-status", get(catalogue_status))
+        .route(
+            "/v1/cases/catalogue-notifications",
+            get(catalogue_notifications),
+        )
+        .route(
+            "/v1/cases/catalogue-notifications/{notification_id}/read",
+            post(read_catalogue_notification),
+        )
+        .route("/v1/admin/catalogue/health", get(admin_catalogue_health))
+        .route("/v1/admin/catalogue/me", get(admin_catalogue_me))
+        .route(
+            "/v1/admin/catalogue/missions/{mission_id}",
+            get(admin_mission_details),
+        )
+        .route(
+            "/v1/admin/catalogue/missions/{mission_id}/validation",
+            get(admin_validate_mission),
+        )
+        .route(
+            "/v1/admin/catalogue/missions/{mission_id}/transition",
+            post(admin_transition_mission),
+        )
         .route("/v1/cases/{case_id}", get(get_case))
+        .route(
+            "/v1/cases/{case_id}/transport-quotes",
+            get(transport_quotes),
+        )
+        .route("/v1/cases/{case_id}/ledger", get(transport_ledger))
+        .route("/v1/cases/{case_id}/pressure", post(pressure_witness))
+        .route("/v1/economy/bribe-tokens", get(bribe_token_balance))
+        .route("/v1/economy/bribe-tokens/ledger", get(bribe_token_history))
+        .route("/v1/discipline", get(disciplinary_history))
+        .route("/v1/discipline/jail", get(jail_status))
+        .route(
+            "/v1/discipline/{disciplinary_case_id}/acknowledge",
+            post(acknowledge_disciplinary_case),
+        )
         .route("/v1/cases/{case_id}/commands", post(execute_command))
         .with_state(state)
         .layer(DefaultBodyLimit::max(32 * 1024))
@@ -551,16 +963,6 @@ async fn register(
     if !NIGERIAN_JURISDICTIONS.contains(&request.home_base.as_str()) {
         return Err(bad_request("choose a valid home base"));
     }
-    if state.config.cloudflare_email_api_url.is_empty()
-        || state.config.cloudflare_api_token.is_empty()
-        || state.config.email_from.is_empty()
-    {
-        return Err(ApiError::new(
-            StatusCode::SERVICE_UNAVAILABLE,
-            "email_unconfigured",
-            "email confirmation is not configured",
-        ));
-    }
     let password_hash = secure_password(request.password.clone()).await?;
     let player_id = format!("player-{}", uuid::Uuid::new_v4());
     let verification = random_token();
@@ -585,21 +987,22 @@ async fn register(
         state.config.public_web_url.trim_end_matches('/'),
         verification
     );
-    if let Err(error) = send_confirmation(&state.config, &email, &link).await {
-        let store = state.store.clone();
-        let cleanup_id = player_id.clone();
-        if let Err(cleanup_error) =
-            tokio::task::spawn_blocking(move || store.delete_unverified_player(&cleanup_id))
-                .await
-                .map_err(task_error)?
+    let email_config = state.config.clone();
+    tokio::spawn(async move {
+        if email_config.cloudflare_email_api_url.is_empty()
+            || email_config.cloudflare_api_token.is_empty()
+            || email_config.email_from.is_empty()
         {
-            tracing::error!(%cleanup_error, player_id=%player_id, "failed to roll back unverified registration");
+            tracing::error!(player_id=%player_id,"confirmation email is not configured; registration remains pending confirmation");
+            return;
         }
-        return Err(error);
-    }
+        if let Err(error) = send_confirmation(&email_config, &email, &link).await {
+            tracing::error!(error_code=error.code,error_message=%error.message,player_id=%player_id,"confirmation email delivery failed asynchronously; registration remains pending confirmation");
+        }
+    });
     Ok((
         StatusCode::CREATED,
-        Json(serde_json::json!({"message":"Check your email to confirm your account."})),
+        Json(serde_json::json!({"message":"Account created. Confirmation email has been queued."})),
     ))
 }
 
@@ -918,30 +1321,31 @@ async fn update_profile(
     if !NIGERIAN_JURISDICTIONS.contains(&request.home_base.as_str()) {
         return Err(bad_request("choose a valid home base"));
     }
-    for value in [
-        &request.display_name,
-        &request.pronouns,
-        &request.sex,
-        &request.avatar_id,
-        &request.uniform_id,
-    ]
-    .into_iter()
-    .flatten()
+    for value in [&request.display_name, &request.pronouns, &request.sex]
+        .into_iter()
+        .flatten()
     {
         if value.trim().is_empty() || value.len() > 64 {
             return Err(bad_request("profile values must be 1 to 64 characters"));
         }
     }
+    if request.avatar_id.is_some() || request.uniform_id.is_some() {
+        return Err(bad_request(
+            "use /v1/profile/avatar to choose an avatar preset",
+        ));
+    }
     let store = state.store.clone();
     let player = account.player_id.clone();
+    let current_avatar = account.avatar_id.clone();
+    let current_uniform = account.uniform_id.clone();
     tokio::task::spawn_blocking(move || {
         store.update_profile(
             &player,
             request.display_name.as_deref(),
             request.pronouns.as_deref(),
             request.sex.as_deref(),
-            request.avatar_id.as_deref(),
-            request.uniform_id.as_deref(),
+            current_avatar.as_deref(),
+            current_uniform.as_deref(),
             &request.home_base,
             request.leaderboard_opt_in,
         )
@@ -957,6 +1361,55 @@ async fn update_profile(
     Ok(Json(AuthResponse {
         player: authenticate(&headers, &state).await?,
     }))
+}
+
+async fn avatar_options(
+    State(state): State<Arc<AppState>>,
+    headers: HeaderMap,
+) -> Result<Json<AvatarCatalogueResponse>, ApiError> {
+    authenticate(&headers, &state).await?;
+    Ok(Json(AvatarCatalogueResponse {
+        catalogue_version: 1,
+        renderer: "babylon_procedural_v1",
+        options: &AVATAR_PRESETS,
+    }))
+}
+
+fn avatar_profile(account: &PlayerAccount) -> AvatarProfileResponse {
+    AvatarProfileResponse {
+        catalogue_version: 1,
+        setup_complete: account.avatar_setup_complete,
+        selected_avatar_id: account.avatar_id.clone(),
+        selected: account.avatar_id.as_deref().and_then(avatar_preset),
+    }
+}
+
+async fn get_avatar(
+    State(state): State<Arc<AppState>>,
+    headers: HeaderMap,
+) -> Result<Json<AvatarProfileResponse>, ApiError> {
+    let account = authenticate(&headers, &state).await?;
+    Ok(Json(avatar_profile(&account)))
+}
+
+async fn select_avatar(
+    State(state): State<Arc<AppState>>,
+    headers: HeaderMap,
+    Json(request): Json<AvatarSelectionRequest>,
+) -> Result<Json<AvatarProfileResponse>, ApiError> {
+    ensure_origin(&headers, &state.config)?;
+    let account = authenticate(&headers, &state).await?;
+    if avatar_preset(&request.avatar_id).is_none() {
+        return Err(bad_request("choose one of the current avatar presets"));
+    }
+    let store = state.store.clone();
+    let player_id = account.player_id;
+    let avatar_id = request.avatar_id;
+    tokio::task::spawn_blocking(move || store.select_avatar(&player_id, &avatar_id))
+        .await
+        .map_err(task_error)??;
+    let updated = authenticate(&headers, &state).await?;
+    Ok(Json(avatar_profile(&updated)))
 }
 
 async fn case_archive(
@@ -1000,6 +1453,583 @@ async fn progression_summary(
     ))
 }
 
+async fn cooperation_preferences(
+    State(state): State<Arc<AppState>>,
+    headers: HeaderMap,
+) -> Result<Json<naijachase_storage::CooperationPreferences>, ApiError> {
+    let player = authorize(&headers, &state).await?.player_id;
+    let store = state.store.clone();
+    Ok(Json(
+        tokio::task::spawn_blocking(move || store.cooperation_preferences(&player))
+            .await
+            .map_err(task_error)??,
+    ))
+}
+async fn update_cooperation_preferences(
+    State(state): State<Arc<AppState>>,
+    headers: HeaderMap,
+    Json(body): Json<CooperationPreferencesRequest>,
+) -> Result<Json<naijachase_storage::CooperationPreferences>, ApiError> {
+    ensure_origin(&headers, &state.config)?;
+    let player = authorize(&headers, &state).await?.player_id;
+    let store = state.store.clone();
+    Ok(Json(
+        tokio::task::spawn_blocking(move || {
+            store.set_cooperation_preferences(&player, body.enabled, body.email_enabled)
+        })
+        .await
+        .map_err(task_error)??,
+    ))
+}
+async fn cooperation_requests(
+    State(state): State<Arc<AppState>>,
+    headers: HeaderMap,
+) -> Result<Json<Vec<naijachase_storage::CooperationRequest>>, ApiError> {
+    let player = authorize(&headers, &state).await?.player_id;
+    let store = state.store.clone();
+    Ok(Json(
+        tokio::task::spawn_blocking(move || store.cooperation_requests(&player))
+            .await
+            .map_err(task_error)??,
+    ))
+}
+async fn create_cooperation_request(
+    State(state): State<Arc<AppState>>,
+    headers: HeaderMap,
+    Json(body): Json<CooperationCreateRequest>,
+) -> Result<(StatusCode, Json<serde_json::Value>), ApiError> {
+    ensure_origin(&headers, &state.config)?;
+    validate_id(&body.command_id, "command_id").map_err(bad_request)?;
+    validate_id(&body.case_id, "case_id").map_err(bad_request)?;
+    validate_id(&body.venue_id, "venue_id").map_err(bad_request)?;
+    let player = authorize(&headers, &state).await?.player_id;
+    let store = state.store.clone();
+    let case_store = state.store.clone();
+    let case_id = body.case_id.clone();
+    let owner = player.clone();
+    let (_, game) =
+        tokio::task::spawn_blocking(move || case_store.load_owned_case(&case_id, &owner))
+            .await
+            .map_err(task_error)??;
+    if !available_venue_ids(&state.catalogue, &game).contains(&body.venue_id)
+        || game
+            .visited_venues
+            .iter()
+            .any(|v| v.ends_with(&format!("|{}", body.venue_id)))
+    {
+        return Err(bad_request("venue is not available for assistance"));
+    }
+    let scene =
+        serde_json::json!({"venue_id":body.venue_id,"jurisdiction":game.state,"stage":game.stage});
+    let id = tokio::task::spawn_blocking(move || {
+        store.create_cooperation_request(
+            &player,
+            &body.helper_username,
+            &body.case_id,
+            &body.venue_id,
+            &body.command_id,
+            &scene,
+        )
+    })
+    .await
+    .map_err(task_error)??;
+    Ok((
+        StatusCode::CREATED,
+        Json(serde_json::json!({"request_id":id,"status":"pending","expires_in_seconds":43200})),
+    ))
+}
+async fn cooperation_transition(
+    state: Arc<AppState>,
+    headers: HeaderMap,
+    id: String,
+    action: &'static str,
+    recommendation: Option<String>,
+) -> Result<Json<serde_json::Value>, ApiError> {
+    ensure_origin(&headers, &state.config)?;
+    validate_id(&id, "request_id").map_err(bad_request)?;
+    if recommendation
+        .as_ref()
+        .is_some_and(|v| v.trim().is_empty() || v.len() > 240)
+    {
+        return Err(bad_request("recommendation must be 1 to 240 characters"));
+    }
+    let player = authorize(&headers, &state).await?.player_id;
+    let value = recommendation.map(|text| serde_json::json!({"text":text}));
+    let store = state.store.clone();
+    tokio::task::spawn_blocking(move || {
+        store.transition_cooperation_request(&player, &id, action, value.as_ref())
+    })
+    .await
+    .map_err(task_error)??;
+    Ok(Json(serde_json::json!({"status":action})))
+}
+async fn accept_cooperation_request(
+    State(s): State<Arc<AppState>>,
+    Path(id): Path<String>,
+    h: HeaderMap,
+) -> Result<Json<serde_json::Value>, ApiError> {
+    cooperation_transition(s, h, id, "accept", None).await
+}
+async fn decline_cooperation_request(
+    State(s): State<Arc<AppState>>,
+    Path(id): Path<String>,
+    h: HeaderMap,
+) -> Result<Json<serde_json::Value>, ApiError> {
+    cooperation_transition(s, h, id, "decline", None).await
+}
+async fn complete_cooperation_request(
+    State(s): State<Arc<AppState>>,
+    Path(id): Path<String>,
+    h: HeaderMap,
+    Json(b): Json<CooperationCompleteRequest>,
+) -> Result<Json<serde_json::Value>, ApiError> {
+    cooperation_transition(s, h, id, "complete", Some(b.recommendation)).await
+}
+async fn acknowledge_cooperation_request(
+    State(s): State<Arc<AppState>>,
+    Path(id): Path<String>,
+    h: HeaderMap,
+) -> Result<Json<serde_json::Value>, ApiError> {
+    cooperation_transition(s, h, id, "acknowledge", None).await
+}
+async fn cooperation_block(
+    State(s): State<Arc<AppState>>,
+    h: HeaderMap,
+    Json(b): Json<CooperationUsernameRequest>,
+) -> Result<Json<serde_json::Value>, ApiError> {
+    ensure_origin(&h, &s.config)?;
+    let p = authorize(&h, &s).await?.player_id;
+    let store = s.store.clone();
+    tokio::task::spawn_blocking(move || store.cooperation_block(&p, &b.username))
+        .await
+        .map_err(task_error)??;
+    Ok(Json(serde_json::json!({"blocked":true})))
+}
+async fn cooperation_unblock(
+    State(s): State<Arc<AppState>>,
+    Path(id): Path<String>,
+    h: HeaderMap,
+) -> Result<Json<serde_json::Value>, ApiError> {
+    ensure_origin(&h, &s.config)?;
+    let p = authorize(&h, &s).await?.player_id;
+    let store = s.store.clone();
+    tokio::task::spawn_blocking(move || store.cooperation_unblock(&p, &id))
+        .await
+        .map_err(task_error)??;
+    Ok(Json(serde_json::json!({"blocked":false})))
+}
+async fn cooperation_blocks(
+    State(s): State<Arc<AppState>>,
+    h: HeaderMap,
+) -> Result<Json<Vec<(String, String)>>, ApiError> {
+    let p = authorize(&h, &s).await?.player_id;
+    let store = s.store.clone();
+    Ok(Json(
+        tokio::task::spawn_blocking(move || store.cooperation_blocks(&p))
+            .await
+            .map_err(task_error)??,
+    ))
+}
+async fn cooperation_report(
+    State(s): State<Arc<AppState>>,
+    h: HeaderMap,
+    Json(b): Json<CooperationReportRequest>,
+) -> Result<(StatusCode, Json<serde_json::Value>), ApiError> {
+    ensure_origin(&h, &s.config)?;
+    let p = authorize(&h, &s).await?.player_id;
+    let store = s.store.clone();
+    let id = tokio::task::spawn_blocking(move || {
+        store.cooperation_report(&p, &b.username, &b.category, b.details.as_deref())
+    })
+    .await
+    .map_err(task_error)??;
+    Ok((
+        StatusCode::CREATED,
+        Json(serde_json::json!({"report_id":id})),
+    ))
+}
+async fn cooperation_reputation(
+    State(s): State<Arc<AppState>>,
+    h: HeaderMap,
+) -> Result<Json<serde_json::Value>, ApiError> {
+    let p = authorize(&h, &s).await?.player_id;
+    let store = s.store.clone();
+    let reputation = tokio::task::spawn_blocking(move || store.cooperation_reputation(&p))
+        .await
+        .map_err(task_error)??;
+    Ok(Json(serde_json::json!({"reputation":reputation})))
+}
+
+async fn create_group(
+    State(s): State<Arc<AppState>>,
+    h: HeaderMap,
+    Json(b): Json<CreateGroupRequest>,
+) -> Result<(StatusCode, Json<serde_json::Value>), ApiError> {
+    ensure_origin(&h, &s.config)?;
+    let p = authorize(&h, &s).await?.player_id;
+    let store = s.store.clone();
+    let id = tokio::task::spawn_blocking(move || {
+        store.create_group(&p, b.name.trim(), b.capacity.unwrap_or(20))
+    })
+    .await
+    .map_err(task_error)??;
+    Ok((
+        StatusCode::CREATED,
+        Json(serde_json::json!({"group_id":id})),
+    ))
+}
+async fn group_details(
+    State(s): State<Arc<AppState>>,
+    Path(id): Path<String>,
+    h: HeaderMap,
+) -> Result<Json<serde_json::Value>, ApiError> {
+    let p = authorize(&h, &s).await?.player_id;
+    let store = s.store.clone();
+    Ok(Json(
+        tokio::task::spawn_blocking(move || store.group_details(&p, &id))
+            .await
+            .map_err(task_error)??,
+    ))
+}
+async fn invite_group_member(
+    State(s): State<Arc<AppState>>,
+    Path(group): Path<String>,
+    h: HeaderMap,
+    Json(b): Json<InviteGroupRequest>,
+) -> Result<(StatusCode, Json<serde_json::Value>), ApiError> {
+    ensure_origin(&h, &s.config)?;
+    let p = authorize(&h, &s).await?.player_id;
+    let store = s.store.clone();
+    let id =
+        tokio::task::spawn_blocking(move || store.invite_group_member(&p, &group, &b.username))
+            .await
+            .map_err(task_error)??;
+    Ok((
+        StatusCode::CREATED,
+        Json(serde_json::json!({"invitation_id":id,"expires_in_seconds":604800})),
+    ))
+}
+async fn respond_group_invitation(
+    State(s): State<Arc<AppState>>,
+    Path(id): Path<String>,
+    h: HeaderMap,
+    Json(b): Json<InvitationResponseRequest>,
+) -> Result<Json<serde_json::Value>, ApiError> {
+    ensure_origin(&h, &s.config)?;
+    let p = authorize(&h, &s).await?.player_id;
+    let store = s.store.clone();
+    tokio::task::spawn_blocking(move || store.respond_group_invitation(&p, &id, b.accept))
+        .await
+        .map_err(task_error)??;
+    Ok(Json(serde_json::json!({"accepted":b.accept})))
+}
+async fn leave_group(
+    State(s): State<Arc<AppState>>,
+    Path(group): Path<String>,
+    h: HeaderMap,
+) -> Result<Json<serde_json::Value>, ApiError> {
+    ensure_origin(&h, &s.config)?;
+    let p = authorize(&h, &s).await?.player_id;
+    let store = s.store.clone();
+    tokio::task::spawn_blocking(move || store.leave_group(&p, &group))
+        .await
+        .map_err(task_error)??;
+    Ok(Json(serde_json::json!({"left":true})))
+}
+async fn transfer_group_ownership(
+    State(s): State<Arc<AppState>>,
+    Path(group): Path<String>,
+    h: HeaderMap,
+    Json(b): Json<TransferOwnerRequest>,
+) -> Result<Json<serde_json::Value>, ApiError> {
+    ensure_origin(&h, &s.config)?;
+    let p = authorize(&h, &s).await?.player_id;
+    let store = s.store.clone();
+    tokio::task::spawn_blocking(move || store.transfer_group_ownership(&p, &group, &b.player_id))
+        .await
+        .map_err(task_error)??;
+    Ok(Json(serde_json::json!({"transferred":true})))
+}
+fn weekly_window(now: u64) -> (u64, u64) {
+    let local = now + 3600;
+    let days = local / 86400;
+    let weekday = (days + 3) % 7;
+    let mut start = (days - weekday) * 86400 + 7 * 3600 - 3600;
+    if now < start {
+        start -= 604800
+    }
+    (start, start + 604800)
+}
+async fn current_weekly_challenge(
+    State(s): State<Arc<AppState>>,
+    Path(group): Path<String>,
+    h: HeaderMap,
+) -> Result<Json<serde_json::Value>, ApiError> {
+    let p = authorize(&h, &s).await?.player_id;
+    let store = s.store.clone();
+    let sg = group.clone();
+    tokio::task::spawn_blocking(move || store.group_details(&p, &sg))
+        .await
+        .map_err(task_error)??;
+    let now = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_secs();
+    let (start, end) = weekly_window(now);
+    let mut missions = s.catalogue.missions.values().collect::<Vec<_>>();
+    missions.sort_by(|a, b| a.mission_id.cmp(&b.mission_id));
+    let hash = group
+        .bytes()
+        .fold(start, |a, b| a.wrapping_mul(31).wrapping_add(b as u64));
+    let mission = missions[(hash as usize) % missions.len()];
+    let game = build_game_from_mission(&s.catalogue, mission, hash, 0)?;
+    let store = s.store.clone();
+    let mission_id = mission.mission_id.clone();
+    let id = tokio::task::spawn_blocking(move || {
+        store.schedule_weekly_challenge(&group, start, end, &mission_id, 1, hash, &game)
+    })
+    .await
+    .map_err(task_error)??;
+    Ok(Json(
+        serde_json::json!({"challenge_id":id,"starts_at_unix":start,"ends_at_unix":end,"timezone":"Africa/Lagos","schedule_version":1,"rules_version":1}),
+    ))
+}
+async fn start_weekly_attempt(
+    State(s): State<Arc<AppState>>,
+    Path(challenge): Path<String>,
+    h: HeaderMap,
+) -> Result<(StatusCode, Json<serde_json::Value>), ApiError> {
+    ensure_origin(&h, &s.config)?;
+    let p = authorize(&h, &s).await?.player_id;
+    let store = s.store.clone();
+    let id = tokio::task::spawn_blocking(move || store.start_weekly_attempt(&p, &challenge))
+        .await
+        .map_err(task_error)??;
+    Ok((
+        StatusCode::CREATED,
+        Json(serde_json::json!({"attempt_id":id})),
+    ))
+}
+async fn get_weekly_attempt(
+    State(s): State<Arc<AppState>>,
+    Path(attempt): Path<String>,
+    h: HeaderMap,
+) -> Result<Json<naijachase_storage::WeeklyAttemptView>, ApiError> {
+    let p = authorize(&h, &s).await?.player_id;
+    let store = s.store.clone();
+    let a = attempt.clone();
+    let _ = tokio::task::spawn_blocking(move || store.complete_weekly_arrival(&p, &a))
+        .await
+        .map_err(task_error)??;
+    let p = authenticate(&h, &s).await?.player_id;
+    let store = s.store.clone();
+    Ok(Json(
+        tokio::task::spawn_blocking(move || store.weekly_attempt(&p, &attempt))
+            .await
+            .map_err(task_error)??,
+    ))
+}
+async fn execute_weekly_command(
+    State(s): State<Arc<AppState>>,
+    Path(attempt): Path<String>,
+    h: HeaderMap,
+    Json(request): Json<ExecuteRequest>,
+) -> Result<Json<serde_json::Value>, ApiError> {
+    ensure_origin(&h, &s.config)?;
+    let account = authorize(&h, &s).await?;
+    let p = account.player_id.clone();
+    let store = s.store.clone();
+    let a = attempt.clone();
+    let _ = tokio::task::spawn_blocking(move || store.complete_weekly_arrival(&p, &a))
+        .await
+        .map_err(task_error)??;
+    let store = s.store.clone();
+    let p = account.player_id.clone();
+    let a = attempt.clone();
+    let view = tokio::task::spawn_blocking(move || store.weekly_attempt(&p, &a))
+        .await
+        .map_err(task_error)??;
+    if view.state_version != request.expected_version {
+        return Err(StorageError::VersionConflict(attempt).into());
+    }
+    let (command, _) = translate_command(
+        &s.catalogue,
+        &view.state,
+        request.command,
+        &account.home_base,
+    )
+    .map_err(bad_request)?;
+    let movement = matches!(
+        command,
+        Command::TravelBy { .. } | Command::VisitVenueBy { .. } | Command::SearchHideoutBy { .. }
+    );
+    if movement {
+        let (next, _) = naijachase_core::apply(view.state.clone(), command.clone())
+            .map_err(|e| bad_request(e.to_string()))?;
+        let ledger = next
+            .economy
+            .ledger
+            .last()
+            .ok_or_else(|| bad_request("movement ledger missing"))?;
+        let duration = ledger.minutes.saturating_mul(60);
+        let destination = ledger.destination.clone();
+        let mode = ledger.mode.clone();
+        let fare = ledger.cost;
+        let store = s.store.clone();
+        let p = account.player_id;
+        let command_id = request.command_id;
+        let transit = tokio::task::spawn_blocking(move || {
+            store.depart_weekly(
+                &p,
+                &view.attempt_id,
+                &command_id,
+                &destination,
+                &mode,
+                fare,
+                duration,
+                &next,
+            )
+        })
+        .await
+        .map_err(task_error)??;
+        Ok(Json(
+            serde_json::json!({"status":"in_transit","transit_id":transit,"duration_seconds":duration}),
+        ))
+    } else {
+        let store = s.store.clone();
+        let p = account.player_id;
+        let a = view.attempt_id;
+        let updated = tokio::task::spawn_blocking(move || {
+            store.execute_weekly(&p, &a, request.expected_version, |state| {
+                naijachase_core::apply(state, command)
+                    .map(|v| v.0)
+                    .map_err(|e| e.to_string())
+            })
+        })
+        .await
+        .map_err(task_error)??;
+        Ok(Json(serde_json::to_value(updated).unwrap()))
+    }
+}
+async fn delete_group(
+    State(s): State<Arc<AppState>>,
+    Path(group): Path<String>,
+    h: HeaderMap,
+) -> Result<Json<serde_json::Value>, ApiError> {
+    ensure_origin(&h, &s.config)?;
+    let p = authorize(&h, &s).await?.player_id;
+    let store = s.store.clone();
+    tokio::task::spawn_blocking(move || store.delete_group(&p, &group))
+        .await
+        .map_err(task_error)??;
+    Ok(Json(serde_json::json!({"deleted":true})))
+}
+async fn manage_group_member(
+    State(s): State<Arc<AppState>>,
+    Path(group): Path<String>,
+    h: HeaderMap,
+    Json(b): Json<ManageMemberRequest>,
+) -> Result<Json<serde_json::Value>, ApiError> {
+    ensure_origin(&h, &s.config)?;
+    let p = authorize(&h, &s).await?.player_id;
+    let store = s.store.clone();
+    tokio::task::spawn_blocking(move || {
+        store.manage_group_member(&p, &group, &b.player_id, b.role.as_deref())
+    })
+    .await
+    .map_err(task_error)??;
+    Ok(Json(serde_json::json!({"updated":true})))
+}
+async fn weekly_challenge_details(
+    State(s): State<Arc<AppState>>,
+    Path(id): Path<String>,
+    h: HeaderMap,
+) -> Result<Json<serde_json::Value>, ApiError> {
+    let p = authorize(&h, &s).await?.player_id;
+    let store = s.store.clone();
+    Ok(Json(
+        tokio::task::spawn_blocking(move || store.weekly_challenge_details(&p, &id))
+            .await
+            .map_err(task_error)??,
+    ))
+}
+async fn weekly_history(
+    State(s): State<Arc<AppState>>,
+    h: HeaderMap,
+) -> Result<Json<Vec<serde_json::Value>>, ApiError> {
+    let p = authorize(&h, &s).await?.player_id;
+    let store = s.store.clone();
+    Ok(Json(
+        tokio::task::spawn_blocking(move || store.weekly_history(&p))
+            .await
+            .map_err(task_error)??,
+    ))
+}
+async fn weekly_notifications(
+    State(s): State<Arc<AppState>>,
+    h: HeaderMap,
+) -> Result<Json<Vec<serde_json::Value>>, ApiError> {
+    let p = authorize(&h, &s).await?.player_id;
+    let store = s.store.clone();
+    Ok(Json(
+        tokio::task::spawn_blocking(move || store.weekly_notifications(&p))
+            .await
+            .map_err(task_error)??,
+    ))
+}
+async fn update_weekly_notifications(
+    State(s): State<Arc<AppState>>,
+    h: HeaderMap,
+    Json(b): Json<WeeklyNotificationRequest>,
+) -> Result<Json<serde_json::Value>, ApiError> {
+    ensure_origin(&h, &s.config)?;
+    let p = authorize(&h, &s).await?.player_id;
+    let store = s.store.clone();
+    tokio::task::spawn_blocking(move || store.set_weekly_notifications(&p, b.web, b.email))
+        .await
+        .map_err(task_error)??;
+    Ok(Json(serde_json::json!({"updated":true})))
+}
+async fn group_invitations(
+    State(s): State<Arc<AppState>>,
+    h: HeaderMap,
+) -> Result<Json<Vec<serde_json::Value>>, ApiError> {
+    let p = authorize(&h, &s).await?.player_id;
+    let store = s.store.clone();
+    Ok(Json(
+        tokio::task::spawn_blocking(move || store.group_invitations(&p))
+            .await
+            .map_err(task_error)??,
+    ))
+}
+async fn weekly_events(
+    State(s): State<Arc<AppState>>,
+    Path(id): Path<String>,
+    h: HeaderMap,
+) -> Result<Json<Vec<serde_json::Value>>, ApiError> {
+    let p = authorize(&h, &s).await?.player_id;
+    let store = s.store.clone();
+    Ok(Json(
+        tokio::task::spawn_blocking(move || store.weekly_events(&p, &id, 0))
+            .await
+            .map_err(task_error)??,
+    ))
+}
+async fn cancel_weekly_challenge(
+    State(s): State<Arc<AppState>>,
+    Path(id): Path<String>,
+    h: HeaderMap,
+    Json(b): Json<CancelChallengeRequest>,
+) -> Result<Json<serde_json::Value>, ApiError> {
+    ensure_origin(&h, &s.config)?;
+    let p = authorize(&h, &s).await?.player_id;
+    let store = s.store.clone();
+    tokio::task::spawn_blocking(move || store.cancel_weekly_challenge(&p, &id, &b.reason))
+        .await
+        .map_err(task_error)??;
+    Ok(Json(serde_json::json!({"cancelled":true})))
+}
+
 async fn achievement_catalog() -> Json<serde_json::Value> {
     Json(serde_json::json!({"achievements":[
         {"id":"first_case","title":"First Case","description":"Solve your first case."},
@@ -1041,7 +2071,19 @@ async fn send_email(
         .json(&serde_json::json!({"from":config.email_from,"to":to,"subject":subject,"text":text,"html":html}))
         .send().await.map_err(|error|{tracing::error!(%error,"confirmation email failed");ApiError::new(StatusCode::BAD_GATEWAY,"email_failed","confirmation email could not be sent")})?;
     if !response.status().is_success() {
-        tracing::error!(status=%response.status(),"Cloudflare rejected confirmation email");
+        let status = response.status();
+        let request_id = response
+            .headers()
+            .get("cf-ray")
+            .and_then(|value| value.to_str().ok())
+            .unwrap_or("unavailable")
+            .to_owned();
+        let provider_body = response
+            .text()
+            .await
+            .unwrap_or_else(|_| "response body unavailable".into());
+        let provider_body = provider_body.chars().take(2_000).collect::<String>();
+        tracing::error!(%status,%request_id,%provider_body,"Cloudflare rejected confirmation email");
         return Err(ApiError::new(
             StatusCode::BAD_GATEWAY,
             "email_failed",
@@ -1096,31 +2138,308 @@ const NIGERIAN_JURISDICTIONS: [&str; 37] = [
     "Zamfara",
 ];
 
-async fn create_case(
+async fn assign_case(
     State(state): State<Arc<AppState>>,
     headers: HeaderMap,
-    Json(request): Json<CreateCaseRequest>,
+    Json(_request): Json<AssignCaseRequest>,
 ) -> Result<(StatusCode, Json<CaseResponse>), ApiError> {
     ensure_origin(&headers, &state.config)?;
     let account = authorize(&headers, &state).await?;
     let player = account.player_id.clone();
-    validate_id(&request.case_id, "case_id").map_err(bad_request)?;
-    validate_id(&request.mission_id, "mission_id").map_err(bad_request)?;
-    let mission = state
-        .catalogue
-        .missions
-        .get(&request.mission_id)
-        .ok_or_else(|| bad_request("unknown mission_id"))?;
-    let route = state
-        .catalogue
-        .route(mission)
-        .map_err(|_| bad_request("mission route unavailable"))?;
+    let store = state.store.clone();
+    let lookup_player = player.clone();
+    let unseen =
+        tokio::task::spawn_blocking(move || store.unseen_published_missions(&lookup_player))
+            .await
+            .map_err(task_error)??;
+    if unseen.is_empty() {
+        return Err(StorageError::CatalogueExhausted.into());
+    }
+    let (mission_id, seed) = {
+        let mut entropy = rand::rng();
+        let newest_pool = (unseen.len() / 5).max(1);
+        let selection_pool = if entropy.next_u64() % 10 < 7 {
+            newest_pool
+        } else {
+            unseen.len()
+        };
+        (
+            unseen[(entropy.next_u64() as usize) % selection_pool].clone(),
+            entropy.next_u64(),
+        )
+    };
+    let case_id = format!("case-{}", uuid::Uuid::new_v4());
     let store = state.store.clone();
     let career_player = player.clone();
     let career_points = tokio::task::spawn_blocking(move || store.career_points(&career_player))
         .await
         .map_err(task_error)??;
-    let game = GameState {
+    let store = state.store.clone();
+    let runtime_id = mission_id.clone();
+    let runtime = tokio::task::spawn_blocking(move || store.runtime_mission(&runtime_id))
+        .await
+        .map_err(task_error)??;
+    let game = build_runtime_game(&state.catalogue, runtime, seed, career_points)?;
+    let store = state.store.clone();
+    let saved_case_id = case_id.clone();
+    let saved = game.clone();
+    tokio::task::spawn_blocking(move || {
+        store.create_case_with_kind(&saved_case_id, &player, &mission_id, &saved, "ordinary")
+    })
+    .await
+    .map_err(task_error)??;
+    let store = state.store.clone();
+    let player = authenticate(&headers, &state).await?.player_id;
+    let lookup_id = case_id.clone();
+    let (version, stored_game) =
+        tokio::task::spawn_blocking(move || store.load_owned_case(&lookup_id, &player))
+            .await
+            .map_err(task_error)??;
+    Ok((
+        StatusCode::CREATED,
+        Json(CaseResponse {
+            api_version: API_VERSION,
+            case_id,
+            state_version: version,
+            duplicate: false,
+            attempt_kind: "ordinary".into(),
+            state: (&stored_game).into(),
+            events: vec![],
+        }),
+    ))
+}
+
+async fn replay_case(
+    State(state): State<Arc<AppState>>,
+    headers: HeaderMap,
+    Json(request): Json<ReplayCaseRequest>,
+) -> Result<(StatusCode, Json<CaseResponse>), ApiError> {
+    ensure_origin(&headers, &state.config)?;
+    let player = authorize(&headers, &state).await?.player_id;
+    validate_id(&request.mission_id, "mission_id").map_err(bad_request)?;
+    let seed = rand::rng().next_u64();
+    let case_id = format!("replay-{}", uuid::Uuid::new_v4());
+    let store = state.store.clone();
+    let career_player = player.clone();
+    let career_points = tokio::task::spawn_blocking(move || store.career_points(&career_player))
+        .await
+        .map_err(task_error)??;
+    let store = state.store.clone();
+    let runtime_id = request.mission_id.clone();
+    let runtime = tokio::task::spawn_blocking(move || store.runtime_mission(&runtime_id))
+        .await
+        .map_err(task_error)??;
+    let game = build_runtime_game(&state.catalogue, runtime, seed, career_points)?;
+    let store = state.store.clone();
+    let saved_case_id = case_id.clone();
+    let mission_id = request.mission_id.clone();
+    let saved = game.clone();
+    tokio::task::spawn_blocking(move || {
+        store.create_case_with_kind(&saved_case_id, &player, &mission_id, &saved, "replay")
+    })
+    .await
+    .map_err(task_error)??;
+    Ok((
+        StatusCode::CREATED,
+        Json(CaseResponse {
+            api_version: API_VERSION,
+            case_id,
+            state_version: 1,
+            duplicate: false,
+            attempt_kind: "replay".into(),
+            state: (&game).into(),
+            events: vec![],
+        }),
+    ))
+}
+
+async fn catalogue_status(
+    State(state): State<Arc<AppState>>,
+    headers: HeaderMap,
+) -> Result<Json<CatalogueProgress>, ApiError> {
+    let player = authenticate(&headers, &state).await?.player_id;
+    let store = state.store.clone();
+    Ok(Json(
+        tokio::task::spawn_blocking(move || store.catalogue_progress(&player))
+            .await
+            .map_err(task_error)??,
+    ))
+}
+
+async fn catalogue_notifications(
+    State(state): State<Arc<AppState>>,
+    headers: HeaderMap,
+) -> Result<Json<Vec<ReleaseNotification>>, ApiError> {
+    let player = authenticate(&headers, &state).await?.player_id;
+    let store = state.store.clone();
+    Ok(Json(
+        tokio::task::spawn_blocking(move || store.release_notifications(&player))
+            .await
+            .map_err(task_error)??,
+    ))
+}
+
+async fn read_catalogue_notification(
+    State(state): State<Arc<AppState>>,
+    Path(notification_id): Path<u64>,
+    headers: HeaderMap,
+) -> Result<Json<serde_json::Value>, ApiError> {
+    ensure_origin(&headers, &state.config)?;
+    let player = authorize(&headers, &state).await?.player_id;
+    let store = state.store.clone();
+    tokio::task::spawn_blocking(move || store.read_release_notification(&player, notification_id))
+        .await
+        .map_err(task_error)??;
+    Ok(Json(serde_json::json!({"message":"notification read"})))
+}
+
+async fn admin_catalogue_health(
+    State(state): State<Arc<AppState>>,
+    headers: HeaderMap,
+) -> Result<Json<CatalogueHealth>, ApiError> {
+    let player = authorize(&headers, &state).await?.player_id;
+    let store = state.store.clone();
+    let role_store = state.store.clone();
+    let role = tokio::task::spawn_blocking(move || role_store.content_role(&player))
+        .await
+        .map_err(task_error)??;
+    if !matches!(role.as_str(), "editor" | "publisher" | "admin") {
+        return Err(StorageError::Forbidden.into());
+    }
+    Ok(Json(
+        tokio::task::spawn_blocking(move || store.catalogue_health(50))
+            .await
+            .map_err(task_error)??,
+    ))
+}
+
+async fn admin_catalogue_me(
+    State(state): State<Arc<AppState>>,
+    headers: HeaderMap,
+) -> Result<Json<serde_json::Value>, ApiError> {
+    let player = authorize(&headers, &state).await?.player_id;
+    let store = state.store.clone();
+    let role = tokio::task::spawn_blocking(move || store.content_role(&player))
+        .await
+        .map_err(task_error)??;
+    if role == "player" {
+        return Err(StorageError::Forbidden.into());
+    }
+    Ok(Json(serde_json::json!({"content_role":role})))
+}
+
+async fn admin_transition_mission(
+    State(state): State<Arc<AppState>>,
+    Path(mission_id): Path<String>,
+    headers: HeaderMap,
+    Json(request): Json<MissionTransitionRequest>,
+) -> Result<Json<serde_json::Value>, ApiError> {
+    ensure_origin(&headers, &state.config)?;
+    let player = authorize(&headers, &state).await?.player_id;
+    validate_id(&mission_id, "mission_id").map_err(bad_request)?;
+    if request.reason.trim().is_empty() || request.reason.len() > 500 {
+        return Err(bad_request("reason must be 1 to 500 characters"));
+    }
+    if !matches!(
+        request.target_status.as_str(),
+        "draft" | "editorial_review" | "validated" | "scheduled" | "published" | "retired"
+    ) {
+        return Err(bad_request("invalid target_status"));
+    }
+    let store = state.store.clone();
+    tokio::task::spawn_blocking(move || {
+        store.transition_mission(
+            &player,
+            &mission_id,
+            &request.target_status,
+            request.scheduled_for.as_deref(),
+            &request.reason,
+        )
+    })
+    .await
+    .map_err(task_error)??;
+    Ok(Json(
+        serde_json::json!({"message":"mission lifecycle updated"}),
+    ))
+}
+
+async fn admin_validate_mission(
+    State(state): State<Arc<AppState>>,
+    Path(mission_id): Path<String>,
+    headers: HeaderMap,
+) -> Result<Json<MissionValidation>, ApiError> {
+    let player = authorize(&headers, &state).await?.player_id;
+    validate_id(&mission_id, "mission_id").map_err(bad_request)?;
+    let role_store = state.store.clone();
+    let role = tokio::task::spawn_blocking(move || role_store.content_role(&player))
+        .await
+        .map_err(task_error)??;
+    if !matches!(role.as_str(), "editor" | "publisher" | "admin") {
+        return Err(StorageError::Forbidden.into());
+    }
+    let store = state.store.clone();
+    Ok(Json(
+        tokio::task::spawn_blocking(move || store.validate_mission(&mission_id))
+            .await
+            .map_err(task_error)??,
+    ))
+}
+
+async fn admin_mission_details(
+    State(state): State<Arc<AppState>>,
+    Path(mission_id): Path<String>,
+    headers: HeaderMap,
+) -> Result<Json<serde_json::Value>, ApiError> {
+    let player = authorize(&headers, &state).await?.player_id;
+    validate_id(&mission_id, "mission_id").map_err(bad_request)?;
+    let role_store = state.store.clone();
+    let role = tokio::task::spawn_blocking(move || role_store.content_role(&player))
+        .await
+        .map_err(task_error)??;
+    if !matches!(role.as_str(), "editor" | "publisher" | "admin") {
+        return Err(StorageError::Forbidden.into());
+    }
+    let store = state.store.clone();
+    Ok(Json(
+        tokio::task::spawn_blocking(move || store.mission_admin_details(&mission_id))
+            .await
+            .map_err(task_error)??,
+    ))
+}
+
+fn build_runtime_game(
+    catalogue: &Catalogue,
+    runtime: naijachase_storage::RuntimeMission,
+    seed: u64,
+    career_points: u64,
+) -> Result<GameState, ApiError> {
+    let mission = Mission {
+        mission_id: runtime.mission_id,
+        difficulty: runtime.difficulty,
+        thief_id: runtime.thief_id,
+        start_location_id: runtime.start_location_id,
+        stop_2_location_id: runtime.stop_2_location_id,
+        stop_3_location_id: runtime.stop_3_location_id,
+        capture_location_id: runtime.capture_location_id,
+    };
+    build_game_from_mission(catalogue, &mission, seed, career_points)
+}
+
+fn build_game_from_mission(
+    catalogue: &Catalogue,
+    mission: &Mission,
+    seed: u64,
+    career_points: u64,
+) -> Result<GameState, ApiError> {
+    let route = catalogue
+        .route(mission)
+        .map_err(|_| bad_request("mission route unavailable"))?;
+    let opening_budget = opening_budget_for(catalogue, mission)?;
+    let capture_state = route
+        .last()
+        .cloned()
+        .ok_or_else(|| bad_request("mission route unavailable"))?;
+    Ok(GameState {
         version: 1,
         mission_id: mission.mission_id.clone(),
         thief_id: mission.thief_id.clone(),
@@ -1135,35 +2454,25 @@ async fn create_case(
         observations: BTreeMap::new(),
         visited_venues: vec![],
         warrant_suspect: None,
-        hideout_venue: choose_hideout(&request.mission_id, request.seed, &state.catalogue),
+        hideout_venue: choose_hideout(&mission.mission_id, seed, &capture_state, catalogue),
         replay: vec![],
         outcome: None,
-    };
-    let store = state.store.clone();
-    let case_id = request.case_id.clone();
-    let mission_id = request.mission_id.clone();
-    let saved = game.clone();
-    tokio::task::spawn_blocking(move || store.create_case(&case_id, &player, &mission_id, &saved))
-        .await
-        .map_err(task_error)??;
-    let store = state.store.clone();
-    let player = authenticate(&headers, &state).await?.player_id;
-    let lookup_id = request.case_id.clone();
-    let (version, stored_game) =
-        tokio::task::spawn_blocking(move || store.load_owned_case(&lookup_id, &player))
-            .await
-            .map_err(task_error)??;
-    Ok((
-        StatusCode::CREATED,
-        Json(CaseResponse {
-            api_version: API_VERSION,
-            case_id: request.case_id,
-            state_version: version,
-            duplicate: false,
-            state: (&stored_game).into(),
-            events: vec![],
-        }),
-    ))
+        economy: naijachase_contracts::CaseEconomy {
+            rules_version: naijachase_core::TRANSPORT_RULES_VERSION,
+            opening_budget,
+            balance: opening_budget,
+            ledger: vec![naijachase_contracts::TransportLedgerEntry {
+                sequence: 1,
+                kind: "opening_allocation".into(),
+                origin: String::new(),
+                destination: String::new(),
+                mode: "allocation".into(),
+                cost: 0,
+                minutes: 0,
+                balance_after: opening_budget,
+            }],
+        },
+    })
 }
 
 async fn get_case(
@@ -1175,8 +2484,15 @@ async fn get_case(
     validate_id(&case_id, "case_id").map_err(bad_request)?;
     let store = state.store.clone();
     let lookup_id = case_id.clone();
+    let lookup_player = player.clone();
     let (version, game) =
-        tokio::task::spawn_blocking(move || store.load_owned_case(&lookup_id, &player))
+        tokio::task::spawn_blocking(move || store.load_owned_case(&lookup_id, &lookup_player))
+            .await
+            .map_err(task_error)??;
+    let store = state.store.clone();
+    let kind_case = case_id.clone();
+    let attempt_kind =
+        tokio::task::spawn_blocking(move || store.case_attempt_kind(&kind_case, &player))
             .await
             .map_err(task_error)??;
     Ok(Json(CaseResponse {
@@ -1184,9 +2500,277 @@ async fn get_case(
         case_id,
         state_version: version,
         duplicate: false,
+        attempt_kind,
         state: (&game).into(),
         events: vec![],
     }))
+}
+
+async fn transport_ledger(
+    State(state): State<Arc<AppState>>,
+    Path(case_id): Path<String>,
+    headers: HeaderMap,
+) -> Result<Json<Vec<naijachase_contracts::TransportLedgerEntry>>, ApiError> {
+    let player = authorize(&headers, &state).await?.player_id;
+    validate_id(&case_id, "case_id").map_err(bad_request)?;
+    let store = state.store.clone();
+    let (_, game) = tokio::task::spawn_blocking(move || store.load_owned_case(&case_id, &player))
+        .await
+        .map_err(task_error)??;
+    Ok(Json(game.economy.ledger))
+}
+
+async fn transport_quotes(
+    State(state): State<Arc<AppState>>,
+    Path(case_id): Path<String>,
+    headers: HeaderMap,
+) -> Result<Json<Vec<TransportQuote>>, ApiError> {
+    let player = authorize(&headers, &state).await?.player_id;
+    validate_id(&case_id, "case_id").map_err(bad_request)?;
+    let store = state.store.clone();
+    let (_, game) = tokio::task::spawn_blocking(move || store.load_owned_case(&case_id, &player))
+        .await
+        .map_err(task_error)??;
+    let mut quotes = Vec::new();
+    let mut destinations = state
+        .catalogue
+        .travel
+        .iter()
+        .filter(|((origin, _), _)| origin == &game.state)
+        .map(|((_, destination), edge)| (destination.clone(), edge.travel_minutes))
+        .collect::<Vec<_>>();
+    destinations.sort_by(|a, b| a.0.cmp(&b.0));
+    for (destination, base) in destinations {
+        for mode in ["fly", "drive", "hitch_ride"] {
+            let (minutes, cost) = naijachase_core::interstate_quote(base, mode)
+                .map_err(|e| bad_request(e.to_string()))?;
+            quotes.push(TransportQuote {
+                scope: "interstate".into(),
+                destination_id: destination.clone(),
+                label: destination.clone(),
+                mode: mode.into(),
+                cost,
+                travel_minutes: minutes,
+                wait_minutes: 0,
+                affordable: cost <= game.economy.balance,
+                rules_version: game.economy.rules_version,
+            })
+        }
+    }
+    for venue_id in available_venue_ids(&state.catalogue, &game) {
+        let venue = &state.catalogue.venues[&venue_id];
+        let base = placement_minutes(
+            &state.catalogue,
+            &game.state,
+            &venue_id,
+            &game.mission_id,
+            game.stage,
+        )
+        .map_err(bad_request)?;
+        for mode in ["drive", "hitch_ride"] {
+            let (minutes, cost) =
+                naijachase_core::local_quote(base, mode).map_err(|e| bad_request(e.to_string()))?;
+            let wait = wait_until_open(
+                game.elapsed.saturating_add(minutes),
+                venue.opens_hour,
+                venue.closes_hour,
+            );
+            quotes.push(TransportQuote {
+                scope: "local".into(),
+                destination_id: venue_id.clone(),
+                label: venue.venue_name.clone(),
+                mode: mode.into(),
+                cost,
+                travel_minutes: minutes,
+                wait_minutes: wait,
+                affordable: cost <= game.economy.balance,
+                rules_version: game.economy.rules_version,
+            })
+        }
+    }
+    if game.stage as usize == game.route.len().saturating_sub(1) {
+        let mut ids = state
+            .catalogue
+            .location_venues
+            .keys()
+            .filter(|(candidate, _)| candidate == &game.state)
+            .map(|(_, venue)| venue.clone())
+            .collect::<Vec<_>>();
+        ids.sort();
+        ids.dedup();
+        for venue_id in ids {
+            let venue = &state.catalogue.venues[&venue_id];
+            let base = placement_minutes(
+                &state.catalogue,
+                &game.state,
+                &venue_id,
+                &game.mission_id,
+                game.stage,
+            )
+            .map_err(bad_request)?;
+            for mode in ["drive", "hitch_ride"] {
+                let (minutes, cost) = naijachase_core::local_quote(base, mode)
+                    .map_err(|e| bad_request(e.to_string()))?;
+                quotes.push(TransportQuote {
+                    scope: "apprehension".into(),
+                    destination_id: venue_id.clone(),
+                    label: venue.venue_name.clone(),
+                    mode: mode.into(),
+                    cost,
+                    travel_minutes: minutes,
+                    wait_minutes: 0,
+                    affordable: cost <= game.economy.balance,
+                    rules_version: game.economy.rules_version,
+                })
+            }
+        }
+    }
+    Ok(Json(quotes))
+}
+
+fn pressure_assignment(case_id: &str, game: &GameState, venues: &[String]) -> Option<String> {
+    if venues.is_empty() {
+        return None;
+    }
+    let seed = format!("pressure|{case_id}|{}|{}", game.mission_id, game.stage);
+    let digest = Sha256::digest(seed.as_bytes());
+    if digest[0] as u16 * 100 / 256 >= 65 {
+        return None;
+    }
+    Some(venues[usize::from(digest[1]) % venues.len()].clone())
+}
+
+fn supplemental_clue(catalogue: &Catalogue, game: &GameState, venue_id: &str) -> Option<String> {
+    let destination = game.route.get(game.stage as usize + 1)?;
+    let atoms = catalogue.atoms.get(destination)?;
+    let mut candidates = atoms
+        .iter()
+        .filter(|atom| atom.venue_id == venue_id)
+        .collect::<Vec<_>>();
+    if candidates.is_empty() {
+        candidates = atoms.iter().collect();
+    }
+    let key = game.mission_id.bytes().map(usize::from).sum::<usize>()
+        + game.stage as usize * 17
+        + venue_id.bytes().map(usize::from).sum::<usize>();
+    candidates
+        .get((key + 1) % candidates.len().max(1))
+        .map(|atom| atom.dialogue.trim().to_owned())
+}
+
+async fn pressure_witness(
+    State(state): State<Arc<AppState>>,
+    Path(case_id): Path<String>,
+    headers: HeaderMap,
+    Json(request): Json<PressureWitnessRequest>,
+) -> Result<Json<naijachase_storage::PressureResult>, ApiError> {
+    ensure_origin(&headers, &state.config)?;
+    let player = authorize(&headers, &state).await?.player_id;
+    validate_id(&case_id, "case_id").map_err(bad_request)?;
+    validate_id(&request.command_id, "command_id").map_err(bad_request)?;
+    validate_id(&request.venue_id, "venue_id").map_err(bad_request)?;
+    if !matches!(request.method.as_str(), "bribe" | "intimidate") {
+        return Err(bad_request("method must be bribe or intimidate"));
+    }
+    let store = state.store.clone();
+    let lookup_case = case_id.clone();
+    let lookup_player = player.clone();
+    let (_, game) =
+        tokio::task::spawn_blocking(move || store.load_owned_case(&lookup_case, &lookup_player))
+            .await
+            .map_err(task_error)??;
+    let mut venues = available_venue_ids(&state.catalogue, &game);
+    venues.sort();
+    if !venues.contains(&request.venue_id) {
+        return Err(bad_request("venue is not available at this stop"));
+    }
+    let assigned = pressure_assignment(&case_id, &game, &venues);
+    let has_extra = assigned.as_deref() == Some(request.venue_id.as_str());
+    let clue = if has_extra {
+        supplemental_clue(&state.catalogue, &game, &request.venue_id)
+    } else {
+        None
+    };
+    let store = state.store.clone();
+    let result = tokio::task::spawn_blocking(move || {
+        store.pressure_witness(
+            &player,
+            &case_id,
+            &request.command_id,
+            request.expected_version,
+            &request.venue_id,
+            &request.method,
+            has_extra,
+            clue.as_deref(),
+        )
+    })
+    .await
+    .map_err(task_error)??;
+    Ok(Json(result))
+}
+
+async fn bribe_token_balance(
+    State(state): State<Arc<AppState>>,
+    headers: HeaderMap,
+) -> Result<Json<naijachase_storage::TokenBalance>, ApiError> {
+    let player = authorize(&headers, &state).await?.player_id;
+    let store = state.store.clone();
+    Ok(Json(
+        tokio::task::spawn_blocking(move || store.bribe_token_balance(&player))
+            .await
+            .map_err(task_error)??,
+    ))
+}
+async fn bribe_token_history(
+    State(state): State<Arc<AppState>>,
+    headers: HeaderMap,
+) -> Result<Json<Vec<naijachase_storage::TokenLedgerEntry>>, ApiError> {
+    let player = authorize(&headers, &state).await?.player_id;
+    let store = state.store.clone();
+    Ok(Json(
+        tokio::task::spawn_blocking(move || store.bribe_token_history(&player))
+            .await
+            .map_err(task_error)??,
+    ))
+}
+async fn disciplinary_history(
+    State(state): State<Arc<AppState>>,
+    headers: HeaderMap,
+) -> Result<Json<Vec<naijachase_storage::DisciplinaryCase>>, ApiError> {
+    let player = authorize(&headers, &state).await?.player_id;
+    let store = state.store.clone();
+    Ok(Json(
+        tokio::task::spawn_blocking(move || store.disciplinary_history(&player))
+            .await
+            .map_err(task_error)??,
+    ))
+}
+async fn jail_status(
+    State(state): State<Arc<AppState>>,
+    headers: HeaderMap,
+) -> Result<Json<serde_json::Value>, ApiError> {
+    let player = authorize(&headers, &state).await?.player_id;
+    let store = state.store.clone();
+    let until = tokio::task::spawn_blocking(move || store.jail_status(&player))
+        .await
+        .map_err(task_error)??;
+    Ok(Json(
+        serde_json::json!({"jailed":until.is_some(),"jailed_until":until}),
+    ))
+}
+async fn acknowledge_disciplinary_case(
+    State(state): State<Arc<AppState>>,
+    Path(id): Path<String>,
+    headers: HeaderMap,
+) -> Result<Json<serde_json::Value>, ApiError> {
+    ensure_origin(&headers, &state.config)?;
+    let player = authorize(&headers, &state).await?.player_id;
+    validate_id(&id, "disciplinary_case_id").map_err(bad_request)?;
+    let store = state.store.clone();
+    tokio::task::spawn_blocking(move || store.acknowledge_disciplinary_case(&player, &id))
+        .await
+        .map_err(task_error)??;
+    Ok(Json(serde_json::json!({"acknowledged":true})))
 }
 
 async fn execute_command(
@@ -1228,7 +2812,7 @@ async fn execute_command(
         .metrics
         .commands
         .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-    let (version, game, events, duplicate) = match result {
+    let (version, game, mut events, duplicate) = match result {
         CaseCommandResult::Applied {
             version,
             state,
@@ -1251,17 +2835,37 @@ async fn execute_command(
         let archive_player = player.clone();
         let archive_case = case_id.clone();
         let archive_state = game.clone();
-        tokio::task::spawn_blocking(move || {
+        let awards = tokio::task::spawn_blocking(move || {
             store.record_case_completion(&archive_player, &archive_case, &archive_state)
         })
         .await
         .map_err(task_error)??;
+        for award in awards {
+            let mut data = BTreeMap::new();
+            data.insert("currency".into(), "earned_bribe_token".into());
+            data.insert("reason".into(), award.reason);
+            data.insert("amount".into(), award.amount.to_string());
+            data.insert("balance_after".into(), award.balance_after.to_string());
+            data.insert("components".into(), award.components.join(","));
+            events.push(Event {
+                event_type: "token_awarded".into(),
+                data,
+            });
+        }
     }
+    let store = state.store.clone();
+    let kind_case = case_id.clone();
+    let kind_player = player.clone();
+    let attempt_kind =
+        tokio::task::spawn_blocking(move || store.case_attempt_kind(&kind_case, &kind_player))
+            .await
+            .map_err(task_error)??;
     Ok(Json(CaseResponse {
         api_version: API_VERSION,
         case_id,
         state_version: version,
         duplicate,
+        attempt_kind,
         state: (&game).into(),
         events,
     }))
@@ -1274,8 +2878,11 @@ fn translate_command(
     home_base: &str,
 ) -> Result<(Command, Option<Event>), String> {
     match request {
-        ClientCommand::VisitVenue { venue_id } => {
+        ClientCommand::VisitVenue { venue_id, mode } => {
             validate_id(&venue_id, "venue_id")?;
+            if !available_venue_ids(catalogue, state).contains(&venue_id) {
+                return Err("venue is not available at this stop".into());
+            }
             let venue = catalogue.venues.get(&venue_id).ok_or("unknown venue_id")?;
             let prefix = format!("{}|{}|", state.stage, state.state);
             let first_at_stop = !state
@@ -1375,6 +2982,24 @@ fn translate_command(
                 venue.interview_minutes,
                 state.state == home_base,
             );
+            let base_travel = placement_minutes(
+                catalogue,
+                &state.state,
+                &venue_id,
+                &state.mission_id,
+                state.stage,
+            )?;
+            let (travel_minutes, cost) =
+                naijachase_core::local_quote(base_travel, &mode).map_err(|e| e.to_string())?;
+            let wait_minutes = wait_until_open(
+                state.elapsed.saturating_add(travel_minutes),
+                venue.opens_hour,
+                venue.closes_hour,
+            );
+            data.insert("transport_mode".into(), mode.clone());
+            data.insert("transport_cost".into(), cost.to_string());
+            data.insert("travel_minutes".into(), travel_minutes.to_string());
+            data.insert("wait_minutes".into(), wait_minutes.to_string());
             if minutes < venue.interview_minutes {
                 data.insert(
                     "home_base_discount_minutes".into(),
@@ -1382,11 +3007,15 @@ fn translate_command(
                 );
             }
             Ok((
-                Command::VisitVenue {
+                Command::VisitVenueBy {
                     venue_id,
                     trait_name,
                     trait_value,
-                    minutes,
+                    mode,
+                    travel_minutes,
+                    wait_minutes,
+                    interview_minutes: minutes,
+                    cost,
                 },
                 Some(Event {
                     event_type: "witness_account".into(),
@@ -1417,15 +3046,21 @@ fn translate_command(
             }
             Ok((Command::RecordTrait { trait_name, value }, None))
         }
-        ClientCommand::Travel { destination } => {
+        ClientCommand::Travel { destination, mode } => {
             let travel = catalogue
                 .travel
                 .get(&(state.state.clone(), destination.clone()))
                 .ok_or("unavailable destination")?;
             Ok((
-                Command::Travel {
+                Command::TravelBy {
                     destination,
-                    minutes: travel.travel_minutes,
+                    mode: mode.clone(),
+                    minutes: naijachase_core::interstate_quote(travel.travel_minutes, &mode)
+                        .map_err(|e| e.to_string())?
+                        .0,
+                    cost: naijachase_core::interstate_quote(travel.travel_minutes, &mode)
+                        .map_err(|e| e.to_string())?
+                        .1,
                 },
                 None,
             ))
@@ -1442,13 +3077,38 @@ fn translate_command(
                 None,
             ))
         }
-        ClientCommand::SearchHideout { venue_id } => {
+        ClientCommand::SearchHideout { venue_id, mode } => {
             validate_id(&venue_id, "venue_id")?;
             let venue = catalogue.venues.get(&venue_id).ok_or("unknown venue_id")?;
             Ok((
-                Command::SearchHideout {
+                Command::SearchHideoutBy {
                     venue_id,
-                    minutes: venue.interview_minutes,
+                    mode: mode.clone(),
+                    travel_minutes: naijachase_core::local_quote(
+                        placement_minutes(
+                            catalogue,
+                            &state.state,
+                            &venue.venue_id,
+                            &state.mission_id,
+                            state.stage,
+                        )?,
+                        &mode,
+                    )
+                    .map_err(|e| e.to_string())?
+                    .0,
+                    search_minutes: venue.interview_minutes,
+                    cost: naijachase_core::local_quote(
+                        placement_minutes(
+                            catalogue,
+                            &state.state,
+                            &venue.venue_id,
+                            &state.mission_id,
+                            state.stage,
+                        )?,
+                        &mode,
+                    )
+                    .map_err(|e| e.to_string())?
+                    .1,
                 },
                 None,
             ))
@@ -1470,8 +3130,18 @@ fn natural_trait(field: &str, value: &str) -> String {
     }
 }
 
-fn choose_hideout(mission_id: &str, seed: u64, catalogue: &Catalogue) -> String {
-    let mut ids = catalogue.venues.keys().cloned().collect::<Vec<_>>();
+fn choose_hideout(mission_id: &str, seed: u64, state: &str, catalogue: &Catalogue) -> String {
+    let mut ids = catalogue
+        .location_venues
+        .keys()
+        .filter(|(candidate, _)| candidate == state)
+        .map(|(_, venue)| venue.clone())
+        .collect::<Vec<_>>();
+    ids.sort();
+    ids.dedup();
+    if ids.is_empty() {
+        ids = catalogue.venues.keys().cloned().collect()
+    }
     ids.sort();
     let offset = mission_id
         .bytes()
@@ -1480,6 +3150,152 @@ fn choose_hideout(mission_id: &str, seed: u64, catalogue: &Catalogue) -> String 
         .wrapping_add(seed) as usize
         % ids.len();
     ids[offset].clone()
+}
+
+fn placement_minutes(
+    catalogue: &Catalogue,
+    state: &str,
+    venue_id: &str,
+    mission_id: &str,
+    stage: u8,
+) -> Result<u32, String> {
+    let placements = catalogue
+        .location_venues
+        .get(&(state.to_owned(), venue_id.to_owned()))
+        .ok_or("venue is not available in this jurisdiction")?;
+    let pick =
+        (mission_id.bytes().map(usize::from).sum::<usize>() + stage as usize) % placements.len();
+    Ok(placements[pick].hub_travel_minutes.max(5))
+}
+
+fn available_venue_ids(catalogue: &Catalogue, state: &GameState) -> Vec<String> {
+    available_venue_ids_for(
+        catalogue,
+        &state.route,
+        &state.mission_id,
+        state.stage as usize,
+    )
+}
+
+fn available_venue_ids_for(
+    catalogue: &Catalogue,
+    route: &[String],
+    mission_id: &str,
+    stage: usize,
+) -> Vec<String> {
+    let Some(current_state) = route.get(stage) else {
+        return vec![];
+    };
+    let clue_state = route.get(stage + 1).unwrap_or(current_state);
+    let Some(atoms) = catalogue.atoms.get(clue_state) else {
+        return vec![];
+    };
+    let start = (mission_id.bytes().map(usize::from).sum::<usize>() + stage * 7) % atoms.len();
+    let mut ids = Vec::new();
+    for offset in 0..atoms.len() {
+        let venue = &atoms[(start + offset) % atoms.len()].venue_id;
+        if catalogue
+            .location_venues
+            .contains_key(&(current_state.clone(), venue.clone()))
+            && !ids.contains(venue)
+        {
+            ids.push(venue.clone());
+            if ids.len() == 3 {
+                break;
+            }
+        }
+    }
+    ids
+}
+
+fn wait_until_open(elapsed: u32, opens: u32, closes: u32) -> u32 {
+    let minute = (420 + elapsed) % 1440;
+    let open = opens * 60;
+    let close = closes * 60;
+    let is_open = if open < close {
+        minute >= open && minute < close
+    } else {
+        minute >= open || minute < close
+    };
+    if is_open {
+        0
+    } else if minute < open {
+        open - minute
+    } else {
+        1440 - minute + open
+    }
+}
+
+fn local_costs_for_state(catalogue: &Catalogue, state: &str) -> Vec<u32> {
+    let mut venues = catalogue
+        .location_venues
+        .keys()
+        .filter(|(candidate, _)| candidate == state)
+        .map(|(_, venue)| venue.clone())
+        .collect::<Vec<_>>();
+    venues.sort();
+    venues.dedup();
+    venues
+        .into_iter()
+        .filter_map(|venue| placement_minutes(catalogue, state, &venue, "budget", 0).ok())
+        .filter_map(|minutes| {
+            naijachase_core::local_quote(minutes, "drive")
+                .ok()
+                .map(|(_, cost)| cost)
+        })
+        .collect()
+}
+
+fn mission_budget_baseline(catalogue: &Catalogue, mission: &Mission) -> Result<u32, ApiError> {
+    let route = catalogue
+        .route(mission)
+        .map_err(|_| bad_request("mission route unavailable"))?;
+    let mut total = 0u32;
+    for pair in route.windows(2) {
+        let edge = catalogue
+            .travel
+            .get(&(pair[0].clone(), pair[1].clone()))
+            .ok_or_else(|| bad_request("mission travel edge unavailable"))?;
+        total = total.saturating_add(
+            naijachase_core::interstate_quote(edge.travel_minutes, "fly")
+                .map_err(|e| bad_request(e.to_string()))?
+                .1,
+        )
+    }
+    for (stage, state) in route.iter().enumerate() {
+        for venue in available_venue_ids_for(catalogue, &route, &mission.mission_id, stage) {
+            let base =
+                placement_minutes(catalogue, state, &venue, &mission.mission_id, stage as u8)
+                    .map_err(bad_request)?;
+            total = total.saturating_add(
+                naijachase_core::local_quote(base, "drive")
+                    .map_err(|e| bad_request(e.to_string()))?
+                    .1,
+            );
+        }
+    }
+    let mut final_costs = local_costs_for_state(
+        catalogue,
+        route
+            .last()
+            .ok_or_else(|| bad_request("mission route unavailable"))?,
+    );
+    final_costs.sort_unstable();
+    total = total.saturating_add(final_costs.last().copied().unwrap_or(0));
+    Ok(total)
+}
+
+fn opening_budget_for(catalogue: &Catalogue, mission: &Mission) -> Result<u32, ApiError> {
+    let mut maximum = mission_budget_baseline(catalogue, mission)?;
+    for candidate in catalogue
+        .missions
+        .values()
+        .filter(|candidate| candidate.difficulty == mission.difficulty)
+    {
+        maximum = maximum.max(mission_budget_baseline(catalogue, candidate)?);
+    }
+    let reserved = maximum.saturating_add((maximum + 4) / 5);
+    Ok(reserved.saturating_add(4_999) / 5_000 * 5_000)
 }
 
 fn validate_id(value: &str, field: &str) -> Result<(), String> {
@@ -1544,6 +3360,7 @@ mod tests {
             hideout_venue: "market".into(),
             replay: vec![],
             outcome: None,
+            economy: Default::default(),
         }
     }
 
@@ -1562,6 +3379,14 @@ mod tests {
             translate_command_stub(ClientCommand::Wait { minutes: 0 }),
             Err(_)
         ));
+    }
+    #[test]
+    fn weekly_schedule_uses_monday_seven_wat_boundaries() {
+        let (start, end) = weekly_window(1_767_592_800);
+        assert_eq!(start, 1_767_592_800);
+        assert_eq!(end, 1_768_197_600);
+        let (previous, _) = weekly_window(start - 1);
+        assert_eq!(previous, start - 604_800);
     }
     fn translate_command_stub(command: ClientCommand) -> Result<(), String> {
         match command {
@@ -1635,7 +3460,95 @@ mod tests {
         .unwrap();
         assert_eq!(request.expected_version, 7);
         assert!(
-            matches!(request.command, ClientCommand::Travel { destination } if destination == "Kano")
+            matches!(request.command, ClientCommand::Travel { destination, .. } if destination == "Kano")
+        );
+    }
+
+    #[test]
+    fn all_catalogue_missions_pass_budget_and_transport_strategy_simulation() {
+        let root = FsPath::new(env!("CARGO_MANIFEST_DIR")).join("../../..");
+        let catalogue = Catalogue::load(&root).unwrap();
+        let mut tier_usage = std::collections::BTreeMap::<u32, usize>::new();
+        assert_eq!(catalogue.missions.len(), 1_000);
+        for mission in catalogue.missions.values() {
+            let baseline = mission_budget_baseline(&catalogue, mission).unwrap();
+            let budget = opening_budget_for(&catalogue, mission).unwrap();
+            assert!(budget >= baseline.saturating_mul(120).div_ceil(100));
+            assert_eq!(budget % 5_000, 0);
+            *tier_usage.entry(budget).or_default() += 1;
+
+            let route = catalogue.route(mission).unwrap();
+            let mut mixed_cost = 0u32;
+            for pair in route.windows(2) {
+                let base = catalogue.travel[&(pair[0].clone(), pair[1].clone())].travel_minutes;
+                mixed_cost = mixed_cost
+                    .saturating_add(naijachase_core::interstate_quote(base, "drive").unwrap().1);
+                assert_eq!(
+                    naijachase_core::interstate_quote(base, "hitch_ride")
+                        .unwrap()
+                        .1,
+                    0
+                );
+            }
+            assert!(mixed_cost <= budget);
+
+            let origin = &route[0];
+            if let Some((_, edge)) = catalogue
+                .travel
+                .iter()
+                .find(|((from, destination), _)| from == origin && destination != &route[1])
+            {
+                let wrong_turn_cost = naijachase_core::interstate_quote(edge.travel_minutes, "fly")
+                    .unwrap()
+                    .1;
+                assert!(wrong_turn_cost > 0 && wrong_turn_cost < budget);
+            }
+        }
+        assert!(tier_usage.values().all(|uses| *uses > 1));
+        assert!(tier_usage.len() <= 5);
+    }
+
+    #[test]
+    fn complete_catalogue_pressure_assignment_is_deterministic_and_optional() {
+        let root = FsPath::new(env!("CARGO_MANIFEST_DIR")).join("../../..");
+        let catalogue = Catalogue::load(&root).unwrap();
+        let mut assigned = 0usize;
+        for mission in catalogue.missions.values() {
+            let route = catalogue.route(mission).unwrap();
+            let game = GameState {
+                version: 1,
+                mission_id: mission.mission_id.clone(),
+                thief_id: mission.thief_id.clone(),
+                difficulty: mission.difficulty,
+                stage: 0,
+                state: route[0].clone(),
+                route,
+                elapsed: 0,
+                score: 0,
+                career_points: 0,
+                dossier: Default::default(),
+                observations: Default::default(),
+                visited_venues: vec![],
+                warrant_suspect: None,
+                hideout_venue: String::new(),
+                replay: vec![],
+                outcome: None,
+                economy: Default::default(),
+            };
+            let mut venues = available_venue_ids(&catalogue, &game);
+            venues.sort();
+            assert_eq!(venues.len(), 3);
+            let first = pressure_assignment(&mission.mission_id, &game, &venues);
+            let second = pressure_assignment(&mission.mission_id, &game, &venues);
+            assert_eq!(first, second);
+            if let Some(venue) = first {
+                assert!(venues.contains(&venue));
+                assigned += 1;
+            }
+        }
+        assert!(
+            (580..=720).contains(&assigned),
+            "65% assignment drifted to {assigned}/1000"
         );
     }
 
@@ -1647,6 +3560,49 @@ mod tests {
         }
         assert!(!limiter.allow("player-9999", 1));
         assert!(limiter.allow("new-player", 1));
+    }
+
+    #[test]
+    fn procedural_avatar_catalogue_is_stable_complete_and_renderer_safe() {
+        let ids = AVATAR_PRESETS
+            .iter()
+            .map(|preset| preset.avatar_id)
+            .collect::<std::collections::BTreeSet<_>>();
+        assert_eq!(AVATAR_PRESETS.len(), 10);
+        assert_eq!(ids.len(), 10);
+        assert_eq!(
+            AVATAR_PRESETS
+                .iter()
+                .filter(|p| p.presentation == "feminine")
+                .count(),
+            5
+        );
+        assert_eq!(
+            AVATAR_PRESETS
+                .iter()
+                .filter(|p| p.presentation == "masculine")
+                .count(),
+            5
+        );
+        for preset in AVATAR_PRESETS {
+            for colour in [
+                preset.skin_color,
+                preset.hair_color,
+                preset.uniform_primary,
+                preset.uniform_secondary,
+                preset.uniform_accent,
+            ] {
+                assert_eq!(colour.len(), 7);
+                assert!(colour.starts_with('#'));
+                assert!(
+                    colour[1..]
+                        .chars()
+                        .all(|character| character.is_ascii_hexdigit())
+                );
+            }
+            assert_eq!(avatar_preset(preset.avatar_id), Some(preset));
+        }
+        assert_eq!(avatar_preset("client-invented-avatar"), None);
     }
 
     #[test]
@@ -1663,10 +3619,55 @@ mod tests {
             "/v1/auth/recovery/request",
             "/v1/auth/recovery/complete",
             "/v1/profile",
+            "/v1/avatar/options",
+            "/v1/profile/avatar",
             "/v1/progression/summary",
             "/v1/progression/archive",
             "/v1/progression/achievements",
+            "/v1/cooperation/preferences",
+            "/v1/cooperation/requests",
+            "/v1/cooperation/requests/{request_id}/accept",
+            "/v1/cooperation/requests/{request_id}/decline",
+            "/v1/cooperation/requests/{request_id}/complete",
+            "/v1/cooperation/requests/{request_id}/acknowledge",
+            "/v1/cooperation/blocks",
+            "/v1/cooperation/blocks/{player_id}",
+            "/v1/cooperation/reports",
+            "/v1/cooperation/reputation",
+            "/v1/groups",
+            "/v1/groups/{group_id}",
+            "/v1/groups/{group_id}/delete",
+            "/v1/groups/{group_id}/members",
+            "/v1/groups/{group_id}/invitations",
+            "/v1/groups/invitations/{invitation_id}",
+            "/v1/group-invitations",
+            "/v1/groups/{group_id}/leave",
+            "/v1/groups/{group_id}/transfer-ownership",
+            "/v1/groups/{group_id}/weekly/current",
+            "/v1/weekly/{challenge_id}/attempt",
+            "/v1/weekly/attempts/{attempt_id}",
+            "/v1/weekly/attempts/{attempt_id}/commands",
+            "/v1/weekly/{challenge_id}",
+            "/v1/weekly/{challenge_id}/events",
+            "/v1/weekly/{challenge_id}/cancel",
+            "/v1/weekly/history",
+            "/v1/weekly/notifications",
             "/v1/cases",
+            "/v1/cases/catalogue-status",
+            "/v1/cases/catalogue-notifications",
+            "/v1/cases/{case_id}/transport-quotes",
+            "/v1/cases/{case_id}/ledger",
+            "/v1/cases/{case_id}/pressure",
+            "/v1/economy/bribe-tokens",
+            "/v1/economy/bribe-tokens/ledger",
+            "/v1/discipline",
+            "/v1/discipline/jail",
+            "/v1/discipline/{disciplinary_case_id}/acknowledge",
+            "/v1/admin/catalogue/health",
+            "/v1/admin/catalogue/me",
+            "/v1/admin/catalogue/missions/{mission_id}",
+            "/v1/admin/catalogue/missions/{mission_id}/validation",
+            "/v1/admin/catalogue/missions/{mission_id}/transition",
             "/v1/cases/{case_id}",
             "/v1/cases/{case_id}/commands",
         ] {
@@ -1679,6 +3680,17 @@ mod tests {
             "ProgressionSummary",
             "CaseArchiveEntry",
             "RecoveryCompleteRequest",
+            "CatalogueHealth",
+            "MissionValidation",
+            "MissionTransitionRequest",
+            "CooperationPreferences",
+            "CooperationRequest",
+            "PressureWitnessRequest",
+            "PressureResult",
+            "DisciplinaryCase",
+            "TokenBalance",
+            "TokenLedgerEntry",
+            "JailStatus",
         ] {
             assert!(
                 generated.contains(&format!("type {type_name}=")),

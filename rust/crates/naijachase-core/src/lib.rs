@@ -1,4 +1,4 @@
-use naijachase_contracts::{Command, Event, GameState};
+use naijachase_contracts::{Command, Event, GameState, TransportLedgerEntry};
 use std::collections::BTreeMap;
 use thiserror::Error;
 #[derive(Debug, Error, PartialEq)]
@@ -33,6 +33,58 @@ pub fn investigation_minutes(base_minutes: u32, is_home_base: bool) -> u32 {
         base_minutes
     }
 }
+pub const TRANSPORT_RULES_VERSION: u16 = 1;
+pub fn interstate_quote(base_minutes: u32, mode: &str) -> Result<(u32, u32), Error> {
+    match mode {
+        "fly" => Ok((
+            base_minutes,
+            (800u32).saturating_add(base_minutes.saturating_mul(8)),
+        )),
+        "drive" => Ok((
+            base_minutes.saturating_mul(3),
+            (250u32).saturating_add(base_minutes.saturating_mul(3)),
+        )),
+        "hitch_ride" => Ok((base_minutes.saturating_mul(5), 0)),
+        _ => Err(Error::Invalid("invalid interstate transport mode".into())),
+    }
+}
+pub fn local_quote(base_minutes: u32, mode: &str) -> Result<(u32, u32), Error> {
+    match mode {
+        "drive" => Ok((
+            base_minutes.max(5),
+            (100u32).saturating_add(base_minutes.saturating_mul(4)),
+        )),
+        "hitch_ride" => Ok((base_minutes.saturating_mul(2).saturating_add(20), 0)),
+        _ => Err(Error::Invalid("invalid local transport mode".into())),
+    }
+}
+fn charge_transport(
+    state: &mut GameState,
+    kind: &str,
+    destination: &str,
+    mode: &str,
+    cost: u32,
+    minutes: u32,
+) -> Result<(), Error> {
+    if cost > state.economy.balance {
+        return Err(Error::Invalid(
+            "insufficient case budget; hitch a ride instead".into(),
+        ));
+    }
+    let origin = state.state.clone();
+    state.economy.balance -= cost;
+    state.economy.ledger.push(TransportLedgerEntry {
+        sequence: state.economy.ledger.len() as u32 + 1,
+        kind: kind.into(),
+        origin,
+        destination: destination.into(),
+        mode: mode.into(),
+        cost,
+        minutes,
+        balance_after: state.economy.balance,
+    });
+    Ok(())
+}
 pub fn apply(mut state: GameState, command: Command) -> Result<(GameState, Vec<Event>), Error> {
     if state.elapsed >= 10080 || state.outcome.as_deref() == Some("deadline") {
         state.outcome = Some("deadline".into());
@@ -64,6 +116,41 @@ pub fn apply(mut state: GameState, command: Command) -> Result<(GameState, Vec<E
                     .entry(trait_name.clone())
                     .or_insert(trait_value.clone());
             }
+            "witness_interviewed"
+        }
+        Command::VisitVenueBy {
+            venue_id,
+            trait_name,
+            trait_value,
+            mode,
+            travel_minutes,
+            wait_minutes,
+            interview_minutes,
+            cost,
+        } => {
+            let visit_key = format!("{}|{}|{}", state.stage, state.state, venue_id);
+            if state.visited_venues.contains(&visit_key) {
+                return Err(Error::Invalid(
+                    "venue already questioned at this stop".into(),
+                ));
+            }
+            let total = travel_minutes
+                .saturating_add(*wait_minutes)
+                .saturating_add(*interview_minutes);
+            charge_transport(&mut state, "local_venue", venue_id, mode, *cost, total)?;
+            state.elapsed = state.elapsed.saturating_add(total);
+            state.visited_venues.push(visit_key);
+            if !trait_name.is_empty() {
+                state
+                    .observations
+                    .entry(trait_name.clone())
+                    .or_insert(trait_value.clone());
+            }
+            data.insert("mode".into(), mode.clone());
+            data.insert("cost".into(), cost.to_string());
+            data.insert("travel_minutes".into(), travel_minutes.to_string());
+            data.insert("wait_minutes".into(), wait_minutes.to_string());
+            data.insert("balance".into(), state.economy.balance.to_string());
             "witness_interviewed"
         }
         Command::Wait { minutes } => {
@@ -110,6 +197,50 @@ pub fn apply(mut state: GameState, command: Command) -> Result<(GameState, Vec<E
             }
             state.elapsed += minutes;
             state.state = destination.clone();
+            let final_stage = state.route.len().saturating_sub(1);
+            let correct = (state.stage as usize) < final_stage
+                && state.route.get(state.stage as usize + 1) == Some(destination);
+            if correct {
+                state.stage += 1;
+                state.score += 50 + 10 * state.difficulty as u32;
+                "arrived_on_trail"
+            } else {
+                state.score = state
+                    .score
+                    .saturating_sub(75 + 25 * state.difficulty as u32);
+                "false_destination"
+            }
+        }
+        Command::TravelBy {
+            destination,
+            mode,
+            minutes,
+            cost,
+        } => {
+            const PROFILE_FIELDS: [&str; 8] = [
+                "sex",
+                "height",
+                "skin_tone",
+                "hair",
+                "hobby",
+                "vehicle",
+                "accessory",
+                "feature",
+            ];
+            let key_witness_found = PROFILE_FIELDS
+                .get(state.stage as usize)
+                .is_some_and(|field| state.observations.contains_key(*field));
+            if !key_witness_found {
+                return Err(Error::Invalid(
+                    "find the key witness's dossier hint before travelling".into(),
+                ));
+            }
+            charge_transport(&mut state, "interstate", destination, mode, *cost, *minutes)?;
+            state.elapsed = state.elapsed.saturating_add(*minutes);
+            state.state = destination.clone();
+            data.insert("mode".into(), mode.clone());
+            data.insert("cost".into(), cost.to_string());
+            data.insert("balance".into(), state.economy.balance.to_string());
             let final_stage = state.route.len().saturating_sub(1);
             let correct = (state.stage as usize) < final_stage
                 && state.route.get(state.stage as usize + 1) == Some(destination);
@@ -188,7 +319,60 @@ pub fn apply(mut state: GameState, command: Command) -> Result<(GameState, Vec<E
             } else {
                 let old = rank(state.career_points).to_string();
                 let award = state.score
-                    + (10080 - state.elapsed).saturating_div(60) * (2 + state.difficulty as u32);
+                    + 10080u32.saturating_sub(state.elapsed).saturating_div(60)
+                        * (2 + state.difficulty as u32);
+                state.career_points += award;
+                state.outcome = Some("solved".into());
+                data.insert("award".into(), award.to_string());
+                data.insert("old_rank".into(), old);
+                data.insert("new_rank".into(), rank(state.career_points).into());
+                "arrested"
+            }
+        }
+        Command::SearchHideoutBy {
+            venue_id,
+            mode,
+            travel_minutes,
+            search_minutes,
+            cost,
+        } => {
+            if state.stage as usize != state.route.len().saturating_sub(1) {
+                return Err(Error::Invalid(
+                    "suspect search is only available at the final stop".into(),
+                ));
+            }
+            let visit_prefix = format!("{}|{}|", state.stage, state.state);
+            if state
+                .visited_venues
+                .iter()
+                .filter(|key| key.starts_with(&visit_prefix))
+                .count()
+                < 3
+            {
+                return Err(Error::Invalid(
+                    "question all three local witnesses before searching".into(),
+                ));
+            }
+            let total = travel_minutes.saturating_add(*search_minutes);
+            charge_transport(&mut state, "apprehension", venue_id, mode, *cost, total)?;
+            state.elapsed = state.elapsed.saturating_add(total);
+            data.insert("venue_id".into(), venue_id.clone());
+            data.insert("mode".into(), mode.clone());
+            data.insert("cost".into(), cost.to_string());
+            data.insert("balance".into(), state.economy.balance.to_string());
+            if venue_id != &state.hideout_venue {
+                "hideout_empty"
+            } else if state.warrant_suspect.is_none() {
+                state.outcome = Some("escaped_no_warrant".into());
+                "suspect_found_without_warrant"
+            } else if state.warrant_suspect.as_deref() != Some(state.thief_id.as_str()) {
+                state.outcome = Some("escaped".into());
+                "wrong_warrant"
+            } else {
+                let old = rank(state.career_points).to_string();
+                let award = state.score
+                    + 10080u32.saturating_sub(state.elapsed).saturating_div(60)
+                        * (2 + state.difficulty as u32);
                 state.career_points += award;
                 state.outcome = Some("solved".into());
                 data.insert("award".into(), award.to_string());
@@ -240,6 +424,7 @@ mod tests {
             hideout_venue: "market".into(),
             replay: vec![],
             outcome: None,
+            economy: Default::default(),
         }
     }
 
@@ -248,6 +433,75 @@ mod tests {
         assert_eq!(investigation_minutes(60, false), 60);
         assert_eq!(investigation_minutes(60, true), 48);
         assert_eq!(investigation_minutes(5, true), 1);
+    }
+
+    #[test]
+    fn transport_fares_and_durations_have_the_required_order() {
+        for base in 1..=1_000 {
+            let (fly_minutes, fly_cost) = interstate_quote(base, "fly").unwrap();
+            let (drive_minutes, drive_cost) = interstate_quote(base, "drive").unwrap();
+            let (hitch_minutes, hitch_cost) = interstate_quote(base, "hitch_ride").unwrap();
+            assert!(fly_minutes < drive_minutes && drive_minutes < hitch_minutes);
+            assert!(fly_cost > drive_cost && drive_cost > hitch_cost);
+            assert_eq!(hitch_cost, 0);
+            let (local_drive_minutes, local_drive_cost) = local_quote(base, "drive").unwrap();
+            let (local_hitch_minutes, local_hitch_cost) = local_quote(base, "hitch_ride").unwrap();
+            assert!(local_drive_minutes < local_hitch_minutes);
+            assert!(local_drive_cost > local_hitch_cost);
+            assert_eq!(local_hitch_cost, 0);
+        }
+    }
+
+    #[test]
+    fn zero_balance_rejects_paid_travel_but_preserves_free_hitching() {
+        let mut s = state();
+        s.economy.rules_version = TRANSPORT_RULES_VERSION;
+        let paid = Command::TravelBy {
+            destination: "Kano".into(),
+            mode: "fly".into(),
+            minutes: 90,
+            cost: 1_520,
+        };
+        assert_eq!(
+            apply(s.clone(), paid).unwrap_err(),
+            Error::Invalid("insufficient case budget; hitch a ride instead".into())
+        );
+        let (after, events) = apply(
+            s,
+            Command::TravelBy {
+                destination: "Kano".into(),
+                mode: "hitch_ride".into(),
+                minutes: 450,
+                cost: 0,
+            },
+        )
+        .unwrap();
+        assert_eq!(after.state, "Kano");
+        assert_eq!(after.economy.balance, 0);
+        assert_eq!(after.economy.ledger.len(), 1);
+        assert_eq!(events[0].data["mode"], "hitch_ride");
+    }
+
+    #[test]
+    fn a_local_fare_is_debited_once_and_recorded() {
+        let mut s = state();
+        s.visited_venues.clear();
+        s.economy.opening_budget = 1_000;
+        s.economy.balance = 1_000;
+        let command = Command::VisitVenueBy {
+            venue_id: "market".into(),
+            trait_name: "sex".into(),
+            trait_value: "male".into(),
+            mode: "drive".into(),
+            travel_minutes: 10,
+            wait_minutes: 0,
+            interview_minutes: 20,
+            cost: 140,
+        };
+        let (after, _) = apply(s, command).unwrap();
+        assert_eq!(after.economy.balance, 860);
+        assert_eq!(after.economy.ledger[0].cost, 140);
+        assert_eq!(after.economy.ledger[0].balance_after, 860);
     }
     #[test]
     fn deterministic() {

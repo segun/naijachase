@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
+pub mod economy;
 pub const CONTRACT_VERSION: u16 = 1;
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 #[serde(tag = "type", rename_all = "snake_case")]
@@ -14,6 +15,16 @@ pub enum Command {
         trait_value: String,
         minutes: u32,
     },
+    VisitVenueBy {
+        venue_id: String,
+        trait_name: String,
+        trait_value: String,
+        mode: String,
+        travel_minutes: u32,
+        wait_minutes: u32,
+        interview_minutes: u32,
+        cost: u32,
+    },
     Wait {
         minutes: u32,
     },
@@ -25,6 +36,12 @@ pub enum Command {
         destination: String,
         minutes: u32,
     },
+    TravelBy {
+        destination: String,
+        mode: String,
+        minutes: u32,
+        cost: u32,
+    },
     RequestWarrant {
         suspect_id: Option<String>,
     },
@@ -35,11 +52,36 @@ pub enum Command {
         venue_id: String,
         minutes: u32,
     },
+    SearchHideoutBy {
+        venue_id: String,
+        mode: String,
+        travel_minutes: u32,
+        search_minutes: u32,
+        cost: u32,
+    },
 }
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub struct Event {
     pub event_type: String,
     pub data: BTreeMap<String, String>,
+}
+#[derive(Clone, Debug, Default, Serialize, Deserialize, PartialEq)]
+pub struct TransportLedgerEntry {
+    pub sequence: u32,
+    pub kind: String,
+    pub origin: String,
+    pub destination: String,
+    pub mode: String,
+    pub cost: u32,
+    pub minutes: u32,
+    pub balance_after: u32,
+}
+#[derive(Clone, Debug, Default, Serialize, Deserialize, PartialEq)]
+pub struct CaseEconomy {
+    pub rules_version: u16,
+    pub opening_budget: u32,
+    pub balance: u32,
+    pub ledger: Vec<TransportLedgerEntry>,
 }
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub struct GameState {
@@ -63,6 +105,8 @@ pub struct GameState {
     pub hideout_venue: String,
     pub replay: Vec<Command>,
     pub outcome: Option<String>,
+    #[serde(default)]
+    pub economy: CaseEconomy,
 }
 pub fn migrate_legacy_state(
     value: &serde_json::Value,
@@ -106,5 +150,6 @@ pub fn migrate_legacy_state(
         hideout_venue: String::new(),
         replay: vec![],
         outcome: None,
+        economy: CaseEconomy::default(),
     })
 }

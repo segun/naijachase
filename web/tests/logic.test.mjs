@@ -39,16 +39,31 @@ test("case clock mirrors the seven day deadline", () => {
   assert.equal(model.dayPart(2), "night");
 });
 
-test("mission helpers pick unplayed cases without hard-coded lists", () => {
-  assert.equal(model.missionId(7), "NG-M0007");
-  assert.equal(model.missionNumber("NG-M0042"), 42);
-  assert.equal(model.missionNumber("bogus"), null);
-  assert.equal(model.unplayedMissions([]).length, model.MISSION_COUNT);
-  assert.equal(model.nextMission([]), "NG-M0001");
-  assert.equal(model.nextMission(["NG-M0001", "NG-M0002"]), "NG-M0003");
-  assert.equal(model.randomMission(["NG-M0001"], () => 0), "NG-M0002");
-  assert.equal(model.randomMission(["NG-M0001"], () => 0.999999), "NG-M1000");
-  assert.equal(model.randomMission(model.unplayedMissions([]).map(String)), null);
+test("the browser no longer selects missions, ids or seeds", () => {
+  for (const gone of ["MISSION_COUNT", "missionId", "missionNumber", "unplayedMissions", "nextMission", "randomMission"]) assert.equal(model[gone], undefined, gone);
+});
+
+test("replay is offered once per solved mission, on the original rewarding solve", () => {
+  const e = (case_id, mission_id, outcome, first_completion, attempt_kind = "ordinary") => ({ case_id, mission_id, outcome, first_completion, attempt_kind });
+  const archive = [
+    e("r1", "NG-M0007", "solved", false, "replay"),
+    e("a", "NG-M0007", "solved", true),
+    e("f", "NG-M0009", "escaped", false),
+    e("b", "NG-M0011", "solved", true),
+    e("r2", "NG-M0011", "solved", false, "replay")
+  ];
+  assert.deepEqual([...model.replayTargets(archive)].sort(), ["a", "b"]);
+  assert.deepEqual([...model.replayTargets([e("f", "NG-M0009", "escaped", false)])], [], "failed missions cannot be replayed");
+  assert.deepEqual([...model.replayTargets([e("only", "NG-M0001", "solved", false, "replay")])], ["only"], "falls back when no original solve is listed");
+  assert.deepEqual([...model.replayTargets([])], []);
+  assert.equal(model.isSolved({ outcome: "solved" }), true);
+  assert.equal(model.ATTEMPT_LABEL.replay, "Replay");
+});
+
+test("catalogue progress is displayed from server values, never assumed", () => {
+  assert.deepEqual(model.catalogueView({ published_cases: 1000, completed_cases: 27, unseen_cases: 973, exhausted: false }), { published: 1000, completed: 27, unseen: 973, exhausted: false, percent: 3 });
+  assert.equal(model.catalogueView({ published_cases: 1250, completed_cases: 1250, unseen_cases: 0, exhausted: true }).percent, 100);
+  assert.equal(model.catalogueView({ published_cases: 0, completed_cases: 0, unseen_cases: 0, exhausted: false }).percent, 0);
 });
 
 test("durations and ratios are display-only helpers", () => {

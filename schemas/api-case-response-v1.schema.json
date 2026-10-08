@@ -3,13 +3,14 @@
   "$id": "https://naijachase.example/schemas/api-case-response-v1",
   "title": "Naija Chase API case response v1",
   "type": "object",
-  "required": ["api_version", "case_id", "state_version", "duplicate", "state", "events"],
+  "required": ["api_version", "case_id", "state_version", "duplicate", "attempt_kind", "state", "events"],
   "properties": {
     "api_version": {"const": "v1"},
     "case_id": {"type": "string"},
     "state_version": {"type": "integer", "minimum": 1},
     "duplicate": {"type": "boolean"},
-    "state": {"type": "object"},
+    "attempt_kind": {"enum": ["ordinary", "replay", "weekly"]},
+    "state": {"type":"object","required":["opening_budget","balance","transport_rules_version"],"properties":{"opening_budget":{"type":"integer","minimum":0},"balance":{"type":"integer","minimum":0},"transport_rules_version":{"type":"integer","minimum":1}}},
     "events": {"type": "array"}
   },
   "additionalProperties": false
