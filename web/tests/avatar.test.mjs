@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { spawn } from "node:child_process";
-import * as av from "../src/lib/avatar-model.ts";
+import * as av from "../src/avatar/avatar-model.ts";
 
 const root = new URL("../", import.meta.url);
 const read = p => fs.readFileSync(new URL(p, root), "utf8");
@@ -80,18 +80,18 @@ test("weak, metered or data-saving devices get the silhouette; reduced motion st
 });
 
 test("the picker follows the P3.7.4 handoff: no models, no appearance fields, server IDs only", () => {
-  const picker = read("src/components/AvatarPicker.svelte");
-  const renderer = read("src/lib/avatar3d.ts");
+  const picker = read("src/avatar/AvatarPicker.svelte");
+  const renderer = read("src/avatar/avatar3d.ts");
   assert.doesNotMatch(picker + renderer, /\.(glb|gltf)|SceneLoader|ImportMesh|AppendAsync|LoadAssetContainer/i);
-  assert.match(picker, /import\("\.\.\/lib\/avatar3d\.ts"\)/);
+  assert.match(picker, /import\("\.\/avatar3d\.ts"\)/);
   assert.doesNotMatch(picker, /^\s*import\s+[^\n]*avatar3d/m);
-  assert.match(read("src/api.ts"), /\{ avatar_id: avatarId \} satisfies AvatarSelectionRequest/);
+  assert.match(read("src/api/api.ts"), /\{ avatar_id: avatarId \} satisfies AvatarSelectionRequest/);
   assert.match(picker, /type="radio"/);
   assert.match(picker, /role="alert"/);
   // The generic profile endpoint rejects avatar fields, so Settings must not echo them back.
-  assert.doesNotMatch(read("src/components/Settings.svelte"), /avatar_id|uniform_id/);
+  assert.doesNotMatch(read("src/screens/account/Settings.svelte"), /avatar_id|uniform_id/);
   // Only a server-confirmed setup lets the player past the picker.
-  assert.match(read("src/lib/app.svelte.ts"), /!out\.setup_complete/);
+  assert.match(read("src/state/app.svelte.ts"), /!out\.setup_complete/);
   assert.match(read("src/App.svelte"), /app\.signedIn && app\.needsAvatar/);
 });
 

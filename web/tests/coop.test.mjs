@@ -1,7 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import * as m from "../src/model.ts";
+import * as m from "../src/domain/model.ts";
+import { component, components, allComponents } from "./helpers.mjs";
 
 const read = p => fs.readFileSync(new URL(`../src/${p}`, import.meta.url), "utf8");
 const openapi = JSON.parse(fs.readFileSync(new URL("../../schemas/openapi-v1.json", import.meta.url), "utf8"));
@@ -54,7 +55,7 @@ test("waiting work sorts first and expiry reads naturally", () => {
 });
 
 test("the privacy rules of the handoff are built into the screens", () => {
-  const ui = ["Helpers", "AskForHelp"].map(n => read(`components/${n}.svelte`)).join("\n");
+  const ui = components(["Helpers", "AskForHelp"]);
   assert.doesNotMatch(ui, /\{@html/, "recommendations are untrusted text and never rendered as HTML");
   assert.doesNotMatch(ui, /type="search"|navigator\.geolocation|lastSeen|last_seen|is_online|isOnline/, "no player search, presence or location features");
   assert.match(ui, /no online status/i, "the screen tells players there is none");
@@ -68,9 +69,9 @@ test("the privacy rules of the handoff are built into the screens", () => {
 });
 
 test("help is offered on ordinary cases only, and server state is reloaded after every mutation", () => {
-  assert.match(read("components/Investigate.svelte"), /attempt_kind === "ordinary"/);
-  assert.match(read("components/Investigate.svelte"), /cooperationAvailable\(app\.coop\.prefs\) && app\.coop\.prefs\?\.enabled/);
-  const app = read("lib/app.svelte.ts");
+  assert.match(read("screens/case/Investigate.svelte"), /attempt_kind === "ordinary"/);
+  assert.match(read("screens/case/Investigate.svelte"), /cooperationAvailable\(app\.coop\.prefs\) && app\.coop\.prefs\?\.enabled/);
+  const app = read("state/app.svelte.ts");
   assert.match(app, /await this\.loadCoop\(\);\n\s+if \(ok\) this\.toast/, "list is refreshed whether the call succeeded or not");
   assert.match(app, /command_id: crypto\.randomUUID\(\)/, "a fresh command id per request");
   assert.match(app, /prefs\.age_assurance_status !== "adult"/, "no requests are made for non-adult accounts");
@@ -78,7 +79,7 @@ test("help is offered on ordinary cases only, and server state is reloaded after
 
 test("every cooperation endpoint exists in the contract", () => {
   const known = Object.keys(openapi.paths).map(p => p.replace(/\{[^}]+\}/g, "{id}"));
-  const api = read("api.ts");
+  const api = read("api/api.ts");
   for (const needle of ["coopAccept", "coopDecline", "coopAcknowledge", "coopComplete", "askForHelp", "blocks =", "unblock", "report =", "reputation", "setCoopPreferences"]) assert.ok(api.includes(needle), needle);
   for (const p of ["/v1/cooperation/preferences", "/v1/cooperation/requests", "/v1/cooperation/blocks", "/v1/cooperation/reports", "/v1/cooperation/reputation", "/v1/cooperation/requests/{id}/accept", "/v1/cooperation/requests/{id}/decline", "/v1/cooperation/requests/{id}/complete", "/v1/cooperation/requests/{id}/acknowledge", "/v1/cooperation/blocks/{id}"]) assert.ok(known.includes(p), p);
 });

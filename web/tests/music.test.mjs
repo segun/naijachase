@@ -1,8 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import * as score from "../src/lib/music-score.ts";
-import { DEFAULT_TRACK_ID, TRACK_INFO, isTrackId } from "../src/lib/music-catalogue.ts";
+import * as score from "../src/music/music-score.ts";
+import { DEFAULT_TRACK_ID, TRACK_INFO, isTrackId } from "../src/music/music-catalogue.ts";
+import { component, components, allComponents } from "./helpers.mjs";
 
 const read = p => fs.readFileSync(new URL(`../src/${p}`, import.meta.url), "utf8");
 const stepsOf = track => Array.from({ length: track.loopSteps }, (_, i) => score.trackStep(track, i));
@@ -82,21 +83,21 @@ test("music starts on the first screen and keeps playing after login", () => {
   const app = read("App.svelte");
   assert.match(app, /music\.setActive\(!app\.booting\)/);
   assert.doesNotMatch(app, /setActive\([^)]*signedIn/);
-  const shell = read("components/Shell.svelte");
+  const shell = read("ui/Shell.svelte");
   assert.match(shell, /\{#if app\.signedIn\}<div class="music-dock"[^>]*><MusicToggle music=\{app\.music\} \/><\/div>\{\/if\}/, "signed-in players keep the controls");
   assert.match(shell, /<div class="music-side"><MusicToggle/, "and so does the side rail");
 });
 
 test("music needs a gesture, is an on/off switch, and lets the player choose a tune", () => {
-  const music = read("lib/music.svelte.ts");
+  const music = read("music/music.svelte.ts");
   assert.match(music, /userActivation/);
   assert.match(music, /"pointerdown"/);
   assert.match(music, /localStorage\.getItem\("nc-music"\) !== "off"/);
   assert.match(music, /toggle\(\)/);
   assert.match(music, /choose\(id: string\)/);
   assert.match(music, /nc-music-track/);
-  for (const screen of ["Landing", "AuthPanel"]) assert.match(read(`components/${screen}.svelte`), /MusicToggle/);
-  const toggle = read("components/MusicToggle.svelte");
+  for (const screen of ["Landing", "AuthPanel"]) assert.match(component(screen), /MusicToggle/);
+  const toggle = read("music/MusicToggle.svelte");
   assert.match(toggle, /aria-pressed/);
   assert.match(toggle, /aria-label="Music"/);
   assert.match(toggle, /aria-expanded/);
@@ -105,7 +106,7 @@ test("music needs a gesture, is an on/off switch, and lets the player choose a t
 });
 
 test("music is synthesised, so no audio files are shipped or downloaded", () => {
-  const all = ["lib/music-engine.ts", "lib/music-score.ts", "lib/music-catalogue.ts", "lib/music.svelte.ts", "components/MusicToggle.svelte"].map(read).join("\n");
+  const all = ["music/music-engine.ts", "music/music-score.ts", "music/music-catalogue.ts", "music/music.svelte.ts", "music/MusicToggle.svelte"].map(read).join("\n");
   assert.doesNotMatch(all, /\.(mp3|ogg|wav|m4a)/i);
   assert.doesNotMatch(all, /new Audio\(|<audio|fetch\(/);
 });
@@ -114,15 +115,15 @@ test("sign-in screens fit the viewport on desktop and the chase scene is decorat
   const css = ["screens.css", "base.css"].map(f => read(`styles/${f}`)).join("\n");
   assert.match(css, /@media \(min-width: 961px\) and \(min-height: 620px\)[\s\S]*\.auth \{[^}]*overflow: hidden/);
   assert.match(css, /\.form-grid/);
-  const scene = read("components/ChaseScene.svelte");
+  const scene = read("scenes/chase/ChaseScene.svelte");
   assert.match(scene, /aria-hidden="true"/);
-  assert.match(read("components/AuthPanel.svelte"), /<ChaseStage \/>/);
-  assert.match(read("components/ChaseStage.svelte"), /<ChaseScene \/>/, "the 2D scene is always the base and the fallback");
+  assert.match(read("screens/entry/AuthPanel.svelte"), /<ChaseStage \/>/);
+  assert.match(read("scenes/chase/ChaseStage.svelte"), /<ChaseScene \/>/, "the 2D scene is always the base and the fallback");
   assert.match(css, /prefers-reduced-motion/);
 });
 
 test("the chase scene shows a team of black-uniformed officers and no speech", () => {
-  const scene = read("components/ChaseScene.svelte");
+  const scene = read("scenes/chase/ChaseScene.svelte");
   const officers = [...scene.matchAll(/\{ cls: "c\d"/g)].length;
   assert.ok(officers >= 3 && officers <= 4, `expected 3-4 officers, found ${officers}`);
   assert.doesNotMatch(scene, /Stop|bubble|<text[^>]*>[A-Za-z]/);

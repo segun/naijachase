@@ -1,7 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import * as m from "../src/model.ts";
+import * as m from "../src/domain/model.ts";
+import { component, components, allComponents } from "./helpers.mjs";
 
 const read = p => fs.readFileSync(new URL(`../src/${p}`, import.meta.url), "utf8");
 const openapi = JSON.parse(fs.readFileSync(new URL("../../schemas/openapi-v1.json", import.meta.url), "utf8"));
@@ -45,7 +46,7 @@ test("reserve alert and unread release notices", () => {
 });
 
 test("player notices are polled on the desk and after login, marked read, and never reveal case data", () => {
-  const app = read("lib/app.svelte.ts"), desk = read("components/CaseDesk.svelte");
+  const app = read("state/app.svelte.ts"), desk = read("scenes/office/CaseDesk.svelte");
   assert.match(app, /loadReleases\(\)/);
   assert.match(app, /void this\.loadReleases\(\);/);
   assert.match(app, /readRelease\(id\)/);
@@ -55,15 +56,15 @@ test("player notices are polled on the desk and after login, marked read, and ne
 });
 
 test("the content dashboard is isolated from the player experience", () => {
-  const app = read("App.svelte"), gate = read("components/ContentGate.svelte"), api = read("api.ts");
+  const app = read("App.svelte"), gate = read("screens/admin/ContentGate.svelte"), api = read("api/api.ts");
   assert.match(gate, /import\("\.\/ContentDashboard\.svelte"\)/, "the dashboard is its own lazy chunk");
   assert.doesNotMatch(app, /ContentDashboard/);
   assert.match(gate, /api\.role\(\)/, "the role is asked of the server, never chosen by the browser");
   assert.match(api, /class ContentApi/);
-  assert.match(read("lib/app.svelte.ts"), /location\.hash === "#\/content"/);
-  const player = ["CaseDesk", "Shell", "Archive", "Investigate", "Settings", "Landing"].map(n => read(`components/${n}.svelte`)).join("\n");
+  assert.match(read("state/app.svelte.ts"), /location\.hash === "#\/content"/);
+  const player = components(["CaseDesk", "Shell", "Archive", "Investigate", "Settings", "Landing"]);
   assert.doesNotMatch(player, /#\/content|admin\/catalogue|ContentApi/, "no player-facing link or call");
-  assert.doesNotMatch(read("lib/app.svelte.ts"), /ContentApi|admin\/catalogue/);
+  assert.doesNotMatch(read("state/app.svelte.ts"), /ContentApi|admin\/catalogue/);
 });
 
 test("every content and notification endpoint exists in the contract", () => {
@@ -72,9 +73,9 @@ test("every content and notification endpoint exists in the contract", () => {
 });
 
 test("session rotation never races other requests", () => {
-  const api = read("api.ts");
+  const api = read("api/api.ts");
   assert.match(api, /let rotation: Promise<unknown>/);
   assert.match(api, /await rotation;/);
   assert.match(api, /rotation\.then\(settled\)/);
-  assert.match(read("lib/app.svelte.ts"), /await this\.api\.refresh\(\)\.catch\(\(\) => undefined\);\n\s+await this\.loadProgression\(\);/);
+  assert.match(read("state/app.svelte.ts"), /await this\.api\.refresh\(\)\.catch\(\(\) => undefined\);\n\s+await this\.loadProgression\(\);/);
 });

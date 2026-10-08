@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import * as motion from "../src/lib/chase-motion.ts";
+import * as motion from "../src/scenes/chase/chase-motion.ts";
 
 const read = p => fs.readFileSync(new URL(`../src/${p}`, import.meta.url), "utf8");
 const samples = Array.from({ length: 200 }, (_, i) => motion.runPose(i * 0.013));
@@ -55,7 +55,7 @@ test("police lights alternate red then blue and never overlap", () => {
 });
 
 test("the 3D scene keeps the officers in black, three of them, and the thief masked with a sack", () => {
-  const code = read("lib/chase3d.ts");
+  const code = read("scenes/chase/chase3d.ts");
   assert.equal([...code.matchAll(/name: "cop-[a-c]"/g)].length, 3);
   assert.doesNotMatch(code, /#1d4fa3|#10285a|#0a1a3d/i, "no ceremonial blue uniforms");
   assert.match(code, /top: "#232a31"/);
@@ -64,9 +64,9 @@ test("the 3D scene keeps the officers in black, three of them, and the thief mas
 });
 
 test("3D is an enhancement: skipped for reduced motion, falls back to 2D, and can be switched off", () => {
-  const stage = read("components/ChaseStage.svelte");
-  assert.match(read("lib/scene-capability.ts"), /prefers-reduced-motion: reduce/);
-  assert.match(read("lib/scene-capability.ts"), /dataset\.motion === "reduced"/);
+  const stage = read("scenes/chase/ChaseStage.svelte");
+  assert.match(read("scenes/shared/scene-capability.ts"), /prefers-reduced-motion: reduce/);
+  assert.match(read("scenes/shared/scene-capability.ts"), /dataset\.motion === "reduced"/);
   assert.match(stage, /\.catch\(\(\) => \{ if \(!cancelled\) failed = true; \}\)/);
   assert.match(stage, /nc-scene/);
   assert.match(stage, /aria-pressed/);

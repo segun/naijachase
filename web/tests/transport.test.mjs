@@ -1,7 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import * as m from "../src/model.ts";
+import * as m from "../src/domain/model.ts";
+import { component, components, allComponents } from "./helpers.mjs";
 
 const read = p => fs.readFileSync(new URL(`../src/${p}`, import.meta.url), "utf8");
 const q = (scope, id, mode, cost, travel, wait = 0, affordable = true) => ({ scope, destination_id: id, label: id[0].toUpperCase() + id.slice(1), mode, cost, travel_minutes: travel, wait_minutes: wait, affordable, rules_version: 1 });
@@ -51,21 +52,21 @@ test("money and ledger rows render without exposing hidden route data", () => {
 });
 
 test("the UI never calculates fares and always submits a server-quoted mode", () => {
-  const ui = ["Investigate", "Travel", "Warrant", "MoveOptions"].map(n => read(`components/${n}.svelte`)).join("\n");
-  assert.match(read("api.ts"), /transport-quotes/);
-  assert.match(read("api.ts"), /\/ledger/);
-  assert.match(read("components/Travel.svelte"), /type: "travel", destination, mode: quote\.mode/);
-  assert.match(read("components/Investigate.svelte"), /type: "visit_venue", venue_id: group\.id, mode:/);
-  assert.match(read("components/Warrant.svelte"), /type: "search_hideout", venue_id: group\.id, mode:/);
+  const ui = components(["Investigate", "Travel", "Warrant", "MoveOptions"]);
+  assert.match(read("api/api.ts"), /transport-quotes/);
+  assert.match(read("api/api.ts"), /\/ledger/);
+  assert.match(read("screens/case/Travel.svelte"), /type: "travel", destination, mode: quote\.mode/);
+  assert.match(read("screens/case/Investigate.svelte"), /type: "visit_venue", venue_id: group\.id, mode:/);
+  assert.match(read("screens/case/Warrant.svelte"), /type: "search_hideout", venue_id: group\.id, mode:/);
   assert.doesNotMatch(ui, /cost\s*[:=]\s*\d|fare\s*=\s*\d|\* 1\.\d/, "no browser-side fare maths");
-  assert.match(read("components/Travel.svelte"), /groupQuotes\(app\.quotes, "interstate"\)/);
-  assert.match(read("components/Warrant.svelte"), /groupQuotes\(app\.quotes, "apprehension"\)/);
-  assert.match(read("components/Investigate.svelte"), /groupQuotes\(app\.quotes, "local"\)/);
-  assert.doesNotMatch(read("model.ts"), /export const VENUES/);
+  assert.match(read("screens/case/Travel.svelte"), /groupQuotes\(app\.quotes, "interstate"\)/);
+  assert.match(read("screens/case/Warrant.svelte"), /groupQuotes\(app\.quotes, "apprehension"\)/);
+  assert.match(read("screens/case/Investigate.svelte"), /groupQuotes\(app\.quotes, "local"\)/);
+  assert.doesNotMatch(read("domain/model.ts"), /export const VENUES/);
 });
 
 test("quotes are refreshed whenever case state changes and are never stale across cases", () => {
-  const app = read("lib/app.svelte.ts");
+  const app = read("state/app.svelte.ts");
   assert.match(app, /async refreshQuotes\(\)/);
   assert.match(app, /if \(id === this\.caseId\) this\.quotes = quotes/);
   assert.match(app, /payload\.type !== "record_trait"/);
@@ -73,7 +74,7 @@ test("quotes are refreshed whenever case state changes and are never stale acros
 });
 
 test("movement needs an accessible confirmation step", () => {
-  const dialog = read("components/MoveDialog.svelte"), opts = read("components/MoveOptions.svelte");
+  const dialog = read("screens/case/MoveDialog.svelte"), opts = read("screens/case/MoveOptions.svelte");
   assert.match(dialog, /showModal\(\)/);
   assert.match(dialog, /aria-labelledby/);
   assert.match(opts, /<fieldset/);

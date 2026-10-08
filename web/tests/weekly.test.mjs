@@ -1,7 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import * as m from "../src/model.ts";
+import * as m from "../src/domain/model.ts";
+import { component, components, allComponents } from "./helpers.mjs";
 
 const read = p => fs.readFileSync(new URL(`../src/${p}`, import.meta.url), "utf8");
 const openapi = JSON.parse(fs.readFileSync(new URL("../../schemas/openapi-v1.json", import.meta.url), "utf8"));
@@ -58,43 +59,43 @@ test("transit replies are recognised and standings put the winner first", () => 
 });
 
 test("eligibility, arrival, closure and winners are never computed in the browser", () => {
-  const ui = ["Weekly", "WeeklyPlay", "Groups"].map(n => read(`components/${n}.svelte`)).join("\n") + read("lib/groups.svelte.ts");
-  assert.match(read("components/Weekly.svelte"), /display aid; the server clock decides/);
+  const ui = components(["Weekly", "WeeklyPlay", "Groups"]) + read("state/groups.svelte.ts");
+  assert.match(read("screens/social/Weekly.svelte"), /display aid; the server clock decides/);
   assert.doesNotMatch(ui, /isWinner\s*=|determineWinner|first to finish|finished_at\s*[<>]|\.sort\([^)]*finished_at/i, "no browser-side winner logic");
   assert.match(ui, /find\(s => s\.attempt_id === g\.details!\.winner_attempt_id\)/, "a winner is only ever looked up from the server's winner_attempt_id");
   assert.match(ui, /g\.details\.winner_attempt_id/, "the winner comes from the server's standings");
   assert.match(ui, /a\.winner/);
-  assert.match(read("lib/groups.svelte.ts"), /remaining_seconds/, "arrival timing is read from the server's transit data");
-  assert.match(read("lib/groups.svelte.ts"), /private schedulePoll\(\)/);
-  assert.match(read("components/WeeklyPlay.svelte"), /animations never speed this up/);
+  assert.match(read("state/groups.svelte.ts"), /remaining_seconds/, "arrival timing is read from the server's transit data");
+  assert.match(read("state/groups.svelte.ts"), /private schedulePoll\(\)/);
+  assert.match(read("screens/social/WeeklyPlay.svelte"), /animations never speed this up/);
 });
 
 test("while travelling no commands are offered, and a stale attempt is reloaded", () => {
-  const play = read("components/WeeklyPlay.svelte"), ctl = read("lib/groups.svelte.ts");
+  const play = read("screens/social/WeeklyPlay.svelte"), ctl = read("state/groups.svelte.ts");
   assert.match(play, /\{#if inTransit && a\.transit\}[\s\S]*?\{:else if over\}[\s\S]*?\{:else\}[\s\S]*?role="group" aria-label="Actions"/);
   assert.match(ctl, /e\.code === "stale_version"/);
   assert.match(ctl, /isTransitReply\(reply\)/);
   assert.match(ctl, /command_id|attemptCommand/);
-  assert.match(read("api.ts"), /crypto\.randomUUID\(\), expected_version: version, command/);
+  assert.match(read("api/api.ts"), /crypto\.randomUUID\(\), expected_version: version, command/);
 });
 
 test("weekly play is independent of the ordinary case and exposes no hidden data", () => {
-  const ui = ["Weekly", "WeeklyPlay", "Groups"].map(n => read(`components/${n}.svelte`)).join("\n");
+  const ui = components(["Weekly", "WeeklyPlay", "Groups"]);
   assert.match(ui, /independent of your ordinary case|carries on in parallel/);
   assert.doesNotMatch(ui, /thief_id|hideout_venue|observations|route:/);
-  assert.doesNotMatch(read("lib/groups.svelte.ts"), /app\.game\b|this\.app\.game|sessionStorage/, "weekly state never touches the ordinary case");
+  assert.doesNotMatch(read("state/groups.svelte.ts"), /app\.game\b|this\.app\.game|sessionStorage/, "weekly state never touches the ordinary case");
 });
 
 test("every group and weekly endpoint exists in the contract", () => {
   const known = Object.keys(openapi.paths).map(p => p.replace(/\{[^}]+\}/g, "{id}"));
-  const api = read("api.ts");
+  const api = read("api/api.ts");
   const urls = [...api.matchAll(/`?"?(\/v1\/(?:groups|group-invitations|weekly)[^"`?]*)/g)].map(x => x[1].replace(/\$\{[^}]+\}/g, "{id}"));
   assert.ok(urls.length >= 20, `found ${urls.length}`);
   for (const u of new Set(urls)) assert.ok(known.includes(u), `${u} is not in the contract`);
 });
 
 test("groups are private: no directory, roster only for members, remembered ids are re-validated", () => {
-  const ctl = read("lib/groups.svelte.ts"), ui = read("components/Groups.svelte");
+  const ctl = read("state/groups.svelte.ts"), ui = read("screens/social/Groups.svelte");
   assert.match(ui, /no public directory/i);
   assert.match(ui, /exact username/i);
   assert.match(ctl, /e\.status === 403 \|\| e\.status === 404/, "forgotten groups are dropped when the server says no");

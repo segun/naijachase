@@ -1,10 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import * as room from "../src/lib/room-scene.ts";
-import * as arch from "../src/lib/archive-scene.ts";
-import * as brief from "../src/lib/briefing.ts";
-import * as venues from "../src/lib/venues.ts";
+import * as room from "../src/scenes/office/room-scene.ts";
+import * as core from "../src/scenes/shared/scene-core.ts";
+import * as arch from "../src/scenes/archive/archive-scene.ts";
+import * as brief from "../src/domain/briefing.ts";
+import * as venues from "../src/domain/venues.ts";
 
 const read = p => fs.readFileSync(new URL(`../src/${p}`, import.meta.url), "utf8");
 const at = hour => new Date(2026, 9, 8, hour, 30);
@@ -20,14 +21,14 @@ test("the greeting follows the local time of day", () => {
 });
 
 test("every hour has a lighting palette and the window sky matches the light", () => {
-  for (let h = 0; h < 24; h++) assert.ok(room.PALETTES[room.lightAt(h)], `hour ${h}`);
-  assert.equal(room.lightAt(9), "morning");
-  assert.equal(room.lightAt(14), "afternoon");
-  assert.equal(room.lightAt(18), "dusk");
-  assert.equal(room.lightAt(22), "night");
-  assert.equal(room.PALETTES.night.stars, true);
-  assert.equal(room.PALETTES.afternoon.lamp, 0, "no desk lamp in full daylight");
-  assert.ok(room.PALETTES.night.lamp > room.PALETTES.morning.lamp);
+  for (let h = 0; h < 24; h++) assert.ok(core.PALETTES[core.lightAt(h)], `hour ${h}`);
+  assert.equal(core.lightAt(9), "morning");
+  assert.equal(core.lightAt(14), "afternoon");
+  assert.equal(core.lightAt(18), "dusk");
+  assert.equal(core.lightAt(22), "night");
+  assert.equal(core.PALETTES.night.stars, true);
+  assert.equal(core.PALETTES.afternoon.lamp, 0, "no desk lamp in full daylight");
+  assert.ok(core.PALETTES.night.lamp > core.PALETTES.morning.lamp);
 });
 
 test("the avatar enters at the door, walks to the desk, sits and ends in the seat", () => {
@@ -42,7 +43,7 @@ test("the avatar enters at the door, walks to the desk, sits and ends in the sea
   assert.ok(Math.abs(Math.cos(seated.heading) + 1) < 1e-6, "seated facing the desk (+z)");
   for (let t = 0; t <= room.T_END; t += 0.05) {
     const p = room.poseAt(t);
-    assert.ok(p.x > room.ROOM.minX && p.x < room.ROOM.maxX && p.z > room.ROOM.minZ && p.z <= room.ROOM.maxZ, `inside the room at ${t.toFixed(2)}s`);
+    assert.ok(p.x > core.ROOM.minX && p.x < core.ROOM.maxX && p.z > core.ROOM.minZ && p.z <= core.ROOM.maxZ, `inside the room at ${t.toFixed(2)}s`);
   }
 });
 
@@ -59,12 +60,12 @@ test("the timeline is ordered and the pieces animate in sequence", () => {
 });
 
 test("walking swings the legs and sitting folds them", () => {
-  const walk = room.legAngles({ ...room.poseAt(room.T_WALK_START + 1.4), gait: Math.PI / 2 });
+  const walk = core.legAngles({ ...room.poseAt(room.T_WALK_START + 1.4), gait: Math.PI / 2 });
   assert.ok(walk.hips[0] > 0.3 && walk.hips[1] < -0.3, "legs swing in opposition");
-  const sat = room.legAngles(room.poseAt(room.T_END));
+  const sat = core.legAngles(room.poseAt(room.T_END));
   assert.ok(Math.abs(sat.hips[0] - (Math.PI / 2 - 0.04)) < 1e-9, "thighs horizontal");
   assert.ok(Math.abs(sat.hips[0] + sat.knees[0]) < 1e-9, "shins hang straight down");
-  const typing = room.armAngles(room.poseAt(room.T_END), 0);
+  const typing = core.armAngles(room.poseAt(room.T_END), 0);
   assert.ok(typing[0] > 1 && typing[1] > 1, "hands reach forward to the keyboard");
 });
 
@@ -74,12 +75,12 @@ test("the zoom lands exactly on the terminal glass at every viewport", () => {
     const distance = room.SCREEN.z - end.position[2];
     assert.ok(Math.abs(distance - room.zoomDistance(vw, vh)) < 1e-9);
     // The glass is SCREEN.w wide in the world; projected it must equal the terminal glass width in pixels.
-    const pixels = (room.SCREEN.w * (vh / 2 / Math.tan(room.FOV / 2))) / distance;
-    assert.ok(Math.abs(pixels - room.glassWidth(vw, vh)) < 1e-6, `${vw}x${vh}`);
+    const pixels = (room.SCREEN.w * (vh / 2 / Math.tan(core.FOV / 2))) / distance;
+    assert.ok(Math.abs(pixels - core.glassWidth(vw, vh)) < 1e-6, `${vw}x${vh}`);
     assert.deepEqual([...end.target], [room.SCREEN.x, room.SCREEN.y, room.SCREEN.z]);
   }
-  assert.equal(room.glassWidth(390, 844), 390, "portrait phones use the whole screen");
-  assert.ok(room.glassWidth(1440, 900) <= 1440 * 0.88 + 1e-9 && room.glassWidth(1440, 900) / (900 * 0.88) <= 4 / 3 + 1e-9);
+  assert.equal(core.glassWidth(390, 844), 390, "portrait phones use the whole screen");
+  assert.ok(core.glassWidth(1440, 900) <= 1440 * 0.88 + 1e-9 && core.glassWidth(1440, 900) / (900 * 0.88) <= 4 / 3 + 1e-9);
 });
 
 test("the camera dollies in smoothly and the glass fades in only at the end", () => {
@@ -95,11 +96,11 @@ test("the camera dollies in smoothly and the glass fades in only at the end", ()
 });
 
 test("the rooms are lazy, primitive-built enhancements and the screens keep working without them", () => {
-  const stage = read("components/Stage.svelte"), roomView = read("components/Room.svelte"), archiveView = read("components/ArchiveRoom.svelte");
-  const desk = read("components/CaseDesk.svelte"), app = read("App.svelte"), shell = read("components/Shell.svelte");
-  const scenes = ["lib/chase3d-room.ts", "lib/chase3d-archive.ts", "lib/chase3d-stage.ts"].map(read).join("\n");
-  assert.match(roomView, /import\("\.\.\/lib\/chase3d-room\.ts"\)/);
-  assert.match(archiveView, /import\("\.\.\/lib\/chase3d-archive\.ts"\)/);
+  const stage = read("scenes/shared/Stage.svelte"), roomView = read("scenes/office/Room.svelte"), archiveView = read("scenes/archive/ArchiveRoom.svelte");
+  const desk = read("scenes/office/CaseDesk.svelte"), app = read("App.svelte"), shell = read("ui/Shell.svelte");
+  const scenes = ["scenes/office/chase3d-room.ts", "scenes/archive/chase3d-archive.ts", "scenes/shared/chase3d-stage.ts"].map(read).join("\n");
+  assert.match(roomView, /import\("\.\/chase3d-room\.ts"\)/);
+  assert.match(archiveView, /import\("\.\/chase3d-archive\.ts"\)/);
   for (const view of [stage, roomView, archiveView]) assert.doesNotMatch(view, /^\s*import\s+(?!type\b)[^\n]*chase3d/m, "Babylon.js stays out of the main bundle");
   assert.doesNotMatch(scenes, /\.(glb|gltf)|SceneLoader|ImportMesh|AppendAsync|LoadAssetContainer/i);
   assert.doesNotMatch(scenes, /from "@babylonjs\/core"/, "use deep imports so unused features are tree-shaken");
@@ -107,8 +108,8 @@ test("the rooms are lazy, primitive-built enhancements and the screens keep work
   assert.match(stage, /decideScene/, "reduced motion, Save-Data, slow networks and low memory skip the intro");
   assert.match(roomView, /nc-desk/, "the desk intro plays once per sign-in");
   assert.match(archiveView, /nc-archive/, "the archive intro plays once per sign-in");
-  assert.match(app, /import\("\.\/components\/Room\.svelte"\)/, "the room is a lazy chunk: nobody needs it on the sign-in path");
-  assert.match(app, /import\("\.\/components\/ArchiveRoom\.svelte"\)/);
+  assert.match(app, /import\("\.\/scenes\/office\/Room\.svelte"\)/, "the room is a lazy chunk: nobody needs it on the sign-in path");
+  assert.match(app, /import\("\.\/scenes\/archive\/ArchiveRoom\.svelte"\)/);
   assert.doesNotMatch(app, /^\s*import\s+(Room|ArchiveRoom)/m);
   assert.match(shell, /app\.screen !== "cases" && app\.screen !== "archive"/, "the rooms are full-screen: no side rail");
   assert.match(desk, /greeting\(now\)/);
@@ -125,7 +126,7 @@ test("the archive intro: walk in, take the file, turn round and zoom onto it, in
   assert.ok(Math.abs(start.x - arch.DOOR.x) < 0.05 && start.z > arch.DOOR.z - 0.3, "enters at the door");
   for (let t = 0; t <= arch.T_END; t += 0.05) {
     const p = arch.poseAt(t);
-    assert.ok(p.x > room.ROOM.minX && p.x < room.ROOM.maxX && p.z > room.ROOM.minZ && p.z <= room.ROOM.maxZ, `inside the room at ${t.toFixed(2)}s`);
+    assert.ok(p.x > core.ROOM.minX && p.x < core.ROOM.maxX && p.z > core.ROOM.minZ && p.z <= core.ROOM.maxZ, `inside the room at ${t.toFixed(2)}s`);
   }
   const reach = arch.poseAt(arch.T_GRAB - 0.001);
   assert.ok(reach.reach > 0.99 && reach.carry < 0.01, "arm is up at the shelf when the file is taken");
@@ -143,8 +144,8 @@ test("the archive zoom lands exactly on the file's sheet at every viewport", () 
   for (const [vw, vh] of [[1440, 900], [1280, 720], [1024, 768], [390, 844], [844, 390]]) {
     const end = arch.shotAt(arch.T_END, vw, vh);
     const distance = arch.FILE_FINAL.z - end.position[2];
-    const pixels = (arch.FILE.w * (vh / 2 / Math.tan(room.FOV / 2))) / distance;
-    assert.ok(Math.abs(pixels - room.glassWidth(vw, vh)) < 1e-6, `${vw}x${vh}`);
+    const pixels = (arch.FILE.w * (vh / 2 / Math.tan(core.FOV / 2))) / distance;
+    assert.ok(Math.abs(pixels - core.glassWidth(vw, vh)) < 1e-6, `${vw}x${vh}`);
     assert.deepEqual([...end.target], [arch.FILE_FINAL.x, arch.FILE_FINAL.y, arch.FILE_FINAL.z]);
   }
   assert.ok(Math.abs(arch.FILE.w / arch.FILE.h - 4 / 3) < 1e-9, "the file is 4:3 like the sheet");
@@ -201,7 +202,7 @@ test("the dossier types out in a fixed time, label before value, row by row", ()
 
 test("every venue in the game data has its own drawing, copy, and unknown venues still work", () => {
   const csv = fs.readFileSync(new URL("../../data/gameplay/venues.csv", import.meta.url), "utf8").trim().split("\n").slice(1).map(l => l.split(",")[0]);
-  const art = read("components/VenueArt.svelte");
+  const art = read("scenes/office/VenueArt.svelte");
   assert.ok(csv.length >= 30);
   for (const id of csv) {
     assert.ok(venues.hasFlavour(id), `${id} has briefing copy`);
@@ -225,7 +226,7 @@ test("the exit animation: the player stands, walks out of the door and the camer
   assert.ok(Math.abs(last.x - room.DOOR.x) < 0.02 && last.z > room.DOOR.z - 0.2, "ends in the doorway");
   for (let t = 0; t <= room.T_OUT_END; t += 0.05) {
     const p = room.outroPoseAt(t);
-    assert.ok(p.x > room.ROOM.minX && p.x < room.ROOM.maxX && p.z > room.ROOM.minZ && p.z <= room.ROOM.maxZ, `inside the room at ${t.toFixed(2)}s`);
+    assert.ok(p.x > core.ROOM.minX && p.x < core.ROOM.maxX && p.z > core.ROOM.minZ && p.z <= core.ROOM.maxZ, `inside the room at ${t.toFixed(2)}s`);
   }
   assert.equal(room.outroGlassAt(0), 1);
   assert.equal(room.outroGlassAt(room.T_OUT_ZOOM), 0, "the glass is gone before the camera is out");
@@ -237,11 +238,11 @@ test("the exit animation: the player stands, walks out of the door and the camer
 });
 
 test("opening a case shows the briefing on the desk; choosing a lead leaves through the scene and then opens it", () => {
-  const appSrc = read("lib/app.svelte.ts"), desk = read("components/CaseDesk.svelte"), stage = read("components/Stage.svelte"), inv = read("components/Investigate.svelte"), shell = read("components/Shell.svelte");
+  const appSrc = read("state/app.svelte.ts"), desk = read("scenes/office/CaseDesk.svelte"), stage = read("scenes/shared/Stage.svelte"), inv = read("screens/case/Investigate.svelte"), shell = read("ui/Shell.svelte");
   assert.match(appSrc, /this\.briefing = true; this\.pendingLead = "";\s*this\.go\("cases"\)/, "a new case opens on the desk, not the investigation");
   assert.match(appSrc, /finishBriefing\(lead = ""\)/);
   assert.match(desk, /await leave\(\);\s*app\.finishBriefing\(lead\.id\)/, "the exit plays before the investigation opens");
-  assert.match(desk, /Skip briefing/);
+  assert.doesNotMatch(desk, /Skip briefing/, "the briefing has no skip: the dossier is always read");
   assert.doesNotMatch(desk, /setTimeout\(\(\) => \{ step = "leads"/, "the briefing never moves on by itself: the player reads at their own pace");
   assert.match(desk, /step = "leads"; \}\}>/, "an explicit Continue button moves on");
   assert.match(desk, /Take your time/);
@@ -254,7 +255,7 @@ test("opening a case shows the briefing on the desk; choosing a lead leaves thro
   assert.match(shell, /app\.screen !== "cases"\) \|\|?[^\n]*|inCase && app\.screen !== "cases"/, "no case HUD over the desk");
 });
 
-import * as garage from "../src/lib/garage-scene.ts";
+import * as garage from "../src/scenes/garage/garage-scene.ts";
 
 test("the garage: every animation is five seconds or less", () => {
   for (const [name, t] of [["intro", garage.T_END], ["drive", garage.T_DRIVE_END], ["hitch", garage.T_HITCH_END]]) assert.ok(t <= garage.MAX_SECONDS, `${name} is ${t.toFixed(2)}s`);
@@ -269,7 +270,7 @@ test("the garage intro: the player comes through the office door and stops besid
   assert.ok(garage.T_ARRIVE < garage.T_END, "arrives before the options appear");
   for (let t = 0; t <= garage.T_END; t += 0.05) {
     const p = garage.introPoseAt(t);
-    assert.ok(p.x > room.ROOM.minX && p.x < room.ROOM.maxX && p.z > room.ROOM.minZ && p.z <= room.ROOM.maxZ, `inside the garage at ${t.toFixed(2)}s`);
+    assert.ok(p.x > core.ROOM.minX && p.x < core.ROOM.maxX && p.z > core.ROOM.minZ && p.z <= core.ROOM.maxZ, `inside the garage at ${t.toFixed(2)}s`);
   }
   assert.equal(garage.glassAt(0), 0);
   assert.equal(garage.glassAt(garage.T_END), 1, "the transport options are shown by the time the scene settles");
@@ -307,8 +308,8 @@ test("hitching a ride: the player turns, sticks a thumb out and heads for the ro
 });
 
 test("the garage screen offers Drive and Hitch a ride, asks the server first, and only then plays the exit", () => {
-  const view = read("components/GarageRoom.svelte"), appSrc = read("lib/app.svelte.ts"), appView = read("App.svelte"), model = read("model.ts");
-  assert.match(view, /import\("\.\.\/lib\/chase3d-garage\.ts"\)/);
+  const view = read("scenes/garage/GarageRoom.svelte"), appSrc = read("state/app.svelte.ts"), appView = read("App.svelte"), model = read("domain/model.ts");
+  assert.match(view, /import\("\.\/chase3d-garage\.ts"\)/);
   assert.doesNotMatch(view, /^\s*import\s+[^\n]*chase3d/m);
   assert.match(view, /MODE_LABEL\[MODE_FOR\[how\]\]/, "labelled with the server's own mode names");
   assert.match(view, /visit_venue/);
@@ -316,6 +317,6 @@ test("the garage screen offers Drive and Hitch a ride, asks the server first, an
   assert.match(view, /quote\.affordable/, "an unaffordable option cannot be chosen");
   assert.match(view, /missesDeadline/);
   assert.match(appSrc, /leaveGarage\(\)/);
-  assert.match(appView, /import\("\.\/components\/GarageRoom\.svelte"\)/);
+  assert.match(appView, /import\("\.\/scenes\/garage\/GarageRoom\.svelte"\)/);
   assert.match(model, /"garage"/);
 });

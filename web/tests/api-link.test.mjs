@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { spawn } from "node:child_process";
+import { component, components, allComponents } from "./helpers.mjs";
 
 const root = new URL("../", import.meta.url);
 const read = p => fs.readFileSync(new URL(p, root), "utf8");
@@ -9,7 +10,7 @@ const openapi = JSON.parse(fs.readFileSync(new URL("../schemas/openapi-v1.json",
 const contract = fs.readFileSync(new URL("../contracts/typescript/api-v1.ts", root), "utf8");
 
 test("every endpoint the client calls exists in the OpenAPI contract", () => {
-  const api = read("src/api.ts");
+  const api = read("src/api/api.ts");
   const calls = [...api.matchAll(/call<[^(]*>\(`?"?(\/v1\/[^"`?]*)/g)].map(m => m[1].replace(/\$\{[^}]+\}/g, "{id}"));
   assert.ok(calls.length >= 18, `only found ${calls.length} calls`);
   const known = Object.keys(openapi.paths).map(p => p.replace(/\{[^}]+\}/g, "{id}"));
@@ -17,22 +18,22 @@ test("every endpoint the client calls exists in the OpenAPI contract", () => {
 });
 
 test("response and request shapes come from the generated contract, not local copies", () => {
-  assert.match(read("src/api.ts"), /contracts\/typescript\/api-v1\.ts/);
-  assert.match(read("src/model.ts"), /contracts\/typescript\/api-v1\.ts/);
-  assert.doesNotMatch(read("src/model.ts"), /export type (PublicState|CaseResponse)\s*=/);
+  assert.match(read("src/api/api.ts"), /contracts\/typescript\/api-v1\.ts/);
+  assert.match(read("src/domain/model.ts"), /contracts\/typescript\/api-v1\.ts/);
+  assert.doesNotMatch(read("src/domain/model.ts"), /export type (PublicState|CaseResponse)\s*=/);
 });
 
 test("no mission, suspect-rank or progression values are hard-coded in the UI", () => {
-  for (const file of ["components/CaseDesk.svelte", "components/Results.svelte", "components/Shell.svelte", "lib/app.svelte.ts"]) {
+  for (const file of ["scenes/office/CaseDesk.svelte", "screens/case/Results.svelte", "ui/Shell.svelte", "state/app.svelte.ts"]) {
     const text = read(`src/${file}`);
     assert.doesNotMatch(text, /NG-M\d{4}/, `${file} hard-codes a mission`);
     assert.doesNotMatch(text, /Rookie|Master Detective|points >= \d/, `${file} computes rank in the browser`);
   }
-  assert.doesNotMatch(read("src/model.ts"), /Master Detective|Chief Inspector/);
+  assert.doesNotMatch(read("src/domain/model.ts"), /Master Detective|Chief Inspector/);
 });
 
 test("case assignment follows the P3.7.1 handoff", () => {
-  const api = read("src/api.ts"), app = read("src/lib/app.svelte.ts"), desk = read("src/components/CaseDesk.svelte"), archive = read("src/components/Archive.svelte");
+  const api = read("src/api/api.ts"), app = read("src/state/app.svelte.ts"), desk = read("src/scenes/office/CaseDesk.svelte"), archive = read("src/scenes/archive/Archive.svelte");
   assert.match(api, /"\/v1\/cases", "POST", \{\} satisfies AssignCaseRequest/, "ordinary cases are requested with an empty body");
   assert.match(api, /"\/v1\/cases\/replay"/);
   assert.match(api, /"\/v1\/cases\/catalogue-status"/);
@@ -50,17 +51,17 @@ test("case assignment follows the P3.7.1 handoff", () => {
   assert.match(desk, /Catalogue complete/);
   assert.match(desk, /app\.go\("archive"\)[\s\S]*Notification settings/, "the completion state links to the archive and to notification settings");
   assert.match(desk, /app\.go\("weekly"\)/);
-  assert.doesNotMatch(read("src/components/Landing.svelte"), /1,000|1000/, "the catalogue is dynamic");
+  assert.doesNotMatch(read("src/screens/entry/Landing.svelte"), /1,000|1000/, "the catalogue is dynamic");
   assert.match(archive, /Replay case/);
   assert.match(archive, /replayTargets/);
   assert.match(archive, /first_completion/);
-  assert.match(read("src/components/Results.svelte"), /isReplay/);
+  assert.match(read("src/screens/case/Results.svelte"), /isReplay/);
 });
 
 test("credentials never reach browser storage", () => {
-  const code = ["src/lib/app.svelte.ts", "src/api.ts", ...fs.readdirSync(new URL("src/components/", root)).map(f => `src/components/${f}`)].map(read).join("\n");
+  const code = ["src/state/app.svelte.ts", "src/api/api.ts", ].map(read).join("\n") + "\n" + allComponents();
   assert.doesNotMatch(code, /(localStorage|sessionStorage)\.setItem\([^)]*(password|token)/i);
-  assert.match(read("src/api.ts"), /credentials: "include"/);
+  assert.match(read("src/api/api.ts"), /credentials: "include"/);
 });
 
 test("the dev mock API honours the contract shapes the UI relies on", async () => {

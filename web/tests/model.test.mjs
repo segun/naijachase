@@ -6,14 +6,13 @@ import zlib from "node:zlib";
 
 const src = new URL("../src/", import.meta.url);
 const read = file => fs.readFileSync(new URL(file, src), "utf8");
-const walk = dir => fs.readdirSync(dir, { withFileTypes: true }).flatMap(e => e.isDirectory() ? walk(path.join(dir, e.name)) : [path.join(dir, e.name)]);
-const sourceFiles = walk(new URL(".", src).pathname);
+import { component, sourceFiles } from "./helpers.mjs";
 const css = sourceFiles.filter(f => f.endsWith(".css")).map(f => fs.readFileSync(f, "utf8")).join("\n");
 
 test("accessible shell and responsive safeguards are present", () => {
-  assert.match(read("components/Shell.svelte"), /Skip to investigation/);
-  assert.match(read("components/Shell.svelte"), /id="main"/);
-  assert.match(read("components/Toasts.svelte"), /aria-live="polite"/);
+  assert.match(read("ui/Shell.svelte"), /Skip to investigation/);
+  assert.match(read("ui/Shell.svelte"), /id="main"/);
+  assert.match(read("ui/Toasts.svelte"), /aria-live="polite"/);
   assert.match(css, /prefers-reduced-motion/);
   assert.match(css, /@media \(max-width: 760px\)/);
   assert.match(css, /@media \(max-width: 960px\)/);
@@ -22,7 +21,7 @@ test("accessible shell and responsive safeguards are present", () => {
 });
 
 test("browser never receives hidden engine fields through its public model", () => {
-  const model = read("model.ts");
+  const model = read("domain/model.ts");
   for (const hidden of ["thief_id:", "route:", "observations:", "hideout_venue:"]) assert.doesNotMatch(model, new RegExp(hidden));
 });
 
@@ -30,39 +29,39 @@ test("Svelte is the UI foundation and Babylon.js stays out of the initial bundle
   const pkg = JSON.parse(fs.readFileSync(new URL("../package.json", import.meta.url), "utf8"));
   assert.ok(pkg.dependencies.svelte);
   assert.ok(pkg.devDependencies["@sveltejs/vite-plugin-svelte"]);
-  assert.match(read("components/Shell.svelte"), /class="app"/);
+  assert.match(read("ui/Shell.svelte"), /class="app"/);
   assert.ok(pkg.dependencies["@babylonjs/core"], "Babylon.js is the 3D renderer");
   assert.equal(pkg.dependencies["pixi.js"], undefined);
 });
 
 test("Babylon.js is only reachable through a dynamic import", () => {
-  const offenders = sourceFiles.filter(f => /\.(ts|svelte)$/.test(f) && !/lib[\\/](chase3d[\w-]*|avatar3d)\.ts$/.test(f))
+  const offenders = sourceFiles.filter(f => /\.(ts|svelte)$/.test(f) && !/[\\/]scenes[\\/].+\.ts$|[\\/]avatar[\\/]avatar3d\.ts$/.test(f))
     .filter(f => /(?:^|\n)\s*import[^\n]*@babylonjs/.test(fs.readFileSync(f, "utf8")));
-  assert.deepEqual(offenders, [], "only the lib/chase3d*.ts and lib/avatar3d.ts modules may import @babylonjs");
-  assert.match(read("components/ChaseStage.svelte"), /import\("\.\.\/lib\/chase3d\.ts"\)/);
-  assert.doesNotMatch(read("components/ChaseStage.svelte"), /^\s*import\s+[^\n]*chase3d/m);
-  assert.doesNotMatch(read("lib/chase3d.ts"), /from "@babylonjs\/core"/, "use deep imports so unused features are tree-shaken");
+  assert.deepEqual(offenders, [], "only the TypeScript modules under scenes/ and avatar/avatar3d.ts may import @babylonjs");
+  assert.match(read("scenes/chase/ChaseStage.svelte"), /import\("\.\/chase3d\.ts"\)/);
+  assert.doesNotMatch(read("scenes/chase/ChaseStage.svelte"), /^\s*import\s+[^\n]*chase3d/m);
+  assert.doesNotMatch(read("scenes/chase/chase3d.ts"), /from "@babylonjs\/core"/, "use deep imports so unused features are tree-shaken");
 });
 
 test("every case screen is a component wired into the app", () => {
   const app = read("App.svelte");
   for (const name of ["Landing", "AuthPanel", "Room", "Investigate", "Notebook", "Dossier", "Travel", "Warrant", "Results", "Settings"]) {
-    assert.ok(fs.existsSync(new URL(`components/${name}.svelte`, src)), `${name} component missing`);
-    assert.match(app, new RegExp(`<${name} \\{app\\}|components/${name}\\.svelte`), `${name} is not wired in`);
+    assert.ok(component(name).length > 0, `${name} component missing`);
+    assert.match(app, new RegExp(`<${name} \\{app\\}|/${name}\\.svelte`), `${name} is not wired in`);
   }
   assert.match(app, /svelte:boundary/);
 });
 
 test("components submit intent only: no engine truth is computed or stored in the browser", () => {
   // Only the closed-case archive (public once a case is finished) and the restricted content dashboard may show a thief id.
-  const code = sourceFiles.filter(f => /components|lib/.test(f) && !/Archive\.svelte$|ContentDashboard\.svelte$/.test(f)).map(f => fs.readFileSync(f, "utf8")).join("\n");
+  const code = sourceFiles.filter(f => !/[\\/]styles[\\/]|\.css$/.test(f) && !/Archive\.svelte$|ContentDashboard\.svelte$/.test(f)).map(f => fs.readFileSync(f, "utf8")).join("\n");
   for (const hidden of ["thief_id", "hideout_venue", "observations", "route:"]) assert.doesNotMatch(code, new RegExp(hidden));
   assert.doesNotMatch(code, /localStorage\.setItem\("nc-(case|name|notes)/);
   assert.doesNotMatch(code, /innerHTML|\{@html/);
 });
 
 test("every icon used by a component exists in the icon set", () => {
-  const icons = read("components/Icon.svelte");
+  const icons = read("ui/Icon.svelte");
   const defined = new Set([...icons.matchAll(/^\s+(\w+): "/gm)].map(m => m[1]));
   const used = new Set();
   for (const f of sourceFiles.filter(f => f.endsWith(".svelte") || f.endsWith(".ts"))) {
@@ -75,8 +74,8 @@ test("every icon used by a component exists in the icon set", () => {
 });
 
 test("password recovery is available without exposing account existence", () => {
-  const panel = read("components/AuthPanel.svelte");
-  const controller = read("lib/app.svelte.ts");
+  const panel = read("screens/entry/AuthPanel.svelte");
+  const controller = read("state/app.svelte.ts");
   assert.match(panel, /Forgot password\?/);
   assert.match(panel, /requestPasswordReset\(email\)/);
   assert.match(panel, /completePasswordReset\(resetToken,password,confirm\)/);

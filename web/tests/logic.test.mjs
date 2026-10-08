@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import * as model from "../src/model.ts";
-import * as map from "../src/map.ts";
+import * as model from "../src/domain/model.ts";
+import * as map from "../src/domain/map.ts";
 
 test("every jurisdiction belongs to exactly one geopolitical zone", () => {
   const seen = new Map();

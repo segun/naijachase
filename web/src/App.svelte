@@ -1,28 +1,28 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { AppController } from "./lib/app.svelte";
-  import AuthPanel from "./components/AuthPanel.svelte";
-  import Brand from "./components/Brand.svelte";
-  import ContentGate from "./components/ContentGate.svelte";
-  import Dossier from "./components/Dossier.svelte";
-  import Investigate from "./components/Investigate.svelte";
-  import Landing from "./components/Landing.svelte";
-  import Notebook from "./components/Notebook.svelte";
-  import Results from "./components/Results.svelte";
-  import Shell from "./components/Shell.svelte";
-  import Travel from "./components/Travel.svelte";
-  import Warrant from "./components/Warrant.svelte";
+  import { AppController } from "./state/app.svelte";
+  import AuthPanel from "./screens/entry/AuthPanel.svelte";
+  import Brand from "./ui/Brand.svelte";
+  import ContentGate from "./screens/admin/ContentGate.svelte";
+  import Dossier from "./screens/case/Dossier.svelte";
+  import Investigate from "./screens/case/Investigate.svelte";
+  import Landing from "./screens/entry/Landing.svelte";
+  import Notebook from "./screens/case/Notebook.svelte";
+  import Results from "./screens/case/Results.svelte";
+  import Shell from "./ui/Shell.svelte";
+  import Travel from "./screens/case/Travel.svelte";
+  import Warrant from "./screens/case/Warrant.svelte";
 
   // Secondary screens are separate chunks: nobody needs them on the sign-in path, so they load on first visit.
   const lazy = {
-    avatar: () => import("./components/AvatarPicker.svelte"),
-    archive: () => import("./components/ArchiveRoom.svelte"),
-    groups: () => import("./components/Groups.svelte"),
-    helpers: () => import("./components/Helpers.svelte"),
-    room: () => import("./components/Room.svelte"),
-    garage: () => import("./components/GarageRoom.svelte"),
-    settings: () => import("./components/Settings.svelte"),
-    weekly: () => import("./components/Weekly.svelte")
+    avatar: () => import("./avatar/AvatarPicker.svelte"),
+    archive: () => import("./scenes/archive/ArchiveRoom.svelte"),
+    groups: () => import("./screens/social/Groups.svelte"),
+    helpers: () => import("./screens/social/Helpers.svelte"),
+    room: () => import("./scenes/office/Room.svelte"),
+    garage: () => import("./scenes/garage/GarageRoom.svelte"),
+    settings: () => import("./screens/account/Settings.svelte"),
+    weekly: () => import("./screens/social/Weekly.svelte")
   } as const;
 
   const app = new AppController();

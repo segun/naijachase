@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import * as cap from "../src/lib/scene-capability.ts";
+import * as cap from "../src/scenes/shared/scene-capability.ts";
 
 const desktop = { viewportWidth: 1440, reducedMotion: false, saveData: false, coarsePointer: false, cores: 12, memoryGb: 8, connection: "4g" };
 
@@ -38,13 +38,13 @@ test("the frame-rate guard needs sustained slowness and ignores single dips", ()
 });
 
 test("the stage gates the download, waits for idle, and falls back one way to 2D", () => {
-  const stage = fs.readFileSync(new URL("../src/components/ChaseStage.svelte", import.meta.url), "utf8");
+  const stage = fs.readFileSync(new URL("../src/scenes/chase/ChaseStage.svelte", import.meta.url), "utf8");
   assert.match(stage, /decideScene\(readDevice\(\)\)/);
   assert.match(stage, /requestIdleCallback/);
   assert.match(stage, /onSlow: \(\) => \{ failed = true; \}/);
   // the import() is only reachable from inside the effect guarded by `want`
   assert.match(stage, /if \(!want \|\| !target \|\| !decision\.run\) return;/);
-  const scene = fs.readFileSync(new URL("../src/lib/chase3d.ts", import.meta.url), "utf8");
+  const scene = fs.readFileSync(new URL("../src/scenes/chase/chase3d.ts", import.meta.url), "utf8");
   assert.match(scene, /quality === "light"/);
   assert.match(scene, /light \? null : new GlowLayer/);
   assert.match(scene, /light \? null : new ShadowGenerator/);

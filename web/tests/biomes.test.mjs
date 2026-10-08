@@ -1,8 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import * as b from "../src/lib/chase-biomes.ts";
-import * as motion from "../src/lib/chase-motion.ts";
+import * as b from "../src/scenes/chase/chase-biomes.ts";
+import * as motion from "../src/scenes/chase/chase-motion.ts";
 
 const signText = () => ({ lagos: ["LAGOS ISLAND", "MEDICAL HOSPITAL"], anambra: ["ONITSHA", "MAIN MARKET"], kano: ["WELCOME TO", "SABON GARI"] });
 const read = p => fs.readFileSync(new URL(`../src/${p}`, import.meta.url), "utf8");
@@ -72,7 +72,7 @@ test("walkers and vendors have gentler motion than the chase", () => {
 });
 
 test("each city has the scenery and passers-by that were asked for", () => {
-  const world = read("lib/chase3d-world.ts"), actors = read("lib/chase3d-actors.ts");
+  const world = read("scenes/chase/chase3d-world.ts"), actors = read("scenes/chase/chase3d-actors.ts");
   // Lagos: sea, danfo bus, commuters
   for (const needle of ['"seaMat"', 'merge("danfo"', "danfoYellow", 'LAGOS, off', "briefcase", "handbag", "boat", "lighthouse", "bridgeDeck"]) assert.ok(world.includes(needle) || actors.includes(needle), `Lagos: ${needle}`);
   // Anambra: market stalls, market men and women
@@ -82,15 +82,15 @@ test("each city has the scenery and passers-by that were asked for", () => {
 });
 
 test("there is no corner label: each city is named by signage inside the scene", () => {
-  const stage = read("components/ChaseStage.svelte");
+  const stage = read("scenes/chase/ChaseStage.svelte");
   assert.doesNotMatch(stage, /onLocation|stage-place|place = /);
   assert.doesNotMatch(read("styles/screens.css"), /\.stage-place/);
-  assert.doesNotMatch(read("lib/chase3d.ts"), /onLocation/);
-  assert.match(read("lib/chase3d.ts"), /const palette = blendPalette\(weights\)/);
+  assert.doesNotMatch(read("scenes/chase/chase3d.ts"), /onLocation/);
+  assert.match(read("scenes/chase/chase3d.ts"), /const palette = blendPalette\(weights\)/);
 });
 
 test("signboards carry the requested wording, one per city, in the scene", () => {
-  const signs = read("lib/chase3d-signs.ts"), world = read("lib/chase3d-world.ts");
+  const signs = read("scenes/chase/chase3d-signs.ts"), world = read("scenes/chase/chase3d-world.ts");
   assert.deepEqual(Object.keys(signText()), ["lagos", "anambra", "kano"]);
   assert.deepEqual(signText().lagos, ["LAGOS ISLAND", "MEDICAL HOSPITAL"]);
   assert.deepEqual(signText().anambra, ["ONITSHA", "MAIN MARKET"]);
@@ -119,7 +119,7 @@ test("the world eases down at each city so its sign can be read, without driftin
 });
 
 test("scenery uses instancing and distance culling so the scene stays cheap", () => {
-  const world = read("lib/chase3d-world.ts");
+  const world = read("scenes/chase/chase3d-world.ts");
   assert.match(world, /createInstance/);
   assert.match(world, /WINDOW_RANGE/);
   assert.match(world, /setEnabled\(on\)/);
