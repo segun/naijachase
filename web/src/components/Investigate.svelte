@@ -22,14 +22,6 @@
     return [...quoted, ...extra];
   });
   let choosing = $state<QuoteGroup | null>(null);
-
-  // Arriving from the briefing with a lead already chosen: go straight to its travel options (the server still confirms the fare).
-  $effect(() => {
-    if (!app.pendingLead || !app.quotesLoaded) return;
-    const lead = venues.find(v => v.id === app.pendingLead);
-    app.pendingLead = "";
-    if (lead && lead.options.length && !done.includes(lead.id)) choosing = lead;
-  });
   let pendingVenue = $state("");
 
   async function question(group: QuoteGroup, quote: TransportQuote) {

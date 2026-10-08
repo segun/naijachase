@@ -371,8 +371,17 @@ pub struct AuthResponse {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+pub struct CaseDossier {
+    pub title: String,
+    pub stolen_item: String,
+    pub premise: String,
+    pub opening_briefing: String,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub struct PublicGameState {
     pub mission_id: String,
+    pub case_dossier: CaseDossier,
     pub difficulty: u8,
     pub stage: u8,
     pub current_state: String,
@@ -388,25 +397,36 @@ pub struct PublicGameState {
     pub transport_rules_version: u16,
 }
 
-impl From<&GameState> for PublicGameState {
-    fn from(state: &GameState) -> Self {
-        Self {
-            mission_id: state.mission_id.clone(),
-            difficulty: state.difficulty,
-            stage: state.stage,
-            current_state: state.state.clone(),
-            elapsed: state.elapsed,
-            score: state.score,
-            career_points: state.career_points,
-            dossier: state.dossier.clone(),
-            visited_venues: state.visited_venues.clone(),
-            warrant_suspect: state.warrant_suspect.clone(),
-            outcome: state.outcome.clone(),
-            opening_budget: state.economy.opening_budget,
-            balance: state.economy.balance,
-            transport_rules_version: state.economy.rules_version,
-        }
-    }
+fn public_game_state(
+    state: &GameState,
+    catalogue: &Catalogue,
+) -> Result<PublicGameState, ApiError> {
+    let narrative = catalogue
+        .narratives
+        .get(&state.mission_id)
+        .ok_or_else(|| bad_request("case dossier unavailable"))?;
+    Ok(PublicGameState {
+        mission_id: state.mission_id.clone(),
+        case_dossier: CaseDossier {
+            title: narrative.title.clone(),
+            stolen_item: narrative.stolen_item.clone(),
+            premise: narrative.premise.clone(),
+            opening_briefing: narrative.opening_briefing.clone(),
+        },
+        difficulty: state.difficulty,
+        stage: state.stage,
+        current_state: state.state.clone(),
+        elapsed: state.elapsed,
+        score: state.score,
+        career_points: state.career_points,
+        dossier: state.dossier.clone(),
+        visited_venues: state.visited_venues.clone(),
+        warrant_suspect: state.warrant_suspect.clone(),
+        outcome: state.outcome.clone(),
+        opening_budget: state.economy.opening_budget,
+        balance: state.economy.balance,
+        transport_rules_version: state.economy.rules_version,
+    })
 }
 
 #[derive(Debug, Serialize)]
@@ -2203,7 +2223,7 @@ async fn assign_case(
             state_version: version,
             duplicate: false,
             attempt_kind: "ordinary".into(),
-            state: (&stored_game).into(),
+            state: public_game_state(&stored_game, &state.catalogue)?,
             events: vec![],
         }),
     ))
@@ -2247,7 +2267,7 @@ async fn replay_case(
             state_version: 1,
             duplicate: false,
             attempt_kind: "replay".into(),
-            state: (&game).into(),
+            state: public_game_state(&game, &state.catalogue)?,
             events: vec![],
         }),
     ))
@@ -2501,7 +2521,7 @@ async fn get_case(
         state_version: version,
         duplicate: false,
         attempt_kind,
-        state: (&game).into(),
+        state: public_game_state(&game, &state.catalogue)?,
         events: vec![],
     }))
 }
@@ -2866,7 +2886,7 @@ async fn execute_command(
         state_version: version,
         duplicate,
         attempt_kind,
-        state: (&game).into(),
+        state: public_game_state(&game, &state.catalogue)?,
         events,
     }))
 }
@@ -2884,19 +2904,16 @@ fn translate_command(
                 return Err("venue is not available at this stop".into());
             }
             let venue = catalogue.venues.get(&venue_id).ok_or("unknown venue_id")?;
-            let prefix = format!("{}|{}|", state.stage, state.state);
-            let first_at_stop = !state
-                .visited_venues
-                .iter()
-                .any(|visit| visit.starts_with(&prefix));
-            let (trait_name, trait_value) = if first_at_stop {
+            let key_witness_venue =
+                dossier_witness_venue(catalogue, state).ok_or("dossier witness unavailable")?;
+            let (trait_name, trait_value) = if venue_id == key_witness_venue {
                 let profile = catalogue
                     .profiles
                     .get(&state.thief_id)
                     .ok_or("profile unavailable")?;
                 let traits = profile.traits();
                 let (field, value) = traits
-                    .get(state.stage as usize)
+                    .get(dossier_trait_index(state, state.stage as usize))
                     .ok_or("invalid case stage")?;
                 ((*field).to_owned(), (*value).to_owned())
             } else {
@@ -3177,6 +3194,36 @@ fn available_venue_ids(catalogue: &Catalogue, state: &GameState) -> Vec<String> 
     )
 }
 
+fn dossier_random_byte(state: &GameState, scope: &str, position: usize) -> u8 {
+    let material = format!(
+        "{scope}|{}|{}|{}|{position}",
+        state.mission_id, state.thief_id, state.hideout_venue
+    );
+    Sha256::digest(material.as_bytes())[position % 32]
+}
+
+fn dossier_trait_order(state: &GameState) -> [usize; 8] {
+    let mut order = [0, 1, 2, 3, 4, 5, 6, 7];
+    for position in (1..order.len()).rev() {
+        let swap = dossier_random_byte(state, "dossier-trait", position) as usize % (position + 1);
+        order.swap(position, swap);
+    }
+    order
+}
+
+fn dossier_trait_index(state: &GameState, stage: usize) -> usize {
+    dossier_trait_order(state)[stage % 8]
+}
+
+fn dossier_witness_venue(catalogue: &Catalogue, state: &GameState) -> Option<String> {
+    let venues = available_venue_ids(catalogue, state);
+    (!venues.is_empty()).then(|| {
+        let index = dossier_random_byte(state, "dossier-witness", state.stage as usize) as usize
+            % venues.len();
+        venues[index].clone()
+    })
+}
+
 fn available_venue_ids_for(
     catalogue: &Catalogue,
     route: &[String],
@@ -3366,11 +3413,26 @@ mod tests {
 
     #[test]
     fn public_state_never_contains_hidden_route_thief_or_observations() {
-        let json = serde_json::to_string(&PublicGameState::from(&state())).unwrap();
-        assert!(!json.contains("TH-001"));
-        assert!(!json.contains("route"));
-        assert!(!json.contains("observations"));
-        assert!(!json.contains("hideout"));
+        let root = FsPath::new(env!("CARGO_MANIFEST_DIR")).join("../../..");
+        let catalogue = Catalogue::load(&root).unwrap();
+        let mission = catalogue.missions.values().next().unwrap();
+        let route = catalogue.route(mission).unwrap();
+        let mut game = state();
+        game.mission_id = mission.mission_id.clone();
+        game.thief_id = mission.thief_id.clone();
+        game.state = route[0].clone();
+        game.route = route;
+        let public = public_game_state(&game, &catalogue).unwrap();
+        let json = serde_json::to_value(&public).unwrap();
+        let fields = json.as_object().unwrap();
+        assert!(!fields.contains_key("thief_id"));
+        assert!(!fields.contains_key("route"));
+        assert!(!fields.contains_key("observations"));
+        assert!(!fields.contains_key("hideout_venue"));
+        assert!(!public.case_dossier.title.is_empty());
+        assert!(!public.case_dossier.stolen_item.is_empty());
+        assert!(!public.case_dossier.premise.is_empty());
+        assert!(!public.case_dossier.opening_briefing.is_empty());
     }
     #[test]
     fn validates_untrusted_identifiers_and_wait_bounds() {
@@ -3549,6 +3611,61 @@ mod tests {
         assert!(
             (580..=720).contains(&assigned),
             "65% assignment drifted to {assigned}/1000"
+        );
+    }
+
+    #[test]
+    fn dossier_witnesses_and_trait_sequence_are_deterministic_but_not_fixed() {
+        let root = FsPath::new(env!("CARGO_MANIFEST_DIR")).join("../../..");
+        let catalogue = Catalogue::load(&root).unwrap();
+        let mut witness_positions = [0usize; 3];
+        let mut opening_traits = [0usize; 8];
+        for mission in catalogue.missions.values() {
+            let route = catalogue.route(mission).unwrap();
+            let game = GameState {
+                version: 1,
+                mission_id: mission.mission_id.clone(),
+                thief_id: mission.thief_id.clone(),
+                difficulty: mission.difficulty,
+                stage: 0,
+                state: route[0].clone(),
+                route,
+                elapsed: 0,
+                score: 0,
+                career_points: 0,
+                dossier: Default::default(),
+                observations: Default::default(),
+                visited_venues: vec![],
+                warrant_suspect: None,
+                hideout_venue: format!("hideout-{}", mission.mission_id),
+                replay: vec![],
+                outcome: None,
+                economy: Default::default(),
+            };
+            let venues = available_venue_ids(&catalogue, &game);
+            let key = dossier_witness_venue(&catalogue, &game).unwrap();
+            let position = venues.iter().position(|venue| venue == &key).unwrap();
+            witness_positions[position] += 1;
+
+            let order = dossier_trait_order(&game);
+            assert_eq!(
+                order
+                    .iter()
+                    .copied()
+                    .collect::<std::collections::BTreeSet<_>>()
+                    .len(),
+                8
+            );
+            assert_eq!(order, dossier_trait_order(&game));
+            opening_traits[order[0]] += 1;
+        }
+        assert!(
+            witness_positions.iter().all(|count| *count > 200),
+            "{witness_positions:?}"
+        );
+        assert!(
+            opening_traits.iter().all(|count| *count > 50),
+            "{opening_traits:?}"
         );
     }
 

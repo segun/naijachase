@@ -67,14 +67,16 @@ web/dev/check-budget.mjs advisory bundle-size report run after `vite build`
     the screen. Babylon.js is imported with deep paths and only through a dynamic
     import, so it is not in the initial bundle (the lazy chunk is about 410 KiB
     gzipped, the main cost to weigh before using 3D more widely).
-- **Menu music**: one original track, "Night Pursuit" (a brooding cinematic thriller,
-  E minor, 126 BPM), synthesised with the Web Audio API (no audio files and no
-  third-party music). A single on/off button on the home and sign-in screens
-  controls it. It plays only on home, login, registration and recovery, fades out
-  when the player signs in, and starts on the first tap or key press because
-  browsers block autoplay. The choice is remembered on the device. The
-  synthesiser is a lazy chunk; the track is pure data in
-  `web/src/lib/music-score.ts`.
+- **Music**: ten original tunes (Night Pursuit, Lagos Nights, Highlife Sunrise, Smoke and
+  Mirrors, Harmattan Dawn, Express to Kano, Market Day, Neon Circuit, Midnight Heist and
+  Victory Lap), synthesised with the Web Audio API (no audio files and no third-party
+  music). An on/off button and a tune picker sit on the home and sign-in screens and, once
+  signed in, in the side rail (or a small floating control on the room screens and on
+  mobile). The music starts on the first tap or key press because browsers block autoplay,
+  and keeps playing through sign-in and the game; changing tune fades the old one out and
+  the new one in. The on/off and tune choices are remembered on the device. The synthesiser
+  and the scores are a lazy chunk; the scores are pure data in `web/src/lib/music-score.ts`
+  and the names in the tiny `web/src/lib/music-catalogue.ts`.
 - **Application shell**: sidebar with rank progress on desktop, bottom tab bar
   on mobile, and a sticky case HUD showing location, zone, case clock, a
   deadline meter that turns urgent in the final 24 hours, and score.
@@ -88,14 +90,38 @@ web/dev/check-budget.mjs advisory bundle-size report run after `vite build`
   progress from `GET /v1/cases/catalogue-status`, and one "Open new case" action that calls
   `POST /v1/cases` with an empty body: the server picks the mission and issues the case id and
   seed. When the server reports the catalogue exhausted, the terminal shows a completion
-  milestone with a link to the archive instead of an error. The intro plays once per sign-in
+  milestone with a link to the archive instead of an error. The intro lasts five seconds and plays once per sign-in
   (it can be skipped with the button or Esc) and is a lazy Babylon.js chunk
   (`lib/chase3d-room.ts`) built from primitives and painted textures; timing, lighting for the
   time of day and the camera framing are pure and unit-tested in `lib/room-scene.ts`. With
   reduced motion, Save-Data, a slow network, low memory or no WebGL the terminal opens directly.
   Keyboard: arrows move between options, `N` new case, `A` achievements, `C` career file,
   `M` menu, `Esc` back.
-- **Case archive**: completed cases with outcome, thief, score, time, route and
+- **Case briefing and garage** (`CaseDesk.svelte`, `GarageRoom.svelte`): opening a new case
+  (`POST /v1/cases`) no longer jumps to the investigation. The terminal first types out the
+  server's `state.case_dossier` (title, stolen item, premise, opening briefing, plus starting
+  state, case clock, funds and attempt; `lib/briefing.ts`) and then waits: the player reads at their
+  own pace and presses Continue (or Enter). It never moves on by itself. The three local leads
+  follow (the server's local transport quotes), each with its own line drawing
+  (`VenueArt.svelte`, one per venue in `data/gameplay/venues.csv`, a map pin for new ones).
+  Picking a lead plays a short exit (the player stands and walks out of the door, about 3
+  seconds) and the camera pans into a garage of parked cars (`lib/chase3d-garage.ts`,
+  `lib/garage-scene.ts`). The player comes through the door and waits while two animated cards
+  offer the server's two local modes: **Drive** (keys `D` or `1`) and **Hitch a ride** (`H` or
+  `2`), each with the server's fare, journey time, arrival and balance after, and a warning when
+  unaffordable or past the deadline. The visit command is sent first; only when the server accepts
+  it does the player climb into the open-top car and drive off (about 3.8 seconds) or set off
+  for the roadside with a thumb out (about 2.5 seconds), and then the investigation opens with
+  the witness account in the notebook. "Not now" (Esc) goes back to the investigation without
+  travelling. "Skip briefing" and "Skip to the case" go straight to the investigation; resuming a
+  saved case does not replay the briefing.
+- **Case archive** (`ArchiveRoom.svelte`): opened from the terminal menu, the avatar walks into a
+  records room, takes a case file off the shelf and turns to show it, and the camera zooms onto
+  the file, where the list below is shown on a manila sheet (about 4.5 seconds, skippable with
+  the button or Esc, once per sign-in; same lazy scene frame, fallbacks and unit-tested timeline
+  as the office: `lib/chase3d-archive.ts`, `lib/archive-scene.ts`, shared `Stage.svelte` and
+  `lib/chase3d-stage.ts`). "Back to the desk" or Esc returns. The list itself: completed
+  cases with outcome, thief, score, time, route and
   accuracy; "First solve" and "Replay" badges from `first_completion` and
   `attempt_kind`; and a "Replay case" action (`POST /v1/cases/replay`) on solved
   missions. Replays are labelled in the case, header and results, and the UI states

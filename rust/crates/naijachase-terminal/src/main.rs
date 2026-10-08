@@ -21,6 +21,37 @@ const FIELDS: [&str; 8] = [
     "feature",
 ];
 
+fn dossier_order(mission_id: &str, seed: u64) -> [usize; 8] {
+    let mut order = [0, 1, 2, 3, 4, 5, 6, 7];
+    let mut random = mission_id
+        .bytes()
+        .fold(seed ^ 0x9E37_79B9_7F4A_7C15, |value, byte| {
+            value
+                .wrapping_mul(1_099_511_628_211)
+                .wrapping_add(u64::from(byte))
+        });
+    for position in (1..order.len()).rev() {
+        random = random
+            .wrapping_mul(6_364_136_223_846_793_005)
+            .wrapping_add(1);
+        order.swap(position, (random as usize) % (position + 1));
+    }
+    order
+}
+
+fn dossier_field(mission_id: &str, seed: u64, stage: usize) -> &'static str {
+    FIELDS[dossier_order(mission_id, seed)[stage % FIELDS.len()]]
+}
+
+fn dossier_witness_index(mission_id: &str, seed: u64, stage: usize) -> usize {
+    let mixed = mission_id.bytes().fold(seed ^ stage as u64, |value, byte| {
+        value
+            .wrapping_mul(1_099_511_628_211)
+            .wrapping_add(u64::from(byte))
+    });
+    (mixed as usize) % 3
+}
+
 #[derive(Default, Serialize, Deserialize)]
 struct Career {
     name: String,
@@ -418,8 +449,9 @@ fn main() {
                     println!("You already questioned this witness.");
                     continue;
                 }
-                let evidence_witness = (seed as usize + state.stage as usize) % 3;
-                let field = FIELDS[state.stage as usize];
+                let evidence_witness =
+                    dossier_witness_index(&mission.mission_id, seed, state.stage as usize);
+                let field = dossier_field(&mission.mission_id, seed, state.stage as usize);
                 let gives_profile = i == evidence_witness;
                 let venue = &data.venues[&atom.venue_id];
                 let experience = &data.venue_experiences[&atom.venue_id];
@@ -521,7 +553,7 @@ fn main() {
             }
             4 => edit_dossier(&data, &mut state),
             5 if (state.stage as usize) < final_stage => {
-                let field = FIELDS[state.stage as usize];
+                let field = dossier_field(&mission.mission_id, seed, state.stage as usize);
                 if !state.observations.contains_key(field) {
                     println!(
                         "Find the witness with a suspect-description hint before following the trail."

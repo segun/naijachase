@@ -26,7 +26,7 @@ export type {
   CatalogueHealth, CatalogueProgress, ContentRoleResponse, MissionAdminDetails, MissionLifecycleEvent, MissionTransitionRequest, MissionValidation, ReleaseNotification, InterstateMode, LocalMode, ProfileUpdate, TransportLedgerEntry, TransportQuote, ProgressionSummary, PublicGameState as PublicState, RankHistoryEntry
 } from "../../contracts/typescript/api-v1.ts";
 import type { GroupMember, GroupRole, PlayerGroup, WeeklyAttempt, CompleteCooperationRequest, CooperationPreferences, CooperationReportRequest, CooperationRequest, CreateCooperationRequest, CatalogueHealth, ContentRoleResponse, InterstateMode, LocalMode, MissionAdminDetails, MissionLifecycleEvent, MissionTransitionRequest, MissionValidation, ReleaseNotification, PublicGameState as PublicState, TransportLedgerEntry, TransportQuote } from "../../contracts/typescript/api-v1.ts";
-export type Screen = "welcome"|"cases"|"investigate"|"notebook"|"dossier"|"travel"|"warrant"|"results"|"settings"|"archive"|"content"|"helpers"|"groups"|"weekly";
+export type Screen = "welcome"|"cases"|"investigate"|"notebook"|"dossier"|"travel"|"warrant"|"results"|"settings"|"archive"|"garage"|"content"|"helpers"|"groups"|"weekly";
 
 export function clock(minutes:number):string {
   const total=420+minutes, day=Math.floor(total/1440);

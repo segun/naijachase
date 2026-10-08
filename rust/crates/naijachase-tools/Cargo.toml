@@ -8,3 +8,5 @@ naijachase-core.workspace=true
 naijachase-contracts.workspace=true
 naijachase-storage={path="../naijachase-storage"}
 csv.workspace=true
+serde.workspace=true
+serde_json.workspace=true

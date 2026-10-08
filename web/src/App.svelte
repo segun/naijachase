@@ -20,13 +20,14 @@
     groups: () => import("./components/Groups.svelte"),
     helpers: () => import("./components/Helpers.svelte"),
     room: () => import("./components/Room.svelte"),
+    garage: () => import("./components/GarageRoom.svelte"),
     settings: () => import("./components/Settings.svelte"),
     weekly: () => import("./components/Weekly.svelte")
   } as const;
 
   const app = new AppController();
-  // Menu music belongs to the screens before the game: home, register, login and recovery.
-  $effect(() => { app.music.setActive(!app.booting && !app.signedIn && (app.screen === "welcome" || app.screen === "cases")); });
+  // The music starts on the home screen and carries on through sign-in and the game.
+  $effect(() => { app.music.setActive(!app.booting); });
   onMount(() => app.boot());
 </script>
 
@@ -64,6 +65,7 @@
       {:else if app.screen === "archive" && app.signedIn}{#await lazy.archive() then { default: Screen }}<Screen {app} />{/await}
       {:else if app.screen === "cases" && !app.signedIn}<AuthPanel {app} />
       {:else if app.screen === "cases"}{@render room()}
+      {:else if app.game && app.screen === "garage"}{#await lazy.garage() then { default: Screen }}<Screen {app} />{/await}
       {:else if app.game && app.screen === "investigate"}<Investigate {app} />
       {:else if app.game && app.screen === "notebook"}<Notebook {app} />
       {:else if app.game && app.screen === "dossier"}<Dossier {app} />

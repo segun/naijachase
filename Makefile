@@ -19,7 +19,7 @@ ARGS ?=
 .PHONY: help play test test-storage check fmt fmt-check build release benchmark \
 	validate editorial enrichment simulate export db-migrate db-import db-rebuild \
 	db-verify db-export db-backup db-restore db-test api api-test web web-build enrich-state-clues \
-	web-mock web-mock-ui web-test p34 p35 p36 p39 p391 audit
+	export-witness-scenes web-mock web-mock-ui web-test p34 p35 p36 p39 p391 audit
 
 help: ## Show the common project commands
 	@awk 'BEGIN {FS = ":.*## "} /^[a-zA-Z0-9_-]+:.*## / {printf "  %-16s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -61,6 +61,9 @@ enrichment: ## Report semantic knowledge coverage
 
 enrich-state-clues: ## Rebuild state motto, city, landmark, and economy witness clues
 	@$(TOOLS) enrich-state-clues
+
+export-witness-scenes: ## Export Babylon.js witness venue and location scene descriptions
+	@$(TOOLS) export-witness-scenes data/exports/witness-location-scenes.json
 
 simulate: ## Simulate all missions; override with SIMULATION_OUTPUT=path
 	@$(TOOLS) simulate $(SIMULATION_OUTPUT)

@@ -25,7 +25,7 @@
       <p class="lead">A priceless object is missing. Question witnesses, decode Nigerian clues, build the suspect's dossier and secure the right warrant before the week runs out.</p>
       <div class="hero-actions">
         <button class="btn btn-primary btn-lg" type="button" onclick={() => app.go("cases")}>Begin investigation <Icon name="arrow" /></button>
-        <span class="muted">1,000 cases across 37 jurisdictions</span>
+        <span class="muted">A growing catalogue of cases across 37 jurisdictions</span>
       </div>
     </div>
     <div class="hero-art rise" style:animation-delay=".15s"><NigeriaArt /></div>

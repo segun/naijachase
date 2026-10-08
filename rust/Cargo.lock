@@ -1013,6 +1013,8 @@ dependencies = [
  "naijachase-contracts",
  "naijachase-core",
  "naijachase-storage",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]

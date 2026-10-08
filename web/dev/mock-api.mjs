@@ -42,7 +42,7 @@ groupsDb.set("grp-seed", { group_id: "grp-seed", name: "Lagos Detectives", capac
 const challenges = new Map(), attempts = new Map(), wEvents = [];
 let weeklyNotify = [{ notification_id: 1, type: "challenge_scheduled", channel: "web", payload: {}, read_at: null }];
 const TRANSIT_SECONDS = Number(process.env.MOCK_TRANSIT ?? 6);
-const wkState = () => ({ mission_id: "NG-M0100", difficulty: 2, stage: 0, current_state: "Lagos", elapsed: 0, score: 650, career_points: 0, dossier: {}, visited_venues: [], warrant_suspect: null, outcome: null, opening_budget: 3, balance: 3, transport_rules_version: 1 });
+const wkState = () => ({ mission_id: "NG-M0100", case_dossier: { title: "The Weekly Case", stolen_item: "a weekly prize", premise: "A weekly challenge.", opening_briefing: "Catch the thief before the week ends." }, difficulty: 2, stage: 0, current_state: "Lagos", elapsed: 0, score: 650, career_points: 0, dossier: {}, visited_venues: [], warrant_suspect: null, outcome: null, opening_budget: 3, balance: 3, transport_rules_version: 1 });
 function challengeFor(groupId) {
   if (!challenges.has(groupId)) {
     const id = `wk-${groupId}`; const now = Math.floor(Date.now() / 1000);
@@ -81,8 +81,14 @@ const avatarProfile = () => {
 let player = { player_id: "p1", email: "", username: "", home_base: "Lagos", email_verified: true, display_name: null, pronouns: null, sex: null, avatar_id: null, uniform_id: null, avatar_setup_complete: false, leaderboard_opt_in: false };
 
 const rank = () => [...RANKS].reverse().find(([min]) => points >= min)[1];
+const caseDossier = mission => ({
+  title: `The Vanishing Carved Ceremonial Staff \u2014 The ${mission} Case`,
+  stolen_item: "a carved ceremonial staff",
+  premise: "Someone has taken a carved ceremonial staff from Lagos. The route suggests an artifact theft operation, and the object may be moved again before the week is over.",
+  opening_briefing: "The local case officer seals the scene in Lagos. Recover a carved ceremonial staff, identify the thief from eight dossier details, and obtain a warrant before the seven-day deadline."
+});
 const publicState = c => ({
-  mission_id: c.mission, difficulty: 2, stage: c.stage, current_state: c.state, elapsed: c.elapsed, score: c.score,
+  mission_id: c.mission, case_dossier: caseDossier(c.mission), difficulty: 2, stage: c.stage, current_state: c.state, elapsed: c.elapsed, score: c.score,
   career_points: points, dossier: c.dossier, visited_venues: c.visited, warrant_suspect: c.warrant, outcome: c.outcome,
   opening_budget: c.opening, balance: c.balance, transport_rules_version: 1
 });

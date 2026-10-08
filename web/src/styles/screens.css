@@ -319,8 +319,20 @@
 .music-toggle { display: inline-flex; align-items: center; gap: .5rem; min-height: 44px; padding: .5rem 1rem; border-radius: 999px; border: 1px solid var(--line); background: color-mix(in srgb, var(--bg-raised) 90%, transparent); backdrop-filter: blur(10px); color: var(--muted); font-weight: 700; font-size: .85rem; box-shadow: var(--shadow); }
 .music-toggle[aria-pressed="true"] { color: var(--gold); border-color: color-mix(in srgb, var(--gold) 50%, var(--line)); }
 .music-toggle:hover { border-color: var(--gold); }
+.music-control { position: relative; display: inline-flex; gap: .4rem; align-items: center; }
+.music-pick { color: var(--muted); }
+.music-menu { position: absolute; top: calc(100% + .4rem); right: 0; z-index: 60; margin: 0; padding: .35rem; list-style: none; display: grid; gap: .1rem; min-width: 15rem; max-height: min(70vh, 26rem); overflow-y: auto; border-radius: 14px; border: 1px solid var(--line); background: var(--bg-raised); box-shadow: var(--shadow); }
+.music-menu button { display: grid; width: 100%; text-align: left; padding: .5rem .7rem; border-radius: 10px; border: 1px solid transparent; background: transparent; color: var(--ink); }
+.music-menu button small { color: var(--muted); }
+.music-menu button:hover { background: color-mix(in srgb, var(--gold) 10%, transparent); }
+.music-menu button[aria-pressed="true"] { border-color: color-mix(in srgb, var(--gold) 50%, var(--line)); color: var(--gold); }
+.music-dock { position: fixed; top: .4rem; right: .75rem; z-index: 50; }
+.music-dock.with-rail { display: none; }
+.music-side .music-control { flex-wrap: wrap; }
+.music-side .music-menu { max-height: min(22rem, 50vh); top: auto; bottom: calc(100% + .4rem); left: 0; right: auto; min-width: 100%; }
+.music-dock .music-toggle { min-height: 36px; padding: .25rem .8rem; font-size: .8rem; }
 .auth-main { position: relative; }
-.auth-main .music-toggle { position: absolute; top: 1rem; right: 1rem; z-index: 5; }
+.auth-main .music-control { position: absolute; top: 1rem; right: 1rem; z-index: 5; }
 .landing-actions { display: flex; align-items: center; gap: .6rem; }
 
 /* On desktop the sign-in screen fits the viewport instead of scrolling */
@@ -332,7 +344,7 @@
   .auth-card h1 { font-size: 1.9rem; }
   .auth-card:has(.form-grid) { width: min(100%, 34rem); }
 }
-@media (max-width: 960px) { .music-toggle span { display: none; } .music-toggle { padding: .5rem .7rem; } .auth-main { padding-top: 4.2rem; align-items: start; } }
+@media (max-width: 960px) { .music-toggle span { display: none; } .music-menu { position: fixed; top: 4rem; right: .75rem; left: .75rem; } .music-dock.with-rail { display: block; top: auto; bottom: 4.9rem; right: .6rem; } .music-dock.with-rail .music-menu { top: auto; bottom: 3rem; } .music-toggle { padding: .5rem .7rem; } .auth-main { padding-top: 4.2rem; align-items: start; } }
 .badge-row { display: inline-flex; gap: .4rem; align-items: center; }
 .replay-banner { display: inline-flex; align-items: center; gap: .4rem; }
 

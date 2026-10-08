@@ -28,14 +28,14 @@ export const SEAT = { x: DESK.x, z: 2.35, hipY: 0.48 } as const;
 export const SIT_DROP = 0.84 - SEAT.hipY;
 export const FOV = 0.8;
 
-const WALK_SPEED = 1.15;
+const WALK_SPEED = 2.4;
 const PATH: readonly (readonly [number, number])[] = [[DOOR.x, DOOR.z - 0.12], [DOOR.x, SEAT.z], [SEAT.x - 0.8, SEAT.z]];
 const TURN = 0.3;
-export const T_DOOR = 0.9;
-const T_STEP = 0.6;
-const T_SIT = 1.5;
-const T_TYPE = 0.5;
-export const T_ZOOM = 2.3;
+export const T_DOOR = 0.5;
+const T_STEP = 0.3;
+const T_SIT = 0.9;
+const T_TYPE = 0.2;
+export const T_ZOOM = 1.45;
 
 const segments = PATH.slice(1).map((to, i) => {
   const from = PATH[i]!;
@@ -217,7 +217,7 @@ export function outroPoseAt(t: number): Pose {
 /** The chair is pushed back as the player stands. */
 export const outroChairAt = (t: number) => 1 - smooth((t - OUT_STAND_AT) / OUT_STAND);
 /** The figure appears as the camera leaves the player's eyes and disappears through the doorway. */
-export const outroAlphaAt = (t: number) => Math.min(smooth(t / 0.5), 1 - smooth((t - (T_OUT_END - 0.45)) / 0.3));
+export const outroAlphaAt = (t: number) => Math.min(smooth((t - 0.45) / 0.25), 1 - smooth((t - (T_OUT_END - 0.45)) / 0.3));
 /** The terminal glass fades out as the camera pulls back. */
 export const outroGlassAt = (t: number) => 1 - smooth(t / 0.35);
 

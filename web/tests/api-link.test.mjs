@@ -47,6 +47,10 @@ test("case assignment follows the P3.7.1 handoff", () => {
   assert.match(desk, /app\.openCase\(\)/);
   assert.doesNotMatch(desk, /input|1000|MISSION/i, "no mission picker or hard-coded catalogue size");
   assert.match(desk, /app\.exhausted/);
+  assert.match(desk, /Catalogue complete/);
+  assert.match(desk, /app\.go\("archive"\)[\s\S]*Notification settings/, "the completion state links to the archive and to notification settings");
+  assert.match(desk, /app\.go\("weekly"\)/);
+  assert.doesNotMatch(read("src/components/Landing.svelte"), /1,000|1000/, "the catalogue is dynamic");
   assert.match(archive, /Replay case/);
   assert.match(archive, /replayTargets/);
   assert.match(archive, /first_completion/);

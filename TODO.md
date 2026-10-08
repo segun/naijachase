@@ -75,6 +75,11 @@ completed.
 
 - [x] Three witness encounters at every investigation stage
 - [x] Exactly one of the three witnesses at each stop supplies a new dossier clue
+- [x] Randomise which of the three venue witnesses supplies that clue; never
+  assume the first witness questioned is the key witness.
+- [x] Shuffle all eight dossier fields per case instead of revealing them in the
+  fixed sex, height, skin-tone, hair, hobby, vehicle, accessory, feature order.
+  Keep the shuffle deterministic for saves, retries, and weekly play.
 - [x] Travel unlocks as soon as the key witness at the current stop provides
   that stop's dossier hint; the other two interviews remain optional
 - [x] Different destination evidence from each witness
@@ -195,6 +200,9 @@ completed.
 - [x] Coordinate each crime, stolen object, thief, route, venue, and final
   capture setting around a coherent theme.
 - [x] Add crime-specific opening briefings.
+- [x] Return the complete opening case dossier (`title`, `stolen_item`,
+  `premise`, and `opening_briefing`) in every ordinary/replay/resume API case
+  response while keeping the witness-built suspect `dossier` separate.
 - [x] Add route-specific transitions and arrival descriptions.
 - [x] Create stronger false destinations that share one or two clue traits.
 - [x] Add thief-specific behaviour and calling cards.
@@ -1169,6 +1177,9 @@ scores, rank, detection odds, panel votes, punishment, or jail time.
     spatial/ambient audio, time-of-day lighting, weather, and regional scenery.
   - [ ] Translate environmental descriptions into animation and scene direction
     rather than displaying prose such as crowd or journey descriptions onscreen.
+  - [x] Export the 35 reusable witness-venue archetypes and all 2,946
+    location-specific placements as a deterministic Babylon.js input file;
+    regenerate it with `make export-witness-scenes`.
 - [ ] Add PixiJS as a lazily loaded 2D visual renderer for low-powered devices,
   reduced data use, and players who prefer 2D.
   - [ ] Use animated illustrated backgrounds, parallax layers, sprite characters,
@@ -1287,3 +1298,4 @@ change. If counts change, update both **Current baseline** here and the relevant
 section of `README.md`.
 
 - [ ] Buying music
+- [ ] Hire an assistant (paid feature, not available in weekly group matches to level the playing field)

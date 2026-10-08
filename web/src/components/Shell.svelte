@@ -6,13 +6,14 @@
   import Brand from "./Brand.svelte";
   import Hud from "./Hud.svelte";
   import Icon from "./Icon.svelte";
+  import MusicToggle from "./MusicToggle.svelte";
   import Toasts from "./Toasts.svelte";
 
   let { app, children }: { app: AppController; children: Snippet } = $props();
 
   const inCase = $derived(app.game !== null && app.screen !== "results");
   // The rooms (the desk and the archive) are full-screen: their own menus replace the side rail.
-  const rail = $derived(app.signedIn && app.screen !== "welcome" && app.screen !== "cases" && app.screen !== "archive" && !app.needsAvatar);
+  const rail = $derived(app.signedIn && app.screen !== "welcome" && app.screen !== "cases" && app.screen !== "archive" && app.screen !== "garage" && !app.needsAvatar);
 
   const waiting = $derived(app.coop.requests.filter(r => coopActions(r, app.player?.username ?? "").length).length);
   type Item = { id: Screen; label: string; icon: string; count?: string };
@@ -50,6 +51,7 @@
         {/each}
       </nav>
       <div class="nav-spacer"></div>
+      <div class="music-side"><MusicToggle music={app.music} /></div>
       <div class="profile">
         <div class="profile-head">
           <span class="avatar" class:has-avatar={app.avatar !== null} aria-hidden="true">{#if app.avatar}<AvatarSilhouette preset={app.avatar} crop="bust" />{:else}{initials(app.investigator)}{/if}</span>
@@ -65,7 +67,7 @@
   {/if}
 
   <div class="content">
-    {#if inCase}<Hud {app} />{/if}
+    {#if inCase && app.screen !== "cases" && app.screen !== "garage"}<Hud {app} />{/if}
     <main id="main" tabindex="-1">{@render children()}</main>
   </div>
 </div>
@@ -78,4 +80,5 @@
     <button type="button" aria-current={app.screen === "settings" ? "page" : undefined} onclick={() => app.go("settings")}><Icon name="sliders" />Settings</button>
   </nav>
 {/if}
+{#if app.signedIn}<div class="music-dock" class:with-rail={rail}><MusicToggle music={app.music} /></div>{/if}
 <Toasts {app} />

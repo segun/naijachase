@@ -66,28 +66,26 @@
     return () => clearInterval(timer);
   });
 
-  // Types the dossier out when a case is opened, then moves on to the leads after a beat. Reduced motion shows it all at once.
-  let pause: ReturnType<typeof setTimeout> | undefined;
+  // Types the dossier out when a case is opened and then waits: the player reads at their own pace and chooses to continue.
+  // Reduced motion shows it all at once.
   $effect(() => {
     const id = app.briefing && awake ? app.game?.case_id : undefined;
     if (!id) return;
     const total = untrack(() => totalChars(lines));
     untrack(() => { step = "typing"; chars = 0; leaving = ""; });
-    const toLeads = (wait: number) => { pause = setTimeout(() => { step = "leads"; }, wait); };
-    if (quiet()) { chars = total; toLeads(300); return () => clearTimeout(pause); }
+    if (quiet()) { chars = total; return; }
     const rate = charsPerTick(total);
     const timer = setInterval(() => {
       chars = Math.min(total, chars + rate);
-      if (chars >= total) { clearInterval(timer); toLeads(1100); }
+      if (chars >= total) clearInterval(timer);
     }, TICK_MS);
-    return () => { clearInterval(timer); clearTimeout(pause); };
+    return () => clearInterval(timer);
   });
 
-  /** Enter, Space or a click finishes the typing at once, then moves on to the leads. */
+  /** While typing, Enter or Space finishes the typing; once it is all on screen, they continue to the leads. A stray click never skips ahead. */
   function advance() {
     if (step !== "typing") return;
-    clearTimeout(pause);
-    if (chars < totalChars(lines)) { chars = totalChars(lines); pause = setTimeout(() => { step = "leads"; }, 600); }
+    if (chars < totalChars(lines)) chars = totalChars(lines);
     else step = "leads";
   }
 
@@ -97,6 +95,10 @@
     await leave();
     app.finishBriefing(lead.id);
   }
+
+  $effect(() => {
+    if (app.briefing && step === "typing" && dossier.done) queueMicrotask(() => root?.querySelector<HTMLElement>(".t-continue [data-primary]")?.focus({ preventScroll: true }));
+  });
 
   // Hand keyboard focus to the main action the first time the screen wakes.
   let focused = false;
@@ -170,8 +172,8 @@
       <main class="t-main" id="terminal-main">
         {#if app.briefing}
           {#if step === "typing"}
-            <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
-            <section class="t-file" aria-label="Case dossier" onclick={advance}>
+            <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_noninteractive_element_interactions -->
+            <section class="t-file" aria-label="Case dossier" onclick={() => { chars = totalChars(lines); }}>
               <h1 class="t-greet">Case dossier</h1>
               <p class="sr-only" role="status">{lines.map(l => `${l.label}: ${l.value}`).join(". ")}</p>
               <dl class="t-dossier" aria-hidden="true">
@@ -179,8 +181,10 @@
                   <div><dt>{row.label}</dt><dd>{row.value}{#if i === dossier.rows.length - 1 && !dossier.done}<span class="t-cursor"></span>{/if}</dd></div>
                 {/each}
               </dl>
-              {#if dossier.done}<p class="t-line t-ready" aria-hidden="true">File loaded. Choose where to start.<span class="t-cursor"></span></p>{/if}
-              <button class="t-opt t-small t-quiet" type="button" data-nav onclick={e => { e.stopPropagation(); app.finishBriefing(); }}>Skip briefing <Icon name="arrow" /></button>
+              <div class="t-continue">
+                {#if dossier.done}<button class="t-opt t-big t-hot" type="button" data-nav data-primary onclick={e => { e.stopPropagation(); step = "leads"; }}><Icon name="map" /><span class="t-label">Continue<small>Take your time. Next: the local leads</small></span><kbd>Enter</kbd><Icon name="arrow" /></button>{/if}
+                <button class="t-opt t-small t-quiet" type="button" data-nav onclick={e => { e.stopPropagation(); app.finishBriefing(); }}>Skip briefing <Icon name="arrow" /></button>
+              </div>
             </section>
           {:else}
             <section class="t-leads" aria-labelledby="leads-title">
@@ -238,8 +242,15 @@
               </button>
             {/if}
             {#if app.exhausted}
+              <section class="t-alert" role="status" aria-label="Catalogue complete">
+                <Icon name="trophy" />
+                <span class="t-alert-text">Catalogue complete: you have solved every case published so far. New cases arrive as they are published.</span>
+              </section>
               <button class="t-opt t-big" type="button" data-nav data-primary={app.caseId ? undefined : ""} onclick={() => app.go("archive")}>
-                <Icon name="archive" /><span class="t-label">Every case solved<small>Replay any from your archive, or wait for new ones</small></span><Icon name="arrow" />
+                <Icon name="archive" /><span class="t-label">Case archive<small>Replay any solved case, or wait for new ones</small></span><Icon name="arrow" />
+              </button>
+              <button class="t-opt t-big" type="button" data-nav onclick={() => app.go("weekly")}>
+                <Icon name="bell" /><span class="t-label">Notification settings<small>Choose how you hear about new cases and events</small></span><Icon name="arrow" />
               </button>
             {:else}
               <button class="t-opt t-big t-hot" type="button" data-nav data-primary={app.caseId ? undefined : ""} disabled={app.busy} onclick={() => app.openCase()}>

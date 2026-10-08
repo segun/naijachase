@@ -64,6 +64,13 @@ Complete copy-ready request and response examples are documented in
 `docs/p371-case-assignment-api.md`. Use that guide for implementation and this
 section only as the architectural summary.
 
+Every `CaseResponse.state` contains two intentionally separate values:
+`case_dossier` is the immutable opening presentation (`title`, `stolen_item`,
+`premise`, and `opening_briefing`) and should be shown when the case opens;
+`dossier` is the mutable suspect-trait notebook, so it correctly starts as `{}`
+and fills from witness evidence. Never use the empty trait notebook as the
+opening-case display.
+
 The continuous-release player notifications and restricted editorial dashboard
 contract are documented separately in `docs/p372-continuous-catalogue-api.md`.
 

@@ -409,13 +409,20 @@ export class AppController {
   /** Leaves the briefing for the investigation, optionally heading straight for the chosen lead. */
   finishBriefing(lead = "") {
     this.briefing = false; this.pendingLead = lead;
+    // A chosen lead continues in the garage, where the transport is picked; otherwise straight to the investigation.
+    this.go(this.game?.state.outcome ? "results" : lead ? "garage" : "investigate");
+  }
+
+  /** Leaving the garage (after travelling, or backing out) for the investigation. */
+  leaveGarage() {
+    this.pendingLead = "";
     this.go(this.game?.state.outcome ? "results" : "investigate");
   }
 
   /** Ordinary assignment: the server picks an unseen mission and returns the case id. */
   async openCase() {
     const created = await this.run("Opening case file", () => this.api.assign(), e => {
-      if (e.code === "catalogue_exhausted") { this.exhausted = true; return true; }
+      if (e.code === "catalogue_exhausted") { this.exhausted = true; void this.loadProgression(); return true; }
       if (e.code === "mission_already_completed") { void this.loadProgression(); this.toast(e.message, "info"); return true; }
       return false;
     });

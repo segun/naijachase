@@ -69,7 +69,11 @@
   {:else if id === "conservation_office"}
     <path class="fl" d="M34 70V42l26-14 26 14v28z" /><path class="ln" d="M52 70V54h16v16" /><path class="ac" d="M56 36q4-8 12 0-4 8-12 0zM62 36l-4 6" />
     <path class="fl" d="M10 70V50M10 50q-8-6-4-14 8 0 8 14zM110 70V46M110 46q8-4 6-14-10 2-10 14z" /><path class="ln" d="M18 70h-16M118 70h-16" />
-  {:else if id === "emir_palace" || id === "palace"}
+  {:else if id === "palace"}
+    <path class="fl" d="M28 70V34h64v36z" /><path class="fl" d="M8 70V30h20v40zM92 70V30h20v40z" /><path class="ac" d="M8 30l10-14 10 14zM92 30l10-14 10 14z" />
+    <path class="ln" d="M18 16V6M102 16V6" /><path class="ac" d="M18 6h8l-2 3 2 3h-8zM102 6h8l-2 3 2 3h-8z" /><path class="fl" d="M40 34l20-14 20 14z" />
+    <path class="ac" d="M52 70V52q0-8 8-8t8 8v18z" /><path class="ln" d="M36 46h8M76 46h8M36 58h8M76 58h8M13 44h10M97 44h10" />
+  {:else if id === "emir_palace"}
     <path class="fl" d="M14 70V36h92v34z" /><path class="ln" d="M14 36l6-6 6 6 6-6 6 6 6-6 6 6M72 36l6-6 6 6 6-6 6 6 6-6 6 6" />
     <path class="fl" d="M42 36q18-30 36 0z" /><path class="ac" d="M60 14V6M56 6q4-4 8 0" /><path class="ac" d="M50 70V54q0-8 10-8t10 8v16z" />
     <path class="ln" d="M24 50h12v20H24zM84 50h12v20H84z" />

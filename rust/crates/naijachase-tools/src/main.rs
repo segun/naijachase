@@ -2,6 +2,7 @@ use naijachase_content::{Catalogue, validate_repository};
 use naijachase_contracts::{Command, GameState};
 use naijachase_core::apply;
 use naijachase_storage::MysqlStore;
+use serde::{Deserialize, Serialize};
 use std::{
     collections::{BTreeMap, BTreeSet},
     env, fs,
@@ -218,6 +219,144 @@ fn enrichment(root: &Path) {
     for (domain, count) in domains {
         println!("  {domain}: {count}");
     }
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+struct WitnessVenueScene {
+    venue_id: String,
+    venue_name: String,
+    opens_hour: u8,
+    closes_hour: u8,
+    interview_minutes: u32,
+    witness_roles: String,
+    arrival_day: String,
+    arrival_night: String,
+    arrival_weekend: String,
+    arrival_event_day: String,
+    intro_1: String,
+    intro_2: String,
+    intro_3: String,
+    wait_event: String,
+    investigation_event: String,
+    event_minutes: u32,
+}
+
+#[derive(Debug, Deserialize)]
+struct VenueExperienceExportRow {
+    venue_id: String,
+    arrival_day: String,
+    arrival_night: String,
+    arrival_weekend: String,
+    arrival_event_day: String,
+    intro_1: String,
+    intro_2: String,
+    intro_3: String,
+    wait_event: String,
+    investigation_event: String,
+    event_minutes: u32,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+struct WitnessLocationPlacement {
+    location_id: String,
+    location_name: String,
+    location_type: String,
+    state: String,
+    venue_id: String,
+    venue_name: String,
+    location_fit: u8,
+    hub_travel_minutes: u32,
+    latitude: String,
+    longitude: String,
+    coordinate_kind: String,
+    location_context: String,
+    witness_context: String,
+}
+
+#[derive(Serialize)]
+struct WitnessSceneExport {
+    schema_version: u8,
+    renderer: &'static str,
+    venue_archetype_count: usize,
+    location_placement_count: usize,
+    venue_archetypes: Vec<WitnessVenueScene>,
+    location_placements: Vec<WitnessLocationPlacement>,
+}
+
+fn export_witness_scenes(root: &Path, output: &Path) {
+    let venue_path = root.join("data/gameplay/venues.csv");
+    let experience_path = root.join("data/gameplay/venue-experiences.csv");
+    let placement_path = root.join("data/gameplay/location-venue-map.csv");
+
+    let venues = csv::Reader::from_path(venue_path)
+        .unwrap()
+        .deserialize::<naijachase_content::Venue>()
+        .map(|row| row.unwrap())
+        .map(|venue| (venue.venue_id.clone(), venue))
+        .collect::<BTreeMap<_, _>>();
+    let experiences = csv::Reader::from_path(experience_path)
+        .unwrap()
+        .deserialize::<VenueExperienceExportRow>()
+        .map(|row| row.unwrap())
+        .map(|experience| (experience.venue_id.clone(), experience))
+        .collect::<BTreeMap<_, _>>();
+
+    let mut venue_archetypes = Vec::with_capacity(venues.len());
+    for (venue_id, venue) in venues {
+        let source = experiences
+            .get(&venue_id)
+            .unwrap_or_else(|| panic!("missing scene description for {venue_id}"));
+        let scene = WitnessVenueScene {
+            venue_id,
+            venue_name: venue.venue_name,
+            opens_hour: venue.opens_hour as u8,
+            closes_hour: venue.closes_hour as u8,
+            interview_minutes: venue.interview_minutes,
+            witness_roles: venue.witness_roles,
+            arrival_day: source.arrival_day.clone(),
+            arrival_night: source.arrival_night.clone(),
+            arrival_weekend: source.arrival_weekend.clone(),
+            arrival_event_day: source.arrival_event_day.clone(),
+            intro_1: source.intro_1.clone(),
+            intro_2: source.intro_2.clone(),
+            intro_3: source.intro_3.clone(),
+            wait_event: source.wait_event.clone(),
+            investigation_event: source.investigation_event.clone(),
+            event_minutes: source.event_minutes,
+        };
+        venue_archetypes.push(scene);
+    }
+
+    let mut location_placements = csv::Reader::from_path(placement_path)
+        .unwrap()
+        .deserialize::<WitnessLocationPlacement>()
+        .map(|row| row.unwrap())
+        .collect::<Vec<_>>();
+    location_placements.sort_by(|left, right| {
+        (&left.state, &left.location_id, &left.venue_id).cmp(&(
+            &right.state,
+            &right.location_id,
+            &right.venue_id,
+        ))
+    });
+    let export = WitnessSceneExport {
+        schema_version: 1,
+        renderer: "babylon_procedural_v1",
+        venue_archetype_count: venue_archetypes.len(),
+        location_placement_count: location_placements.len(),
+        venue_archetypes,
+        location_placements,
+    };
+    if let Some(parent) = output.parent() {
+        fs::create_dir_all(parent).unwrap();
+    }
+    fs::write(output, serde_json::to_vec_pretty(&export).unwrap()).unwrap();
+    println!(
+        "Exported {} venue archetypes and {} location placements to {}",
+        export.venue_archetype_count,
+        export.location_placement_count,
+        output.display()
+    );
 }
 
 fn replace_place_name(text: &str, name: &str, replacement: &str) -> String {
@@ -708,6 +847,13 @@ fn main() {
         "editorial" => editorial(&root),
         "enrichment" => enrichment(&root),
         "enrich-state-clues" => enrich_state_clues(&root),
+        "export-witness-scenes" => export_witness_scenes(
+            &root,
+            &args
+                .get(1)
+                .map(PathBuf::from)
+                .unwrap_or_else(|| root.join("data/exports/witness-location-scenes.json")),
+        ),
         "migrate-mysql" => {
             let store = mysql();
             println!(
@@ -774,7 +920,7 @@ fn main() {
         }
         other => {
             eprintln!(
-                "Unknown command {other}. Use validate, simulate, editorial, enrichment, enrich-state-clues, migrate-mysql, import-mysql, rebuild-mysql, verify-mysql, export-mysql, backup-mysql, restore-mysql, or export."
+                "Unknown command {other}. Use validate, simulate, editorial, enrichment, enrich-state-clues, export-witness-scenes, migrate-mysql, import-mysql, rebuild-mysql, verify-mysql, export-mysql, backup-mysql, restore-mysql, or export."
             );
             std::process::exit(2)
         }

@@ -1,7 +1,7 @@
-import { STEP_SECONDS, BPM, midiToFreq, trackStep, type Hit } from "./music-score.ts";
+import { DEFAULT_TRACK, midiToFreq, trackStep, type Hit, type Track } from "./music-score.ts";
 
 type Ctx = BaseAudioContext;
-export type Bus = { dry: AudioNode; wet: AudioNode; out: AudioNode; noise: AudioBuffer; step: number };
+export type Bus = { dry: AudioNode; wet: AudioNode; out: AudioNode; noise: AudioBuffer; step: number; track: Track };
 
 function noiseBuffer(ctx: Ctx): AudioBuffer {
   const length = Math.floor(ctx.sampleRate * 1.5);
@@ -26,7 +26,7 @@ function reverbImpulse(ctx: Ctx): AudioBuffer {
 }
 
 /** Mixing chain: voices -> soft saturation -> compressor, plus reverb and a dotted-eighth echo send. */
-export function buildBus(ctx: Ctx): Bus {
+export function buildBus(ctx: Ctx, track: Track): Bus {
   const out = ctx.createGain();
   const comp = ctx.createDynamicsCompressor();
   comp.threshold.value = -20; comp.ratio.value = 4; comp.attack.value = 0.01; comp.release.value = 0.2;
@@ -47,7 +47,7 @@ export function buildBus(ctx: Ctx): Bus {
   wet.connect(reverb).connect(reverbLevel).connect(comp);
 
   const echo = ctx.createDelay(2);
-  echo.delayTime.value = (60 / BPM) * 0.75;
+  echo.delayTime.value = (60 / track.bpm) * 0.75;
   const feedback = ctx.createGain();
   feedback.gain.value = 0.32;
   const tone = ctx.createBiquadFilter();
@@ -58,7 +58,7 @@ export function buildBus(ctx: Ctx): Bus {
   echo.connect(tone).connect(feedback).connect(echo);
   tone.connect(echoLevel).connect(comp);
 
-  return { dry, wet, out, noise: noiseBuffer(ctx), step: STEP_SECONDS };
+  return { dry, wet, out, noise: noiseBuffer(ctx), step: track.stepSeconds, track };
 }
 
 // ---- Voice building blocks -------------------------------------------------
@@ -147,16 +147,21 @@ export function playHit(ctx: Ctx, bus: Bus, hit: Hit, t: number) {
     case "hat": burst(ctx, bus, t, { length: 0.04, peak: 0.16 * vel, type: "highpass", freq: 7500 }); break;
     case "tick": osc(ctx, bus, "sine", 1900, t, { length: 0.025, peak: 0.12 * vel }); break;
     case "bass":
-      osc(ctx, bus, "sawtooth", f, t, { length: len, peak: 0.3 * vel, cutoff: [1300, 220] });
+      osc(ctx, bus, hit.tone ?? "sawtooth", f, t, { length: len, peak: 0.3 * vel, cutoff: [1300, 220] });
       osc(ctx, bus, "sine", f, t, { length: len * 1.1, peak: 0.3 * vel });
       break;
     case "stab":
-      for (const q of freqs) for (const d of [-9, 9]) osc(ctx, bus, "sawtooth", q, t, { length: len, peak: 0.022 * vel, cutoff: [2600, 600], detune: d, wet: 0.35 });
+      for (const q of freqs) for (const d of [-9, 9]) osc(ctx, bus, hit.tone ?? "sawtooth", q, t, { length: len, peak: 0.022 * vel, cutoff: [2600, 600], detune: d, wet: 0.35 });
       break;
     case "pad":
-      for (const q of freqs) for (const d of [-8, 8]) osc(ctx, bus, "sawtooth", q, t, { length: len, peak: 0.02 * vel, attack: 0.9, cutoff: [700, 500], detune: d, wet: 0.5 });
+      for (const q of freqs) for (const d of [-8, 8]) osc(ctx, bus, hit.tone ?? "sawtooth", q, t, { length: len, peak: 0.02 * vel, attack: 0.9, cutoff: [700, 500], detune: d, wet: 0.5 });
       break;
-    case "lead": osc(ctx, bus, "sawtooth", f, t, { length: len, peak: 0.1 * vel, attack: 0.04, cutoff: [2400, 1500], vibrato: 7, wet: 0.45 }); break;
+    case "lead": osc(ctx, bus, hit.tone ?? "sawtooth", f, t, { length: len, peak: 0.1 * vel, attack: 0.04, cutoff: [2400, 1500], vibrato: 7, wet: 0.45 }); break;
+    case "pluck": osc(ctx, bus, hit.tone ?? "triangle", f, t, { length: len, peak: 0.14 * vel, cutoff: [4200, 500], wet: 0.3 }); break;
+    case "bell":
+      osc(ctx, bus, "sine", f, t, { length: len, peak: 0.12 * vel, attack: 0.005, wet: 0.6 });
+      osc(ctx, bus, "sine", f * 2.76, t, { length: len * 0.5, peak: 0.04 * vel, attack: 0.005, wet: 0.6 });
+      break;
     case "hit": {
       burst(ctx, bus, t, { length: 1.4, peak: 0.45 * vel, type: "lowpass", freq: 900, wet: 0.6 });
       const o = ctx.createOscillator();
@@ -189,14 +194,14 @@ export function playHit(ctx: Ctx, bus: Bus, hit: Hit, t: number) {
 }
 
 export function scheduleStep(ctx: Ctx, bus: Bus, index: number, time: number) {
-  for (const hit of trackStep(index)) playHit(ctx, bus, hit, time);
+  for (const hit of trackStep(bus.track, index)) playHit(ctx, bus, hit, time);
 }
 
 /** Renders `steps` steps offline; used to verify the track produces bounded, audible sound. */
-export async function renderTrack(steps: number, sampleRate = 22050): Promise<Float32Array> {
-  const seconds = steps * STEP_SECONDS + 3;
+export async function renderTrack(track: Track, steps: number, sampleRate = 22050): Promise<Float32Array> {
+  const seconds = steps * track.stepSeconds + 3;
   const ctx = new OfflineAudioContext(1, Math.ceil(seconds * sampleRate), sampleRate);
-  const bus = buildBus(ctx);
+  const bus = buildBus(ctx, track);
   bus.out.connect(ctx.destination);
   for (let i = 0; i < steps; i++) scheduleStep(ctx, bus, i, i * bus.step);
   return (await ctx.startRendering()).getChannelData(0);
@@ -210,13 +215,26 @@ export class ScorePlayer {
   private nextStep = 0;
   private nextTime = 0;
   private wanted = false;
+  /** Bumped by every stop or tune change so a delayed restart can tell it has been overtaken. */
+  private generation = 0;
+  private track: Track = DEFAULT_TRACK;
   private readonly level = 0.55;
 
   get running(): boolean { return this.timer !== undefined; }
 
-  async start() {
+  /** Starts the given tune; if another tune is already playing it fades out and the new one takes over. */
+  async start(track: Track = this.track) {
     this.wanted = true;
-    if (this.running) return;
+    const changed = track.id !== this.track.id;
+    this.track = track;
+    if (this.running) {
+      if (changed) await this.restart();
+      return;
+    }
+    await this.begin();
+  }
+
+  private async begin() {
     const AudioCtor = window.AudioContext ?? (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
     if (!AudioCtor) return;
     this.ctx ??= new AudioCtor();
@@ -235,10 +253,17 @@ export class ScorePlayer {
     this.schedule();
   }
 
+  private async restart() {
+    const generation = ++this.generation;
+    this.halt(0.35);
+    await new Promise(resolve => setTimeout(resolve, 400));
+    if (generation === this.generation && this.wanted) await this.begin();
+  }
+
   private build() {
     if (!this.ctx || !this.volume) return;
     this.bus?.out.disconnect();
-    this.bus = buildBus(this.ctx);
+    this.bus = buildBus(this.ctx, this.track);
     this.bus.out.connect(this.volume);
   }
 
@@ -252,9 +277,8 @@ export class ScorePlayer {
     }
   }
 
-  /** Fades out, then stops scheduling and releases the audio device. */
-  stop(fadeSeconds = 1) {
-    this.wanted = false;
+  /** Stops scheduling and fades the volume out. */
+  private halt(fadeSeconds: number) {
     const { ctx, volume } = this;
     if (this.timer === undefined || !ctx || !volume) return;
     clearInterval(this.timer);
@@ -262,6 +286,15 @@ export class ScorePlayer {
     volume.gain.cancelScheduledValues(ctx.currentTime);
     volume.gain.setValueAtTime(Math.max(volume.gain.value, 0.0001), ctx.currentTime);
     volume.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + fadeSeconds);
+  }
+
+  /** Fades out, then stops scheduling and releases the audio device. */
+  stop(fadeSeconds = 1) {
+    this.wanted = false;
+    this.generation++;
+    const ctx = this.ctx;
+    if (this.timer === undefined || !ctx) return;
+    this.halt(fadeSeconds);
     setTimeout(() => { if (this.timer === undefined && !this.wanted) void ctx.suspend(); }, fadeSeconds * 1000 + 100);
   }
 }

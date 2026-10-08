@@ -11,15 +11,15 @@
 
   let { app, seenKey, load, loading = "Opening the office…", sheet = "crt", children }: {
     app: AppController;
-    /** sessionStorage key marking that this room's intro has played in this sign-in. */
-    seenKey: string;
+    /** sessionStorage key marking that this room's intro has played in this sign-in. Without one the intro plays every time. */
+    seenKey?: string;
     /** Imports and starts the scene; it must be a dynamic import so Babylon.js stays out of the main bundle. */
     load: (canvas: HTMLCanvasElement, options: SceneOptions) => Promise<SceneHandle>;
     loading?: string;
-    /** The look of the surface the camera lands on. */
-    sheet?: "crt" | "paper";
+    /** The look of the surface the camera lands on; a dock is a panel along the bottom over the settled shot, with no zoom. */
+    sheet?: "crt" | "paper" | "dock";
     /** Receives whether the screen is awake, and `leave`, which plays the scene's exit animation (the player walking out) and resolves when it ends. */
-    children: Snippet<[boolean, () => Promise<void>]>;
+    children: Snippet<[boolean, (how?: string) => Promise<void>]>;
   } = $props();
 
   const AVATAR_WAIT_MS = 8000;
@@ -31,7 +31,7 @@
   // The room is full-screen, so the "narrow viewport" rule that hides the side panel elsewhere does not apply.
   const device = decideScene({ ...readDevice(), viewportWidth: MIN_WIDTH });
   // svelte-ignore state_referenced_locally
-  const seen = sessionStorage.getItem(seenKey) === "1";
+  const seen = seenKey !== undefined && sessionStorage.getItem(seenKey) === "1";
 
   const playIntro = device.run && !seen;
   let phase = $state<"intro" | "desk" | "outro">(playIntro ? "intro" : "desk");
@@ -47,7 +47,7 @@
   function finish() {
     if (phase === "desk") return;
     phase = "desk"; glass = 1;
-    sessionStorage.setItem(seenKey, "1");
+    if (seenKey) sessionStorage.setItem(seenKey, "1");
   }
 
   function skip() {
@@ -55,11 +55,11 @@
   }
 
   /** The exit: the glass fades, the camera pulls back and the player walks out. Without a 3D scene it is a quick fade. */
-  async function leave() {
+  async function leave(how?: string) {
     if (phase !== "desk") return;
     phase = "outro";
     const exit = handle?.leave;
-    if (exit) await Promise.race([exit(), new Promise(resolve => setTimeout(resolve, LEAVE_MAX_MS))]);
+    if (exit) await Promise.race([exit(how), new Promise(resolve => setTimeout(resolve, LEAVE_MAX_MS))]);
     else { glass = 0; await new Promise(resolve => setTimeout(resolve, 250)); }
   }
 
@@ -104,7 +104,7 @@
 <div class="room" class:flat={!has3d}>
   {#if device.run}<canvas class="room-canvas" class:ready bind:this={canvas} aria-hidden="true"></canvas>{/if}
   {#if phase === "intro" && !ready}<p class="room-loading" role="status">{loading}</p>{/if}
-  <div class="glass" class:paper={sheet === "paper"} style:opacity={glass} style:visibility={glass > 0.01 ? "visible" : "hidden"} inert={phase !== "desk"}>
+  <div class="glass" class:paper={sheet === "paper"} class:dock={sheet === "dock"} style:opacity={glass} style:visibility={glass > 0.01 ? "visible" : "hidden"} inert={phase !== "desk"}>
     {@render children(awake, leave)}
   </div>
   {#if phase !== "desk"}<button class="room-skip" type="button" onclick={skip}>{phase === "intro" ? "Skip intro" : "Skip"} <kbd>Esc</kbd></button>{/if}

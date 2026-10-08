@@ -45,8 +45,8 @@ export type SceneHandle = {
   scene: Scene;
   /** Plays a timeline from its start; resolves when it ends (or is skipped). */
   play(next: Timeline): Promise<void>;
-  /** The scene's exit animation, if it has one (leaving the desk). */
-  leave?: () => Promise<void>;
+  /** The scene's exit animation, if it has one (leaving the desk, driving off). `how` picks a variant. */
+  leave?: (how?: string) => Promise<void>;
 };
 export type SceneOptions = {
   /** The player's avatar. Without one the room is empty, which is fine for the settled shot. */

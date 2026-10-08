@@ -60,17 +60,26 @@ Successful response — `201 Created`:
   "duplicate": false,
   "attempt_kind": "ordinary",
   "state": {
-    "mission_id": "NG-M0427",
-    "difficulty": 3,
+    "mission_id": "NG-M0001",
+    "case_dossier": {
+      "title": "The Vanishing Carved Ceremonial Staff — The Umuahia Case",
+      "stolen_item": "a carved ceremonial staff",
+      "premise": "Someone has taken a carved ceremonial staff from Umuahia. The route suggests an artifact theft operation, and the object may be moved again before the week is over.",
+      "opening_briefing": "The local case officer seals the scene at Umuahia. Recover a carved ceremonial staff, identify the thief from eight dossier details, and obtain a warrant before the seven-day deadline."
+    },
+    "difficulty": 2,
     "stage": 0,
     "current_state": "Abia",
     "elapsed": 0,
-    "score": 800,
+    "score": 650,
     "career_points": 4200,
     "dossier": {},
     "visited_venues": [],
     "warrant_suspect": null,
-    "outcome": null
+    "outcome": null,
+    "opening_budget": 35000,
+    "balance": 35000,
+    "transport_rules_version": 1
   },
   "events": []
 }
@@ -78,6 +87,11 @@ Successful response — `201 Created`:
 
 Persist the returned `case_id`; it is required to resume the case and submit
 commands. Do not replace it with a browser-generated ID.
+
+`state.case_dossier` is the immutable opening case file shown before gameplay.
+`state.dossier` is intentionally a separate map: it begins empty and gains the
+eight suspect-profile traits discovered from witnesses. The frontend must not
+substitute one for the other.
 
 Catalogue exhausted — `409 Conflict`:
 
@@ -209,6 +223,13 @@ POST /v1/cases/{case_id}/commands
 ```
 
 ## Required frontend changes
+
+Witness order is not evidence order. At each stop exactly one of the three
+available witnesses carries the suspect-description hint, and its venue is
+selected deterministically by the server for that case. The eight dossier
+fields are also shuffled per case. Never label the first card as the dossier
+witness or predict the next field in the browser; render the returned witness
+account and current case state.
 
 1. Remove the fixed mission-number input, “next mission” calculation, and
    browser-side random mission selection.
