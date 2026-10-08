@@ -13,7 +13,7 @@
 
   const inCase = $derived(app.game !== null && app.screen !== "results");
   // The rooms (the desk and the archive) are full-screen: their own menus replace the side rail.
-  const rail = $derived(app.signedIn && app.screen !== "welcome" && app.screen !== "cases" && app.screen !== "archive" && app.screen !== "garage" && !app.needsAvatar);
+  const rail = $derived(app.signedIn && app.screen !== "welcome" && app.screen !== "cases" && app.screen !== "archive" && app.screen !== "garage" && app.screen !== "witness" && !app.needsAvatar);
 
   const waiting = $derived(app.coop.requests.filter(r => coopActions(r, app.player?.username ?? "").length).length);
   type Item = { id: Screen; label: string; icon: string; count?: string };
@@ -67,7 +67,7 @@
   {/if}
 
   <div class="content">
-    {#if inCase && app.screen !== "cases" && app.screen !== "garage"}<Hud {app} />{/if}
+    {#if inCase && app.screen !== "cases" && app.screen !== "garage" && app.screen !== "witness"}<Hud {app} />{/if}
     <main id="main" tabindex="-1">{@render children()}</main>
   </div>
 </div>

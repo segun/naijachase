@@ -66,7 +66,8 @@ Install the pinned web dependencies with `cd web && pnpm install`. Run
 `make api` and `make web` in separate terminals, then open
 `http://127.0.0.1:4173`. Run `make p36` for the complete web vertical-slice
 gate. The architecture, accessibility checks, mobile budget, and 2D/3D/Wasm
-decision are documented in `docs/web-vertical-slice.md`.
+decision are documented in `docs/web-vertical-slice.md`. Animated scenes are 3D
+with a 2D fallback; see `docs/scene-conventions.md` before adding one.
 
 ## Play in the terminal
 

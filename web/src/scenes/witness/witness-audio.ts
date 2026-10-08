@@ -15,11 +15,15 @@ export type WitnessAudio = {
   dispose(): void;
 };
 
+/** How loud the witness's voice is, against an ambience that peaks around 0.15. */
+const VOICE_LEVEL = 0.22;
+
 /** The two main resonances of five vowel sounds, so the babble does not drone on one note. */
 const VOWELS: readonly (readonly [number, number])[] = [[730, 1090], [530, 1840], [270, 2290], [570, 840], [300, 870]];
 
-function random(seed: number): () => number {
-  let s = (seed % 2147483646) + 1;
+export function random(seed: number): () => number {
+  // Seeds can be negative (a hash XOR) or fractional; the generator needs a whole number from 1 to 2147483646.
+  let s = (Math.abs(Math.trunc(seed)) % 2147483646) + 1;
   return () => { s = (s * 16807) % 2147483647; return (s - 1) / 2147483646; };
 }
 
@@ -75,7 +79,7 @@ export function createWitnessAudio(mix: SoundMix, vehicle: "car" | "bus", seed: 
     osc.type = "sawtooth";
     osc.frequency.setValueAtTime(freq, at);
     osc.frequency.linearRampToValueAtTime(freq * (0.9 + rnd() * 0.2), at + seconds);
-    const [f1, f2] = VOWELS[vowel % VOWELS.length]!;
+    const [f1, f2] = VOWELS[Math.abs(vowel) % VOWELS.length]!;
     const env = ctx.createGain();
     env.gain.setValueAtTime(0.0001, at);
     env.gain.linearRampToValueAtTime(level, at + seconds * 0.25);
@@ -120,8 +124,8 @@ export function createWitnessAudio(mix: SoundMix, vehicle: "car" | "bus", seed: 
 
   /** The crowd drops back while the witness speaks so the voice is clear. */
   const duck = (on: boolean) => {
-    murmur.gain.setTargetAtTime(murmurLevel * (on ? 0.45 : 1), ctx.currentTime, 0.3);
-    chatter.gain.setTargetAtTime(chatterLevel * (on ? 0.45 : 1), ctx.currentTime, 0.3);
+    murmur.gain.setTargetAtTime(murmurLevel * (on ? 0.35 : 1), ctx.currentTime, 0.3);
+    chatter.gain.setTargetAtTime(chatterLevel * (on ? 0.35 : 1), ctx.currentTime, 0.3);
   };
   const later = (fn: () => void, ms: number) => {
     const id = setTimeout(() => { timers.delete(id); fn(); }, Math.max(0, ms));
@@ -143,7 +147,7 @@ export function createWitnessAudio(mix: SoundMix, vehicle: "car" | "bus", seed: 
         const span = (w.end - w.start) / w.syllables;
         for (let s = 0; s < w.syllables; s++) {
           const contour = 1 + 0.1 * Math.sin(i * 0.9 + s) + (r() - 0.5) * 0.08;
-          blip(first + w.start + s * span, pitch * contour, Math.max(0.06, span * 0.85), 0.085, Math.floor(r() * 5));
+          blip(first + w.start + s * span, pitch * contour, Math.max(0.06, span * 0.85), VOICE_LEVEL, Math.floor(r() * 5));
         }
       });
       later(() => duck(true), startsIn * 1000 - 200);

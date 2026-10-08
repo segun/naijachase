@@ -27,6 +27,10 @@ web/src/
                          room-scene.ts and chase3d-room.ts
     archive/             the records room: ArchiveRoom, Archive (the list), archive-scene.ts
     garage/              the garage: GarageRoom, garage-scene.ts and chase3d-garage.ts
+    witness/             the witness interview: WitnessScene, witness-scene.ts (timing, poses, subtitles),
+                         venue-recipes.ts (per-venue look and sound), market-layout.ts (where things stand),
+                         witness-driver.ts (shared options, sound, subtitles), witness-audio.ts,
+                         chase3d-witness.ts (3D) and witness-2d.ts (2D)
   screens/               the ordinary screens, grouped by feature
     entry/               Landing, AuthPanel
     account/             Settings
@@ -135,10 +139,29 @@ Rules of the layout: Babylon.js may only be imported by TypeScript modules under
   `2`), each with the server's fare, journey time, arrival and balance after, and a warning when
   unaffordable or past the deadline. The visit command is sent first; only when the server accepts
   it does the player climb into the open-top car and drive off (about 3.8 seconds) or set off
-  for the roadside with a thumb out (about 2.5 seconds), and then the investigation opens with
-  the witness account in the notebook. "Not now" (Esc) goes back to the investigation without
+  for the roadside with a thumb out (about 2.5 seconds), and then the witness scene plays (below)
+  and the investigation opens with the witness account in the notebook. "Not now" (Esc) goes back to the investigation without
   travelling. The dossier cannot be skipped; "Skip to the case" on the leads screen goes straight to the investigation; resuming a
   saved case does not replay the briefing.
+- **Witness scene** (`scenes/witness/`): after a visit is accepted (from the garage, or from the
+  investigation's travel dialog) the picture fades up on the venue. Only the market has a scene so far;
+  other venues go straight to the investigation. The player's vehicle pulls up (the open-top car for
+  **Drive**, a yellow minibus with a rear door for **Hitch a ride**), the player gets out under a banner
+  carrying the venue's name, walks up to the witness behind her stall, and the witness greets the player and
+  speaks with her mouth and hands moving. The words appear along the bottom of the screen as they are said (a
+  large caption of about 14 words at a time, spoken words bright and the rest dim). The whole
+  account is also announced once to screen readers and stays in the notebook. Length follows the number of
+  words: about 10 to 15 seconds for a typical account (speech is paced at 3.3 words per second, between 3 and
+  11 seconds, and the scene never exceeds 18 seconds); Esc, Enter, Space or the Skip button end it. Everything is
+  derived from the account text and the venue id, so no per-location scene is stored or downloaded: the
+  witness is picked from the venue recipe by the account text and the lighting follows the case clock. Sound is
+  synthesised with the Web Audio API (crowd murmur, traders calling, a generator, coins, the engine, door,
+  footsteps and a syllable-timed voice babble); it follows the Music toggle and turns the music down while it
+  plays. It is never skipped and never leaves a black screen: it starts in 3D on capable devices and in 2D (Canvas 2D, `witness-2d.ts`) on
+  the rest, and if 3D fails, throws, loses its context, stalls or runs below 20 fps it carries on in 2D from the same moment. Reduced motion
+  starts the 2D scene at the conversation. The pattern every scene must follow is in `docs/scene-conventions.md`. Timing, poses, subtitle paging and mouth movement are pure and unit-tested in
+  `scenes/witness/witness-scene.ts`; a new venue needs an entry in `venue-recipes.ts` and its dressing in
+  `chase3d-witness.ts`.
 - **Case archive** (`ArchiveRoom.svelte`): opened from the terminal menu, the avatar walks into a
   records room, takes a case file off the shelf and turns to show it, and the camera zooms onto
   the file, where the list below is shown on a manila sheet (about 4.5 seconds, skippable with

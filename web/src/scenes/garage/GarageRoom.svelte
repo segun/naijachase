@@ -1,7 +1,8 @@
 <script lang="ts">
   // After the briefing: the player comes through the office door into the garage and the two ways to reach the chosen lead are
   // offered as animated cards (Drive, or Hitch a ride on foot). Choosing one sends the visit to the server first; only when the
-  // server accepts does the player climb into the car and drive off, or set off for the roadside, and the investigation opens.
+  // server accepts does the player climb into the car and drive off, or set off for the roadside; then the witness scene plays
+  // (for venues that have one) and the investigation opens.
   import "../../styles/terminal.css";
   import type { AppController } from "../../state/app.svelte";
   import { MODE_FOR, type Exit } from "./garage-scene.ts";
@@ -38,7 +39,7 @@
     const ok = await app.command({ type: "visit_venue", venue_id: venueId, mode: quote.mode as "drive" | "hitch_ride" }, "Witness interviewed.", "Interviewing witness");
     if (!ok) { chosen = ""; failed = true; return; }
     await leave(how);
-    app.leaveGarage();
+    app.arriveAtWitness(how);
   }
 
   const key = (e: KeyboardEvent, awake: boolean, leave: (how?: string) => Promise<void>) => {

@@ -51,6 +51,9 @@ export class MenuMusic {
     void this.sync();
   }
 
+  /** Quietens the music while a scene plays its own sound. Does nothing if the music is not playing. */
+  duck(on: boolean) { this.player?.duck(on); }
+
   private arm() {
     if (this.armed) return;
     this.armed = true;

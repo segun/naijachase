@@ -2,6 +2,7 @@ import { untrack } from "svelte";
 import { Api, ApiError } from "../api/api";
 import { MenuMusic } from "../music/music.svelte.ts";
 import { GroupsController } from "./groups.svelte.ts";
+import { recipeFor } from "../scenes/witness/venue-recipes.ts";
 import {
   FIELDS, RATE_LIMIT_MESSAGE, errorKind, groupNotes, nearestHomeBase, parseNotes,
   catalogueView, unreadReleases, type ReportCategory, type AchievementDef, type CaseArchiveEntry, type CaseResponse, type CatalogueProgress, type ClientCommand, type Note,
@@ -9,6 +10,8 @@ import {
 } from "../domain/model.ts";
 
 export type Toast = { id: number; kind: "info" | "error" | "success"; text: string };
+/** The witness just questioned, for the arrival scene that follows the journey to the venue. */
+export type WitnessVisit = { venueId: string; venueName: string; role: string; message: string; arrival: "drive" | "hitch" };
 export type Settings = { textSize: "normal" | "large"; contrast: "normal" | "high"; motion: "system" | "reduced" };
 
 const DEFAULT_SETTINGS: Settings = { textSize: "normal", contrast: "normal", motion: "system" };
@@ -66,6 +69,10 @@ export class AppController {
   briefing = $state(false);
   /** The local lead chosen in the briefing; the investigation opens its travel options so the server still confirms the fare. */
   pendingLead = $state("");
+  /** Set by a successful visit_venue command; the garage hands it to the witness scene. */
+  lastWitness = $state<Omit<WitnessVisit, "arrival"> | null>(null);
+  /** The witness scene being played; null when none is. */
+  witnessVisit = $state<WitnessVisit | null>(null);
 
   signedIn = $derived(this.player !== null);
   /** First login: the avatar picker comes before the case desk and nothing else is reachable. */
@@ -138,7 +145,7 @@ export class AppController {
 
   private endSession(message?: string) {
     clearInterval(this.refreshTimer);
-    this.player = null; this.game = null; this.caseId = ""; this.briefing = false; this.pendingLead = "";
+    this.player = null; this.game = null; this.caseId = ""; this.briefing = false; this.pendingLead = ""; this.lastWitness = null; this.witnessVisit = null;
     this.summary = null; this.archive = []; this.sessions = []; this.avatar = null; this.catalogueStatus = null; this.exhausted = false; this.quotes = []; this.ledger = []; this.notes = []; this.trail = []; this.rankAtStart = null;
     sessionStorage.clear();
     this.screen = "cases";
@@ -419,6 +426,23 @@ export class AppController {
     this.go(this.game?.state.outcome ? "results" : "investigate");
   }
 
+  /** After the journey to a venue: the witness scene if that venue has one, otherwise straight to the investigation. */
+  arriveAtWitness(arrival: "drive" | "hitch") {
+    const witness = this.lastWitness;
+    this.lastWitness = null;
+    if (witness && !this.game?.state.outcome && recipeFor(witness.venueId)) {
+      this.pendingLead = "";
+      this.witnessVisit = { ...witness, arrival };
+      this.go("witness");
+    } else this.leaveGarage();
+  }
+
+  /** The witness scene is over (or was skipped): on to the investigation, where the account is in the notebook. */
+  leaveWitness() {
+    this.witnessVisit = null;
+    this.go(this.game?.state.outcome ? "results" : "investigate");
+  }
+
   /** Ordinary assignment: the server picks an unseen mission and returns the case id. */
   async openCase() {
     const created = await this.run("Opening case file", () => this.api.assign(), e => {
@@ -477,11 +501,15 @@ export class AppController {
   async command(payload: ClientCommand, message: string, label = "Working", quiet = false): Promise<boolean> {
     const current = this.game;
     if (!current) return false;
+    if (payload.type === "visit_venue") this.lastWitness = null;
     const next = await this.run(label, () => this.api.command(current.case_id, current.state_version, payload));
     if (!next) return false;
     this.game = next;
     const account = next.events.find(e => e.event_type === "witness_account")?.data;
     if (account?.message && !next.duplicate) {
+      if (payload.type === "visit_venue") {
+        this.lastWitness = { venueId: payload.venue_id, venueName: account.venue_name ?? "", role: account.witness_role ?? "Witness", message: account.message };
+      }
       this.notes = [...this.notes, {
         stop: current.state.current_state,
         venue: account.venue_name ?? "Witness",

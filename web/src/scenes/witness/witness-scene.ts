@@ -30,15 +30,16 @@ export const CAR_SEAT = { x: -0.38, z: 0.25 } as const;
 export const CAR_HEADING = headingOf(-1, 0);
 export const CAR_SIT_DROP = 0.09;
 export const SEAT_WORLD: readonly [number, number] = [VEHICLE_STOP_X + CAR_SEAT.z, ROAD_Z - CAR_SEAT.x];
-/** The minibus door, measured from the bus's centre along its length. */
-export const BUS_DOOR_X = -1.2;
+/** The minibus has a rear door, so the player steps out where the camera can see them. It is 2.5 m behind the bus's centre. */
+export const BUS_REAR = 2.55;
 /** Where the player stands after stepping out, on the market side of the vehicle. */
 export const EXIT_POINT: Record<Arrival, readonly [number, number]> = {
   drive: [SEAT_WORLD[0] + 0.1, ROAD_Z + 1.5],
-  hitch: [VEHICLE_STOP_X + BUS_DOOR_X, ROAD_Z + 1.9]
+  hitch: [VEHICLE_STOP_X + BUS_REAR + 0.9, ROAD_Z]
 };
 
 const FACE_MARKET = headingOf(0, 1);
+const FACE_REAR = headingOf(1, 0);
 const FACE_WITNESS = headingOf(WITNESS.x - MEET.x, WITNESS.z - MEET.z);
 const WITNESS_FACES_PLAYER = headingOf(MEET.x - WITNESS.x, MEET.z - WITNESS.z);
 
@@ -190,10 +191,11 @@ export function playerPoseAt(plan: Plan, t: number): WitnessPose {
   } else {
     // Hitching: the player is inside the minibus until its door opens, then steps down.
     const open = plan.stopped + 0.25;
-    if (t < open) return pose({ x: exit[0], z: exit[1] - 0.8, heading: FACE_MARKET, visible: false, alpha: 0 });
+    const inside = exit[0] - 1.3;
+    if (t < open) return pose({ x: inside, z: exit[1], heading: FACE_REAR, visible: false, alpha: 0 });
     if (t < plan.walkStart) {
       const k = smooth((t - open) / (plan.walkStart - open));
-      return pose({ x: exit[0], z: mix(exit[1] - 0.8, exit[1], k), heading: FACE_MARKET, alpha: clamp01(k * 4), gait: k * 5, stride: Math.sin(k * Math.PI) * 0.8 });
+      return pose({ x: mix(inside, exit[0], k), z: exit[1], heading: FACE_REAR, alpha: smooth((k - 0.35) / 0.2), gait: k * 5, stride: Math.sin(k * Math.PI) * 0.8 });
     }
   }
   const heading = headingOf(MEET.x - exit[0], MEET.z - exit[1]);
@@ -202,7 +204,7 @@ export function playerPoseAt(plan: Plan, t: number): WitnessPose {
     const k = clamp01((t - plan.walkStart) / (plan.walkEnd - plan.walkStart));
     return pose({
       x: mix(exit[0], MEET.x, k), z: mix(exit[1], MEET.z, k),
-      heading: turnTo(FACE_MARKET, heading, smooth((t - plan.walkStart) / 0.25)),
+      heading: turnTo(plan.arrival === "drive" ? FACE_MARKET : FACE_REAR, heading, smooth((t - plan.walkStart) / 0.25)),
       gait: (t - plan.walkStart) * WALK_SPEED * 2.4,
       stride: smooth((t - plan.walkStart) / 0.2) * (1 - smooth((t - (plan.walkEnd - 0.25)) / 0.25))
     });
@@ -249,10 +251,10 @@ export function witnessAt(plan: Plan, timings: readonly WordTiming[], t: number)
 
 // ---- The camera ----
 
-const ARRIVAL_SHOT: CameraShot = { position: [1.4, 1.45, -7.4], target: [-0.8, 1.05, 0.2] };
-const ARRIVAL_END: CameraShot = { position: [0.6, 1.4, -6.8], target: [-0.8, 1.05, 0.2] };
-const TALK_FROM: CameraShot = { position: [-1.95, 1.62, -0.55], target: [0.75, 1.12, 1.9] };
-const TALK_TO: CameraShot = { position: [-1.5, 1.6, -0.2], target: [0.7, 1.25, 1.95] };
+const ARRIVAL_SHOT: CameraShot = { position: [0.4, 1.8, -11.5], target: [0.4, 1.35, 0.5] };
+const ARRIVAL_END: CameraShot = { position: [-0.4, 1.75, -10.6], target: [-0.4, 1.3, 0.5] };
+const TALK_FROM: CameraShot = { position: [3.3, 1.55, -1.3], target: [0.75, 1.3, 1.9] };
+const TALK_TO: CameraShot = { position: [3.0, 1.55, -0.9], target: [0.8, 1.35, 1.95] };
 
 /** An establishing shot of the market and the arriving vehicle, a follow shot of the walk, then a two-shot that eases in on the witness. */
 export function cameraAt(plan: Plan, t: number): CameraShot {

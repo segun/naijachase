@@ -10,6 +10,7 @@ const WITNESS = {
   library: "The librarian whispers that someone studied maps of the north and left before closing.",
   motor_park: "An agbero says a tall passenger bargained hard for a seat heading toward the savannah."
 };
+const WITNESS_ROLE = { market: "market woman", library: "librarian", motor_park: "agbero" };
 const RANKS = [[0, "Rookie"], [1500, "Investigator"], [4000, "Senior Investigator"], [8000, "Inspector"]];
 const CATALOG = [
   { id: "first_case", title: "First Case", description: "Solve your first case." },
@@ -153,7 +154,7 @@ function apply(c, cmd) {
       pay(c, "local", cmd.venue_id, cmd.mode, c.state, VENUE_LABEL[cmd.venue_id]);
       c.visited.push(key); c.elapsed += 45;
       const hint = first ? ` I also noticed the suspect was ${TRAITS[c.stage % 8]}.` : "";
-      events.push({ event_type: "witness_account", data: { message: WITNESS[cmd.venue_id] + hint, venue_name: cmd.venue_id.replace("_", " ") } });
+      events.push({ event_type: "witness_account", data: { message: WITNESS[cmd.venue_id] + hint, venue_name: cmd.venue_id.replace("_", " "), witness_role: WITNESS_ROLE[cmd.venue_id] } });
       break;
     }
     case "record_trait": c.dossier[cmd.trait_name] = cmd.value; break;

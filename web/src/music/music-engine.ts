@@ -288,6 +288,14 @@ export class ScorePlayer {
     volume.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + fadeSeconds);
   }
 
+  /** Turns the music down (or back up) while something else, such as a witness scene's own sound, needs to be heard. */
+  duck(on: boolean, fadeSeconds = 0.6) {
+    const { ctx, volume } = this;
+    if (!ctx || !volume || this.timer === undefined) return;
+    volume.gain.cancelScheduledValues(ctx.currentTime);
+    volume.gain.setTargetAtTime(this.level * (on ? 0.25 : 1), ctx.currentTime, fadeSeconds / 3);
+  }
+
   /** Fades out, then stops scheduling and releases the audio device. */
   stop(fadeSeconds = 1) {
     this.wanted = false;

@@ -1173,6 +1173,13 @@ scores, rank, detection odds, panel votes, punishment, or jail time.
     mobile devices before committing.
   - [ ] Prototype one market investigation, one road journey with a vehicle and
     generated LGA sign, one witness interaction, and one arrest sequence.
+    - [x] Market witness scene: Drive or Hitch arrival, the player walks up to a market
+      witness who speaks with live word-by-word subtitles, synthesised market sound, a
+      length that follows the words (about 10-15 s), venue name on a banner.
+      2D (Canvas 2D) fallback for it is built and takes over when 3D fails or the device is weak;
+      the convention is in `docs/scene-conventions.md`.
+      Remaining: the other 34 venue recipes, the road journey with an LGA sign, the arrest
+      sequence, and measuring frame rate on real mobile devices.
   - [ ] Support glTF/GLB assets, character animation, reusable camera sequences,
     spatial/ambient audio, time-of-day lighting, weather, and regional scenery.
   - [ ] Translate environmental descriptions into animation and scene direction

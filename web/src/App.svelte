@@ -21,6 +21,7 @@
     helpers: () => import("./screens/social/Helpers.svelte"),
     room: () => import("./scenes/office/Room.svelte"),
     garage: () => import("./scenes/garage/GarageRoom.svelte"),
+    witness: () => import("./scenes/witness/WitnessScene.svelte"),
     settings: () => import("./screens/account/Settings.svelte"),
     weekly: () => import("./screens/social/Weekly.svelte")
   } as const;
@@ -66,6 +67,7 @@
       {:else if app.screen === "cases" && !app.signedIn}<AuthPanel {app} />
       {:else if app.screen === "cases"}{@render room()}
       {:else if app.game && app.screen === "garage"}{#await lazy.garage() then { default: Screen }}<Screen {app} />{/await}
+      {:else if app.game && app.screen === "witness" && app.witnessVisit}{#await lazy.witness() then { default: Screen }}<Screen {app} />{/await}
       {:else if app.game && app.screen === "investigate"}<Investigate {app} />
       {:else if app.game && app.screen === "notebook"}<Notebook {app} />
       {:else if app.game && app.screen === "dossier"}<Dossier {app} />

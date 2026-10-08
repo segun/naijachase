@@ -28,7 +28,7 @@
     pendingVenue = group.id;
     const ok = await app.command({ type: "visit_venue", venue_id: group.id, mode: quote.mode as "drive" | "hitch_ride" }, "Witness interviewed.", "Interviewing witness");
     pendingVenue = "";
-    if (ok) choosing = null;
+    if (ok) { choosing = null; app.arriveAtWitness(quote.mode === "drive" ? "drive" : "hitch"); }
   }
 </script>
 

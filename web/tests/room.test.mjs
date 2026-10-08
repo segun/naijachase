@@ -313,7 +313,7 @@ test("the garage screen offers Drive and Hitch a ride, asks the server first, an
   assert.doesNotMatch(view, /^\s*import\s+[^\n]*chase3d/m);
   assert.match(view, /MODE_LABEL\[MODE_FOR\[how\]\]/, "labelled with the server's own mode names");
   assert.match(view, /visit_venue/);
-  assert.match(view, /const ok = await app\.command\([^)]*\);\s*if \(!ok\) \{ chosen = ""; failed = true; return; \}\s*await leave\(how\);\s*app\.leaveGarage\(\)/, "command, then exit animation, then the investigation");
+  assert.match(view, /const ok = await app\.command\([^)]*\);\s*if \(!ok\) \{ chosen = ""; failed = true; return; \}\s*await leave\(how\);\s*app\.arriveAtWitness\(how\)/, "command, then exit animation, then the witness scene (or the investigation)");
   assert.match(view, /quote\.affordable/, "an unaffordable option cannot be chosen");
   assert.match(view, /missesDeadline/);
   assert.match(appSrc, /leaveGarage\(\)/);

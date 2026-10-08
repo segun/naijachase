@@ -44,7 +44,7 @@ export function runabout(stage: Stage): { root: TransformNode; wheels: Wheels } 
   return { root, wheels };
 }
 
-/** A yellow shared-ride minibus with a black stripe, a sliding door on its -x side near the front, and a roof rack. `door` slides back as it opens. */
+/** A yellow shared-ride minibus with a black stripe, a roof rack and a rear door that swings open about `door`'s y axis (negative angles open it outwards). */
 export function danfo(stage: Stage): { root: TransformNode; wheels: Wheels; door: TransformNode } {
   const { box, cyl, mat, caster, scene } = stage;
   const root = new TransformNode("danfo", scene);
@@ -68,9 +68,9 @@ export function danfo(stage: Stage): { root: TransformNode; wheels: Wheels; door
   box("rack", 1.9, 0.05, 3.4, trim, 0, 2.3, 0.3, root);
   for (const z of [-1.2, 1.8]) for (const x of [-0.9, 0.9]) box("rackPost", 0.04, 0.12, 0.04, trim, x, 2.24, z, root);
   const door = new TransformNode("busDoor", scene);
-  door.parent = root; door.position.set(-1.02, 0, -1.2);
-  box("doorLeaf", 0.05, 1.45, 0.9, mat("#e0a800", { specular: 0.3 }), 0, 1.2, 0, door);
-  box("doorGlass", 0.06, 0.55, 0.7, glass, 0, 1.55, 0, door);
+  door.parent = root; door.position.set(0.85, 0, 2.55);
+  box("doorLeaf", 1.7, 1.45, 0.05, mat("#e0a800", { specular: 0.3 }), -0.85, 1.2, 0, door);
+  box("doorGlass", 1.3, 0.55, 0.06, glass, -0.85, 1.55, 0, door);
   const wheels: Wheels = [];
   for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
     const hub = new TransformNode("wheel", scene);
