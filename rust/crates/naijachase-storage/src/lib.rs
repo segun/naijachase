@@ -305,7 +305,8 @@ fn case_metrics(state: &GameState) -> (Vec<String>, u32, u32, u32, u32) {
     let mut wrong_deductions = 0;
     for command in &state.replay {
         match command {
-            naijachase_contracts::Command::Travel { destination, .. } => {
+            naijachase_contracts::Command::Travel { destination, .. }
+            | naijachase_contracts::Command::TravelBy { destination, .. } => {
                 states.insert(destination.clone());
                 if state.route.get(stage + 1) == Some(destination) {
                     stage += 1;
@@ -3174,6 +3175,12 @@ mod tests {
             destination: "Kano".into(),
             minutes: 10,
         });
+        game.replay.push(naijachase_contracts::Command::TravelBy {
+            destination: "Abuja".into(),
+            mode: "hitch_ride".into(),
+            minutes: 20,
+            cost: 0,
+        });
         game.replay
             .push(naijachase_contracts::Command::RecordTrait {
                 trait_name: "hair".into(),
@@ -3186,8 +3193,8 @@ mod tests {
             });
         let (states, correct_travels, wrong_travels, correct_deductions, wrong_deductions) =
             case_metrics(&game);
-        assert_eq!(states, vec!["Kano", "Lagos", "Ogun"]);
-        assert_eq!((correct_travels, wrong_travels), (1, 1));
+        assert_eq!(states, vec!["Abuja", "Kano", "Lagos", "Ogun"]);
+        assert_eq!((correct_travels, wrong_travels), (1, 2));
         assert_eq!((correct_deductions, wrong_deductions), (1, 1));
     }
 
@@ -3712,7 +3719,8 @@ mod tests {
         let player_id = format!("auth-{id}");
         let player = player_id.as_str();
         let email = format!("auth-{id}@example.invalid");
-        let token = |label: &str| format!("{:x}", Sha256::digest(format!("{id}-{label}")))[..32].to_owned();
+        let token =
+            |label: &str| format!("{:x}", Sha256::digest(format!("{id}-{label}")))[..32].to_owned();
         store
             .register_player(
                 player,
@@ -3734,10 +3742,7 @@ mod tests {
             )
             .unwrap();
         assert_eq!(birth_date.as_deref(), Some("2000-02-29"));
-        let (account, password) = store
-            .login_record(&email)
-            .unwrap()
-            .unwrap();
+        let (account, password) = store.login_record(&email).unwrap().unwrap();
         assert!(!account.email_verified);
         assert_eq!(password, "argon-hash");
         assert!(!store.verify_email("wrong-hash").unwrap());
@@ -3768,17 +3773,41 @@ mod tests {
         store
             .create_session(player, &token("old-session"), &token("family-2"), None)
             .unwrap();
-        assert!(store.rotate_session(&token("old-session"), &token("new-session")).unwrap());
-        assert!(store.authenticate_session(&token("old-session")).unwrap().is_none());
-        assert!(store.authenticate_session(&token("new-session")).unwrap().is_some());
+        assert!(
+            store
+                .rotate_session(&token("old-session"), &token("new-session"))
+                .unwrap()
+        );
+        assert!(
+            store
+                .authenticate_session(&token("old-session"))
+                .unwrap()
+                .is_none()
+        );
+        assert!(
+            store
+                .authenticate_session(&token("new-session"))
+                .unwrap()
+                .is_some()
+        );
         assert!(
             !store
                 .rotate_session(&token("old-session"), &token("attacker-session"))
                 .unwrap()
         );
-        assert!(store.authenticate_session(&token("new-session")).unwrap().is_none());
+        assert!(
+            store
+                .authenticate_session(&token("new-session"))
+                .unwrap()
+                .is_none()
+        );
         store
-            .create_session(player, &token("recovery-session"), &token("family-recovery"), None)
+            .create_session(
+                player,
+                &token("recovery-session"),
+                &token("family-recovery"),
+                None,
+            )
             .unwrap();
         let sessions = store.sessions(player, &token("recovery-session")).unwrap();
         assert!(sessions.iter().any(|session| session.current));
@@ -3790,7 +3819,12 @@ mod tests {
             .clone();
         assert!(store.revoke_session_id(player, &session_id).unwrap());
         store
-            .create_session(player, &token("reset-session"), &token("family-reset"), None)
+            .create_session(
+                player,
+                &token("reset-session"),
+                &token("family-reset"),
+                None,
+            )
             .unwrap();
         store
             .update_profile(
@@ -3805,12 +3839,7 @@ mod tests {
             )
             .unwrap();
         assert_eq!(
-            store
-                .login_record(&email)
-                .unwrap()
-                .unwrap()
-                .0
-                .home_base,
+            store.login_record(&email).unwrap().unwrap().0.home_base,
             "Abia"
         );
         assert_eq!(

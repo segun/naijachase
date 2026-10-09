@@ -153,7 +153,7 @@ const groundShadow = (g: Ctx, o: Proj, half: number) => disc(g, o, 0, 0, half * 
 const arch = (g: Ctx, o: Proj, x: number, y: number, r: number) => disc(g, o, x, y, r + 0.08, "#0f1215");
 
 /** The open-top runabout, side on, facing left: a long rounded bonnet, a low tub and a curved tail. */
-function drawCar(g: Ctx, o: Proj, spin: number) {
+export function drawCar(g: Ctx, o: Proj, spin: number) {
   groundShadow(g, o, 2.2);
   paintBody(g, o, [[-1.85, 0.3], [1.8, 0.3], [1.86, 0.62], [1.45, 0.86], [-0.1, 0.88], [-0.55, 0.86], [-1.35, 0.76], [-1.86, 0.5]], 0.22, "#f7d160", "#d9a92d", 0.25, 0.9);
   soften(g, o, [[-1.7, 0.3], [-0.5, 0.3], [-0.5, 0.42], [-1.7, 0.42]], 0.05); g.fillStyle = "rgba(0,0,0,.22)"; g.fill();
@@ -168,7 +168,7 @@ function drawCar(g: Ctx, o: Proj, spin: number) {
   for (const wx of [-1.15, 1.15]) { arch(g, o, wx, 0.31, 0.31); wheel(g, o, wx, 0.31, 0.31, spin); }
 }
 /** The shared-ride minibus, side on, facing left, with its rear door opening at the right-hand end. */
-function drawBus(g: Ctx, o: Proj, spin: number, door: number) {
+export function drawBus(g: Ctx, o: Proj, spin: number, door: number) {
   groundShadow(g, o, 3.0);
   paintBody(g, o, [[-2.5, 0.42], [2.5, 0.42], [2.5, 2.3], [2.3, 2.42], [-1.9, 2.42], [-2.35, 1.95], [-2.5, 1.2]], 0.3, "#fbd23a", "#dba400", 0.4, 2.45);
   soften(g, o, [[-2.5, 0.98], [2.5, 0.98], [2.5, 1.12], [-2.5, 1.12]], 0.04); g.fillStyle = "#15191c"; g.fill();

@@ -44,7 +44,7 @@ export type SceneHandle = {
   skip(): void;
   scene: Scene;
   /** Plays a timeline from its start; resolves when it ends (or is skipped). */
-  play(next: Timeline): Promise<void>;
+  play(next: Timeline, startAt?: number): Promise<void>;
   /** The scene's exit animation, if it has one (leaving the desk, driving off). `how` picks a variant. */
   leave?: (how?: string) => Promise<void>;
 };
@@ -198,10 +198,10 @@ export function createStage(canvas: HTMLCanvasElement, options: StageOptions) {
     return {
       scene,
       skip() { skipped = true; },
-      play(next) {
+      play(next, startAt = 0) {
         return new Promise<void>(resolve => {
           done?.();
-          current = next; offset = 0; started = -1; skipped = false; finished = false; done = resolve;
+          current = next; offset = startAt; started = -1; skipped = false; finished = false; done = resolve;
           engine.stopRenderLoop();
           engine.runRenderLoop(frame);
         });

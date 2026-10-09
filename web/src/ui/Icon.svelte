@@ -39,7 +39,10 @@
     flag: "M5 21V4 M5 4h11l-2 4 2 4H5",
     helper: "M12 21s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.5-7 10-7 10z",
     trophy2: "M7 4h10v5a5 5 0 0 1-10 0z M12 14v4 M8 21h8",
-    mail: "M3 5h18v14H3z M3 6l9 7 9-7"
+    mail: "M3 5h18v14H3z M3 6l9 7 9-7",
+    flame: "M12 3c1 4 5 6 5 11a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-4-1-6 1-10z",
+    info: "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z M12 11v6 M12 7.5h.01",
+    snow: "M12 2v20 M3.3 7l17.4 10 M3.3 17L20.7 7 M9.5 4L12 6.5 14.5 4 M9.5 20l2.5-2.5 2.5 2.5"
   };
   let { name, label }: { name: string; label?: string } = $props();
 </script>

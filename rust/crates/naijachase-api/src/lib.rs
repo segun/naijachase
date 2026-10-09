@@ -10,9 +10,9 @@ use base64::{Engine, engine::general_purpose::URL_SAFE_NO_PAD};
 use naijachase_content::{Catalogue, Mission};
 use naijachase_contracts::{Command, Event, GameState};
 use naijachase_storage::{
-    Achievement, BirthDate, CaseArchiveEntry, CaseCommandResult, CatalogueHealth, CatalogueProgress,
-    MissionValidation, MysqlStore, PlayerAccount, PlayerSession, ProgressionSummary,
-    ReleaseNotification, StorageError,
+    Achievement, BirthDate, CaseArchiveEntry, CaseCommandResult, CatalogueHealth,
+    CatalogueProgress, MissionValidation, MysqlStore, PlayerAccount, PlayerSession,
+    ProgressionSummary, ReleaseNotification, StorageError,
 };
 use rand::RngCore;
 use serde::{Deserialize, Serialize};
@@ -399,6 +399,25 @@ pub struct CaseDossier {
     pub opening_briefing: String,
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
+pub struct SuspectPortrait {
+    pub skin_color: String,
+    pub hair_style: String,
+    pub hair_color: String,
+    pub background_color: String,
+    pub presentation: String,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
+pub struct SuspectFile {
+    pub suspect_id: String,
+    pub name: String,
+    pub alias: String,
+    pub dossier: BTreeMap<String, String>,
+    pub summary: String,
+    pub portrait: SuspectPortrait,
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub struct PublicGameState {
     pub mission_id: String,
@@ -413,6 +432,8 @@ pub struct PublicGameState {
     pub dossier: BTreeMap<String, String>,
     pub visited_venues: Vec<String>,
     pub warrant_suspect: Option<String>,
+    pub suspect_files: Vec<SuspectFile>,
+    pub resolved_thief_name: Option<String>,
     pub outcome: Option<String>,
     pub opening_budget: u32,
     pub balance: u32,
@@ -445,11 +466,101 @@ fn public_game_state(
         dossier: state.dossier.clone(),
         visited_venues: state.visited_venues.clone(),
         warrant_suspect: state.warrant_suspect.clone(),
+        suspect_files: suspect_files(state, catalogue),
+        resolved_thief_name: state
+            .outcome
+            .as_ref()
+            .and_then(|_| catalogue.thieves.get(&state.thief_id))
+            .map(|thief| thief.name.clone()),
         outcome: state.outcome.clone(),
         opening_budget: state.economy.opening_budget,
         balance: state.economy.balance,
         transport_rules_version: state.economy.rules_version,
     })
+}
+
+fn suspect_files(state: &GameState, catalogue: &Catalogue) -> Vec<SuspectFile> {
+    if state.stage as usize != state.route.len().saturating_sub(1) || state.dossier.len() < 8 {
+        return vec![];
+    }
+    let Some(target) = catalogue.profiles.get(&state.thief_id) else {
+        return vec![];
+    };
+    let target_traits = target.traits();
+    let mut candidates = catalogue
+        .profiles
+        .values()
+        .filter(|profile| profile.thief_id != state.thief_id)
+        .map(|profile| {
+            let distance = target_traits
+                .iter()
+                .zip(profile.traits())
+                .filter(|((_, expected), (_, candidate))| expected != candidate)
+                .count();
+            let tie = Sha256::digest(
+                format!("suspect-file|{}|{}", state.mission_id, profile.thief_id).as_bytes(),
+            );
+            (distance, tie.to_vec(), profile)
+        })
+        .filter(|(distance, _, _)| (1..=2).contains(distance))
+        .collect::<Vec<_>>();
+    candidates.sort_by(|a, b| (a.0, &a.1).cmp(&(b.0, &b.1)));
+    let mut selected = vec![target];
+    selected.extend(
+        candidates
+            .into_iter()
+            .take(2)
+            .map(|(_, _, profile)| profile),
+    );
+    selected.sort_by_key(|profile| {
+        Sha256::digest(
+            format!("suspect-position|{}|{}", state.mission_id, profile.thief_id).as_bytes(),
+        )
+        .to_vec()
+    });
+    selected
+        .into_iter()
+        .filter_map(|profile| {
+            let thief = catalogue.thieves.get(&profile.thief_id)?;
+            let dossier = profile
+                .traits()
+                .into_iter()
+                .map(|(field, value)| (field.to_owned(), value.to_owned()))
+                .collect();
+            let digest = Sha256::digest(profile.thief_id.as_bytes());
+            let skin_color = match profile.skin_tone.as_str() {
+                "light-skinned" => "#9b5f3f",
+                _ => "#57351f",
+            };
+            let backgrounds = ["#315f6b", "#65513a", "#4f416b", "#365c48", "#6b3f46"];
+            Some(SuspectFile {
+                suspect_id: profile.thief_id.clone(),
+                name: thief.name.clone(),
+                alias: thief.alias.clone(),
+                dossier,
+                summary: format!(
+                    "{}, known as {}, is {}, {}, and {}. Records associate this suspect with {}, {}, {}, {}, and a person who {}.",
+                    thief.name,
+                    thief.alias,
+                    profile.sex,
+                    profile.height,
+                    profile.skin_tone,
+                    profile.hair,
+                    profile.hobby,
+                    profile.vehicle,
+                    profile.accessory,
+                    profile.feature
+                ),
+                portrait: SuspectPortrait {
+                    skin_color: skin_color.into(),
+                    hair_style: profile.hair.clone(),
+                    hair_color: if digest[0] % 4 == 0 { "#33241d" } else { "#15120f" }.into(),
+                    background_color: backgrounds[usize::from(digest[1]) % backgrounds.len()].into(),
+                    presentation: profile.sex.clone(),
+                },
+            })
+        })
+        .collect()
 }
 
 #[derive(Debug, Serialize)]
@@ -1039,8 +1150,8 @@ async fn register(
     Json(request): Json<RegisterRequest>,
 ) -> Result<(StatusCode, Json<serde_json::Value>), ApiError> {
     ensure_origin(&headers, &state.config)?;
-    let birth_date =
-        BirthDate::new(request.dob_day, request.dob_month, request.dob_year).map_err(bad_request)?;
+    let birth_date = BirthDate::new(request.dob_day, request.dob_month, request.dob_year)
+        .map_err(bad_request)?;
     let email = request.email.trim().to_lowercase();
     enforce_auth_limit(&state, &email, "register", 5).await?;
     let username = request.username.trim().to_owned();
@@ -2889,15 +3000,7 @@ async fn transport_quotes(
         }
     }
     if game.stage as usize == game.route.len().saturating_sub(1) {
-        let mut ids = state
-            .catalogue
-            .location_venues
-            .keys()
-            .filter(|(candidate, _)| candidate == &game.state)
-            .map(|(_, venue)| venue.clone())
-            .collect::<Vec<_>>();
-        ids.sort();
-        ids.dedup();
+        let ids = hideout_options(&state.catalogue, &game);
         for venue_id in ids {
             let venue = &state.catalogue.venues[&venue_id];
             let base = placement_minutes(
@@ -3102,6 +3205,16 @@ async fn execute_command(
                 translate_command(&catalogue, &game, client_command, &account.home_base)?;
             let (next, mut events) =
                 naijachase_core::apply(game, command).map_err(|error| error.to_string())?;
+            if next.outcome.as_deref() == Some("escaped") {
+                if let Some(thief) = catalogue.thieves.get(&next.thief_id) {
+                    for event in &mut events {
+                        if event.event_type == "wrong_warrant" {
+                            event.data.insert("thief_name".into(), thief.name.clone());
+                            event.data.insert("thief_alias".into(), thief.alias.clone());
+                        }
+                    }
+                }
+            }
             if next.outcome.as_deref() != Some("deadline")
                 && let Some(event) = public_event
             {
@@ -3214,24 +3327,10 @@ fn translate_command(
                 .sum::<usize>()
                 + state.stage as usize;
             let (dialogue, atom_roles) = if on_trail {
-                let clue_state = state
-                    .route
-                    .get(state.stage as usize + 1)
-                    .unwrap_or(&state.state);
-                let atoms = catalogue
-                    .atoms
-                    .get(clue_state)
+                let atom = witness_clue_plan(catalogue, state)
+                    .into_iter()
+                    .find(|atom| atom.venue_id == venue_id)
                     .ok_or("witness clue unavailable")?;
-                let matching = atoms
-                    .iter()
-                    .filter(|atom| atom.venue_id == venue_id)
-                    .collect::<Vec<_>>();
-                let pool = if matching.is_empty() {
-                    atoms.iter().collect::<Vec<_>>()
-                } else {
-                    matching
-                };
-                let atom = pool[clue_key % pool.len()];
                 let difficulty = match state.difficulty {
                     1 | 2 => "easy",
                     3 => "medium",
@@ -3393,6 +3492,9 @@ fn translate_command(
         }
         ClientCommand::SearchHideout { venue_id, mode } => {
             validate_id(&venue_id, "venue_id")?;
+            if !hideout_options(catalogue, state).contains(&venue_id) {
+                return Err("hideout is not one of the five active search locations".into());
+            }
             let venue = catalogue.venues.get(&venue_id).ok_or("unknown venue_id")?;
             Ok((
                 Command::SearchHideoutBy {
@@ -3454,6 +3556,28 @@ fn choose_hideout(mission_id: &str, seed: u64, state: &str, catalogue: &Catalogu
         .wrapping_add(seed) as usize
         % ids.len();
     ids[offset].clone()
+}
+
+fn hideout_options(catalogue: &Catalogue, state: &GameState) -> Vec<String> {
+    let mut ids = catalogue
+        .location_venues
+        .keys()
+        .filter(|(candidate, _)| candidate == &state.state)
+        .map(|(_, venue)| venue.clone())
+        .collect::<Vec<_>>();
+    ids.sort();
+    ids.dedup();
+    ids.retain(|venue| venue != &state.hideout_venue);
+    ids.sort_by_key(|venue| {
+        Sha256::digest(format!("hideout-option|{}|{}", state.mission_id, venue).as_bytes()).to_vec()
+    });
+    ids.truncate(4);
+    ids.push(state.hideout_venue.clone());
+    ids.sort_by_key(|venue| {
+        Sha256::digest(format!("hideout-position|{}|{}", state.mission_id, venue).as_bytes())
+            .to_vec()
+    });
+    ids
 }
 
 /// The one placement (a real location's version of the venue, such as "Aba Community Market") a visit uses.
@@ -3538,12 +3662,119 @@ fn dossier_witness_venue(catalogue: &Catalogue, state: &GameState) -> Option<Str
     if !is_on_trail(state) {
         return None;
     }
-    let venues = available_venue_ids(catalogue, state);
+    let venues = witness_clue_plan(catalogue, state)
+        .into_iter()
+        .filter(|atom| atom.dimension != "landmark")
+        .map(|atom| atom.venue_id.clone())
+        .collect::<Vec<_>>();
     (!venues.is_empty()).then(|| {
         let index = dossier_random_byte(state, "dossier-witness", state.stage as usize) as usize
             % venues.len();
         venues[index].clone()
     })
+}
+
+fn candidate_states(atom: &naijachase_content::ClueAtom) -> BTreeSet<&str> {
+    atom.candidate_states.split('|').collect()
+}
+
+/// Builds one deliberately decisive clue and two multi-state clues. The
+/// decisive clue is always the curated landmark atom and can never carry the
+/// dossier evidence that marks the key witness.
+fn witness_clue_plan<'a>(
+    catalogue: &'a Catalogue,
+    state: &GameState,
+) -> Vec<&'a naijachase_content::ClueAtom> {
+    if !is_on_trail(state) {
+        return vec![];
+    }
+    witness_clue_plan_for(
+        catalogue,
+        &state.route,
+        &state.mission_id,
+        state.stage as usize,
+        &state.state,
+    )
+}
+
+fn witness_clue_plan_for<'a>(
+    catalogue: &'a Catalogue,
+    route: &[String],
+    mission_id: &str,
+    stage: usize,
+    actual_state: &str,
+) -> Vec<&'a naijachase_content::ClueAtom> {
+    let Some(route_state) = route.get(stage) else {
+        return vec![];
+    };
+    if route_state != actual_state {
+        return vec![];
+    }
+    let target = route.get(stage + 1).unwrap_or(route_state);
+    let Some(atoms) = catalogue.atoms.get(target) else {
+        return vec![];
+    };
+    let start = (mission_id.bytes().map(usize::from).sum::<usize>() + stage * 7) % atoms.len();
+    let ordered = (0..atoms.len())
+        .map(|offset| &atoms[(start + offset) % atoms.len()])
+        .collect::<Vec<_>>();
+    let available = |atom: &&naijachase_content::ClueAtom| {
+        catalogue
+            .location_venues
+            .contains_key(&(actual_state.to_owned(), atom.venue_id.clone()))
+    };
+    let decisive = ordered
+        .iter()
+        .copied()
+        .filter(|atom| atom.dimension == "landmark")
+        .filter(available)
+        .next();
+    let Some(decisive) = decisive else {
+        return vec![];
+    };
+
+    let ambiguous = ordered
+        .iter()
+        .copied()
+        .filter(|atom| atom.venue_id != decisive.venue_id)
+        .filter(|atom| candidate_states(atom).len() > 1)
+        .filter(available)
+        .collect::<Vec<_>>();
+
+    let mut fallback = None;
+    let mut selected = None;
+    'pairs: for (left_index, left) in ambiguous.iter().enumerate() {
+        for right in ambiguous.iter().skip(left_index + 1) {
+            if left.venue_id == right.venue_id {
+                continue;
+            }
+            let left_candidates = candidate_states(left);
+            let right_candidates = candidate_states(right);
+            let intersection = left_candidates
+                .intersection(&right_candidates)
+                .copied()
+                .collect::<BTreeSet<_>>();
+            if !intersection.contains(target.as_str()) {
+                continue;
+            }
+            let reduces_options = intersection.len() < left_candidates.len()
+                || intersection.len() < right_candidates.len();
+            fallback.get_or_insert((*left, *right));
+            if reduces_options {
+                selected = Some((*left, *right));
+                break 'pairs;
+            }
+        }
+    }
+    let Some((left, right)) = selected.or(fallback) else {
+        return vec![];
+    };
+    let mut plan = vec![left, right, decisive];
+    plan.sort_by_key(|atom| {
+        Sha256::digest(format!("clue-position|{mission_id}|{stage}|{}", atom.atom_id).as_bytes())
+            .to_vec()
+    });
+    plan
 }
 
 fn available_venue_ids_for(
@@ -3557,6 +3788,12 @@ fn available_venue_ids_for(
         return vec![];
     };
     let on_trail = route_state == actual_state;
+    if on_trail {
+        return witness_clue_plan_for(catalogue, route, mission_id, stage, actual_state)
+            .into_iter()
+            .map(|atom| atom.venue_id.clone())
+            .collect();
+    }
     let atom_state = if on_trail {
         route.get(stage + 1).unwrap_or(route_state)
     } else {
@@ -3637,19 +3874,13 @@ fn mission_budget_baseline(catalogue: &Catalogue, mission: &Mission) -> Result<u
                 .1,
         )
     }
-    for (stage, state) in route.iter().enumerate() {
-        for venue in
-            available_venue_ids_for(catalogue, &route, &mission.mission_id, stage, &route[stage])
-        {
-            let base =
-                placement_minutes(catalogue, state, &venue, &mission.mission_id, stage as u8)
-                    .map_err(bad_request)?;
-            total = total.saturating_add(
-                naijachase_core::local_quote(base, "drive")
-                    .map_err(|e| bad_request(e.to_string()))?
-                    .1,
-            );
-        }
+    for state in &route {
+        // Budget against the three most expensive local drives in the state.
+        // This is both faster and more conservative than coupling the money
+        // calculation to a particular randomized clue plan.
+        let mut costs = local_costs_for_state(catalogue, state);
+        costs.sort_unstable_by(|left, right| right.cmp(left));
+        total = total.saturating_add(costs.into_iter().take(3).sum::<u32>());
     }
     let mut final_costs = local_costs_for_state(
         catalogue,
@@ -3803,6 +4034,73 @@ mod tests {
         assert!(!public.case_dossier.stolen_item.is_empty());
         assert!(!public.case_dossier.premise.is_empty());
         assert!(!public.case_dossier.opening_briefing.is_empty());
+    }
+
+    #[test]
+    fn final_stop_exposes_three_close_suspect_files_only_after_dossier_is_complete() {
+        let root = FsPath::new(env!("CARGO_MANIFEST_DIR")).join("../../..");
+        let catalogue = Catalogue::load(&root).unwrap();
+        for mission in catalogue.missions.values() {
+            let mut game = state();
+            game.mission_id = mission.mission_id.clone();
+            game.thief_id = mission.thief_id.clone();
+            game.route = catalogue.route(mission).unwrap();
+            game.stage = (game.route.len() - 1) as u8;
+            game.state = game.route.last().unwrap().clone();
+            assert!(suspect_files(&game, &catalogue).is_empty());
+
+            let target = catalogue.profiles.get(&game.thief_id).unwrap();
+            game.dossier = target
+                .traits()
+                .into_iter()
+                .map(|(key, value)| (key.to_owned(), value.to_owned()))
+                .collect();
+            let files = suspect_files(&game, &catalogue);
+            assert_eq!(files.len(), 3, "{}", mission.mission_id);
+            assert!(files.iter().any(|file| file.suspect_id == game.thief_id));
+            for file in &files {
+                assert!(!file.name.is_empty());
+                assert!(!file.alias.is_empty());
+                assert_eq!(file.dossier.len(), 8);
+                assert!(!file.summary.is_empty());
+                if file.suspect_id != game.thief_id {
+                    let distance = target
+                        .traits()
+                        .iter()
+                        .zip(catalogue.profiles[&file.suspect_id].traits())
+                        .filter(|((_, expected), (_, candidate))| expected != candidate)
+                        .count();
+                    assert!((1..=2).contains(&distance));
+                }
+            }
+            assert_eq!(files, suspect_files(&game, &catalogue));
+        }
+    }
+
+    #[test]
+    fn every_final_stop_offers_exactly_five_hideouts_including_the_real_one() {
+        let root = FsPath::new(env!("CARGO_MANIFEST_DIR")).join("../../..");
+        let catalogue = Catalogue::load(&root).unwrap();
+        for mission in catalogue.missions.values() {
+            let mut game = state();
+            game.mission_id = mission.mission_id.clone();
+            game.route = catalogue.route(mission).unwrap();
+            game.stage = (game.route.len() - 1) as u8;
+            game.state = game.route.last().unwrap().clone();
+            game.hideout_venue = catalogue
+                .location_venues
+                .keys()
+                .find(|(jurisdiction, _)| jurisdiction == &game.state)
+                .map(|(_, venue)| venue.clone())
+                .unwrap();
+            let options = hideout_options(&catalogue, &game);
+            assert_eq!(options.len(), 5, "{} in {}", mission.mission_id, game.state);
+            assert!(options.contains(&game.hideout_venue));
+            let mut unique = options.clone();
+            unique.sort();
+            unique.dedup();
+            assert_eq!(unique.len(), 5);
+        }
     }
     #[test]
     fn validates_untrusted_identifiers_and_wait_bounds() {
@@ -3989,7 +4287,8 @@ mod tests {
                 .unwrap();
             assert_eq!(response.status(), StatusCode::BAD_REQUEST);
             let error: serde_json::Value =
-                serde_json::from_slice(&to_bytes(response.into_body(), 4096).await.unwrap()).unwrap();
+                serde_json::from_slice(&to_bytes(response.into_body(), 4096).await.unwrap())
+                    .unwrap();
             assert_eq!(error["message"], message);
             assert!(store.login_record(&email).unwrap().is_none());
         }
@@ -4053,10 +4352,13 @@ mod tests {
         let root = FsPath::new(env!("CARGO_MANIFEST_DIR")).join("../../..");
         let catalogue = Catalogue::load(&root).unwrap();
         let mut tier_usage = std::collections::BTreeMap::<u32, usize>::new();
+        let mut budgets_by_difficulty = std::collections::BTreeMap::<u8, u32>::new();
         assert_eq!(catalogue.missions.len(), 1_000);
         for mission in catalogue.missions.values() {
             let baseline = mission_budget_baseline(&catalogue, mission).unwrap();
-            let budget = opening_budget_for(&catalogue, mission).unwrap();
+            let budget = *budgets_by_difficulty
+                .entry(mission.difficulty)
+                .or_insert_with(|| opening_budget_for(&catalogue, mission).unwrap());
             assert!(budget >= baseline.saturating_mul(120).div_ceil(100));
             assert_eq!(budget % 5_000, 0);
             *tier_usage.entry(budget).or_default() += 1;
@@ -4189,6 +4491,86 @@ mod tests {
             opening_traits.iter().all(|count| *count > 50),
             "{opening_traits:?}"
         );
+    }
+
+    #[test]
+    fn every_mission_stop_has_two_ambiguous_clues_and_a_non_key_decisive_clue() {
+        let root = FsPath::new(env!("CARGO_MANIFEST_DIR")).join("../../..");
+        let catalogue = Catalogue::load(&root).unwrap();
+        let mut decisive_positions = [0usize; 3];
+        let mut key_positions = [0usize; 3];
+        for mission in catalogue.missions.values() {
+            let route = catalogue.route(mission).unwrap();
+            for stage in 0..route.len() {
+                let game = GameState {
+                    version: 1,
+                    mission_id: mission.mission_id.clone(),
+                    thief_id: mission.thief_id.clone(),
+                    difficulty: mission.difficulty,
+                    stage: stage as u8,
+                    state: route[stage].clone(),
+                    route: route.clone(),
+                    elapsed: 0,
+                    score: 0,
+                    career_points: 0,
+                    dossier: Default::default(),
+                    observations: Default::default(),
+                    visited_venues: vec![],
+                    warrant_suspect: None,
+                    hideout_venue: format!("hideout-{}", mission.mission_id),
+                    replay: vec![],
+                    outcome: None,
+                    economy: Default::default(),
+                };
+                let plan = witness_clue_plan(&catalogue, &game);
+                assert_eq!(plan.len(), 3, "{} stage {stage}", mission.mission_id);
+                let venues = plan
+                    .iter()
+                    .map(|atom| atom.venue_id.as_str())
+                    .collect::<BTreeSet<_>>();
+                assert_eq!(venues.len(), 3);
+                let decisive = plan
+                    .iter()
+                    .enumerate()
+                    .filter(|(_, atom)| atom.dimension == "landmark")
+                    .collect::<Vec<_>>();
+                assert_eq!(decisive.len(), 1);
+                decisive_positions[decisive[0].0] += 1;
+                let ambiguous = plan
+                    .iter()
+                    .filter(|atom| atom.dimension != "landmark")
+                    .collect::<Vec<_>>();
+                assert_eq!(ambiguous.len(), 2);
+                assert!(
+                    ambiguous
+                        .iter()
+                        .all(|atom| candidate_states(atom).len() > 1)
+                );
+                let combined = candidate_states(ambiguous[0])
+                    .intersection(&candidate_states(ambiguous[1]))
+                    .copied()
+                    .collect::<BTreeSet<_>>();
+                assert!(combined.contains(route.get(stage + 1).unwrap_or(&route[stage]).as_str()));
+                assert!(
+                    combined.len() < candidate_states(ambiguous[0]).len()
+                        || combined.len() < candidate_states(ambiguous[1]).len(),
+                    "ambiguous clues do not narrow {} stage {stage}",
+                    mission.mission_id
+                );
+                let key = dossier_witness_venue(&catalogue, &game).unwrap();
+                let key_position = plan.iter().position(|atom| atom.venue_id == key).unwrap();
+                key_positions[key_position] += 1;
+                assert_ne!(plan[key_position].dimension, "landmark");
+                assert_eq!(
+                    available_venue_ids(&catalogue, &game),
+                    plan.iter()
+                        .map(|atom| atom.venue_id.clone())
+                        .collect::<Vec<_>>()
+                );
+            }
+        }
+        assert!(decisive_positions.iter().all(|count| *count > 500));
+        assert!(key_positions.iter().all(|count| *count > 500));
     }
 
     #[test]

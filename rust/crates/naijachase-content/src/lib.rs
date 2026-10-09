@@ -283,6 +283,7 @@ pub struct Location {
 pub struct ClueAtom {
     pub atom_id: String,
     pub state: String,
+    pub dimension: String,
     pub candidate_states: String,
     pub venue_id: String,
     pub venue_name: String,

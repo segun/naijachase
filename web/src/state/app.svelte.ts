@@ -1,6 +1,7 @@
 import { untrack } from "svelte";
 import { Api, ApiError } from "../api/api";
 import { birthDateError } from "../domain/birth-date.mjs";
+import { journeyModeOf } from "../scenes/journey/journey-scene.ts";
 import { MenuMusic } from "../music/music.svelte.ts";
 import { GroupsController } from "./groups.svelte.ts";
 import type { CurrentActivityResponse } from "../../../contracts/typescript/api-v1.ts";
@@ -13,6 +14,8 @@ import {
 export type Toast = { id: number; kind: "info" | "error" | "success"; text: string };
 /** The witness just questioned, for the arrival scene that follows the journey to the venue. */
 export type WitnessVisit = { venueId: string; venueName: string; role: string; message: string; arrival: "drive" | "hitch" };
+/** A journey between states about to be played: where from and to, how, and the seed that fixes which landscapes it passes through. */
+export type JourneyVisit = { from: string; to: string; mode: "drive" | "hitch" | "fly"; seed: number };
 export type Settings = { textSize: "normal" | "large"; contrast: "normal" | "high"; motion: "system" | "reduced" };
 
 const DEFAULT_SETTINGS: Settings = { textSize: "normal", contrast: "normal", motion: "system" };
@@ -82,6 +85,8 @@ export class AppController {
   lastWitness = $state<Omit<WitnessVisit, "arrival"> | null>(null);
   /** The witness scene being played; null when none is. */
   witnessVisit = $state<WitnessVisit | null>(null);
+  /** The travelling scene being played between two states; null when none is. */
+  journey = $state<JourneyVisit | null>(null);
   /** Set when the player has just come back from a venue: the office plays a short return (seated, then the zoom) instead of the long walk-in. */
   returning = $state(false);
 
@@ -162,7 +167,7 @@ export class AppController {
     this.ordinaryCaseId = null; this.activityKnown = false;
     this.dossierLoad = undefined;
     this.dossierOptions = null; this.dossierOptionsLoading = false; this.dossierOptionsError = "";
-    this.player = null; this.game = null; this.caseId = ""; this.briefing = false; this.pendingLead = ""; this.lastWitness = null; this.witnessVisit = null; this.returning = false;
+    this.player = null; this.game = null; this.caseId = ""; this.briefing = false; this.pendingLead = ""; this.lastWitness = null; this.witnessVisit = null; this.journey = null; this.returning = false;
     this.summary = null; this.archive = []; this.sessions = []; this.avatar = null; this.catalogueStatus = null; this.exhausted = false; this.quotes = []; this.ledger = []; this.notes = []; this.trail = []; this.rankAtStart = null;
     sessionStorage.clear();
     this.screen = "cases";
@@ -534,6 +539,25 @@ export class AppController {
     } else this.leaveGarage();
   }
 
+  /** Plays the travelling scene for a journey the server has just accepted, then goes to the desk. */
+  startJourney(from: string, to: string, transport: string) {
+    const mode = journeyModeOf(transport);
+    if (!mode || from === to) { this.finishJourney(); return; }
+    this.journey = { from, to, mode, seed: Math.floor(Math.random() * 2147483000) };
+    this.go("journey");
+  }
+
+  /** The travelling scene is over (or was skipped): on to the desk, which plays the short return. */
+  leaveJourney() {
+    this.journey = null;
+    this.finishJourney();
+  }
+  private finishJourney() {
+    this.pendingLead = "";
+    this.returning = !this.game?.state.outcome;
+    this.go(this.game?.state.outcome ? "results" : "investigate");
+  }
+
   /** The witness scene is over (or was skipped): on to the investigation, where the account is in the notebook. */
   leaveWitness() {
     this.witnessVisit = null;
@@ -724,6 +748,7 @@ export class AppController {
     if (next.state.current_state !== current.state.current_state) {
       this.lastWitness = null;
       this.witnessVisit = null;
+      this.journey = null;
       this.quotes = []; this.quotesLoaded = false;
       this.trail = [...this.trail, next.state.current_state];
     }
@@ -765,7 +790,7 @@ export class AppController {
   private clearCase() {
     this.caseGeneration++;
     this.game = null; this.caseId = ""; this.notes = []; this.trail = []; this.rankAtStart = null;
-    this.briefing = false; this.pendingLead = ""; this.lastWitness = null; this.witnessVisit = null; this.returning = false;
+    this.briefing = false; this.pendingLead = ""; this.lastWitness = null; this.witnessVisit = null; this.journey = null; this.returning = false;
     this.quotes = []; this.quotesLoaded = false; this.ledger = [];
     ["nc-case", "nc-notes", "nc-trail", "nc-rank"].forEach(k => sessionStorage.removeItem(k));
   }

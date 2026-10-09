@@ -23,11 +23,11 @@ export const FIELDS = ["sex","height","skin_tone","hair","hobby","vehicle","acce
 // Response shapes come from the generated API contract; do not redefine them here.
 export type {
   AuthResponse, AvatarCatalogue, AvatarPreset, AvatarProfile, CaseArchiveEntry, CaseResponse, ClientCommand, GameEvent, Player, PlayerSession,
-  CatalogueHealth, CatalogueProgress, ContentRoleResponse, DossierOptions, DossierOptionField, MissionAdminDetails, MissionLifecycleEvent, MissionTransitionRequest, MissionValidation, ReleaseNotification, InterstateMode, LocalMode, ProfileUpdate, TransportLedgerEntry, TransportQuote, ProgressionSummary, PublicGameState as PublicState, RankHistoryEntry
+  CatalogueHealth, CatalogueProgress, ContentRoleResponse, DossierOptions, DossierOptionField, MissionAdminDetails, MissionLifecycleEvent, MissionTransitionRequest, MissionValidation, ReleaseNotification, InterstateMode, LocalMode, ProfileUpdate, TransportLedgerEntry, TransportQuote, ProgressionSummary, PublicGameState as PublicState, RankHistoryEntry, SuspectFile, SuspectPortrait
 } from "../../../contracts/typescript/api-v1.ts";
 import type { GroupMember, GroupRole, PlayerGroup, WeeklyAttempt, CompleteCooperationRequest, CooperationPreferences, CooperationReportRequest, CooperationRequest, CreateCooperationRequest, CatalogueHealth, ContentRoleResponse, InterstateMode, LocalMode, MissionAdminDetails, MissionLifecycleEvent, MissionTransitionRequest, MissionValidation, ReleaseNotification, PublicGameState as PublicState, TransportLedgerEntry, TransportQuote } from "../../../contracts/typescript/api-v1.ts";
 import type { DossierOptions } from "../../../contracts/typescript/api-v1.ts";
-export type Screen = "welcome"|"cases"|"investigate"|"notebook"|"dossier"|"travel"|"warrant"|"results"|"settings"|"archive"|"garage"|"witness"|"content"|"helpers"|"groups"|"weekly";
+export type Screen = "welcome"|"cases"|"investigate"|"notebook"|"dossier"|"travel"|"warrant"|"results"|"settings"|"archive"|"garage"|"witness"|"journey"|"content"|"helpers"|"groups"|"weekly";
 /** The case's own screens. They are all shown on the office computer, so the office stays mounted while the player moves between them. */
 export const CASE_SCREENS: readonly Screen[] = ["investigate", "notebook", "dossier", "travel", "warrant"];
 export const isCaseScreen = (screen: Screen): boolean => CASE_SCREENS.includes(screen);
@@ -74,8 +74,6 @@ export function timeLeft(elapsed:number):{minutes:number;label:string;percentUse
   const label=days>0?`${days}d ${hours}h left`:`${hours}h ${minutes%60}m left`;
   return {minutes,label,percentUsed:Math.min(100,Math.round((elapsed/DEADLINE_MINUTES)*100)),urgent:minutes<=1440};
 }
-
-export const SUSPECTS=["NG-T001","NG-T002","NG-T003"] as const;
 
 export const FIELD_META:Record<(typeof FIELDS)[number],{label:string;hint:string;placeholder:string}>={
   sex:{label:"Sex",hint:"How witnesses describe the suspect.",placeholder:"e.g. female"},

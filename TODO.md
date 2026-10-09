@@ -99,8 +99,11 @@ completed.
 - [x] A warrant requires all eight dossier details; players may fill them in
   before or after travelling to the next stop
 - [x] Different destination evidence from each witness
-- [x] Individual clues remain ambiguous
+- [x] The two non-decisive clues at each stop remain individually ambiguous
 - [x] Three-clue intersection resolves to exactly one state
+- [x] Structure every on-trail stop as two multi-state ambiguous clues and one
+  shuffled decisive landmark clue; choose the key witness only from the two
+  ambiguous witnesses, while retaining the one-key-witness travel rule.
 - [x] Suspect traits are embedded naturally in witness dialogue
 - [x] Notebook shows the narrowing destination shortlist
 - [x] Nigerian roles such as agbero, market woman, conductor, boatman,
@@ -125,6 +128,15 @@ completed.
 - [x] Warrant candidates display complete eight-trait descriptions
 - [x] A warrant no longer ends the case; the player must locate the final hideout
 - [x] Finding the correct hideout without a warrant causes the suspect to escape
+- [x] Let the player request a warrant and begin the final search after the key
+  witness is questioned; the other two final-stop interviews are optional.
+- [x] Return three named, closely matched suspect files with complete dossier
+  details, backend summaries, and procedural passport-avatar descriptors.
+- [x] Limit the final search to five server-selected hideouts, close a case with
+  no reward when the real thief is found under a wrong warrant, and expose the
+  real thief's name for the terminal result dialog.
+- [x] Preserve score, travel, stop, and deduction statistics in the
+  archive for failed, expired, and wrong-warrant cases.
 
 ### Context-aware venues
 
@@ -1215,9 +1227,10 @@ scores, rank, detection odds, panel votes, punishment, or jail time.
   - [x] Add an animated chase scene to the sign-in screen, a compact
     no-scroll registration layout, and a synthesised "Night Pursuit" menu track with an
     on/off button for the pre-game screens.
-  - [ ] Expose a mission list, warrant candidates, the current stop's venues, and
-    travel durations through the API so the client can stop using fixed
-    placeholders (venues and suspect files `NG-T001`–`NG-T003`).
+  - [x] Expose server-selected warrant candidates, the current stop's venues,
+    travel durations, and five final hideouts through the API so the client no
+    longer uses fixed suspect or venue placeholders. Case assignment replaces
+    the obsolete mission picker; the archive remains the mission/replay list.
   - [x] Keep essential dialogue, clues, subtitles, labels, and notebook entries
     as accessible text; do not present environmental prose as large paragraphs.
 - [ ] Add Babylon.js as a lazily loaded 3D scene renderer rather than coupling
@@ -1238,6 +1251,16 @@ scores, rank, detection odds, panel votes, punishment, or jail time.
       terminal (status strip, leads, notebook, dossier, travel, warrant) instead of the old Investigate page.
       Cheap look upgrades (no artist, no GLB): rounded lofted cars and buses, softened boxes, tone-mapped grade,
       sun glow and clouds, contact shadows, and matching curved vehicles in 2D (`docs/scene-conventions.md`).
+    - [x] Travelling scene between states (`web/src/scenes/journey/`): hitch ride leaves a bus park and drive
+      leaves a garage; either then passes through 3 to 5 landscapes picked at random from 12 (waterfront, forest,
+      desert, roadside market, farm road, savanna, rocky hills, village, city outskirts, rainforest, palm plantation,
+      river crossing) that blend into each other, and ends at a "Welcome to <state>" billboard. Flying goes through
+      "<source state> Airport", shows the boarding pass to the cabin crew, climbs the air stairs, taxis, takes off,
+      lands, steps down and walks to "Welcome to <state> Airport". 3D with a 2D fallback, Skip, reduced motion
+      starts at the arrival shot; the desk follows. The scene is only the picture: the server's travel command
+      has already been accepted and nothing about it changes.
+    - [x] Weekly play "Show travel route": an endless, seamless loop of the same scenery (landscapes for drive/hitch,
+      a plane among random clouds for flying) behind a button in the in-transit panel; Esc returns to the text.
       Not yet checked on real phones: frame rate, and whether the extra geometry is fine on low-end devices.
       Remaining: the other 34 venue scenes (split between two agents: `docs/agents/Agent1.md` and
       `docs/agents/Agent2.md`), the road journey with an LGA sign, the arrest

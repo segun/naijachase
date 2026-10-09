@@ -125,7 +125,7 @@
         <span class="t-clock" aria-label="Local time">{day} · {clock}</span>
       </header>
       <section class="t-case" aria-label="Case status">
-        <div class="t-stat"><span class="t-tag">Location</span><strong>{gs.current_state}</strong><small>{zoneOf(gs.current_state) ?? "Nigeria"} · stop {Math.min(gs.stage + 1, TOTAL_STOPS)} of {TOTAL_STOPS} · trail {gs.trail_status}</small></div>
+        <div class="t-stat"><span class="t-tag">Location</span><strong>{gs.current_state}</strong><small>{zoneOf(gs.current_state) ?? "Nigeria"} · stop {Math.min(gs.stage + 1, TOTAL_STOPS)} of {TOTAL_STOPS} · trail {gs.trail_status}</small><span class="t-trail" class:cold={gs.trail_status === "cold"}><Icon name={gs.trail_status === "hot" ? "flame" : "snow"} /> Trail {gs.trail_status === "hot" ? "hot" : "cold"}</span></div>
         <div class="t-stat"><span class="t-tag">Case clock</span><strong><Icon name={night ? "moon" : "sun"} /> {parts.day} {parts.time}</strong><small class:urgent={left.urgent}>{left.label}</small></div>
         <div class="t-stat t-deadline">
           <span class="t-tag">Deadline Monday 07:00</span>

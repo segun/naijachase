@@ -9,11 +9,9 @@
   const recorded = $derived(app.game!.state.dossier);
   let values = $state<Record<string, string>>(untrack(() => ({ ...app.game!.state.dossier })));
   const count = $derived(dossierCount(recorded));
-  const changed = $derived(app.dossierOptions?.fields.filter(({ field, options }) => options.includes(values[field] ?? "") && values[field] !== recorded[field]) ?? []);
   const circumference = 2 * Math.PI * 34;
 
-  async function save(event: SubmitEvent) {
-    event.preventDefault();
+  async function save() {
     await app.saveDossier(values);
   }
 </script>
@@ -39,13 +37,13 @@
   </div>
 
   <DossierOptionsStatus {app} />
-  <form class="dossier-grid" onsubmit={save}>
+  <div class="dossier-grid">
     {#each app.dossierOptions?.fields ?? [] as entry, i}
       {@const field = entry.field}
       {@const meta = FIELD_META[field]}
       <label class="trait card rise" class:filled={!!recorded[field]} style:animation-delay="{i * 0.04}s">
         <span class="trait-head"><span>{entry.label}</span>{#if recorded[field]}<span class="badge badge-green"><Icon name="check" />Recorded</span>{/if}</span>
-        <select class="select" name={field} bind:value={values[field]} disabled={app.busy}>
+        <select class="select" name={field} bind:value={values[field]} onchange={save} disabled={app.busy}>
           <option value="">Not yet known</option>
           {#each entry.options as option}<option value={option}>{option}</option>{/each}
         </select>
@@ -53,10 +51,5 @@
         <small class="muted">{meta.hint}</small>
       </label>
     {/each}
-    <div class="dossier-actions">
-      <button class="btn btn-primary btn-lg" disabled={app.busy || !app.dossierOptions || changed.length === 0}>
-        {#if app.busy}<span class="spinner"></span> {app.busyLabel}…{:else}Record {changed.length || ""} changed detail{changed.length === 1 ? "" : "s"}{/if}
-      </button>
-    </div>
-  </form>
+  </div>
 </div>

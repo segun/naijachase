@@ -54,9 +54,17 @@ mod tests {
     fn birth_date_rejects_invalid_calendar_dates_and_ranges() {
         let today = NaiveDate::from_ymd_opt(2026, 10, 9).unwrap();
         for (day, month, year) in [
-            (0, 1, 2000), (32, 1, 2000), (31, 4, 2000), (29, 2, 1900),
-            (29, 2, 2001), (1, 0, 2000), (1, 13, 2000), (1, 1, 0),
-            (1, 1, 999), (1, 1, 10000), (1, 1, u32::MAX),
+            (0, 1, 2000),
+            (32, 1, 2000),
+            (31, 4, 2000),
+            (29, 2, 1900),
+            (29, 2, 2001),
+            (1, 0, 2000),
+            (1, 13, 2000),
+            (1, 1, 0),
+            (1, 1, 999),
+            (1, 1, 10000),
+            (1, 1, u32::MAX),
         ] {
             assert_eq!(
                 BirthDate::on(day, month, year, today).unwrap_err(),
@@ -71,11 +79,7 @@ mod tests {
 
     #[test]
     fn birth_date_leap_day_turns_eighteen_on_march_first_in_non_leap_year() {
-        assert!(
-            BirthDate::on(29, 2, 2008, NaiveDate::from_ymd_opt(2026, 2, 28).unwrap()).is_err()
-        );
-        assert!(
-            BirthDate::on(29, 2, 2008, NaiveDate::from_ymd_opt(2026, 3, 1).unwrap()).is_ok()
-        );
+        assert!(BirthDate::on(29, 2, 2008, NaiveDate::from_ymd_opt(2026, 2, 28).unwrap()).is_err());
+        assert!(BirthDate::on(29, 2, 2008, NaiveDate::from_ymd_opt(2026, 3, 1).unwrap()).is_ok());
     }
 }

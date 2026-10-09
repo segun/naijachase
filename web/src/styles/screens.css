@@ -448,3 +448,10 @@ textarea.input { resize: vertical; min-height: 5rem; }
 .avatar-error { color: var(--red); display: grid; gap: .6rem; justify-items: start; font-weight: 600; }
 .avatar-actions { align-items: center; }
 @media (forced-colors: active) { .avatar-card.selected { outline: 3px solid Highlight; } }
+
+.map { position: relative; }
+.map-info { position: absolute; top: .5rem; right: .5rem; z-index: 3; display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface-2); color: var(--gold); }
+.map-info-pop { position: absolute; top: 3rem; right: .5rem; z-index: 4; width: min(320px, calc(100% - 1rem)); display: grid; gap: .6rem; padding: .9rem; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--line); box-shadow: 0 8px 24px rgba(0,0,0,.4); font-size: .9rem; }
+.toggle-end { display: flex; justify-content: flex-end; }
+.view-toggle { margin-bottom: .75rem; }
+.btn.btn-icon { min-width: 48px; padding-inline: .75rem; }

@@ -1,0 +1,5 @@
+/* The travelling scene: shares .room, .room-canvas, .room-skip (terminal.css) and .witness-fade, .witness-caption (witness.css). */
+.journey { background: #000; }
+.journey .room-skip { top: 1.25rem; left: 1.25rem; right: auto; bottom: auto; }
+.journey-caption { padding: .6rem 1.4rem .75rem; width: auto; max-width: min(94vw, 48rem); }
+.journey-caption .caption-line { min-height: 0; color: #fff; font-size: clamp(1.1rem, 2.4vw, 1.8rem); }

@@ -39,6 +39,26 @@ use only that command's returned dialogue. Regression coverage
 is in `web/tests/trail-parity.test.mjs` and
 `web/tests/mock-case-lifecycle.test.mjs`.
 
+## Three-clue difficulty structure
+
+Every on-trail stop now returns a deliberately structured set of three witness
+accounts:
+
+- two ambiguous clues whose catalogue candidate sets each contain multiple
+  jurisdictions;
+- one decisive landmark clue intended to identify the destination on its own.
+
+The decisive clue is shuffled among the three venues, so the UI must not assume
+it is the third displayed witness. It is never the key witness and never carries
+the new suspect-profile trait. The key witness is selected deterministically
+from the two ambiguous-clue witnesses and remains the only interview required
+by the engine before onward travel. Consequently, a player who investigates the
+decisive clue first still has to locate the key witness, while a player who finds
+the key witness first may travel immediately.
+
+Do not label clues as “ambiguous”, “decisive”, or “key” in the player UI. Those
+roles exist to shape deduction and progression, not to reveal the solution.
+
 ## Seven-day deadline
 
 The Rust engine is authoritative for the 10,080-minute simulated deadline. If a
@@ -72,6 +92,68 @@ any Fly or Drive command at zero balance, and rejects any transport command whos
 server-calculated fare exceeds the current balance, with
 `insufficient case budget; hitch a ride instead`. Never treat a disabled button
 as the security boundary.
+
+## Final witness, warrant candidates, and hideout search
+
+At the final stop, the player may proceed as soon as the key witness has been
+questioned. The other two witnesses remain available but are optional. The API
+enforces the key-witness rule for both `request_warrant` and `search_hideout`;
+the frontend must not require three completed interviews.
+
+Once all eight dossier fields are filled at the final stop,
+`state.suspect_files` contains exactly three server-selected candidates. Each
+entry contains `suspect_id`, `name`, `alias`, the complete eight-field
+`dossier`, a backend-written `summary`, and a procedural `portrait` descriptor:
+
+```json
+{
+  "suspect_id": "NG-T042",
+  "name": "Example Name",
+  "alias": "The Example",
+  "dossier": {
+    "sex": "female",
+    "height": "tall",
+    "skin_tone": "dark-skinned",
+    "hair": "long braided hair",
+    "hobby": "tennis",
+    "vehicle": "a silver saloon",
+    "accessory": "a leather briefcase",
+    "feature": "quotes old proverbs"
+  },
+  "summary": "Backend-authored suspect summary.",
+  "portrait": {
+    "skin_color": "#57351f",
+    "hair_style": "long braided hair",
+    "hair_color": "#15120f",
+    "background_color": "#315f6b",
+    "presentation": "female"
+  }
+}
+```
+
+Render `portrait` locally as a consistent passport-style avatar; it is a visual
+descriptor, not an image URL. The warrant page shows only `name`, `alias`,
+`portrait` and `summary` for each candidate; the `dossier` field stays in the
+payload but is not displayed. Do not invent or hard-code candidates. The real
+thief and both decoys are included, and each decoy differs from the real profile
+in only one or two dossier fields. Send the selected `suspect_id` in the normal
+`request_warrant` command.
+
+After a warrant is issued, the apprehension section of
+`GET /v1/cases/{case_id}/transport-quotes` contains exactly five possible
+hideouts, including the real hideout. Only offer those five locations. Empty
+hideouts keep the case active. If the player reaches the real hideout with the
+wrong warrant, the command returns `state.outcome = "escaped"`, a
+`wrong_warrant` event containing `thief_name` and `thief_alias`, and no reward.
+Show a terminal dialog explaining that the named real thief avoided arrest due
+to the wrong warrant. Offer **Start new case** and **Close**, matching the
+deadline dialog. `state.resolved_thief_name` is populated only for a terminal
+outcome and is safe to use after refresh.
+
+The server persists the final score, correct/wrong travel totals,
+correct/wrong deductions, and visited-state count for every terminal outcome,
+not only successful arrests. Archive and progression screens must display the
+returned values and must not replace failed-case statistics with zeroes.
 
 All browser requests use `credentials: "include"`. Production mutations must
 originate from an entry in `NAIJACHASE_ALLOWED_ORIGINS`; a different or missing

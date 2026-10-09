@@ -1,0 +1,123 @@
+<script lang="ts">
+  // The journey between two states: out of the garage in a car, into a minibus at the bus park, or through an airport and onto a plane, then
+  // on to the desk. Same pattern as the witness scene: 3D (Babylon.js) when the device looks capable, otherwise 2D (Canvas 2D), and if 3D
+  // fails, stalls or runs too slowly it carries on in 2D from where it had got to. Both read the same timeline (journey-scene.ts).
+  import "../../styles/terminal.css";
+  import "../../styles/witness.css";
+  import "../../styles/journey.css";
+  import type { AppController } from "../../state/app.svelte";
+  import { clockParts } from "../../domain/model.ts";
+  import { MIN_WIDTH, decideScene, readDevice } from "../shared/scene-capability.ts";
+  import type { JourneyHandle } from "./journey-driver.ts";
+
+  type Mode = "3d" | "2d";
+  /** The witness scene's switch: once 3D has failed on this device in this session, every scene goes straight to 2D. */
+  const FALLBACK_KEY = "nc-witness-2d";
+  const FIRST_FRAME_MS = 9000;
+  const STALL_MS = 3000;
+
+  type Visit = { from: string; to: string; mode: "drive" | "hitch" | "fly"; seed: number };
+  // `loop` is the weekly "show travel route" view: the same scenery with no departure or arrival, running until Esc calls `onclose`.
+  // `note` replaces the caption there (for example once the journey has really ended), and `startHour` is the case hour for the lighting.
+  let { app, visit: given, loop = false, onclose, note, startHour }: { app: AppController; visit?: Visit; loop?: boolean; onclose?: () => void; note?: string; startHour?: number } = $props();
+
+  // svelte-ignore state_referenced_locally
+  const visit = given ?? app.journey;
+  const decision = decideScene({ ...readDevice(), viewportWidth: MIN_WIDTH });
+  const quality = decision.run ? decision.quality : "light";
+  const reducedMotion = !decision.run && decision.reason === "reduced-motion";
+  const stored = (storage: Storage, key: string) => { try { return storage.getItem(key); } catch { return null; } };
+  const prefer2d = !decision.run || stored(localStorage, "nc-scene") === "2d" || stored(sessionStorage, FALLBACK_KEY) === "1";
+
+  let mode = $state<Mode>(prefer2d ? "2d" : "3d");
+  let canvas = $state<HTMLCanvasElement>();
+  let ready = $state(false);
+  let fade = $state(0);
+  let caption = $state<string | null>(null);
+  let failure = $state("");
+  let skip: () => void = () => {};
+  let finished = false;
+  let resumeAt = 0;
+  // svelte-ignore state_referenced_locally
+  const hour = startHour ?? clockParts(app.game?.state.elapsed ?? 0).hour;
+
+  function finish() {
+    if (finished) return;
+    finished = true;
+    if (loop) onclose?.(); else app.leaveJourney();
+  }
+
+  function fallBack(at: number, why: string) {
+    if (mode !== "3d" || finished) return;
+    console.warn(`The 3D journey scene is switching to 2D: ${why}`);
+    try { sessionStorage.setItem(FALLBACK_KEY, "1"); } catch { /* private mode: the next scene just tries 3D again */ }
+    resumeAt = at; ready = false; mode = "2d";
+  }
+
+  $effect(() => {
+    if (!visit) { finish(); return; }
+    const target = canvas, current = mode;
+    if (!target || target.dataset.mode !== current) return;
+    let cancelled = false;
+    let handle: JourneyHandle | undefined;
+    let began = 0, lastTick = 0;
+    const watchdog = current === "3d" ? setInterval(() => {
+      if (document.hidden) { lastTick = performance.now(); return; }
+      if (began && performance.now() - (lastTick || began) > (lastTick ? STALL_MS : FIRST_FRAME_MS)) fallBack(handle?.now() ?? 0, "no frames");
+    }, 500) : undefined;
+
+    const options = {
+      preset: app.avatar, hour, quality, mode: visit.mode, from: visit.from, to: visit.to, reducedMotion, loop,
+      // The 3D scene may hand over to 2D mid-way, so 2D must show the same landscapes: the seed is the same for both.
+      seed: visit.seed,
+      onTick: () => { lastTick = performance.now(); ready = true; },
+      onFrame: (f: { fade: number; caption: string | null }) => { fade = f.fade; caption = f.caption; },
+      onSlow: () => fallBack(handle?.now() ?? 0, "low frame rate"),
+      onFault: (why: string) => { if (current === "3d") fallBack(handle?.now() ?? 0, why); else failure = why; }
+    };
+    const load = current === "3d"
+      ? import("./chase3d-journey.ts").then(m => { began = performance.now(); return m.createJourneyScene3D(target, options); })
+      : import("./journey-2d.ts").then(m => m.createJourneyScene2D(target, options));
+
+    load
+      .then(h => {
+        if (cancelled) { h.dispose(); return; }
+        handle = h;
+        skip = () => h.skip();
+        return h.start(current === "2d" ? resumeAt || undefined : 0).then(() => { if (!cancelled) finish(); });
+      })
+      .catch(e => {
+        if (cancelled) return;
+        console.error(`The ${current} journey scene failed.`, e);
+        if (current === "3d") fallBack(handle?.now() ?? 0, e instanceof Error ? e.message : String(e));
+        else failure = e instanceof Error ? e.message : String(e);
+      });
+
+    return () => { cancelled = true; clearInterval(watchdog); handle?.dispose(); };
+  });
+
+  function key(e: KeyboardEvent) {
+    if (!["Escape", "Enter", " "].includes(e.key) || e.metaKey || e.ctrlKey || e.altKey) return;
+    e.preventDefault();
+    if (loop || failure || !ready) finish(); else skip();
+  }
+</script>
+
+<svelte:window onkeydown={key} />
+
+<div class="room witness journey" role="region" aria-label="Travelling to {visit?.to ?? 'the next state'}">
+  {#key mode}<canvas class="room-canvas" class:ready data-mode={mode} bind:this={canvas} aria-hidden="true"></canvas>{/key}
+  <div class="witness-fade" style:opacity={1 - fade}></div>
+  {#if failure}
+    <div class="witness-error" role="alert">
+      <p><strong>The journey scene could not start.</strong></p>
+      <p class="mono">{failure}</p>
+      <button class="btn btn-primary" type="button" onclick={finish}>{loop ? "Back" : "Continue to the desk"}</button>
+    </div>
+  {:else if !ready}<p class="room-loading" role="status">Travelling to {visit?.to}…</p>{/if}
+  {#if note ?? caption}
+    <div class="witness-caption journey-caption" aria-hidden="true"><p class="caption-line">{note ?? caption}</p></div>
+  {/if}
+  <p class="sr-only" role="status">{note ?? (loop ? "" : caption) ?? ""}</p>
+  <button class="room-skip" type="button" onclick={() => { if (loop || failure || !ready) finish(); else skip(); }}>{loop ? "Back" : "Skip"} <kbd>Esc</kbd></button>
+</div>

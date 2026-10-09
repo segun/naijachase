@@ -68,6 +68,30 @@ A venue is a recipe plus a scenery set per renderer; the choreography is shared 
   witness to the vehicle clear in a set (the player walks it twice), and do not draw anything on the lane near the stopping point.
   The office part of the return is separate (`room-scene.ts`, `T_RETURN_FROM`).
 
+## The travelling scene
+
+`web/src/scenes/journey/` plays between a travel command being accepted and the desk (`app.startJourney` in `Travel.svelte`,
+`app.leaveJourney` at the end). It follows the same split as the witness scene:
+
+| File | Holds |
+| --- | --- |
+| `journey-scene.ts` | The rules, pure and unit-tested (`tests/journey.test.mjs`): the landscapes, the random route, the timeline of a drive, a hitch ride and a flight, and `frameAt(plan, t)`, which says where the camera, vehicle, player and cabin crew are at second `t`. |
+| `journey-driver.ts` | The options and handle both renderers share. |
+| `chase3d-journey.ts` / `journey-2d.ts` | Draw a frame. Same side-on pinhole camera (`cam.d` metres in front of the road, horizon mid-screen), so a prop is the same size and place in both. |
+| `JourneyScene.svelte` | Picks 3D or 2D, falls back, owns the caption, Skip and the hand-over to the desk. |
+
+- **Landscapes** are data (`LANDSCAPES`): colours, a strip of water, and weighted props. Add one by adding an entry; use only prop kinds that
+  both renderers draw (`PropKind`). Props are generated once, with a seed, so a 3D to 2D hand-over shows the same route. Where one landscape ends the
+  next begins: props of both grow and shrink across `plan.blend` metres and the sky, ground, road and hills mix their colours.
+- **Set pieces** (garage, bus park, billboard, terminals) clear random props around them and are never blended out.
+- Planes fly in one continuous world: the first airport, the boarding apron, the runway and the second airport are far apart, and a dip to black (`plan.cuts`) joins the
+  jumps. The camera must not jump anywhere else (a test checks it).
+- **Route view (weekly play)**: weekly attempts run on real time, so `WeeklyPlay.svelte` offers a "Show travel route" button during a journey that opens `JourneyScene` with
+  `loop`. The plan (`planJourney({ loop: true })`) is endless and periodic: 8 landscapes in a ring for driving and hitching (no garage, bus park or billboard), and for
+  flying a plane in cruise among 150 random clouds. Props are stored once per lap and drawn at the copy nearest the camera (`propX`), so there is no jump at the seam.
+  Esc (or Back) calls `onclose` instead of skipping; it never affects the real wait. Reduced motion shows one still frame.
+- The flight's two airports are named from the case: `"<from> Airport"` and `"Welcome to <to> Airport"`. Avoid a green and white livery (it reads as a flag).
+
 ## Looks: cheap upgrades, no artist
 
 Everything is still built in code (no GLB or other model files). What keeps it from looking like building blocks:

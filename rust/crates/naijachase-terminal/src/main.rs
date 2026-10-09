@@ -43,13 +43,19 @@ fn dossier_field(mission_id: &str, seed: u64, stage: usize) -> &'static str {
     FIELDS[dossier_order(mission_id, seed)[stage % FIELDS.len()]]
 }
 
-fn dossier_witness_index(mission_id: &str, seed: u64, stage: usize) -> usize {
+fn dossier_witness_index(mission_id: &str, seed: u64, stage: usize, clues: &[&ClueAtom]) -> usize {
     let mixed = mission_id.bytes().fold(seed ^ stage as u64, |value, byte| {
         value
             .wrapping_mul(1_099_511_628_211)
             .wrapping_add(u64::from(byte))
     });
-    (mixed as usize) % 3
+    let ambiguous = clues
+        .iter()
+        .enumerate()
+        .filter(|(_, atom)| atom.dimension != "landmark")
+        .map(|(index, _)| index)
+        .collect::<Vec<_>>();
+    ambiguous[(mixed as usize) % ambiguous.len()]
 }
 
 #[derive(Default, Serialize, Deserialize)]
@@ -140,23 +146,36 @@ fn venues<'a>(
     let start = (mission.bytes().map(u32::from).sum::<u32>() + stage as u32 * 7 + seed as u32)
         as usize
         % atoms.len();
-    let mut out = vec![];
-    let mut used = BTreeSet::new();
+    let available = |atom: &&ClueAtom| {
+        data.location_venues
+            .contains_key(&(current_state.to_owned(), atom.venue_id.clone()))
+    };
+    let decisive = (0..atoms.len())
+        .map(|offset| &atoms[(start + offset) % atoms.len()])
+        .find(|atom| atom.dimension == "landmark" && available(atom));
+    let Some(decisive) = decisive else {
+        return vec![];
+    };
+    let mut ambiguous = vec![];
+    let mut used = BTreeSet::from([decisive.venue_id.as_str()]);
     for n in 0..atoms.len() {
         let atom = &atoms[(start + n) % atoms.len()];
-        if !data
-            .location_venues
-            .contains_key(&(current_state.to_owned(), atom.venue_id.clone()))
-        {
+        if !available(&atom) || atom.candidate_states.split('|').count() < 2 {
             continue;
         }
         if used.insert(&atom.venue_id) {
-            out.push(atom);
-            if out.len() == 3 {
+            ambiguous.push(atom);
+            if ambiguous.len() == 2 {
                 break;
             }
         }
     }
+    if ambiguous.len() != 2 {
+        return vec![];
+    }
+    let decisive_position = (start + stage as usize) % 3;
+    let mut out = ambiguous;
+    out.insert(decisive_position, decisive);
     out
 }
 fn edit_dossier(data: &Catalogue, state: &mut GameState) {
@@ -425,7 +444,7 @@ fn main() {
                     continue;
                 }
                 let evidence_witness =
-                    dossier_witness_index(&mission.mission_id, seed, state.stage as usize);
+                    dossier_witness_index(&mission.mission_id, seed, state.stage as usize, &clues);
                 let field = dossier_field(&mission.mission_id, seed, state.stage as usize);
                 let gives_profile = i == evidence_witness;
                 let venue = &data.venues[&atom.venue_id];
@@ -650,17 +669,6 @@ fn main() {
                 println!("Warrant issued. Now locate the suspect before the deadline.");
             }
             6 if state.stage as usize == final_stage => {
-                let visits = state
-                    .visited_venues
-                    .iter()
-                    .filter(|key| key.starts_with(&format!("{}|{}|", state.stage, state.state)))
-                    .count();
-                if visits < 3 {
-                    println!(
-                        "Question all three local witnesses before searching for the suspect."
-                    );
-                    continue;
-                }
                 let labels = clues
                     .iter()
                     .map(|a| format!("Search {}", a.venue_name))
@@ -714,7 +722,7 @@ fn main() {
             }
             i if i == menu.len() - 2 => {
                 println!(
-                    "\n=== HELP AND RULES ===\nSolve the case before next Monday at 07:00. Question all three witnesses at each of eight stops. Only one witness per stop remembers a suspect detail. Combine destination clues, enter all eight dossier traits, obtain the right warrant, then search the final city's venues for the hideout. Finding the suspect without a warrant lets them escape."
+                    "\n=== HELP AND RULES ===\nSolve the case before next Monday at 07:00. At each stop, find and question the key witness before moving on; the other interviews are optional. Only one witness per stop remembers a suspect detail. Combine destination clues, enter all eight dossier traits, obtain the right warrant, then search one of five possible hideouts. Finding the suspect without the right warrant lets them escape."
                 );
             }
             _ => {
@@ -742,10 +750,11 @@ mod tests {
         for mission in data.missions.values() {
             let route = data.route(mission).unwrap();
             assert_eq!(route.len(), 8, "{} route length", mission.mission_id);
-            for stage in 0..7 {
+            for stage in 0..route.len() {
+                let clue_state = route.get(stage + 1).unwrap_or(&route[stage]);
                 let found = venues(
                     &data,
-                    &route[stage + 1],
+                    clue_state,
                     &route[stage],
                     &mission.mission_id,
                     stage as u8,
@@ -757,8 +766,25 @@ mod tests {
                     "{} stage {stage}: {} -> {}",
                     mission.mission_id,
                     route[stage],
-                    route[stage + 1]
+                    clue_state
                 );
+                assert_eq!(
+                    found
+                        .iter()
+                        .filter(|atom| atom.dimension == "landmark")
+                        .count(),
+                    1
+                );
+                assert_eq!(
+                    found
+                        .iter()
+                        .filter(|atom| atom.dimension != "landmark")
+                        .filter(|atom| atom.candidate_states.split('|').count() > 1)
+                        .count(),
+                    2
+                );
+                let key = dossier_witness_index(&mission.mission_id, 0, stage, &found);
+                assert_ne!(found[key].dimension, "landmark");
             }
         }
     }

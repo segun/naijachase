@@ -1,7 +1,8 @@
 <script lang="ts">
+  import { tick } from "svelte";
   import type { AppController } from "../../state/app.svelte";
   import { MAP_H, MAP_W, outlinePath, percentPoint, statePoint } from "../../domain/map.ts";
-  import { STATES, ZONES, groupQuotes, money, zoneOf, type TransportQuote } from "../../domain/model.ts";
+  import { STATES, ZONES, groupQuotes, money, type TransportQuote } from "../../domain/model.ts";
   import Icon from "../../ui/Icon.svelte";
   import MoveOptions from "./MoveOptions.svelte";
 
@@ -16,6 +17,12 @@
   const group = $derived(selected ? quoted.get(selected) ?? null : null);
   let view = $state<"map" | "list">("map");
   let query = $state("");
+  let showInfo = $state(false);
+  let sideEl = $state<HTMLElement | null>(null);
+
+  $effect(() => {
+    if (selected) tick().then(() => sideEl?.scrollIntoView({ behavior: "smooth", block: "end" }));
+  });
 
   const trailPath = $derived(
     app.trail.map(s => statePoint(s)).filter(p => p !== null)
@@ -29,19 +36,25 @@
 
   async function go(quote: TransportQuote) {
     if (!selected || !quote.affordable || (gs.balance === 0 && quote.cost > 0)) return;
-    const destination = selected;
+    const destination = selected, origin = here;
     if (await app.command({ type: "travel", destination, mode: quote.mode }, `Arrived in ${destination}.`, `Travelling to ${destination}`)) {
       selected = null;
-      app.go("investigate");
+      app.startJourney(origin, destination, quote.mode);
     }
   }
 </script>
+
+{#snippet viewToggle()}
+<div class="segmented view-toggle" role="group" aria-label="Destination view">
+      <button type="button" aria-pressed={view === "map"} onclick={() => (view = "map")}><Icon name="map" />Map</button>
+      <button type="button" aria-pressed={view === "list"} onclick={() => (view = "list")}><Icon name="list" />List</button>
+    </div>
+{/snippet}
 
 <div class="page">
   <header class="page-head rise">
     <p class="eyebrow">Air and road desk</p>
     <h1>Choose your destination</h1>
-    <p>Use the witness clues. A wrong state costs time, money and score, so check the fare and confirm before you travel. Funds: <strong>{money(gs.balance)}</strong>.</p>
   </header>
 
   <div class="segmented" role="group" aria-label="Destination view">
@@ -53,6 +66,13 @@
     <section class="card map-card rise" aria-label="Destinations">
       {#if view === "map"}
         <div class="map" style:aspect-ratio="{MAP_W} / {MAP_H}">
+          <button type="button" class="map-info" aria-label="About this map" aria-expanded={showInfo} onclick={() => (showInfo = !showInfo)}><Icon name="info" /></button>
+          {#if showInfo}
+            <div class="map-info-pop" role="dialog" aria-label="Travel advice">
+              <p>Use the witness clues. A wrong state costs time, money and score, so check the fare and confirm before you travel. Funds: <strong>{money(gs.balance)}</strong>.</p>
+              <button class="btn btn-ghost" type="button" onclick={() => (showInfo = false)}>Got it</button>
+            </div>
+          {/if}
           <svg viewBox="0 0 {MAP_W} {MAP_H}" aria-hidden="true">
             <path d={outlinePath()} class="land" />
             {#if trailPath}<path d={trailPath} class="trail-line" />{/if}
@@ -69,8 +89,10 @@
             {/if}
           {/each}
         </div>
-        <p class="map-note muted">Schematic map. Dots mark each state's capital. Prefer text? Switch to List.</p>
+        <div class="toggle-end">{@render viewToggle()}
+  </div>
       {:else}
+        {@render viewToggle()}
         <label class="field"><span>Search states</span><input class="input" type="search" bind:value={query} placeholder="Type a state…" /></label>
         <div class="zones">
           {#each filtered as [zone, members]}
@@ -90,15 +112,15 @@
     </section>
 
     <aside class="stack side-rail">
-      <section class="card boarding rise" aria-live="polite">
+      <section class="card boarding rise" aria-live="polite" bind:this={sideEl}>
         <p class="eyebrow">Boarding pass</p>
         <div class="route"><div><small>From</small><strong>{here}</strong></div><Icon name="plane" /><div><small>To</small><strong>{selected ?? "—"}</strong></div></div>
         {#if selected && group}
-          <p class="muted">{zoneOf(selected) ?? "Nigeria"}. Fares and journey times are quoted by the service.</p>
           {#key selected}
-            <MoveOptions {group} elapsed={gs.elapsed} balance={gs.balance} busy={app.busy} confirmLabel={`Travel to ${selected}`} working={app.busyLabel || "Travelling"} onconfirm={go} />
+            <MoveOptions {group} elapsed={gs.elapsed} balance={gs.balance} busy={app.busy} confirmLabel={`Travel to ${selected}`} working={app.busyLabel || "Travelling"} onconfirm={go} summary={false}>
+            {#snippet actions()}<button class="btn btn-ghost btn-icon" type="button" aria-label="Clear selection" title="Clear selection" disabled={app.busy} onclick={() => (selected = null)}><Icon name="x" /></button>{/snippet}
+            </MoveOptions>
           {/key}
-          <button class="btn btn-ghost btn-block" type="button" disabled={app.busy} onclick={() => (selected = null)}>Clear selection</button>
         {:else if selected}
           <p class="muted">{app.quotesLoaded ? "No journey to this destination is available right now." : "Fetching fares…"}</p>
         {:else}

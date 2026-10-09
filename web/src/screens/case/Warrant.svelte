@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { AppController } from "../../state/app.svelte";
-  import { FIELDS, FIELD_META, SUSPECTS, cheapest, dossierCount, duration, groupQuotes, money, venueInfo, type QuoteGroup, type TransportQuote } from "../../domain/model.ts";
+  import { FIELDS, FIELD_META, cheapest, dossierCount, duration, groupQuotes, money, venueInfo, type QuoteGroup, type TransportQuote } from "../../domain/model.ts";
   import Icon from "../../ui/Icon.svelte";
   import MoveDialog from "./MoveDialog.svelte";
   import MoveOptions from "./MoveOptions.svelte";
@@ -8,6 +8,7 @@
   let { app }: { app: AppController } = $props();
   const gs = $derived(app.game!.state);
   const ready = $derived(dossierCount(gs.dossier) === 8);
+  const suspects = $derived(gs.suspect_files);
   let picked = $state<string | null>(null);
   let confirming = $state(false);
   // The final journey to a hideout is quoted by the server under the "apprehension" scope.
@@ -29,7 +30,7 @@
   <header class="page-head rise">
     <p class="eyebrow">Magistrate desk</p>
     <h1>Request a warrant</h1>
-    <p>Match your dossier to the right suspect. A wrong warrant costs time and score.</p>
+    <p>Match your dossier to the right suspect. The real thief will escape if you reach them with the wrong warrant.</p>
   </header>
 
   <ol class="phases">
@@ -47,12 +48,15 @@
       </section>
     {/if}
     <section aria-label="Suspect files" class="suspects">
-      {#each SUSPECTS as id, i}
-        <button type="button" class="suspect rise" class:picked={picked === id} disabled={!ready || app.busy} aria-pressed={picked === id} style:animation-delay="{i * 0.08}s" onclick={() => { picked = id; confirming = false; }}>
-          <span class="suspect-photo"><Icon name="user" /></span>
+      {#each suspects as suspect, i (suspect.suspect_id)}
+        <button type="button" class="suspect rise" class:picked={picked === suspect.suspect_id} disabled={!ready || app.busy} aria-pressed={picked === suspect.suspect_id} style:animation-delay="{i * 0.08}s" onclick={() => { picked = suspect.suspect_id; confirming = false; }}>
+          <span class="suspect-photo" style:background={suspect.portrait.background_color} role="img" aria-label="Passport portrait of {suspect.name}">
+            <svg viewBox="0 0 120 140" aria-hidden="true"><path fill={suspect.portrait.skin_color} d="M31 126c2-27 13-40 29-40s27 13 29 40z"/><ellipse fill={suspect.portrait.skin_color} cx="60" cy="58" rx="29" ry="35"/><path fill={suspect.portrait.hair_color} d="M31 58c0-29 12-43 30-43 22 0 31 18 28 46-8-11-18-16-30-16-10 0-19 4-28 13z"/><circle cx="49" cy="59" r="2.5"/><circle cx="71" cy="59" r="2.5"/><path d="M51 75q9 7 18 0" fill="none" stroke="#3a2018" stroke-width="2"/></svg>
+          </span>
           <span class="file-no">File 0{i + 1}</span>
-          <strong>Suspect {i + 1}</strong>
-          <span class="mono muted">{id}</span>
+          <strong>{suspect.name}</strong>
+          <span class="mono muted">{suspect.alias} · {suspect.suspect_id}</span>
+          <span class="muted">{suspect.summary}</span>
         </button>
       {/each}
     </section>
@@ -78,7 +82,7 @@
   {:else}
     <section class="card issued rise">
       <div class="stamp-mark" role="img" aria-label="Warrant issued">Warrant issued</div>
-      <h2>{gs.warrant_suspect}</h2>
+      <h2>{suspects.find(s => s.suspect_id === gs.warrant_suspect)?.name ?? gs.warrant_suspect}</h2>
       <p class="muted">The suspect is hiding somewhere nearby. Choose where to search.</p>
     </section>
     <section class="venues" aria-label="Search for the hideout">

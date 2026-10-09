@@ -4,7 +4,7 @@ use std::collections::BTreeMap;
 use thiserror::Error;
 #[derive(Debug, Error, PartialEq)]
 pub enum Error {
-    #[error("invalid command: {0}")]
+    #[error("{0}")]
     Invalid(String),
     #[error("deadline expired")]
     Deadline,
@@ -283,16 +283,9 @@ pub fn apply(mut state: GameState, command: Command) -> Result<(GameState, Vec<E
             if state.dossier.len() != 8 {
                 return Err(Error::Invalid("incomplete dossier".into()));
             }
-            let visit_prefix = format!("{}|{}|", state.stage, state.state);
-            if state
-                .visited_venues
-                .iter()
-                .filter(|key| key.starts_with(&visit_prefix))
-                .count()
-                < 3
-            {
+            if !key_witness_questioned(&state) {
                 return Err(Error::Invalid(
-                    "question all three local witnesses before requesting a warrant".into(),
+                    "question the key witness before requesting a warrant".into(),
                 ));
             }
             data.insert(
@@ -315,16 +308,9 @@ pub fn apply(mut state: GameState, command: Command) -> Result<(GameState, Vec<E
                     "suspect search is only available at the final stop".into(),
                 ));
             }
-            let visit_prefix = format!("{}|{}|", state.stage, state.state);
-            if state
-                .visited_venues
-                .iter()
-                .filter(|key| key.starts_with(&visit_prefix))
-                .count()
-                < 3
-            {
+            if !key_witness_questioned(&state) {
                 return Err(Error::Invalid(
-                    "question all three local witnesses before searching".into(),
+                    "question the key witness before searching".into(),
                 ));
             }
             state.elapsed += minutes;
@@ -362,16 +348,9 @@ pub fn apply(mut state: GameState, command: Command) -> Result<(GameState, Vec<E
                     "suspect search is only available at the final stop".into(),
                 ));
             }
-            let visit_prefix = format!("{}|{}|", state.stage, state.state);
-            if state
-                .visited_venues
-                .iter()
-                .filter(|key| key.starts_with(&visit_prefix))
-                .count()
-                < 3
-            {
+            if !key_witness_questioned(&state) {
                 return Err(Error::Invalid(
-                    "question all three local witnesses before searching".into(),
+                    "question the key witness before searching".into(),
                 ));
             }
             let total = travel_minutes.saturating_add(*search_minutes);
@@ -700,11 +679,20 @@ mod tests {
         let mut s = state();
         s.stage = 3;
         s.state = "Abuja".into();
-        s.visited_venues = vec![
-            "3|Abuja|market".into(),
-            "3|Abuja|hotel".into(),
-            "3|Abuja|museum".into(),
-        ];
+        // The key witness is enough at the final stop; the other two interviews
+        // remain optional.
+        s.visited_venues = vec!["3|Abuja|market".into()];
+        let final_trait = [
+            "sex",
+            "height",
+            "skin_tone",
+            "hair",
+            "hobby",
+            "vehicle",
+            "accessory",
+            "feature",
+        ][key_witness_trait_index(&s)];
+        s.observations.insert(final_trait.into(), "observed".into());
         s.hideout_venue = "market".into();
         assert_eq!(
             apply(
@@ -751,5 +739,40 @@ mod tests {
         .unwrap();
         assert_eq!(events[0].event_type, "arrested");
         assert_eq!(s.outcome.as_deref(), Some("solved"));
+    }
+
+    #[test]
+    fn wrong_warrant_closes_case_without_erasing_progress() {
+        let mut s = state();
+        s.stage = 3;
+        s.state = "Abuja".into();
+        s.visited_venues = vec!["3|Abuja|market".into()];
+        let final_trait = [
+            "sex",
+            "height",
+            "skin_tone",
+            "hair",
+            "hobby",
+            "vehicle",
+            "accessory",
+            "feature",
+        ][key_witness_trait_index(&s)];
+        s.observations.insert(final_trait.into(), "observed".into());
+        s.hideout_venue = "market".into();
+        s.warrant_suspect = Some("NOT-T".into());
+        s.score = 1375;
+        s.career_points = 420;
+        let (s, events) = apply(
+            s,
+            Command::SearchHideout {
+                venue_id: "market".into(),
+                minutes: 45,
+            },
+        )
+        .unwrap();
+        assert_eq!(s.outcome.as_deref(), Some("escaped"));
+        assert_eq!(events[0].event_type, "wrong_warrant");
+        assert_eq!(s.score, 1375);
+        assert_eq!(s.career_points, 420);
     }
 }

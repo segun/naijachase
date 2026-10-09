@@ -18,9 +18,9 @@ NG-T016,Maryam Ibrahim,The Archivist,Zaria,Kaduna,historical_theft,"bookish, met
 NG-T017,Kelechi Obi,Switch,Port Harcourt,Rivers,identity_fraud,"adaptable, tech_savvy, deceptive, restless, playful",adaptable,tech_savvy,deceptive,restless,playful,3
 NG-T018,Yemi Lawal,The Undertaker,Ilorin,Kwara,murder,"grim, patient, methodical, cold, observant",grim,patient,methodical,cold,observant,4
 NG-T019,Fatima Sule,Silver Fox,Jos,Plateau,heist,"clever, patient, elegant, skeptical, risk_taker",clever,patient,elegant,skeptical,risk_taker,5
-NG-T020,Chukwudi Nnamdi,The Mechanic,Nnewi,Anambra,vehicle_theft,"hands_on, inventive, loyal, impatient, pragmatic",hands_on,inventive,loyal,impatient,pragmatic,1
+NG-T020,Chukwuma Nnamdi,The Mechanic,Nnewi,Anambra,vehicle_theft,"hands_on, inventive, loyal, impatient, pragmatic",hands_on,inventive,loyal,impatient,pragmatic,1
 NG-T021,Bisi Adebayo,The Diplomat,Abeokuta,Ogun,political_intrigue,"diplomatic, calculated, charming, ambitious, secretive",diplomatic,calculated,charming,ambitious,secretive,2
-NG-T022,Haruna Yakubu,The Shepherd,Maiduguri,Borno,smuggling,"resilient, cautious, quiet, resourceful, protective",resilient,cautious,quiet,resourceful,protective,3
+NG-T022,Halimat Yakubu,The Shepherd,Maiduguri,Borno,smuggling,"resilient, cautious, quiet, resourceful, protective",resilient,cautious,quiet,resourceful,protective,3
 NG-T023,Adaeze Chukwu,Black Orchid,Calabar,Cross River,art_theft,"stylish, patient, romantic, deceptive, perfectionist",stylish,patient,romantic,deceptive,perfectionist,4
 NG-T024,Taiwo Fasina,The Gambler,Lagos,Lagos,fraud,"risk_taker, mathematical, charming, impulsive, competitive",risk_taker,mathematical,charming,impulsive,competitive,5
 NG-T025,Abdulrahman Lawan,The Strategist,Bauchi,Bauchi,heist,"strategic, disciplined, patient, analytical, proud",strategic,disciplined,patient,analytical,proud,1
@@ -40,7 +40,7 @@ NG-T038,Chioma Okoro,The Actress,Port Harcourt,Rivers,identity_fraud,"dramatic, 
 NG-T039,Kabiru Umar,The Falconer,Kano,Kano,poaching,"patient, traditionalist, observant, resilient, secretive",patient,traditionalist,observant,resilient,secretive,5
 NG-T040,Tosin Bamgbose,The Banker,Lagos,Lagos,financial_fraud,"numerate, polished, ambitious, paranoid, greedy",numerate,polished,ambitious,paranoid,greedy,1
 NG-T041,Blessing Eze,The Nurse,Benin City,Edo,poisoning,"empathetic, precise, secretive, patient, resentful",empathetic,precise,secretive,patient,resentful,2
-NG-T042,Ibrahim Danladi,The Fixer,Abuja,FCT,political_intrigue,"connected, pragmatic, discreet, resourceful, cynical",connected,pragmatic,discreet,resourceful,cynical,3
+NG-T042,Khadijat Danladi,The Fixer,Abuja,FCT,political_intrigue,"connected, pragmatic, discreet, resourceful, cynical",connected,pragmatic,discreet,resourceful,cynical,3
 NG-T043,Temitope Akin,The Photographer,Lagos,Lagos,blackmail,"observant, artistic, patient, curious, opportunistic",observant,artistic,patient,curious,opportunistic,4
 NG-T044,Ogechi Nwankwo,The Seamstress,Aba,Abia,smuggling,"precise, creative, patient, frugal, secretive",precise,creative,patient,frugal,secretive,5
 NG-T045,Suleiman Abba,The Professor,Zaria,Kaduna,academic_theft,"intellectual, arrogant, meticulous, competitive, absent_minded",intellectual,arrogant,meticulous,competitive,absent_minded,1
@@ -54,7 +54,7 @@ NG-T052,Shade Akinyemi,The Florist,Abeokuta,Ogun,poisoning,"gentle, scientific, 
 NG-T053,Mubarak Isah,The Trader,Kano,Kano,smuggling,"commercial, calculating, sociable, risk_taker, resourceful",commercial,calculating,sociable,risk_taker,resourceful,4
 NG-T054,Ejiro Okoro,The Fisherman,Warri,Delta,smuggling,"patient, practical, quiet, resilient, superstitious",patient,practical,quiet,resilient,superstitious,5
 NG-T055,Lola Martins,The Stylist,Lagos,Lagos,identity_fraud,"fashionable, social, observant, manipulative, perfectionist",fashionable,social,observant,manipulative,perfectionist,1
-NG-T056,Yakubu Saleh,The Tracker,Jos,Plateau,kidnapping,"observant, patient, physical, quiet, methodical",observant,patient,physical,quiet,methodical,2
+NG-T056,Yasmine Saleh,The Tracker,Jos,Plateau,kidnapping,"observant, patient, physical, quiet, methodical",observant,patient,physical,quiet,methodical,2
 NG-T057,Chisom Nwafor,The Hacker,Enugu,Enugu,cybercrime,"technical, introverted, curious, cocky, restless",technical,introverted,curious,cocky,restless,3
 NG-T058,Adewale Oni,The Priest,Ile-Ife,Osun,artifact_theft,"mysterious, cultured, patient, superstitious, persuasive",mysterious,cultured,patient,superstitious,persuasive,4
 NG-T059,Mariam Shehu,The Mathematician,Maiduguri,Borno,financial_fraud,"analytical, patient, precise, quiet, competitive",analytical,patient,precise,quiet,competitive,5
@@ -66,17 +66,17 @@ NG-T064,Samuel Adekunle,The Preacher,Ilorin,Kwara,con_art,"charismatic, persuasi
 NG-T065,Rukayat Bello,The Collector II,Katsina,Katsina,antiquities,"obsessive, cultured, patient, wealthy, secretive",obsessive,cultured,patient,wealthy,secretive,1
 NG-T066,Femi Aro,The Carpenter,Osogbo,Osun,burglary,"hands_on, patient, inventive, quiet, practical",hands_on,patient,inventive,quiet,practical,2
 NG-T067,Juliet Nwosu,The Banker,Enugu,Enugu,financial_fraud,"numerate, polished, ambitious, cautious, deceptive",numerate,polished,ambitious,cautious,deceptive,3
-NG-T068,Yahaya Musa,The Guide,Jos,Plateau,smuggling,"knowledgeable, friendly, observant, resourceful, cautious",knowledgeable,friendly,observant,resourceful,cautious,4
+NG-T068,Yusra Musa,The Guide,Jos,Plateau,smuggling,"knowledgeable, friendly, observant, resourceful, cautious",knowledgeable,friendly,observant,resourceful,cautious,4
 NG-T069,Morenike Adeola,The Heiress,Lagos,Lagos,fraud,"privileged, vain, intelligent, reckless, persuasive",privileged,vain,intelligent,reckless,persuasive,5
-NG-T070,Emmanuel Etim,The Diver II,Calabar,Cross River,salvage_theft,"fearless, patient, physical, quiet, curious",fearless,patient,physical,quiet,curious,1
+NG-T070,Emmanuela Etim,The Diver II,Calabar,Cross River,salvage_theft,"fearless, patient, physical, quiet, curious",fearless,patient,physical,quiet,curious,1
 NG-T071,Aisha Sule,The Tailor,Kano,Kano,identity_fraud,"precise, creative, secretive, patient, observant",precise,creative,secretive,patient,observant,2
-NG-T072,Kunle Ajibade,The Historian III,Ibadan,Oyo,artifact_theft,"bookish, arrogant, nostalgic, meticulous, competitive",bookish,arrogant,nostalgic,meticulous,competitive,3
+NG-T072,Kayinsola Ajibade,The Historian III,Ibadan,Oyo,artifact_theft,"bookish, arrogant, nostalgic, meticulous, competitive",bookish,arrogant,nostalgic,meticulous,competitive,3
 NG-T073,Ngozi Nkem,The Negotiator II,Aba,Abia,kidnapping,"persuasive, calm, strategic, empathetic, controlling",persuasive,calm,strategic,empathetic,controlling,4
-NG-T074,Sadiq Umar,The Smuggler,Sokoto,Sokoto,smuggling,"streetwise, cautious, resourceful, patient, greedy",streetwise,cautious,resourceful,patient,greedy,5
+NG-T074,Sadiyat Umar,The Smuggler,Sokoto,Sokoto,smuggling,"streetwise, cautious, resourceful, patient, greedy",streetwise,cautious,resourceful,patient,greedy,5
 NG-T075,Damilola Femi,The Influencer,Lagos,Lagos,fraud,"social, vain, persuasive, restless, opportunistic",social,vain,persuasive,restless,opportunistic,1
-NG-T076,Chukwuemeka Ibe,The Engineer,Enugu,Enugu,heist,"technical, logical, meticulous, introverted, stubborn",technical,logical,meticulous,introverted,stubborn,2
+NG-T076,Chukwunonso Ibe,The Engineer,Enugu,Enugu,heist,"technical, logical, meticulous, introverted, stubborn",technical,logical,meticulous,introverted,stubborn,2
 NG-T077,Hadiza Garba,The Archivist II,Zaria,Kaduna,information_theft,"bookish, patient, secretive, nostalgic, possessive",bookish,patient,secretive,nostalgic,possessive,3
-NG-T078,Tajudeen Yusuf,The Falcon II,Kano,Kano,espionage,"alert, disciplined, quiet, deceptive, fearless",alert,disciplined,quiet,deceptive,fearless,4
+NG-T078,Tamara Yusuf,The Falcon II,Kano,Kano,espionage,"alert, disciplined, quiet, deceptive, fearless",alert,disciplined,quiet,deceptive,fearless,4
 NG-T079,Abisola Kuti,The Singer,Abeokuta,Ogun,blackmail,"musical, charismatic, observant, social, vengeful",musical,charismatic,observant,social,vengeful,5
 NG-T080,Bassey Duke,The Governor,Calabar,Cross River,political_intrigue,"commanding, ambitious, connected, calculating, proud",commanding,ambitious,connected,calculating,proud,1
 NG-T081,Oluwaseun Taiwo,The Driver,Lagos,Lagos,courier,"streetwise, observant, calm, loyal, impatient",streetwise,observant,calm,loyal,impatient,2
@@ -88,11 +88,11 @@ NG-T086,Adaobi Eze,The Botanist II,Nsukka,Enugu,poisoning,"scientific, quiet, cu
 NG-T087,Yusuf Ibrahim,The Trader II,Katsina,Katsina,smuggling,"commercial, calculating, social, risk_taker, resourceful",commercial,calculating,social,risk_taker,resourceful,3
 NG-T088,Tolu Adebisi,The Magician II,Ibadan,Oyo,con_art,"showman, quick_witted, charming, reckless, improviser",showman,quick_witted,charming,reckless,improviser,4
 NG-T089,Grace Okon,The Journalist II,Uyo,Akwa Ibom,blackmail,"inquisitive, persistent, sociable, cynical, brave",inquisitive,persistent,sociable,cynical,brave,5
-NG-T090,Ishaq Bello,The Locksmith III,Kaduna,Kaduna,burglary,"technical, methodical, quiet, patient, cautious",technical,methodical,quiet,patient,cautious,1
+NG-T090,Isra Bello,The Locksmith III,Kaduna,Kaduna,burglary,"technical, methodical, quiet, patient, cautious",technical,methodical,quiet,patient,cautious,1
 NG-T091,Chiamaka Obi,The Socialite II,Port Harcourt,Rivers,fraud,"glamorous, connected, persuasive, competitive, calculating",glamorous,connected,persuasive,competitive,calculating,2
-NG-T092,Fatai Lawal,The Undertaker II,Ilorin,Kwara,murder,"grim, cold, methodical, patient, observant",grim,cold,methodical,patient,observant,3
+NG-T092,Fatima Lawal,The Undertaker II,Ilorin,Kwara,murder,"grim, cold, methodical, patient, observant",grim,cold,methodical,patient,observant,3
 NG-T093,Amina Yusuf,The Tracker II,Jos,Plateau,kidnapping,"observant, patient, physical, quiet, protective",observant,patient,physical,quiet,protective,4
-NG-T094,Daniel Okoro,The Mechanic II,Nnewi,Anambra,vehicle_theft,"inventive, hands_on, pragmatic, impatient, loyal",inventive,hands_on,pragmatic,impatient,loyal,5
+NG-T094,Daniella Okoro,The Mechanic II,Nnewi,Anambra,vehicle_theft,"inventive, hands_on, pragmatic, impatient, loyal",inventive,hands_on,pragmatic,impatient,loyal,5
 NG-T095,Seyi Balogun,The Hacker II,Lagos,Lagos,cybercrime,"technical, curious, cocky, restless, competitive",technical,curious,cocky,restless,competitive,1
 NG-T096,Maryam Suleiman,The Librarian II,Sokoto,Sokoto,information_theft,"quiet, bookish, meticulous, patient, suspicious",quiet,bookish,meticulous,patient,suspicious,2
 NG-T097,Kola Akin,The Gambler II,Lagos,Lagos,fraud,"risk_taker, mathematical, charming, impulsive, competitive",risk_taker,mathematical,charming,impulsive,competitive,3

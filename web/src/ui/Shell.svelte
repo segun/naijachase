@@ -13,7 +13,7 @@
 
   const inCase = $derived(app.game !== null && app.screen !== "results");
   // The rooms (the desk, the case on the office computer, the archive, the garage and the witness scene) are full-screen: their own menus replace the side rail.
-  const inRoom = $derived(["welcome", "cases", "archive", "garage", "witness"].includes(app.screen) || (app.game !== null && isCaseScreen(app.screen)));
+  const inRoom = $derived(["welcome", "cases", "archive", "garage", "witness", "journey"].includes(app.screen) || (app.game !== null && isCaseScreen(app.screen)));
   const rail = $derived(app.signedIn && !inRoom && !app.needsAvatar);
 
   const waiting = $derived(app.coop.requests.filter(r => coopActions(r, app.player?.username ?? "").length).length);

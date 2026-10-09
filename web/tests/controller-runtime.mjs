@@ -68,7 +68,7 @@ export function caseFile(id = "case-one", overrides = {}) {
     api_version: "v1", case_id: id, state_version: 1, duplicate: false, attempt_kind: "ordinary", events: [],
     state: {
       mission_id: "NG-M0001", case_dossier: { title: "The first case" }, outcome: null,
-      stage: 0, current_state: "Lagos", trail_status: "hot", elapsed: 0, score: 800, career_points: 1200,
+      stage: 0, current_state: "Lagos", trail_status: "hot", elapsed: 0, score: 800, career_points: 1200, suspect_files: [], resolved_thief_name: null,
       dossier: {}, visited_venues: [], warrant_suspect: null, balance: 6000
     },
     ...overrides

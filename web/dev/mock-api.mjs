@@ -68,7 +68,7 @@ groupsDb.set("grp-seed", { group_id: "grp-seed", name: "Lagos Detectives", capac
 const challenges = new Map(), attempts = new Map(), wEvents = [];
 let weeklyNotify = [{ notification_id: 1, type: "challenge_scheduled", channel: "web", payload: {}, read_at: null }];
 const TRANSIT_SECONDS = Number(process.env.MOCK_TRANSIT ?? 6);
-const wkState = () => ({ mission_id: "NG-M0100", case_dossier: { title: "The Weekly Case", stolen_item: "a weekly prize", premise: "A weekly challenge.", opening_briefing: "Catch the thief before the week ends." }, difficulty: 2, stage: 0, current_state: "Lagos", trail_status: "hot", elapsed: 0, score: 650, career_points: 0, dossier: {}, visited_venues: [], warrant_suspect: null, outcome: null, opening_budget: 3, balance: 3, transport_rules_version: 1 });
+const wkState = () => ({ mission_id: "NG-M0100", case_dossier: { title: "The Weekly Case", stolen_item: "a weekly prize", premise: "A weekly challenge.", opening_briefing: "Catch the thief before the week ends." }, difficulty: 2, stage: 0, current_state: "Lagos", trail_status: "hot", elapsed: 0, score: 650, career_points: 0, dossier: {}, visited_venues: [], warrant_suspect: null, suspect_files: [], resolved_thief_name: null, outcome: null, opening_budget: 3, balance: 3, transport_rules_version: 1 });
 function challengeFor(groupId) {
   if (!challenges.has(groupId)) {
     const id = `wk-${groupId}`; const now = Math.floor(Date.now() / 1000);
@@ -116,7 +116,7 @@ const caseDossier = mission => ({
 const trailStatus = c => c.state === c.route[c.stage] ? "hot" : "cold";
 const publicState = c => ({
   mission_id: c.mission, case_dossier: caseDossier(c.mission), difficulty: 2, stage: c.stage, current_state: c.state, trail_status: trailStatus(c), elapsed: c.elapsed, score: c.score,
-  career_points: points, dossier: c.dossier, visited_venues: c.visited, warrant_suspect: c.warrant, outcome: c.outcome,
+  career_points: points, dossier: c.dossier, visited_venues: c.visited, warrant_suspect: c.warrant, suspect_files: [], resolved_thief_name: c.outcome ? "Demo Thief" : null, outcome: c.outcome,
   opening_budget: c.opening, balance: c.balance, transport_rules_version: 1
 });
 const reply = (c, events = [], duplicate = false) => ({ api_version: "v1", case_id: c.id, state_version: c.version, duplicate, attempt_kind: c.kind, state: publicState(c), events });
