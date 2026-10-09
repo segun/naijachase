@@ -122,6 +122,54 @@ export function createWitnessAudio(mix: SoundMix, vehicle: "car" | "bus", seed: 
     if (rnd() < 0.18 * mix.clinks) ping(at, 1800 + rnd() * 1800, 0.012);
   }, 450);
 
+  // Anything else the venue sounds like (see SoundExtra in recipe-kit.ts): bells and whistles, surf and wind, drums, birds.
+  const extras = mix.extras ?? [];
+  for (const e of extras) {
+    if (e.kind !== "swell") continue;
+    const gain = loop(e.filter ?? "bandpass", e.freq, e.q ?? 0.8, e.level);
+    const swell = ctx.createOscillator(), depth = ctx.createGain();
+    swell.frequency.value = e.rate; depth.gain.value = e.level * 0.7;
+    swell.connect(depth).connect(gain.gain); swell.start();
+  }
+  const tone = (at: number, e: Extract<(typeof extras)[number], { kind: "tone" }>) => {
+    const osc = ctx.createOscillator(), env = ctx.createGain();
+    osc.type = e.shape ?? "sine";
+    osc.frequency.setValueAtTime(e.freq, at);
+    if (e.slide) osc.frequency.exponentialRampToValueAtTime(Math.max(20, e.freq * e.slide), at + e.length);
+    if (e.vibrato) { const v = ctx.createOscillator(), d = ctx.createGain(); v.frequency.value = 5.5; d.gain.value = e.freq * 0.015; v.connect(d).connect(osc.frequency); v.start(at); v.stop(at + e.length + 0.1); }
+    env.gain.setValueAtTime(0.0001, at);
+    env.gain.linearRampToValueAtTime(e.level, at + 0.03);
+    env.gain.exponentialRampToValueAtTime(0.0001, at + e.length);
+    osc.connect(env).connect(master);
+    osc.start(at); osc.stop(at + e.length + 0.05);
+  };
+  const chirp = (at: number, freq: number, level: number) => {
+    const osc = ctx.createOscillator(), env = ctx.createGain(), pan = ctx.createStereoPanner();
+    osc.frequency.setValueAtTime(freq, at); osc.frequency.exponentialRampToValueAtTime(freq * (0.8 + rnd() * 0.6), at + 0.08);
+    env.gain.setValueAtTime(level, at); env.gain.exponentialRampToValueAtTime(0.0001, at + 0.1);
+    pan.pan.value = rnd() * 1.6 - 0.8;
+    osc.connect(env).connect(pan).connect(master);
+    osc.start(at); osc.stop(at + 0.12);
+  };
+  const thump = (at: number, freq: number, level: number) => {
+    const osc = ctx.createOscillator(), env = ctx.createGain();
+    osc.frequency.setValueAtTime(freq * 2.2, at); osc.frequency.exponentialRampToValueAtTime(freq, at + 0.12);
+    env.gain.setValueAtTime(level, at); env.gain.exponentialRampToValueAtTime(0.0001, at + 0.3);
+    osc.connect(env).connect(master);
+    osc.start(at); osc.stop(at + 0.32);
+  };
+  const extraTimers: ReturnType<typeof setInterval>[] = [];
+  if (extras.some(e => e.kind === "tone" || e.kind === "chirps")) {
+    extraTimers.push(setInterval(() => {
+      const at = ctx.currentTime + 0.05;
+      for (const e of extras) {
+        if (e.kind === "tone" && rnd() < 0.45 / Math.max(0.5, e.every)) tone(at, e);
+        if (e.kind === "chirps" && rnd() < e.rate * 0.45) chirp(at, e.freq * (0.85 + rnd() * 0.3), e.level);
+      }
+    }, 450));
+  }
+  for (const e of extras) if (e.kind === "pulse") extraTimers.push(setInterval(() => thump(ctx.currentTime + 0.02, e.freq, e.level), 60000 / Math.max(30, e.bpm)));
+
   /** The crowd drops back while the witness speaks so the voice is clear. */
   const duck = (on: boolean) => {
     murmur.gain.setTargetAtTime(murmurLevel * (on ? 0.35 : 1), ctx.currentTime, 0.3);
@@ -155,6 +203,7 @@ export function createWitnessAudio(mix: SoundMix, vehicle: "car" | "bus", seed: 
     },
     dispose() {
       clearInterval(ambience);
+      extraTimers.forEach(clearInterval);
       timers.forEach(clearTimeout);
       master.gain.cancelScheduledValues(ctx.currentTime);
       master.gain.setTargetAtTime(0.0001, ctx.currentTime, 0.12);

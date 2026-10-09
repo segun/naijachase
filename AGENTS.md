@@ -6,3 +6,5 @@
   structure of `web/src/scenes/witness/`.
 - Run the web checks with `cd web && npx svelte-check --tsconfig ./tsconfig.json && node --test tests/*.test.mjs`.
 - Keep `TODO.md` and `docs/` up to date when a feature changes.
+- Witness scenes for the 34 venues without one are being built by two agents in parallel: see `docs/agents/Agent1.md` and
+  `docs/agents/Agent2.md` for who owns which files and what to avoid.

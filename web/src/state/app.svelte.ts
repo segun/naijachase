@@ -2,7 +2,6 @@ import { untrack } from "svelte";
 import { Api, ApiError } from "../api/api";
 import { MenuMusic } from "../music/music.svelte.ts";
 import { GroupsController } from "./groups.svelte.ts";
-import { recipeFor } from "../scenes/witness/venue-recipes.ts";
 import {
   FIELDS, RATE_LIMIT_MESSAGE, errorKind, groupNotes, nearestHomeBase, parseNotes,
   catalogueView, unreadReleases, type ReportCategory, type AchievementDef, type CaseArchiveEntry, type CaseResponse, type CatalogueProgress, type ClientCommand, type Note,
@@ -427,10 +426,12 @@ export class AppController {
   }
 
   /** After the journey to a venue: the witness scene if that venue has one, otherwise straight to the investigation. */
-  arriveAtWitness(arrival: "drive" | "hitch") {
+  async arriveAtWitness(arrival: "drive" | "hitch") {
     const witness = this.lastWitness;
     this.lastWitness = null;
-    if (witness && !this.game?.state.outcome && recipeFor(witness.venueId)) {
+    // The recipes are loaded on demand, so they never weigh on the first download however many venues have a scene.
+    const recipes = witness ? await import("../scenes/witness/venue-recipes.ts").catch(() => null) : null;
+    if (witness && recipes?.recipeFor(witness.venueId) && !this.game?.state.outcome) {
       this.pendingLead = "";
       this.witnessVisit = { ...witness, arrival };
       this.go("witness");

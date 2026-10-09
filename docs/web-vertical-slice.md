@@ -30,7 +30,9 @@ web/src/
     witness/             the witness interview: WitnessScene, witness-scene.ts (timing, poses, subtitles),
                          venue-recipes.ts (per-venue look and sound), market-layout.ts (where things stand),
                          witness-driver.ts (shared options, sound, subtitles), witness-audio.ts,
-                         chase3d-witness.ts (3D) and witness-2d.ts (2D)
+                         chase3d-witness.ts + chase3d-sets.ts (3D core and set registry), witness-2d.ts +
+                         witness-2d-sets.ts + witness-2d-kit.ts (2D core, registry, drawing tools), and one
+                         set file per renderer for each family of venues
   screens/               the ordinary screens, grouped by feature
     entry/               Landing, AuthPanel
     account/             Settings

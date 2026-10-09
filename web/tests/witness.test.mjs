@@ -144,7 +144,7 @@ test("footsteps are counted only while striding", () => {
 
 test("only venues with a recipe get a witness scene; the market's witnesses and voices are fixed by the account", () => {
   assert.ok(recipes.recipeFor("market"));
-  assert.equal(recipes.recipeFor("library"), undefined);
+  assert.equal(recipes.recipeFor("no_such_venue"), undefined);
   const market = recipes.recipeFor("market");
   assert.equal(recipes.witnessFor(market, "same words").avatar_id, recipes.witnessFor(market, "same words").avatar_id);
   assert.ok(new Set(Array.from({ length: 40 }, (_, i) => recipes.witnessFor(market, `account ${i}`).avatar_id)).size > 2, "different accounts meet different people");
@@ -156,8 +156,9 @@ test("the garage hands the visit to the witness scene, which loads lazily and ne
   const app = read("state/app.svelte.ts"), view = read("scenes/witness/WitnessScene.svelte"), root = read("App.svelte");
   assert.match(app, /if \(payload\.type === "visit_venue"\) this\.lastWitness = null;/, "a stale account is never replayed");
   assert.match(read("screens/case/Investigate.svelte"), /app\.arriveAtWitness\(/, "later witnesses, questioned from the investigation, get the scene too");
-  assert.match(app, /arriveAtWitness\(arrival: "drive" \| "hitch"\)/);
-  assert.match(app, /recipeFor\(witness\.venueId\)/, "venues without a scene go straight to the investigation");
+  assert.match(app, /async arriveAtWitness\(arrival: "drive" \| "hitch"\)/);
+  assert.match(app, /recipes\?\.recipeFor\(witness\.venueId\)/, "venues without a scene go straight to the investigation");
+  assert.match(app, /import\("\.\.\/scenes\/witness\/venue-recipes\.ts"\)/, "recipes load on demand, not in the first download");
   assert.match(app, /leaveWitness\(\) \{\s*this\.witnessVisit = null;/);
   assert.match(root, /import\("\.\/scenes\/witness\/WitnessScene\.svelte"\)/);
   assert.match(view, /import\("\.\/chase3d-witness\.ts"\)/, "Babylon.js is a dynamic import");

@@ -1,31 +1,11 @@
-// What makes each kind of venue look and sound like itself, as data. The witness scene is built from one of these, so a new venue
-// is a new entry here (plus, for now, its dressing in chase3d-witness.ts) rather than a new scene. Only the market exists so far;
-// every other venue goes straight to the investigation until it has a recipe.
-import type { AvatarPreset } from "../../avatar/avatar-model.ts";
+// What makes each kind of venue look and sound like itself, as data. The witness scene is built from one of these, so a new venue is a new
+// entry (in this file for the market, otherwise in recipes-open-air.ts or recipes-buildings.ts) plus scenery in both renderers, not a new
+// scene. A venue without a recipe goes straight to the investigation. See docs/scene-conventions.md.
+import { type VenueRecipe, look } from "./recipe-kit.ts";
+import { OPEN_AIR_RECIPES } from "./recipes-open-air.ts";
+import { BUILDING_RECIPES } from "./recipes-buildings.ts";
 
-/** How loud each layer of the venue's ambience is, 0 to 1. */
-export type SoundMix = {
-  /** The murmur of many people. */
-  crowd: number;
-  /** Individual voices calling out across the space. */
-  calls: number;
-  /** A generator, engine or machinery hum. */
-  hum: number;
-  /** Small bright sounds: coins, bells, metal on metal. */
-  clinks: number;
-};
-
-export type VenueRecipe = {
-  id: string;
-  /** Which set of scenery chase3d-witness.ts builds. */
-  set: "market";
-  sound: SoundMix;
-  /** Fictional witnesses for this kind of venue; one is picked from the account so it is always the same person. */
-  witnesses: readonly (AvatarPreset & { /** Voice pitch in Hz. */ pitch: number })[];
-};
-
-const look = (id: string, label: string, presentation: AvatarPreset["presentation"], skin: string, hair: string, hairColor: string, primary: string, secondary: string, accent: string, pitch: number) =>
-  ({ avatar_id: id, label, presentation, skin_tone: "brown", skin_color: skin, hair_style: hair, hair_color: hairColor, uniform_primary: primary, uniform_secondary: secondary, uniform_accent: accent, pitch });
+export type { SoundExtra, SoundMix, VenueRecipe, Witness } from "./recipe-kit.ts";
 
 const MARKET: VenueRecipe = {
   id: "market",
@@ -41,8 +21,9 @@ const MARKET: VenueRecipe = {
   ]
 };
 
-const RECIPES: Record<string, VenueRecipe> = { market: MARKET };
+const RECIPES: Readonly<Record<string, VenueRecipe>> = { market: MARKET, ...OPEN_AIR_RECIPES, ...BUILDING_RECIPES };
 
+export const allRecipes = (): readonly VenueRecipe[] => Object.values(RECIPES);
 /** The recipe for a venue, or undefined while that venue has no witness scene. */
 export const recipeFor = (venueId: string): VenueRecipe | undefined => RECIPES[venueId];
 

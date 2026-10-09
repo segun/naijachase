@@ -50,3 +50,17 @@ Rules:
   (`localStorage["nc-scene"] = "2d"`).
 - PixiJS was the original idea for the 2D renderer. Plain Canvas 2D was used because Pixi needs WebGL, which is exactly what
   the weak devices lack. A Pixi renderer can still be added behind the same handle if 2D ever needs it.
+
+## Adding a venue to the witness scenes
+
+A venue is a recipe plus a scenery set per renderer; the choreography is shared and does not change.
+
+- Recipe: `recipes-open-air.ts` or `recipes-buildings.ts` (the market's is in `venue-recipes.ts`), built with `recipe-kit.ts`.
+- 3D set: register in `chase3d-open-air.ts` / `chase3d-buildings.ts` (via `chase3d-sets.ts`); 2D set: `witness-2d-open-air.ts` /
+  `witness-2d-buildings.ts` (via `witness-2d-sets.ts`). Both under the recipe's `set` id.
+- `web/tests/witness-sets.test.mjs` checks every recipe automatically (real venue, both sets registered, witnesses, quiet sound).
+- The remaining 34 venues are split between two agents in `docs/agents/Agent1.md` and `docs/agents/Agent2.md`, which also list what to
+  avoid, based on what went wrong with the market.
+- Flags: do not draw anything that reads as a real national flag (green and white are never the two colours of a flag; a test enforces it).
+- Signs carrying the venue's name are sized for the arrival shot. In the conversation shot the camera looks at the witness, so a sign can
+  be cut off by the frame; that is expected and not worth bending the layout for (checked: moving the camera does not help either).

@@ -1178,7 +1178,8 @@ scores, rank, detection odds, panel votes, punishment, or jail time.
       length that follows the words (about 10-15 s), venue name on a banner.
       2D (Canvas 2D) fallback for it is built and takes over when 3D fails or the device is weak;
       the convention is in `docs/scene-conventions.md`.
-      Remaining: the other 34 venue recipes, the road journey with an LGA sign, the arrest
+      Remaining: the other 34 venue scenes (split between two agents: `docs/agents/Agent1.md` and
+      `docs/agents/Agent2.md`), the road journey with an LGA sign, the arrest
       sequence, and measuring frame rate on real mobile devices.
   - [ ] Support glTF/GLB assets, character animation, reusable camera sequences,
     spatial/ambient audio, time-of-day lighting, weather, and regional scenery.

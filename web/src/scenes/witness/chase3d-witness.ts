@@ -1,20 +1,14 @@
-// Lazily loaded Babylon.js scene for a witness interview: the player's vehicle pulls up at a venue (so far, a market), the player
+// Lazily loaded Babylon.js scene for a witness interview: the player's vehicle pulls up at a venue (each kind of venue adds its own scenery through chase3d-sets.ts), the player
 // walks up to the witness, and the witness speaks while the words appear as subtitles. Built from primitives and painted textures;
 // timing, poses and subtitles are in witness-scene.ts and the venue's look and sound in venue-recipes.ts.
 import { Scene } from "@babylonjs/core/scene";
-import { PointLight } from "@babylonjs/core/Lights/pointLight";
-import { Vector3 } from "@babylonjs/core/Maths/math.vector";
-import { TransformNode } from "@babylonjs/core/Meshes/transformNode";
 import { Mesh } from "@babylonjs/core/Meshes/mesh";
 import { CreateSphere } from "@babylonjs/core/Meshes/Builders/sphereBuilder";
-import { StandardMaterial } from "@babylonjs/core/Materials/standardMaterial";
-import type { DynamicTexture } from "@babylonjs/core/Materials/Textures/dynamicTexture";
 import type { Texture } from "@babylonjs/core/Materials/Textures/texture";
-import { hex, merge, seeded } from "../shared/chase3d-kit.ts";
+import { hex, seeded } from "../shared/chase3d-kit.ts";
 import { createStage, type Stage } from "../shared/chase3d-stage.ts";
 import { danfo, runabout } from "../shared/chase3d-cars.ts";
 import { armAngles, legAngles, type CameraShot } from "../shared/scene-core.ts";
-import { hashOf } from "./venue-recipes.ts";
 import { setFor } from "./chase3d-sets.ts";
 import { createDriver, fitShot, type WitnessFrame, type WitnessHandle, type WitnessOptions } from "./witness-driver.ts";
 import { ROAD_Z, VEHICLE_FROM_X, WITNESS, busDoorAt, cameraAt, listenLean, playerPoseAt, vehicleXAt, witnessAt } from "./witness-scene.ts";
@@ -29,7 +23,6 @@ export async function createWitnessScene(canvas: HTMLCanvasElement, options: Wit
   const stage = createStage(canvas, { hour: options.hour, quality: options.quality });
   const { scene, camera, palette, mat, box, cyl, sphere, plane, textured, caster, engine } = stage;
   const light = stage.light;
-  const r = seeded(hashOf(options.venueName) || 1);
   const night = palette.stars || palette.lamp > 0.5;
 
   scene.fogMode = Scene.FOGMODE_LINEAR;
