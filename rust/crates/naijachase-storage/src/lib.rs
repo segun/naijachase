@@ -1758,17 +1758,32 @@ impl MysqlStore {
         &self,
         player_id: &str,
     ) -> Result<Option<(String, u64, GameState)>, StorageError> {
+        Ok(self
+            .ongoing_cases_by_kind(player_id, "ordinary")?
+            .into_iter()
+            .next())
+    }
+
+    pub fn ongoing_cases_by_kind(
+        &self,
+        player_id: &str,
+        attempt_kind: &str,
+    ) -> Result<Vec<(String, u64, GameState)>, StorageError> {
+        if !matches!(attempt_kind, "ordinary" | "replay") {
+            return Err(StorageError::Command("invalid attempt kind".into()));
+        }
         let rows: Vec<(String, u64, Vec<u8>)> = self.pool.get_conn()?.exec(
-            "SELECT case_id,version,state_json FROM active_cases WHERE player_id=:player AND attempt_kind='ordinary' ORDER BY updated_at DESC,created_at DESC",
-            params! { "player" => player_id },
+            "SELECT case_id,version,state_json FROM active_cases WHERE player_id=:player AND attempt_kind=:kind ORDER BY updated_at DESC,created_at DESC",
+            params! { "player" => player_id, "kind" => attempt_kind },
         )?;
+        let mut active = Vec::new();
         for (case_id, version, data) in rows {
             let state: GameState = serde_json::from_slice(&data)?;
             if state.outcome.is_none() {
-                return Ok(Some((case_id, version, state)));
+                active.push((case_id, version, state));
             }
         }
-        Ok(None)
+        Ok(active)
     }
 
     pub fn execute_case_command<F>(

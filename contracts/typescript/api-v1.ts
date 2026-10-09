@@ -47,6 +47,7 @@ export type JailStatus={jailed:boolean;jailed_until:string|null};
 export type GameEvent={event_type:string;data:Record<string,string>};
 export type CaseResponse={api_version:"v1";case_id:string;state_version:number;duplicate:boolean;attempt_kind:"ordinary"|"replay"|"weekly";state:PublicGameState;events:GameEvent[]};
 export type CurrentCaseResponse={has_ongoing_case:boolean;case:CaseResponse|null};
+export type CurrentActivityResponse={has_ongoing_activity:boolean;ordinary_case:CaseResponse|null;replay_cases:CaseResponse[];weekly_attempts:WeeklyAttempt[]};
 export type CooperationPreferences={enabled:boolean;email_enabled:boolean;age_assurance_status:"unknown"|"adult"|"minor"};
 export type CooperationRequest={request_id:string;owner_username:string;helper_username:string;case_id:string;venue_id:string;status:"pending"|"accepted"|"completed"|"acknowledged"|"declined"|"cancelled"|"expired";public_scene:{venue_id:string;jurisdiction:string;stage:number};recommendation:{text:string}|null;reward_granted:boolean;expires_at:string};
 export type CreateCooperationRequest={command_id:string;case_id:string;venue_id:string;helper_username:string};

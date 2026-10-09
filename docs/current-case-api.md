@@ -48,5 +48,6 @@ navigation convenience, but it must not decide whether a case exists.
 
 `POST /v1/cases {}` now returns the existing ongoing ordinary case with
 `200 OK` and `duplicate: true` when one exists. It creates a case with `201`
-only when the player has none. Replays and weekly attempts remain independent
-and are not returned by this endpoint.
+only when the player has none. This compatibility endpoint is intentionally
+ordinary-only. Use `GET /v1/activity/current` for ordinary cases, replays, and
+weekly attempts together; see `docs/current-activity-api.md`.

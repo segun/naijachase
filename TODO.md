@@ -426,6 +426,10 @@ local replay, or client-side prediction becomes a concrete product requirement.
   and weekly frontend integration contract.
 - [x] Expose the signed-in player's current ordinary case for cross-device
   resume and make new-case assignment reuse an existing ongoing case.
+- [x] Expose one authenticated current-activity inventory covering the ordinary
+  case, every resumable replay, and every active or in-transit weekly attempt;
+  document `GET /v1/activity/current` for the frontend and keep the narrower
+  ordinary endpoint for compatibility.
 - [x] Replace ordinary and weekly web dossier free-text inputs with server-owned
   select choices, session-cached loading, inline retry, saved-value preselection,
   and exact listed-value submission.

@@ -253,6 +253,22 @@ impl MysqlStore {
         ) = row.ok_or(StorageError::Forbidden)?;
         Ok(WeeklyAttemptView{attempt_id:attempt.into(),challenge_id,status,state_version,state:serde_json::from_str(&state)?,starts_at,ends_at,winner:winner.as_deref()==Some(attempt),transit:destination.map(|destination|serde_json::json!({"destination":destination,"mode":mode,"remaining_seconds":remaining.unwrap_or(0)}))})
     }
+
+    pub fn ongoing_weekly_attempts(
+        &self,
+        player: &str,
+    ) -> Result<Vec<WeeklyAttemptView>, StorageError> {
+        let attempt_ids: Vec<String> = self.pool.get_conn()?.exec(
+            "SELECT a.attempt_id FROM weekly_attempts a JOIN weekly_challenges w ON w.challenge_id=a.challenge_id WHERE a.player_id=:player AND a.status IN('active','in_transit') AND w.status='open' AND UTC_TIMESTAMP()>=w.starts_at AND UTC_TIMESTAMP()<w.ends_at ORDER BY a.started_at DESC",
+            params! { "player" => player },
+        )?;
+        let mut attempts = Vec::with_capacity(attempt_ids.len());
+        for attempt_id in attempt_ids {
+            self.complete_weekly_arrival(player, &attempt_id)?;
+            attempts.push(self.weekly_attempt(player, &attempt_id)?);
+        }
+        Ok(attempts)
+    }
     pub fn depart_weekly(
         &self,
         player: &str,

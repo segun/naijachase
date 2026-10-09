@@ -460,6 +460,44 @@ pub struct CurrentCaseResponse {
 }
 
 #[derive(Debug, Serialize)]
+pub struct PublicWeeklyAttempt {
+    pub attempt_id: String,
+    pub challenge_id: String,
+    pub status: String,
+    pub state_version: u64,
+    pub state: PublicGameState,
+    pub starts_at: String,
+    pub ends_at: String,
+    pub winner: bool,
+    pub transit: Option<serde_json::Value>,
+}
+
+#[derive(Debug, Serialize)]
+pub struct CurrentActivityResponse {
+    pub has_ongoing_activity: bool,
+    pub ordinary_case: Option<CaseResponse>,
+    pub replay_cases: Vec<CaseResponse>,
+    pub weekly_attempts: Vec<PublicWeeklyAttempt>,
+}
+
+fn public_weekly_attempt(
+    attempt: naijachase_storage::WeeklyAttemptView,
+    catalogue: &Catalogue,
+) -> Result<PublicWeeklyAttempt, ApiError> {
+    Ok(PublicWeeklyAttempt {
+        attempt_id: attempt.attempt_id,
+        challenge_id: attempt.challenge_id,
+        status: attempt.status,
+        state_version: attempt.state_version,
+        state: public_game_state(&attempt.state, catalogue)?,
+        starts_at: attempt.starts_at,
+        ends_at: attempt.ends_at,
+        winner: attempt.winner,
+        transit: attempt.transit,
+    })
+}
+
+#[derive(Debug, Serialize)]
 struct ErrorBody {
     error: &'static str,
     message: String,
@@ -845,6 +883,7 @@ pub fn router(state: Arc<AppState>) -> Router {
             get(achievement_catalog),
         )
         .route("/v1/cases", post(assign_case))
+        .route("/v1/activity/current", get(current_activity))
         .route("/v1/cases/current", get(current_case))
         .route("/v1/cases/replay", post(replay_case))
         .route("/v1/cases/catalogue-status", get(catalogue_status))
@@ -2334,21 +2373,82 @@ async fn current_case(
         .await
         .map_err(task_error)??;
     let case = current
-        .map(|(case_id, version, game)| {
-            Ok(CaseResponse {
-                api_version: API_VERSION,
-                case_id,
-                state_version: version,
-                duplicate: false,
-                attempt_kind: "ordinary".into(),
-                state: public_game_state(&game, &state.catalogue)?,
-                events: vec![],
-            })
-        })
+        .map(
+            |(case_id, version, game)| -> Result<CaseResponse, ApiError> {
+                Ok(CaseResponse {
+                    api_version: API_VERSION,
+                    case_id,
+                    state_version: version,
+                    duplicate: false,
+                    attempt_kind: "ordinary".into(),
+                    state: public_game_state(&game, &state.catalogue)?,
+                    events: vec![],
+                })
+            },
+        )
         .transpose()?;
     Ok(Json(CurrentCaseResponse {
         has_ongoing_case: case.is_some(),
         case,
+    }))
+}
+
+async fn current_activity(
+    State(state): State<Arc<AppState>>,
+    headers: HeaderMap,
+) -> Result<Json<CurrentActivityResponse>, ApiError> {
+    let player = authorize(&headers, &state).await?.player_id;
+    let store = state.store.clone();
+    let lookup_player = player.clone();
+    let (ordinary_cases, replay_cases) = tokio::task::spawn_blocking(move || {
+        Ok::<_, StorageError>((
+            store.ongoing_cases_by_kind(&lookup_player, "ordinary")?,
+            store.ongoing_cases_by_kind(&lookup_player, "replay")?,
+        ))
+    })
+    .await
+    .map_err(task_error)??;
+
+    let store = state.store.clone();
+    let weekly_attempts =
+        tokio::task::spawn_blocking(move || store.ongoing_weekly_attempts(&player))
+            .await
+            .map_err(task_error)??;
+
+    let to_case = |attempt_kind: &str,
+                   (case_id, version, game): (String, u64, GameState)|
+     -> Result<CaseResponse, ApiError> {
+        Ok(CaseResponse {
+            api_version: API_VERSION,
+            case_id,
+            state_version: version,
+            duplicate: false,
+            attempt_kind: attempt_kind.into(),
+            state: public_game_state(&game, &state.catalogue)?,
+            events: vec![],
+        })
+    };
+    let ordinary_case = ordinary_cases
+        .into_iter()
+        .next()
+        .map(|case| to_case("ordinary", case))
+        .transpose()?;
+    let replay_cases = replay_cases
+        .into_iter()
+        .map(|case| to_case("replay", case))
+        .collect::<Result<Vec<_>, _>>()?;
+    let weekly_attempts = weekly_attempts
+        .into_iter()
+        .map(|attempt| public_weekly_attempt(attempt, &state.catalogue))
+        .collect::<Result<Vec<_>, _>>()?;
+    let has_ongoing_activity =
+        ordinary_case.is_some() || !replay_cases.is_empty() || !weekly_attempts.is_empty();
+
+    Ok(Json(CurrentActivityResponse {
+        has_ongoing_activity,
+        ordinary_case,
+        replay_cases,
+        weekly_attempts,
     }))
 }
 

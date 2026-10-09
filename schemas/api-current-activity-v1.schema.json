@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://naijachase.app/schemas/api-current-activity-v1.schema.json",
+  "title": "NaijaChase current player activity",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["has_ongoing_activity", "ordinary_case", "replay_cases", "weekly_attempts"],
+  "properties": {
+    "has_ongoing_activity": { "type": "boolean" },
+    "ordinary_case": {
+      "oneOf": [
+        { "$ref": "api-case-response-v1.schema.json" },
+        { "type": "null" }
+      ]
+    },
+    "replay_cases": {
+      "type": "array",
+      "items": { "$ref": "api-case-response-v1.schema.json" }
+    },
+    "weekly_attempts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["attempt_id", "challenge_id", "status", "state_version", "state", "starts_at", "ends_at", "winner", "transit"],
+        "properties": {
+          "attempt_id": { "type": "string" },
+          "challenge_id": { "type": "string" },
+          "status": { "enum": ["active", "in_transit"] },
+          "state_version": { "type": "integer", "minimum": 1 },
+          "state": {
+            "type": "object",
+            "required": ["mission_id", "case_dossier", "dossier", "opening_budget", "balance", "transport_rules_version"],
+            "properties": {
+              "mission_id": { "type": "string" },
+              "case_dossier": { "type": "object" },
+              "dossier": { "type": "object", "additionalProperties": { "type": "string" } },
+              "opening_budget": { "type": "integer", "minimum": 0 },
+              "balance": { "type": "integer", "minimum": 0 },
+              "transport_rules_version": { "type": "integer", "minimum": 1 }
+            }
+          },
+          "starts_at": { "type": "string" },
+          "ends_at": { "type": "string" },
+          "winner": { "type": "boolean" },
+          "transit": {
+            "oneOf": [
+              {
+                "type": "object",
+                "required": ["destination", "mode", "remaining_seconds"],
+                "properties": {
+                  "destination": { "type": "string" },
+                  "mode": { "enum": ["fly", "drive", "hitch_ride"] },
+                  "remaining_seconds": { "type": "integer", "minimum": 0 }
+                }
+              },
+              { "type": "null" }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,5 +1,5 @@
 import type {
-  AssignCaseRequest, AuthResponse, AvatarCatalogue, AvatarProfile, AvatarSelectionRequest, CaseArchiveEntry, CaseResponse, CatalogueProgress, ClientCommand, CurrentCaseResponse, ExecuteRequest,
+  AssignCaseRequest, AuthResponse, AvatarCatalogue, AvatarProfile, AvatarSelectionRequest, CaseArchiveEntry, CaseResponse, CatalogueProgress, ClientCommand, CurrentActivityResponse, CurrentCaseResponse, ExecuteRequest,
   LoginRequest, PlayerSession, ProfileUpdate, ProgressionSummary, RecoveryCompleteRequest,
   RecoveryRequest, RegisterRequest, ReplayCaseRequest, TransportLedgerEntry, TransportQuote,
   CatalogueHealth, CompleteCooperationRequest, ContentRoleResponse, CooperationPreferences, CooperationReportRequest, CooperationRequest, CreateCooperationRequest, DossierOptions, MissionAdminDetails, MissionTransitionRequest, MissionValidation, ReleaseNotification
@@ -87,6 +87,7 @@ export class Api {
   /** The server picks the mission and generates the case id and seed; the body is deliberately empty. */
   assign = () => call<CaseResponse>("/v1/cases", "POST", {} satisfies AssignCaseRequest);
   currentCase = () => call<CurrentCaseResponse>("/v1/cases/current");
+  currentActivity = () => call<CurrentActivityResponse>("/v1/activity/current");
   replay = (missionId: string) => call<CaseResponse>("/v1/cases/replay", "POST", { mission_id: missionId } satisfies ReplayCaseRequest);
   catalogueStatus = () => call<CatalogueProgress>("/v1/cases/catalogue-status");
   load = (caseId: string) => call<CaseResponse>(`/v1/cases/${encodeURIComponent(caseId)}`);
