@@ -9,13 +9,16 @@
   import { MIN_WIDTH, decideScene, readDevice } from "./scene-capability.ts";
   import "../../styles/terminal.css";
 
-  let { app, seenKey, load, loading = "Opening the office…", sheet = "crt", children }: {
+  let { app, seenKey, load, loading = "Opening the office…", sheet = "crt", quick = false, introFrom = 0, children }: {
     app: AppController;
     /** sessionStorage key marking that this room's intro has played in this sign-in. Without one the intro plays every time. */
     seenKey?: string;
     /** Imports and starts the scene; it must be a dynamic import so Babylon.js stays out of the main bundle. */
     load: (canvas: HTMLCanvasElement, options: SceneOptions) => Promise<SceneHandle>;
     loading?: string;
+    /** Play the intro even if this room's intro has already played this sign-in, starting `introFrom` seconds in (the office uses it for the short return from a venue). */
+    quick?: boolean;
+    introFrom?: number;
     /** The look of the surface the camera lands on; a dock is a panel along the bottom over the settled shot, with no zoom. */
     sheet?: "crt" | "paper" | "dock";
     /** Receives whether the screen is awake, and `leave`, which plays the scene's exit animation (the player walking out) and resolves when it ends. */
@@ -33,7 +36,8 @@
   // svelte-ignore state_referenced_locally
   const seen = seenKey !== undefined && sessionStorage.getItem(seenKey) === "1";
 
-  const playIntro = device.run && !seen;
+  // svelte-ignore state_referenced_locally
+  const playIntro = device.run && (!seen || quick);
   let phase = $state<"intro" | "desk" | "outro">(playIntro ? "intro" : "desk");
   let glass = $state(playIntro ? 0 : 1);
   let ready = $state(false);
@@ -79,7 +83,7 @@
     load(target, {
       preset, hour: new Date().getHours(), quality: device.quality,
       // A settled shot (no intro) starts at the end of the timeline.
-      startSeconds: intro ? 0 : 60,
+      startSeconds: intro ? (quick ? introFrom : 0) : 60,
       onGlass: v => {
         if (cancelled) return;
         lastFrame = performance.now(); ready = true;

@@ -3,9 +3,9 @@ import { Api, ApiError } from "../api/api";
 import { MenuMusic } from "../music/music.svelte.ts";
 import { GroupsController } from "./groups.svelte.ts";
 import {
-  FIELDS, RATE_LIMIT_MESSAGE, errorKind, groupNotes, nearestHomeBase, parseNotes,
+  dossierChanges, RATE_LIMIT_MESSAGE, errorKind, groupNotes, nearestHomeBase, parseNotes,
   catalogueView, unreadReleases, type ReportCategory, type AchievementDef, type CaseArchiveEntry, type CaseResponse, type CatalogueProgress, type ClientCommand, type Note,
-  type AvatarCatalogue, type AvatarPreset, type CooperationPreferences, type CooperationRequest, type Player, type PlayerSession, type ReleaseNotification, type TransportLedgerEntry, type TransportQuote, type ProfileUpdate, type ProgressionSummary, type Screen
+  type AvatarCatalogue, type AvatarPreset, type DossierOptions, type CooperationPreferences, type CooperationRequest, type Player, type PlayerSession, type ReleaseNotification, type TransportLedgerEntry, type TransportQuote, type ProfileUpdate, type ProgressionSummary, type Screen
 } from "../domain/model.ts";
 
 export type Toast = { id: number; kind: "info" | "error" | "success"; text: string };
@@ -33,6 +33,8 @@ export class AppController {
   readonly groups = new GroupsController(this);
   private toastId = 0;
   private refreshTimer: ReturnType<typeof setInterval> | undefined;
+  private dossierLoad: Promise<void> | undefined;
+  private sessionGeneration = 0;
 
   screen = $state<Screen>("welcome");
   game = $state<CaseResponse | null>(null);
@@ -54,6 +56,9 @@ export class AppController {
   sessions = $state<PlayerSession[]>([]);
   /** The player's chosen preset, as the server describes it; null until loaded or chosen. */
   avatar = $state<AvatarPreset | null>(null);
+  dossierOptions = $state<DossierOptions | null>(null);
+  dossierOptionsLoading = $state(false);
+  dossierOptionsError = $state("");
   catalogueStatus = $state<CatalogueProgress | null>(null);
   /** Set when the server reports that every published case is complete; a milestone, not an error. */
   exhausted = $state(false);
@@ -72,6 +77,8 @@ export class AppController {
   lastWitness = $state<Omit<WitnessVisit, "arrival"> | null>(null);
   /** The witness scene being played; null when none is. */
   witnessVisit = $state<WitnessVisit | null>(null);
+  /** Set when the player has just come back from a venue: the office plays a short return (seated, then the zoom) instead of the long walk-in. */
+  returning = $state(false);
 
   signedIn = $derived(this.player !== null);
   /** First login: the avatar picker comes before the case desk and nothing else is reachable. */
@@ -144,7 +151,10 @@ export class AppController {
 
   private endSession(message?: string) {
     clearInterval(this.refreshTimer);
-    this.player = null; this.game = null; this.caseId = ""; this.briefing = false; this.pendingLead = ""; this.lastWitness = null; this.witnessVisit = null;
+    this.sessionGeneration++;
+    this.dossierLoad = undefined;
+    this.dossierOptions = null; this.dossierOptionsLoading = false; this.dossierOptionsError = "";
+    this.player = null; this.game = null; this.caseId = ""; this.briefing = false; this.pendingLead = ""; this.lastWitness = null; this.witnessVisit = null; this.returning = false;
     this.summary = null; this.archive = []; this.sessions = []; this.avatar = null; this.catalogueStatus = null; this.exhausted = false; this.quotes = []; this.ledger = []; this.notes = []; this.trail = []; this.rankAtStart = null;
     sessionStorage.clear();
     this.screen = "cases";
@@ -191,6 +201,7 @@ export class AppController {
         this.screen = "cases";
       } else {
         this.player = (await this.api.me()).player;
+        void this.loadDossierOptions();
         void this.loadAvatar();
         this.screen = "cases";
         this.syncRoute();
@@ -215,6 +226,7 @@ export class AppController {
     const out = await this.run("Signing in", () => this.api.login({ email, password }));
     if (!out) return false;
     this.player = out.player;
+    void this.loadDossierOptions();
     void this.loadAvatar();
     this.startRefresh();
     this.syncRoute();
@@ -270,6 +282,36 @@ export class AppController {
   }
 
   // ---- Profile, devices, progression ------------------------------------
+
+  loadDossierOptions(): Promise<void> {
+    if (this.dossierOptions) return Promise.resolve();
+    return (this.dossierLoad ??= this.fetchDossierOptions());
+  }
+
+  private async fetchDossierOptions() {
+    const generation = this.sessionGeneration;
+    this.dossierOptionsLoading = true;
+    this.dossierOptionsError = "";
+    try {
+      const options = await this.api.dossierOptions();
+      if (generation === this.sessionGeneration) this.dossierOptions = options;
+    } catch (e) {
+      if (generation === this.sessionGeneration) {
+        this.dossierOptionsError = e instanceof Error ? e.message : String(e);
+        this.fail(e);
+      }
+    } finally {
+      if (generation === this.sessionGeneration) {
+        this.dossierOptionsLoading = false;
+        this.dossierLoad = undefined;
+      }
+    }
+  }
+
+  selectedDossierChanges(values: Record<string, string>, recorded: Record<string, string>) {
+    try { return dossierChanges(this.dossierOptions, values, recorded); }
+    catch (e) { this.fail(e); return null; }
+  }
 
   async saveProfile(update: ProfileUpdate) {
     const out = await this.run("Saving profile", () => this.api.updateProfile(update));
@@ -412,7 +454,7 @@ export class AppController {
     this.go("cases");
   }
 
-  /** Leaves the briefing for the investigation, optionally heading straight for the chosen lead. */
+  /** Leaves the briefing for the investigation, optionally heading straight for the chosen lead. The case terminal uses it too: choosing a lead there also walks out to the garage. */
   finishBriefing(lead = "") {
     this.briefing = false; this.pendingLead = lead;
     // A chosen lead continues in the garage, where the transport is picked; otherwise straight to the investigation.
@@ -441,6 +483,8 @@ export class AppController {
   /** The witness scene is over (or was skipped): on to the investigation, where the account is in the notebook. */
   leaveWitness() {
     this.witnessVisit = null;
+    // The short office return is for a case that goes on; a finished case goes to its results instead.
+    this.returning = !this.game?.state.outcome;
     this.go(this.game?.state.outcome ? "results" : "investigate");
   }
 
@@ -531,14 +575,13 @@ export class AppController {
   }
 
   async saveDossier(changes: Record<string, string>) {
+    const selected = this.selectedDossierChanges(changes, this.game?.state.dossier ?? {});
+    if (!selected) return false;
     let saved = 0;
-    for (const field of FIELDS) {
-      const value = (changes[field] ?? "").trim();
-      if (value && value !== this.game?.state.dossier[field]) {
-        const ok = await this.command({ type: "record_trait", trait_name: field, value }, "", "Filing dossier", true);
-        if (!ok) return false;
-        saved++;
-      }
+    for (const { field, value } of selected) {
+      const ok = await this.command({ type: "record_trait", trait_name: field, value }, "", "Filing dossier", true);
+      if (!ok) return false;
+      saved++;
     }
     if (saved) this.toast(`${saved} dossier detail${saved === 1 ? "" : "s"} recorded.`, "success");
     return true;

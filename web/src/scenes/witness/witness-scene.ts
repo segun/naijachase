@@ -1,7 +1,9 @@
 // Pure logic for the witness scene that follows the journey: the player's vehicle pulls up at the venue, the player walks up to the
 // witness, and the witness speaks while the words appear as subtitles. No Babylon.js here, so it is unit-tested; chase3d-witness.ts
 // turns these numbers into pixels. The length of the scene follows the number of words the witness says, so a short answer is not
-// padded and a long one is not rushed: about 10 to 15 seconds for a typical account, and never more than MAX_SECONDS.
+// padded and a long one is not rushed: about 10 to 15 seconds for a typical account, and never more than MAX_SECONDS. When the witness has
+// finished, the player walks back to the vehicle and is driven away: about 3.5 seconds more (MAX_LEAVE_SECONDS), after which the office
+// scene takes over, so leaving the venue and arriving back at the desk together stay around five seconds.
 import { type CameraShot, type Pose, clamp01, headingOf, lerp3, mix, smooth, turnTo } from "../shared/scene-core.ts";
 
 /** How the player got here: the server's two local modes, as the garage names them. */
@@ -12,7 +14,10 @@ export const WALK_SPEED = 2.3;
 export const WORDS_PER_SECOND = 3.3;
 export const MIN_SPEECH = 3;
 export const MAX_SPEECH = 11;
+/** The most the arrival and the conversation can take. */
 export const MAX_SECONDS = 18;
+/** The most the walk back, boarding and driving away can take. */
+export const MAX_LEAVE_SECONDS = 4;
 
 // ---- Layout (metres: x right, y up, z away from the camera; heading 0 faces the camera) ----
 
@@ -127,6 +132,14 @@ export type Plan = {
   walkEnd: number;
   speechStart: number;
   speechEnd: number;
+  /** Whether the player walks back and is driven away after the conversation (not under reduced motion). */
+  leave: boolean;
+  /** The picture cuts to the wide shot and the player starts back to the vehicle. */
+  leaveStart: number;
+  /** The player is beside the vehicle again. */
+  backAt: number;
+  /** The player is in (a car) or on (a minibus); the vehicle pulls away. */
+  boarded: number;
   /** The picture has faded to black. */
   end: number;
   /** How long the witness speaks, seconds. */
@@ -138,30 +151,67 @@ const ARRIVE = 2;
 const STEP_OUT = 0.9;
 const GREET = 0.5;
 const OUTRO = 0.8;
+/** After the last word: the witness waves, the picture dips to black and cuts to the wide shot. */
+const LEAVE_GAP = 0.4;
+/** Back to the vehicle a little quicker than the walk in. */
+export const LEAVE_SPEED = 3.2;
+const BOARD = 0.55;
+const DEPART = 1.2;
+const END_PAD = 0.3;
+/** The minibus comes back this long before the cut (unseen: the camera looks the other way) and takes this long to pull in. */
+const BUS_RETURN_LEAD = 0.8;
+const BUS_RETURN = 1.8;
 export const walkDistance = (arrival: Arrival) => Math.hypot(MEET.x - EXIT_POINT[arrival][0], MEET.z - EXIT_POINT[arrival][1]);
 
-export function planScene(arrival: Arrival, wordCount: number): Plan {
+export function planScene(arrival: Arrival, wordCount: number, leave = true): Plan {
   const speech = speechSeconds(wordCount);
   const stopped = LEAD + ARRIVE;
   const walkStart = stopped + STEP_OUT;
   const walkEnd = walkStart + walkDistance(arrival) / WALK_SPEED;
   const speechStart = walkEnd + GREET;
   const speechEnd = speechStart + speech;
-  return { arrival, lead: LEAD, stopped, walkStart, walkEnd, speechStart, speechEnd, end: Math.min(MAX_SECONDS, speechEnd + OUTRO), speech };
+  const leaveStart = speechEnd + LEAVE_GAP;
+  const backAt = leaveStart + walkDistance(arrival) / LEAVE_SPEED;
+  const boarded = backAt + BOARD;
+  const end = leave ? boarded + DEPART + END_PAD : Math.min(MAX_SECONDS, speechEnd + OUTRO);
+  return { arrival, lead: LEAD, stopped, walkStart, walkEnd, speechStart, speechEnd, leave, leaveStart: leave ? leaveStart : end, backAt: leave ? backAt : end, boarded: leave ? boarded : end, end, speech };
 }
 
-/** The picture is black at the start and the end: it fades in over half a second and out over the last 0.6. */
-export const fadeAt = (plan: Plan, t: number) => Math.min(smooth(t / 0.5), 1 - smooth((t - (plan.end - 0.6)) / 0.6));
+/**
+ * The picture is black at the start and the end: it fades in over half a second and out over the last stretch. When the player leaves,
+ * it also dips to black for an instant at the cut from the conversation to the wide shot.
+ */
+export function fadeAt(plan: Plan, t: number): number {
+  const tail = plan.leave ? 0.4 : 0.6;
+  const ends = Math.min(smooth(t / 0.5), 1 - smooth((t - (plan.end - tail)) / tail));
+  if (!plan.leave) return ends;
+  const cut = plan.leaveStart;
+  const black = t < cut - 0.05 ? smooth((t - (cut - 0.3)) / 0.25) : 1 - smooth((t - (cut - 0.05)) / 0.25);
+  return ends * (1 - black);
+}
 
 // ---- The vehicle ----
 
-/** The vehicle comes in from the right, slowing to a stop; the minibus leaves again to the left once the player is clear. */
+const arriveAt = (from: number, to: number, t: number) => {
+  const k = clamp01((t - from) / (to - from));
+  return mix(VEHICLE_FROM_X, VEHICLE_STOP_X, 1 - (1 - k) * (1 - k));
+};
+const departAt = (from: number, duration: number, t: number) => {
+  const k = clamp01((t - from) / duration);
+  return VEHICLE_STOP_X + (VEHICLE_GONE_X - VEHICLE_STOP_X) * k * k;
+};
+/** When the minibus starts coming back for the player, and when it has stopped. */
+export const busReturnStart = (plan: Plan) => plan.leaveStart - BUS_RETURN_LEAD;
+export const busReturnStop = (plan: Plan) => busReturnStart(plan) + BUS_RETURN;
+
+/**
+ * The vehicle comes in from the right, slowing to a stop. The minibus leaves again once the player is clear, and comes back for them
+ * after the conversation; the car stays parked until the player is in it. Both then pull away to the left.
+ */
 export function vehicleXAt(plan: Plan, t: number): number {
-  const arriving = clamp01((t - plan.lead) / (plan.stopped - plan.lead));
-  const x = mix(VEHICLE_FROM_X, VEHICLE_STOP_X, 1 - (1 - arriving) * (1 - arriving));
-  if (plan.arrival === "drive") return x;
-  const leaving = clamp01((t - (plan.walkStart + 0.2)) / 2.2);
-  return x + (VEHICLE_GONE_X - VEHICLE_STOP_X) * leaving * leaving;
+  if (plan.arrival === "drive") return plan.leave && t >= plan.boarded ? departAt(plan.boarded, DEPART, t) : arriveAt(plan.lead, plan.stopped, t);
+  if (plan.leave && t >= busReturnStart(plan)) return t >= plan.boarded ? departAt(plan.boarded, DEPART, t) : arriveAt(busReturnStart(plan), busReturnStop(plan), t);
+  return arriveAt(plan.lead, plan.stopped, t) + (VEHICLE_GONE_X - VEHICLE_STOP_X) * (() => { const k = clamp01((t - (plan.walkStart + 0.2)) / 2.2); return k * k; })();
 }
 /** 0 to 1: how fast the vehicle is going, for the engine sound and the wheels. */
 export function vehicleSpeedAt(plan: Plan, t: number): number {
@@ -169,14 +219,46 @@ export function vehicleSpeedAt(plan: Plan, t: number): number {
   return clamp01(Math.abs(vehicleXAt(plan, t + dt) - vehicleXAt(plan, t - dt)) / (2 * dt) / 7);
 }
 /** How far the minibus door is open (0 to 1). */
-export const busDoorAt = (plan: Plan, t: number) => smooth((t - plan.stopped) / 0.25) * (1 - smooth((t - (plan.walkStart + 0.1)) / 0.25));
+export function busDoorAt(plan: Plan, t: number): number {
+  const first = smooth((t - plan.stopped) / 0.25) * (1 - smooth((t - (plan.walkStart + 0.1)) / 0.25));
+  if (!plan.leave) return first;
+  return Math.max(first, smooth((t - busReturnStop(plan)) / 0.25) * (1 - smooth((t - (plan.boarded + 0.05)) / 0.25)));
+}
 
 // ---- The player ----
 
 export type WitnessPose = Pose & { alpha: number };
 const pose = (over: Partial<WitnessPose>): WitnessPose => ({ x: 0, y: 0, z: 0, heading: 0, sit: 0, gait: 0, stride: 0, type: 0, visible: true, alpha: 1, ...over });
 
+/** Back to the vehicle: the way the player walked in, reversed, then in (a car) or on (a minibus) and away. */
+function leavingPoseAt(plan: Plan, t: number): WitnessPose {
+  const exit = EXIT_POINT[plan.arrival];
+  const toward = headingOf(exit[0] - MEET.x, exit[1] - MEET.z);
+  if (t < plan.backAt) {
+    const k = clamp01((t - plan.leaveStart) / (plan.backAt - plan.leaveStart));
+    return pose({
+      x: mix(MEET.x, exit[0], k), z: mix(MEET.z, exit[1], k), heading: toward,
+      gait: (t - plan.leaveStart) * LEAVE_SPEED * 2.4,
+      stride: smooth((t - plan.leaveStart) / 0.15) * (1 - smooth((t - (plan.backAt - 0.2)) / 0.2))
+    });
+  }
+  if (plan.arrival === "drive") {
+    // The car has not moved until the player is in it, so the seat is where it was when they got out.
+    if (t >= plan.boarded) return pose({ x: vehicleXAt(plan, t) + CAR_SEAT.z, y: -CAR_SIT_DROP, z: SEAT_WORLD[1], heading: CAR_HEADING, sit: 1, type: 1 });
+    const k = smooth((t - plan.backAt) / (plan.boarded - plan.backAt));
+    return pose({
+      x: mix(exit[0], SEAT_WORLD[0], k), z: mix(exit[1], SEAT_WORLD[1], k),
+      y: mix(0, -CAR_SIT_DROP, k) + Math.sin(k * Math.PI) * 0.22,
+      heading: turnTo(toward, CAR_HEADING, k), sit: k, type: k
+    });
+  }
+  if (t >= plan.boarded) return pose({ x: exit[0] - 1.3, z: exit[1], heading: FACE_REAR, visible: false, alpha: 0 });
+  const k = smooth((t - plan.backAt) / (plan.boarded - plan.backAt));
+  return pose({ x: mix(exit[0], exit[0] - 1.3, k), z: exit[1], heading: turnTo(toward, headingOf(-1, 0), smooth(k / 0.5)), alpha: 1 - smooth((k - 0.45) / 0.35), gait: k * 5, stride: Math.sin(k * Math.PI) * 0.8 });
+}
+
 export function playerPoseAt(plan: Plan, t: number): WitnessPose {
+  if (plan.leave && t >= plan.leaveStart) return leavingPoseAt(plan, t);
   const exit = EXIT_POINT[plan.arrival];
   if (plan.arrival === "drive") {
     if (t < plan.stopped) return pose({ x: vehicleXAt(plan, t) + CAR_SEAT.z, y: -CAR_SIT_DROP, z: SEAT_WORLD[1], heading: CAR_HEADING, sit: 1, type: 1 });
@@ -239,10 +321,13 @@ export function witnessAt(plan: Plan, timings: readonly WordTiming[], t: number)
   const greet = smooth((t - plan.walkEnd) / 0.2) * (1 - smooth((t - (plan.speechStart + 0.1)) / 0.25));
   const beat = talking ? Math.sin((t - plan.speechStart) * 4.4) : 0;
   const emphasis = talking ? smooth((t - plan.speechStart) / 0.4) * (1 - smooth((t - plan.speechEnd) / 0.4)) : 0;
+  // As the player turns to go she lifts a hand and waves them off until they have gone.
+  const bye = plan.leave ? smooth((t - plan.speechEnd - 0.05) / 0.2) * (1 - smooth((t - plan.boarded) / 0.2)) : 0;
+  const hand = Math.max(greet, bye);
   return {
     mouth: talking ? mouthAt(timings, t - plan.speechStart) : 0,
-    arms: [0.25 * emphasis + idle + 0.3 * greet, 0.7 * emphasis + 0.25 * emphasis * beat + 0.9 * greet] as const,
-    wave: greet * (0.3 + 0.25 * Math.sin((t - plan.walkEnd) * 11)),
+    arms: [0.25 * emphasis + idle + 0.3 * hand, 0.7 * emphasis + 0.25 * emphasis * beat + 0.9 * hand] as const,
+    wave: hand * (0.3 + 0.25 * Math.sin((t - (bye > greet ? plan.speechEnd : plan.walkEnd)) * 11)),
     heading: turnTo(0, WITNESS_FACES_PLAYER, notice * 0.6),
     lean: emphasis * (0.02 + 0.03 * Math.max(0, beat)),
     bob: emphasis * Math.abs(beat) * 0.015
@@ -256,8 +341,18 @@ const ARRIVAL_END: CameraShot = { position: [-0.4, 1.75, -10.6], target: [-0.4, 
 const TALK_FROM: CameraShot = { position: [3.3, 1.55, -1.3], target: [0.75, 1.3, 1.9] };
 const TALK_TO: CameraShot = { position: [3.0, 1.55, -0.9], target: [0.8, 1.35, 1.95] };
 
-/** An establishing shot of the market and the arriving vehicle, a follow shot of the walk, then a two-shot that eases in on the witness. */
+/** After the cut: the wide shot again, drifting back out as the player walks to the vehicle and is driven away. */
+function leavingShotAt(plan: Plan, t: number): CameraShot {
+  const drift = smooth((t - plan.leaveStart) / (plan.end - plan.leaveStart));
+  return { position: lerp3(ARRIVAL_END.position, ARRIVAL_SHOT.position, drift), target: ARRIVAL_END.target };
+}
+
+/**
+ * An establishing shot of the market and the arriving vehicle, a follow shot of the walk, a two-shot that eases in on the witness and,
+ * after the conversation, a cut back to the wide shot to watch the player leave.
+ */
 export function cameraAt(plan: Plan, t: number): CameraShot {
+  if (plan.leave && t >= plan.leaveStart) return leavingShotAt(plan, t);
   const drift = smooth(t / plan.walkStart);
   const arrival: CameraShot = { position: lerp3(ARRIVAL_SHOT.position, ARRIVAL_END.position, drift), target: ARRIVAL_SHOT.target };
   const k = smooth((t - (plan.walkStart - 0.3)) / (plan.walkEnd - plan.walkStart + 0.3));

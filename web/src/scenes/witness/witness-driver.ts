@@ -50,12 +50,12 @@ export type WitnessHandle = {
 
 export function createDriver(options: WitnessOptions) {
   const words = wordsOf(options.text);
-  const plan = planScene(options.arrival, words.length);
+  const plan = planScene(options.arrival, words.length, !options.reducedMotion);
   const timings = wordTimings(words, plan.speech);
   const pages = subtitlePages(words);
   const witness = options.recipe.witnesses[hashOf(options.text) % options.recipe.witnesses.length]!;
   let audio = options.sound ? createWitnessAudio(options.recipe.sound, options.arrival === "drive" ? "car" : "bus", hashOf(options.text)) : null;
-  let spoken = false, lastStep = -1, doorSounded = false, lastPage = -2, lastSpoken = -2, lastFade = -1, lastT = 0;
+  let spoken = false, lastStep = -1, doorSounded = false, boardSounded = false, lastPage = -2, lastSpoken = -2, lastFade = -1, lastT = 0;
 
   return {
     words, plan, timings, pages, witness,
@@ -69,6 +69,7 @@ export function createDriver(options: WitnessOptions) {
           audio.engine(vehicleSpeedAt(plan, t));
           if (!spoken) { spoken = true; audio.speak(timings, Math.max(0, plan.speechStart - t), witness.pitch, hashOf(options.text) ^ 0x5bd1e995); }
           if (!doorSounded && t >= plan.stopped + (options.arrival === "hitch" ? 0.1 : 0.35)) { doorSounded = true; if (t < plan.walkStart) audio.door(); }
+          if (!boardSounded && plan.leave && t >= plan.backAt + 0.25) { boardSounded = true; audio.door(); }
           const step = stepsTaken(player);
           if (step >= 0 && step !== lastStep) audio.step();
           lastStep = step;
@@ -76,7 +77,8 @@ export function createDriver(options: WitnessOptions) {
       } catch (e) { console.warn("The witness scene's sound failed; continuing without it.", e); audio?.dispose(); audio = null; }
       options.onTick?.();
       const fade = Math.round(fadeAt(plan, t) * 100) / 100;
-      const state = t >= plan.speechStart ? subtitleAt(timings, pages, t - plan.speechStart) : null;
+      // The caption goes a moment after the last word, so it is not left over the walk back to the vehicle.
+      const state = t >= plan.speechStart && t <= plan.speechEnd + 0.35 ? subtitleAt(timings, pages, t - plan.speechStart) : null;
       const page = state ? state.page : -1, count = state ? state.spoken : -1;
       if (fade !== lastFade || page !== lastPage || count !== lastSpoken) {
         lastFade = fade; lastPage = page; lastSpoken = count;

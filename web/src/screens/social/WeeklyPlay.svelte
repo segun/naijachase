@@ -1,6 +1,8 @@
 <script lang="ts">
+  import { untrack } from "svelte";
   import type { AppController } from "../../state/app.svelte";
-  import { FIELDS, FIELD_META, KNOWN_VENUES, MODE_LABEL, STATES, SUSPECTS, clockParts, dossierCount, money, secondsLabel, venueInfo, weeklyStatus, type InterstateMode, type LocalMode } from "../../domain/model.ts";
+  import { KNOWN_VENUES, MODE_LABEL, STATES, SUSPECTS, clockParts, dossierCount, money, secondsLabel, venueInfo, weeklyStatus, type InterstateMode, type LocalMode } from "../../domain/model.ts";
+  import DossierOptionsStatus from "../../ui/DossierOptionsStatus.svelte";
   import Icon from "../../ui/Icon.svelte";
 
   let { app }: { app: AppController } = $props();
@@ -15,7 +17,8 @@
   let venue = $state(KNOWN_VENUES[0] ?? "market"), localMode = $state<LocalMode>("drive");
   let destination = $state(""), interMode = $state<InterstateMode>("drive");
   let suspect = $state<string>(SUSPECTS[0]);
-  let values = $state<Record<string, string>>({});
+  let values = $state<Record<string, string>>(untrack(() => ({ ...app.groups.attempt!.state.dossier })));
+  const changed = $derived(app.dossierOptions?.fields.filter(({ field, options }) => options.includes(values[field] ?? "") && values[field] !== s.dossier[field]) ?? []);
   let startedAt = $state(0);
 
   // Remember the longest wait seen for this journey so the bar can fill as the server's remaining time falls.
@@ -27,9 +30,10 @@
   const locals: LocalMode[] = ["drive", "hitch_ride"], inters: InterstateMode[] = ["fly", "drive", "hitch_ride"];
   async function saveDossier(event: SubmitEvent) {
     event.preventDefault();
-    for (const f of FIELDS) {
-      const v = (values[f] ?? "").trim();
-      if (v && v !== (s.dossier[f] ?? "")) { if (!(await g.command({ type: "record_trait", trait_name: f, value: v }, "Dossier updated.", "Filing dossier"))) return; }
+    const selected = app.selectedDossierChanges(values, s.dossier);
+    if (!selected) return;
+    for (const { field, value } of selected) {
+      if (!(await g.command({ type: "record_trait", trait_name: field, value }, "Dossier updated.", "Filing dossier"))) return;
     }
   }
 </script>
@@ -74,11 +78,20 @@
         <button class="btn btn-primary" disabled={app.busy || !destination}>Travel</button>
       </form>
     {:else if tab === "dossier"}
+      <DossierOptionsStatus {app} />
       <form class="dossier-grid" onsubmit={saveDossier}>
-        {#each FIELDS as f}
-          <label class="field"><span>{FIELD_META[f].label}</span><input class="input" bind:value={values[f]} placeholder={s.dossier[f] ?? FIELD_META[f].placeholder} maxlength="128" /></label>
+        {#each app.dossierOptions?.fields ?? [] as entry}
+          {@const recordedValue = s.dossier[entry.field]}
+          <label class="field">
+            <span>{entry.label}</span>
+            <select class="select" name={entry.field} bind:value={values[entry.field]} disabled={app.busy}>
+              <option value="">Not yet known</option>
+              {#each entry.options as option}<option value={option}>{option}</option>{/each}
+            </select>
+            {#if recordedValue && !entry.options.includes(recordedValue)}<small class="hint warn">Previously recorded: {recordedValue}. Choose a listed value to replace it.</small>{/if}
+          </label>
         {/each}
-        <div class="dossier-actions"><button class="btn btn-primary" disabled={app.busy}>Record details</button></div>
+        <div class="dossier-actions"><button class="btn btn-primary" disabled={app.busy || !app.dossierOptions || changed.length === 0}>Record details</button></div>
       </form>
     {:else}
       {#if !s.warrant_suspect}

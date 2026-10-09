@@ -1,17 +1,13 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { AppController } from "./state/app.svelte";
+  import { isCaseScreen } from "./domain/model.ts";
   import AuthPanel from "./screens/entry/AuthPanel.svelte";
   import Brand from "./ui/Brand.svelte";
   import ContentGate from "./screens/admin/ContentGate.svelte";
-  import Dossier from "./screens/case/Dossier.svelte";
-  import Investigate from "./screens/case/Investigate.svelte";
   import Landing from "./screens/entry/Landing.svelte";
-  import Notebook from "./screens/case/Notebook.svelte";
   import Results from "./screens/case/Results.svelte";
   import Shell from "./ui/Shell.svelte";
-  import Travel from "./screens/case/Travel.svelte";
-  import Warrant from "./screens/case/Warrant.svelte";
 
   // Secondary screens are separate chunks: nobody needs them on the sign-in path, so they load on first visit.
   const lazy = {
@@ -65,14 +61,9 @@
       {:else if app.screen === "helpers" && app.signedIn}{#await lazy.helpers() then { default: Screen }}<Screen {app} />{/await}
       {:else if app.screen === "archive" && app.signedIn}{#await lazy.archive() then { default: Screen }}<Screen {app} />{/await}
       {:else if app.screen === "cases" && !app.signedIn}<AuthPanel {app} />
-      {:else if app.screen === "cases"}{@render room()}
+      {:else if app.screen === "cases" || (app.game && isCaseScreen(app.screen))}{@render room()}
       {:else if app.game && app.screen === "garage"}{#await lazy.garage() then { default: Screen }}<Screen {app} />{/await}
       {:else if app.game && app.screen === "witness" && app.witnessVisit}{#await lazy.witness() then { default: Screen }}<Screen {app} />{/await}
-      {:else if app.game && app.screen === "investigate"}<Investigate {app} />
-      {:else if app.game && app.screen === "notebook"}<Notebook {app} />
-      {:else if app.game && app.screen === "dossier"}<Dossier {app} />
-      {:else if app.game && app.screen === "travel"}<Travel {app} />
-      {:else if app.game && app.screen === "warrant"}<Warrant {app} />
       {:else if app.game && app.screen === "results"}<Results {app} />
       {:else}{@render room()}{/if}
 

@@ -1,0 +1,50 @@
+/* The case on the office terminal (scenes/office/CaseTerminal.svelte). It reuses the terminal look from terminal.css and adds the case
+   status strip, the case navigation and a theme for the ordinary screens (notebook, dossier, travel, warrant) shown inside the glass. */
+
+.t-top { display: grid; gap: .5em; }
+.t-case { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1.25fr) minmax(0, 1fr) auto auto; gap: 1.2em; align-items: end; padding-bottom: .6em; border-bottom: 1px dashed var(--p-dim); }
+.t-stat { display: grid; gap: .12em; min-width: 0; align-content: end; }
+.t-stat strong { color: var(--amber); font-size: 1.12em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-transform: uppercase; }
+.t-stat strong .icon { margin-right: .3em; }
+.t-stat small { color: var(--p-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.t-stat small.urgent { color: var(--warn); }
+.t-deadline { gap: .35em; align-self: center; }
+.t-deadline .t-meter.urgent span { background: repeating-linear-gradient(90deg, var(--warn) 0 .5em, transparent .5em .65em); }
+
+.t-case-content .t-body { grid-template-columns: 17em minmax(0, 1fr); }
+.t-case-content .t-side { overflow-x: hidden; }
+.t-side .t-list > li { display: block; }
+.t-opt.active { background: var(--p); color: #021a0f; text-shadow: none; box-shadow: 0 0 1em rgb(134 255 180 / .45); }
+.t-opt.active:hover:not(:disabled) { background: var(--amber); }
+.t-side .t-opt { padding: .5em .7em; }
+.t-side .t-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.t-lead.seen { opacity: .6; border-style: dashed; }
+.t-log { display: grid; gap: .5em; padding: .8em 1em; border: 1px dashed var(--p-dim); }
+.t-log h2 { font-size: .95em; color: var(--p-dim); }
+.t-log p { margin: 0; text-transform: none; letter-spacing: .02em; }
+.t-who { color: var(--amber); font-weight: 700; text-transform: uppercase; }
+.t-who::after { content: ":"; }
+.t-hint { color: var(--p-dim); }
+
+/* The ordinary screens, drawn in the terminal's glass: plain readable type over the app's own dark-green palette. */
+.t-embed {
+  --bg: #04100c;
+  font: clamp(13px, 1.3cqw, 17px) / 1.55 var(--body); letter-spacing: 0; text-shadow: none; text-transform: none; color: var(--ink);
+  min-width: 0; padding-bottom: 1em;
+}
+.t-embed h1, .t-embed h2, .t-embed h3 { font-family: var(--display); letter-spacing: 0; text-transform: none; }
+.t-embed .page { max-width: none; margin: 0; gap: 1rem; padding: 0; }
+.t-embed .page-head h1 { font-size: 1.6em; }
+.t-embed .rise { animation: none; }
+.t-embed .split { grid-template-columns: minmax(0, 1fr); }
+.t-embed .side-rail { position: static; }
+.t-embed .card { background: rgb(4 24 17 / .85); }
+.t-embed kbd { font: inherit; font-size: .8em; opacity: 1; }
+.t-inline { justify-self: start; }
+
+@container (max-width: 720px) {
+  .t-case-content .t-body { grid-template-columns: 1fr; }
+  .t-case { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: .6em; }
+  .t-deadline { grid-column: 1 / -1; order: 5; }
+}

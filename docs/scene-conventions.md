@@ -64,3 +64,6 @@ A venue is a recipe plus a scenery set per renderer; the choreography is shared 
 - Flags: do not draw anything that reads as a real national flag (green and white are never the two colours of a flag; a test enforces it).
 - Signs carrying the venue's name are sized for the arrival shot. In the conversation shot the camera looks at the witness, so a sign can
   be cut off by the frame; that is expected and not worth bending the layout for (checked: moving the camera does not help either).
+- The witness scene is the whole round trip: arrival, conversation and the walk back to the vehicle. Keep the corridor from the
+  witness to the vehicle clear in a set (the player walks it twice), and do not draw anything on the lane near the stopping point.
+  The office part of the return is separate (`room-scene.ts`, `T_RETURN_FROM`).

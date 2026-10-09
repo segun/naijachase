@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
   import type { AppController } from "../state/app.svelte";
-  import { coopActions, dossierCount, initials, type Screen } from "../domain/model.ts";
+  import { coopActions, dossierCount, initials, isCaseScreen, type Screen } from "../domain/model.ts";
   import AvatarSilhouette from "../avatar/AvatarSilhouette.svelte";
   import Brand from "./Brand.svelte";
   import Hud from "./Hud.svelte";
@@ -12,8 +12,9 @@
   let { app, children }: { app: AppController; children: Snippet } = $props();
 
   const inCase = $derived(app.game !== null && app.screen !== "results");
-  // The rooms (the desk and the archive) are full-screen: their own menus replace the side rail.
-  const rail = $derived(app.signedIn && app.screen !== "welcome" && app.screen !== "cases" && app.screen !== "archive" && app.screen !== "garage" && app.screen !== "witness" && !app.needsAvatar);
+  // The rooms (the desk, the case on the office computer, the archive, the garage and the witness scene) are full-screen: their own menus replace the side rail.
+  const inRoom = $derived(["welcome", "cases", "archive", "garage", "witness"].includes(app.screen) || (app.game !== null && isCaseScreen(app.screen)));
+  const rail = $derived(app.signedIn && !inRoom && !app.needsAvatar);
 
   const waiting = $derived(app.coop.requests.filter(r => coopActions(r, app.player?.username ?? "").length).length);
   type Item = { id: Screen; label: string; icon: string; count?: string };
@@ -67,7 +68,7 @@
   {/if}
 
   <div class="content">
-    {#if inCase && app.screen !== "cases" && app.screen !== "garage" && app.screen !== "witness"}<Hud {app} />{/if}
+    {#if inCase && !inRoom}<Hud {app} />{/if}
     <main id="main" tabindex="-1">{@render children()}</main>
   </div>
 </div>

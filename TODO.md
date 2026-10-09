@@ -1,6 +1,6 @@
 # Naija Chase — Project Tracker
 
-Last updated: 6 October 2026
+Last updated: 9 October 2026
 
 This file is the source of truth for completed work, current limitations, and
 next development priorities. Update it whenever a feature or content pass is
@@ -420,6 +420,15 @@ local replay, or client-side prediction becomes a concrete product requirement.
   targets pass.
 
 #### P3.7 — Identity, progression, and home base
+
+- [x] Expose the canonical eight-field dossier option catalogue through an
+  authenticated API, reject arbitrary trait values, and document the ordinary
+  and weekly frontend integration contract.
+- [x] Expose the signed-in player's current ordinary case for cross-device
+  resume and make new-case assignment reuse an existing ongoing case.
+- [x] Replace ordinary and weekly web dossier free-text inputs with server-owned
+  select choices, session-cached loading, inline retry, saved-value preselection,
+  and exact listed-value submission.
 
 - [x] Implement proper player accounts and login; do not represent individual
   players with tokens listed in an environment variable.
@@ -1178,6 +1187,8 @@ scores, rank, detection odds, panel votes, punishment, or jail time.
       length that follows the words (about 10-15 s), venue name on a banner.
       2D (Canvas 2D) fallback for it is built and takes over when 3D fails or the device is weak;
       the convention is in `docs/scene-conventions.md`.
+      The player now walks back to the vehicle and is driven away, and the office plays a short return to a case
+      terminal (status strip, leads, notebook, dossier, travel, warrant) instead of the old Investigate page.
       Remaining: the other 34 venue scenes (split between two agents: `docs/agents/Agent1.md` and
       `docs/agents/Agent2.md`), the road journey with an LGA sign, the arrest
       sequence, and measuring frame rate on real mobile devices.

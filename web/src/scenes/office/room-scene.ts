@@ -40,6 +40,12 @@ export const T_SIT_START = T_WALK_START + WALK + 0.2;
 export const T_ZOOM_START = T_SIT_START + T_SIT + T_TYPE;
 export const T_END = T_ZOOM_START + T_ZOOM;
 
+/**
+ * Coming back from a venue the player is already at the desk, so the scene starts just before the zoom: the player seated, then the
+ * camera pushes in on the monitor. This is the whole of the office's part of the return (about 1.8 seconds).
+ */
+export const T_RETURN_FROM = T_ZOOM_START - 0.3;
+
 /** Babylon rotation.y for a figure whose face looks towards -z at 0. */
 
 

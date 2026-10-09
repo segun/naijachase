@@ -69,8 +69,8 @@ test("the privacy rules of the handoff are built into the screens", () => {
 });
 
 test("help is offered on ordinary cases only, and server state is reloaded after every mutation", () => {
-  assert.match(read("screens/case/Investigate.svelte"), /attempt_kind === "ordinary"/);
-  assert.match(read("screens/case/Investigate.svelte"), /cooperationAvailable\(app\.coop\.prefs\) && app\.coop\.prefs\?\.enabled/);
+  assert.match(read("scenes/office/CaseTerminal.svelte"), /attempt_kind === "ordinary"/);
+  assert.match(read("scenes/office/CaseTerminal.svelte"), /cooperationAvailable\(app\.coop\.prefs\) && app\.coop\.prefs\?\.enabled/);
   const app = read("state/app.svelte.ts");
   assert.match(app, /await this\.loadCoop\(\);\n\s+if \(ok\) this\.toast/, "list is refreshed whether the call succeeded or not");
   assert.match(app, /command_id: crypto\.randomUUID\(\)/, "a fresh command id per request");

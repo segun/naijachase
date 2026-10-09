@@ -74,10 +74,20 @@ opening-case display.
 The continuous-release player notifications and restricted editorial dashboard
 contract are documented separately in `docs/p372-continuous-catalogue-api.md`.
 
+The suspect dossier is selection-based, not free text. Fetch the authenticated
+`GET /v1/dossier/options` catalogue and use its eight fields and canonical
+values in both ordinary and weekly dossier editors. Full request, response, and
+UI handling details are in `docs/dossier-options-api.md`.
+
 The old mission picker is no longer authoritative. Replace calls that send
 `case_id`, `mission_id`, or `seed` to `POST /v1/cases` with an empty JSON object;
 the server returns the generated case ID and an unseen mission. Remove the fixed
 1–1,000 picker, client-side `randomMission`, and client-side exhaustion logic.
+
+After login, call `GET /v1/cases/current` instead of relying on a case ID in
+browser storage. The endpoint returns the complete resumable ordinary case or
+an explicit null. `POST /v1/cases` also reuses that ongoing case. The complete
+contract is in `docs/current-case-api.md`.
 
 Add a `Replay case` action to successfully solved archive entries. It calls
 `POST /v1/cases/replay` with `{ "mission_id": "NG-M0001" }`. Display replay

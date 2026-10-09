@@ -78,6 +78,7 @@ test("the dev mock API honours the contract shapes the UI relies on", async () =
       return { status: res.status, data: await res.json() };
     };
     assert.equal((await call("/v1/auth/me")).status, 401);
+    assert.equal((await call("/v1/dossier/options")).status, 401);
     const wrong = await call("/v1/auth/login", "POST", { email: "a@x.com", password: "wrong" });
     assert.deepEqual([wrong.status, Object.keys(wrong.data).sort()], [401, ["error", "message"]]);
     const login = await call("/v1/auth/login", "POST", { email: "a@x.com", password: "right" });
@@ -91,6 +92,17 @@ test("the dev mock API honours the contract shapes the UI relies on", async () =
     assert.equal(created.data.attempt_kind, "ordinary");
     assert.match(created.data.case_id, /^case-/);
     const caseId = created.data.case_id;
+    const dossier = await call("/v1/dossier/options");
+    assert.equal(dossier.status, 200);
+    assert.equal(dossier.data.catalogue_version, 1);
+    assert.deepEqual(dossier.data.fields.map(f => f.field), ["sex", "height", "skin_tone", "hair", "hobby", "vehicle", "accessory", "feature"]);
+    assert.ok(dossier.data.fields.every(f => f.label && f.options.length && f.options.every(o => typeof o === "string")));
+    const invalidTrait = await call(`/v1/cases/${caseId}/commands`, "POST", { command_id: "invalid-trait", expected_version: 1, command: { type: "record_trait", trait_name: "hair", value: "made up" } });
+    assert.equal(invalidTrait.status, 422);
+    const selected = dossier.data.fields.find(f => f.field === "hair").options[0];
+    const validTrait = await call(`/v1/cases/${caseId}/commands`, "POST", { command_id: "valid-trait", expected_version: 1, command: { type: "record_trait", trait_name: "hair", value: selected } });
+    assert.equal(validTrait.status, 200);
+    assert.equal(validTrait.data.state.dossier.hair, selected);
     const stateKeys = contract.match(/PublicGameState=\{([^}]*)\}/)[1].split(";").map(s => s.split(":")[0]).filter(Boolean);
     for (const key of stateKeys) assert.ok(key in created.data.state, `state.${key}`);
     const stale = await call(`/v1/cases/${caseId}/commands`, "POST", { command_id: "c1", expected_version: 99, command: { type: "wait", minutes: 5 } });
@@ -100,4 +112,19 @@ test("the dev mock API honours the contract shapes the UI relies on", async () =
     const catalog = await call("/v1/progression/achievement-catalog");
     assert.ok(catalog.data.achievements.every(a => a.id && a.title && a.description));
   } finally { child.kill(); }
+});
+
+test("ordinary and weekly dossier editors render the shared server catalogue, never free text", () => {
+  for (const name of ["Dossier", "WeeklyPlay"]) {
+    const source = component(name);
+    assert.match(source, /app\.dossierOptions\?\.fields/);
+    assert.match(source, /entry\.label/);
+    assert.match(source, /entry\.options as option/);
+    assert.match(source, /<option value=\{option\}>\{option\}<\/option>/);
+    assert.match(source, /Not yet known/);
+    assert.match(source, /DossierOptionsStatus/);
+    assert.doesNotMatch(source, /<input[^>]*values\[/);
+  }
+  assert.match(component("DossierOptionsStatus"), /role="alert"/);
+  assert.match(component("DossierOptionsStatus"), /Retry loading choices/);
 });

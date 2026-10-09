@@ -52,16 +52,16 @@ test("money and ledger rows render without exposing hidden route data", () => {
 });
 
 test("the UI never calculates fares and always submits a server-quoted mode", () => {
-  const ui = components(["Investigate", "Travel", "Warrant", "MoveOptions"]);
+  const ui = components(["CaseTerminal", "GarageRoom", "Travel", "Warrant", "MoveOptions"]);
   assert.match(read("api/api.ts"), /transport-quotes/);
   assert.match(read("api/api.ts"), /\/ledger/);
   assert.match(read("screens/case/Travel.svelte"), /type: "travel", destination, mode: quote\.mode/);
-  assert.match(read("screens/case/Investigate.svelte"), /type: "visit_venue", venue_id: group\.id, mode:/);
+  assert.match(read("scenes/garage/GarageRoom.svelte"), /type: "visit_venue", venue_id: venueId, mode: quote\.mode/);
   assert.match(read("screens/case/Warrant.svelte"), /type: "search_hideout", venue_id: group\.id, mode:/);
   assert.doesNotMatch(ui, /cost\s*[:=]\s*\d|fare\s*=\s*\d|\* 1\.\d/, "no browser-side fare maths");
   assert.match(read("screens/case/Travel.svelte"), /groupQuotes\(app\.quotes, "interstate"\)/);
   assert.match(read("screens/case/Warrant.svelte"), /groupQuotes\(app\.quotes, "apprehension"\)/);
-  assert.match(read("screens/case/Investigate.svelte"), /groupQuotes\(app\.quotes, "local"\)/);
+  assert.match(read("scenes/office/CaseTerminal.svelte"), /groupQuotes\(app\.quotes, "local"\)/);
   assert.doesNotMatch(read("domain/model.ts"), /export const VENUES/);
 });
 

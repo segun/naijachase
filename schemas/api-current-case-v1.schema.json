@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://naijachase.app/schemas/api-current-case-v1.schema.json",
+  "title": "NaijaChase current ordinary case",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["has_ongoing_case", "case"],
+  "properties": {
+    "has_ongoing_case": { "type": "boolean" },
+    "case": {
+      "oneOf": [
+        { "$ref": "api-case-response-v1.schema.json" },
+        { "type": "null" }
+      ]
+    }
+  }
+}

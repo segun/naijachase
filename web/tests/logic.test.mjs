@@ -93,6 +93,23 @@ test("dossier completeness ignores blanks", () => {
   assert.equal(Object.keys(model.FIELD_META).length, model.FIELDS.length);
 });
 
+test("dossier changes use only server-listed strings without normalising or guessing", () => {
+  const catalogue = { catalogue_version: 1, fields: [
+    { field: "hair", label: "Hair", options: ["long braided hair", "a neat afro"] },
+    { field: "hobby", label: "Hobby", options: ["chess", "photography"] }
+  ] };
+  assert.deepEqual(model.dossierChanges(catalogue, { hair: "long braided hair", hobby: "chess" }, { hobby: "chess" }), [
+    { field: "hair", value: "long braided hair" }
+  ]);
+  assert.deepEqual(model.dossierChanges(catalogue, { hair: "", hobby: "chess" }, { hobby: "chess" }), []);
+  assert.deepEqual(model.dossierChanges(catalogue, { hair: "a neat afro" }, { hair: "long braided hair" }), [{ field: "hair", value: "a neat afro" }]);
+  assert.deepEqual(model.dossierChanges(catalogue, { hair: "legacy wording" }, { hair: "legacy wording" }), [], "existing entries are preserved until replaced");
+  for (const values of [{ hair: "braided" }, { hair: " long braided hair " }, { hobby: "Chess" }, { unknown: "chess" }]) {
+    assert.throws(() => model.dossierChanges(catalogue, values, {}), /Choose a listed value/);
+  }
+  assert.throws(() => model.dossierChanges(null, { hobby: "chess" }, {}), /unavailable/);
+});
+
 test("stored notes migrate from the old string format and group by stop", () => {
   const notes = model.parseNotes(JSON.stringify(["old", { stop: "Kano", venue: "Market", message: "a" }, { stop: "Kano", venue: "Library", message: "b" }, 7]));
   assert.equal(notes.length, 3);

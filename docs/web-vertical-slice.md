@@ -36,7 +36,7 @@ web/src/
   screens/               the ordinary screens, grouped by feature
     entry/               Landing, AuthPanel
     account/             Settings
-    case/                Investigate, Notebook, Dossier, Travel, Warrant, Results, Ledger, ...
+    case/                Notebook, Dossier, Travel, Warrant, Results, Ledger, ... (shown inside the office terminal)
     social/              Groups, Weekly, WeeklyPlay, Helpers
     admin/               ContentGate and ContentDashboard (reached only by URL)
   ui/                    shared pieces: Shell, Hud, Brand, Icon, Toasts, Stepper, NigeriaArt
@@ -146,15 +146,18 @@ Rules of the layout: Babylon.js may only be imported by TypeScript modules under
   travelling. The dossier cannot be skipped; "Skip to the case" on the leads screen goes straight to the investigation; resuming a
   saved case does not replay the briefing.
 - **Witness scene** (`scenes/witness/`): after a visit is accepted (from the garage, or from the
-  investigation's travel dialog) the picture fades up on the venue. Only the market has a scene so far;
-  other venues go straight to the investigation. The player's vehicle pulls up (the open-top car for
+  case terminal) the picture fades up on the venue. Only the market has a scene so far;
+  other venues go straight back to the case terminal. The player's vehicle pulls up (the open-top car for
   **Drive**, a yellow minibus with a rear door for **Hitch a ride**), the player gets out under a banner
   carrying the venue's name, walks up to the witness behind her stall, and the witness greets the player and
   speaks with her mouth and hands moving. The words appear along the bottom of the screen as they are said (a
   large caption of about 14 words at a time, spoken words bright and the rest dim). The whole
   account is also announced once to screen readers and stays in the notebook. Length follows the number of
   words: about 10 to 15 seconds for a typical account (speech is paced at 3.3 words per second, between 3 and
-  11 seconds, and the scene never exceeds 18 seconds); Esc, Enter, Space or the Skip button end it. Everything is
+  11 seconds, and the arrival and conversation never exceed 18 seconds); Esc, Enter, Space or the Skip button end it. After the
+  last word the witness waves, the picture dips to black and cuts to a wide shot: the player walks back to the vehicle
+  (the car waits for them; the minibus comes back for them), gets in or on, and is driven away. That takes about 3.5
+  seconds more (`MAX_LEAVE_SECONDS` is 4) and is skipped under reduced motion. Everything is
   derived from the account text and the venue id, so no per-location scene is stored or downloaded: the
   witness is picked from the venue recipe by the account text and the lighting follows the case clock. Sound is
   synthesised with the Web Audio API (crowd murmur, traders calling, a generator, coins, the engine, door,
@@ -175,8 +178,23 @@ Rules of the layout: Babylon.js may only be imported by TypeScript modules under
   `attempt_kind`; and a "Replay case" action (`POST /v1/cases/replay`) on solved
   missions. Replays are labelled in the case, header and results, and the UI states
   that they award no points or achievements (the server enforces this).
-- **Investigate**: scene banner, eight-stop trail, venue cards with per-stop
-  questioned state, and witness accounts shown as dialogue.
+- **The case on the office computer** (`scenes/office/CaseTerminal.svelte`, `LeadGrid.svelte`,
+  `styles/case-terminal.css`): while a case is open the office terminal shows the case itself, not an
+  ordinary page. A status strip shows the location (zone, stop of 8), the case clock, time left to the
+  Monday 07:00 deadline, funds and score. The side menu has Local leads (L), Notebook (B), Dossier (D),
+  Travel (T) and Warrant (W), plus the usual Menu (archive, groups, weekly, helpers, settings, log out). There is
+  no "start a new case" here. Local leads are the server's local quotes as terminal tiles with questioned
+  witnesses marked, the latest accounts and, on ordinary cases, "Ask a friend for help". Choosing a lead
+  stands the player up, walks them out of the office and on to the garage, so every witness is visited the same
+  way. Notebook, Dossier, Travel and Warrant are the ordinary screens drawn inside the glass (`.t-embed`),
+  so they behave exactly as before. The five case screens (`investigate`, `notebook`, `dossier`, `travel`,
+  `warrant`) all render the same office, which stays mounted between them; shortcuts are ignored while typing
+  or while a fare dialog is open. There is no side rail or HUD over it.
+- **Coming back from a venue**: when the witness scene ends the player is already on the way back (see the
+  witness scene), and the office plays a short return: the player is seated at the computer and the camera
+  pushes in on the monitor (about 1.8 seconds, `T_RETURN_FROM` in `room-scene.ts`, `quick` on `Stage.svelte`).
+  Leaving the venue and arriving at the desk together take about five seconds and never more than ten
+  (tested). Devices that skip 3D open the terminal directly.
 - **Notebook**: paper-style accounts grouped by stop, journey timeline and the
   suspect profile so far.
 - **Dossier**: eight guided fields with completion ring; changes save together.
@@ -201,7 +219,7 @@ Rules of the layout: Babylon.js may only be imported by TypeScript modules under
   reserve alert, mission lookup, validation issues, role-appropriate lifecycle actions
   with a required reason (and a UTC time to schedule), and the immutable audit history.
 - **Helpers (cooperation)**: private, asynchronous help from a friend by exact
-  username: preferences, "Ask a friend for help" on Investigate, a request list with
+  username: preferences, "Ask a friend for help" in the case terminal, a request list with
   accept / decline / write a recommendation (1–240 characters) / say thanks, expiry
   countdowns, block and report dialogs, and a blocked list. Offered only to
   age-confirmed adults who opted in. There is no chat, directory, presence or

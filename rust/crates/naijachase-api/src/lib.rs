@@ -18,7 +18,7 @@ use rand::RngCore;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::{
-    collections::{BTreeMap, HashMap, VecDeque},
+    collections::{BTreeMap, BTreeSet, HashMap, VecDeque},
     env,
     path::Path as FsPath,
     sync::{Arc, Mutex},
@@ -90,6 +90,19 @@ pub struct TransportQuote {
     pub wait_minutes: u32,
     pub affordable: bool,
     pub rules_version: u16,
+}
+
+#[derive(Clone, Debug, Serialize, PartialEq, Eq)]
+pub struct DossierOptionField {
+    pub field: String,
+    pub label: String,
+    pub options: Vec<String>,
+}
+
+#[derive(Clone, Debug, Serialize, PartialEq, Eq)]
+pub struct DossierOptionsResponse {
+    pub catalogue_version: u16,
+    pub fields: Vec<DossierOptionField>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -441,6 +454,12 @@ pub struct CaseResponse {
 }
 
 #[derive(Debug, Serialize)]
+pub struct CurrentCaseResponse {
+    pub has_ongoing_case: bool,
+    pub case: Option<CaseResponse>,
+}
+
+#[derive(Debug, Serialize)]
 struct ErrorBody {
     error: &'static str,
     message: String,
@@ -741,6 +760,7 @@ pub fn router(state: Arc<AppState>) -> Router {
         .route("/v1/profile", get(me).put(update_profile))
         .route("/v1/avatar/options", get(avatar_options))
         .route("/v1/profile/avatar", get(get_avatar).put(select_avatar))
+        .route("/v1/dossier/options", get(dossier_options))
         .route("/v1/progression/archive", get(case_archive))
         .route("/v1/progression/achievements", get(achievements))
         .route("/v1/progression/summary", get(progression_summary))
@@ -825,6 +845,7 @@ pub fn router(state: Arc<AppState>) -> Router {
             get(achievement_catalog),
         )
         .route("/v1/cases", post(assign_case))
+        .route("/v1/cases/current", get(current_case))
         .route("/v1/cases/replay", post(replay_case))
         .route("/v1/cases/catalogue-status", get(catalogue_status))
         .route(
@@ -1393,6 +1414,60 @@ async fn avatar_options(
         renderer: "babylon_procedural_v1",
         options: &AVATAR_PRESETS,
     }))
+}
+
+async fn dossier_options(
+    State(state): State<Arc<AppState>>,
+    headers: HeaderMap,
+) -> Result<Json<DossierOptionsResponse>, ApiError> {
+    authorize(&headers, &state).await?;
+    Ok(Json(build_dossier_options(&state.catalogue)))
+}
+
+fn dossier_option_values(catalogue: &Catalogue, field: &str) -> Vec<String> {
+    catalogue
+        .profiles
+        .values()
+        .map(|profile| match field {
+            "sex" => profile.sex.as_str(),
+            "height" => profile.height.as_str(),
+            "skin_tone" => profile.skin_tone.as_str(),
+            "hair" => profile.hair.as_str(),
+            "hobby" => profile.hobby.as_str(),
+            "vehicle" => profile.vehicle.as_str(),
+            "accessory" => profile.accessory.as_str(),
+            "feature" => profile.feature.as_str(),
+            _ => "",
+        })
+        .filter(|value| !value.is_empty())
+        .map(str::to_owned)
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect()
+}
+
+fn build_dossier_options(catalogue: &Catalogue) -> DossierOptionsResponse {
+    let fields = [
+        ("sex", "Sex"),
+        ("height", "Height"),
+        ("skin_tone", "Skin tone"),
+        ("hair", "Hair"),
+        ("hobby", "Hobby"),
+        ("vehicle", "Vehicle"),
+        ("accessory", "Accessory"),
+        ("feature", "Distinguishing feature"),
+    ]
+    .into_iter()
+    .map(|(field, label)| DossierOptionField {
+        field: field.into(),
+        label: label.into(),
+        options: dossier_option_values(catalogue, field),
+    })
+    .collect();
+    DossierOptionsResponse {
+        catalogue_version: 1,
+        fields,
+    }
 }
 
 fn avatar_profile(account: &PlayerAccount) -> AvatarProfileResponse {
@@ -2167,6 +2242,26 @@ async fn assign_case(
     let account = authorize(&headers, &state).await?;
     let player = account.player_id.clone();
     let store = state.store.clone();
+    let current_player = player.clone();
+    if let Some((case_id, version, game)) =
+        tokio::task::spawn_blocking(move || store.current_ordinary_case(&current_player))
+            .await
+            .map_err(task_error)??
+    {
+        return Ok((
+            StatusCode::OK,
+            Json(CaseResponse {
+                api_version: API_VERSION,
+                case_id,
+                state_version: version,
+                duplicate: true,
+                attempt_kind: "ordinary".into(),
+                state: public_game_state(&game, &state.catalogue)?,
+                events: vec![],
+            }),
+        ));
+    }
+    let store = state.store.clone();
     let lookup_player = player.clone();
     let unseen =
         tokio::task::spawn_blocking(move || store.unseen_published_missions(&lookup_player))
@@ -2227,6 +2322,34 @@ async fn assign_case(
             events: vec![],
         }),
     ))
+}
+
+async fn current_case(
+    State(state): State<Arc<AppState>>,
+    headers: HeaderMap,
+) -> Result<Json<CurrentCaseResponse>, ApiError> {
+    let player = authorize(&headers, &state).await?.player_id;
+    let store = state.store.clone();
+    let current = tokio::task::spawn_blocking(move || store.current_ordinary_case(&player))
+        .await
+        .map_err(task_error)??;
+    let case = current
+        .map(|(case_id, version, game)| {
+            Ok(CaseResponse {
+                api_version: API_VERSION,
+                case_id,
+                state_version: version,
+                duplicate: false,
+                attempt_kind: "ordinary".into(),
+                state: public_game_state(&game, &state.catalogue)?,
+                events: vec![],
+            })
+        })
+        .transpose()?;
+    Ok(Json(CurrentCaseResponse {
+        has_ongoing_case: case.is_some(),
+        case,
+    }))
 }
 
 async fn replay_case(
@@ -3061,6 +3184,7 @@ fn translate_command(
             if !FIELDS.contains(&trait_name.as_str())
                 || value.trim().is_empty()
                 || value.len() > 128
+                || !dossier_option_values(catalogue, &trait_name).contains(&value)
             {
                 return Err("invalid dossier entry".into());
             }
@@ -3479,6 +3603,39 @@ mod tests {
             translate_command_stub(ClientCommand::Wait { minutes: 0 }),
             Err(_)
         ));
+    }
+
+    #[test]
+    fn dossier_options_are_canonical_sorted_and_complete() {
+        let root = FsPath::new(env!("CARGO_MANIFEST_DIR")).join("../../..");
+        let catalogue = Catalogue::load(&root).unwrap();
+        let response = build_dossier_options(&catalogue);
+        assert_eq!(response.catalogue_version, 1);
+        assert_eq!(response.fields.len(), 8);
+        let vehicles = response
+            .fields
+            .iter()
+            .find(|field| field.field == "vehicle")
+            .unwrap();
+        assert_eq!(
+            vehicles.options,
+            vec![
+                "a black motorcycle",
+                "a blue minibus",
+                "a dark luxury sedan",
+                "a green sports car",
+                "a grey hatchback",
+                "a red convertible",
+                "a silver saloon",
+                "a vintage coupe",
+                "a white pickup",
+                "a yellow SUV",
+            ]
+        );
+        for field in &response.fields {
+            assert!(!field.options.is_empty());
+            assert!(field.options.windows(2).all(|pair| pair[0] < pair[1]));
+        }
     }
     #[test]
     fn weekly_schedule_uses_monday_seven_wat_boundaries() {

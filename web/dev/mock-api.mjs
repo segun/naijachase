@@ -4,7 +4,25 @@
 import http from "node:http";
 
 const STATES = ["Lagos", "Oyo", "Kwara", "Federal Capital Territory", "Kaduna", "Kano", "Borno", "Rivers", "Abia", "Enugu"];
-const TRAITS = ["female", "tall", "dark brown", "braided", "chess", "motorbike", "gold watch", "gap tooth"];
+const TRAITS = ["female", "tall", "dark-skinned", "long braided hair", "chess", "a black motorcycle", "a gold wristwatch", "walks with a limp"];
+const DOSSIER_OPTIONS = {
+  catalogue_version: 1,
+  fields: [
+    ["sex", "Sex", ["female", "male"]],
+    ["height", "Height", ["medium height", "short", "tall"]],
+    ["skin_tone", "Skin tone", ["dark-skinned", "light-skinned"]],
+    ["hair", "Hair", ["a neat afro", "long braided hair"]],
+    ["hobby", "Hobby", ["chess", "photography"]],
+    ["vehicle", "Vehicle", ["a black motorcycle", "a blue minibus"]],
+    ["accessory", "Accessory", ["a gold wristwatch", "a red scarf"]],
+    ["feature", "Distinguishing feature", ["walks with a limp", "writes left-handed"]]
+  ].map(([field, label, options]) => ({ field, label, options }))
+};
+function validateTrait(cmd) {
+  if (cmd.type === "record_trait" && !DOSSIER_OPTIONS.fields.find(f => f.field === cmd.trait_name)?.options.includes(cmd.value)) {
+    throw new HttpError(422, "invalid_command", "Choose a listed dossier value.");
+  }
+}
 const WITNESS = {
   market: "A trader leans in: the buyer asked for the road to the big river city and paid in crisp notes.",
   library: "The librarian whispers that someone studied maps of the north and left before closing.",
@@ -211,6 +229,7 @@ const server = http.createServer(async (req, res) => {
       return send(200, { message: "Password updated. Log in with your new password." });
     }
     needAuth();
+    if (path === "/v1/dossier/options" && req.method === "GET") return send(200, DOSSIER_OPTIONS);
     if (path.startsWith("/v1/admin/catalogue")) {
       if (!ROLE) throw new HttpError(403, "forbidden", "content role required");
       if (path === "/v1/admin/catalogue/me") return send(200, { content_role: ROLE });
@@ -317,6 +336,7 @@ const server = http.createServer(async (req, res) => {
         if (body.expected_version !== a.state_version) throw new HttpError(409, "stale_version", "state version is stale");
         if (a.status === "in_transit") throw new HttpError(422, "invalid_command", "attempt is in transit or challenge closed");
         const cmd = body.command;
+        validateTrait(cmd);
         if (cmd.type === "travel") { a.status = "in_transit"; a.transit = { destination: cmd.destination, mode: cmd.mode, arrives: Date.now() + TRANSIT_SECONDS * 1000 }; a.state_version += 1; return send(200, { status: "in_transit", transit_id: "tr-1", duration_seconds: TRANSIT_SECONDS }); }
         if (cmd.type === "record_trait") a.state.dossier[cmd.trait_name] = cmd.value;
         else if (cmd.type === "visit_venue") a.state.visited_venues.push(`0|${a.state.current_state}|${cmd.venue_id}`);
@@ -421,6 +441,7 @@ const server = http.createServer(async (req, res) => {
     if (c.seen.has(body.command_id)) return send(200, reply(c, [], true));
     if (body.expected_version !== c.version) throw new HttpError(409, "stale_version", "state version is stale");
     if (c.outcome) throw new HttpError(422, "rejected", "This case is already closed.");
+    validateTrait(body.command);
     const events = apply(c, body.command);
     c.seen.add(body.command_id); c.version += 1;
     return send(200, reply(c, events));

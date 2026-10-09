@@ -1,8 +1,8 @@
 import type {
-  AssignCaseRequest, AuthResponse, AvatarCatalogue, AvatarProfile, AvatarSelectionRequest, CaseArchiveEntry, CaseResponse, CatalogueProgress, ClientCommand, ExecuteRequest,
+  AssignCaseRequest, AuthResponse, AvatarCatalogue, AvatarProfile, AvatarSelectionRequest, CaseArchiveEntry, CaseResponse, CatalogueProgress, ClientCommand, CurrentCaseResponse, ExecuteRequest,
   LoginRequest, PlayerSession, ProfileUpdate, ProgressionSummary, RecoveryCompleteRequest,
   RecoveryRequest, RegisterRequest, ReplayCaseRequest, TransportLedgerEntry, TransportQuote,
-  CatalogueHealth, CompleteCooperationRequest, ContentRoleResponse, CooperationPreferences, CooperationReportRequest, CooperationRequest, CreateCooperationRequest, MissionAdminDetails, MissionTransitionRequest, MissionValidation, ReleaseNotification
+  CatalogueHealth, CompleteCooperationRequest, ContentRoleResponse, CooperationPreferences, CooperationReportRequest, CooperationRequest, CreateCooperationRequest, DossierOptions, MissionAdminDetails, MissionTransitionRequest, MissionValidation, ReleaseNotification
 } from "../../../contracts/typescript/api-v1.ts";
 import type { AchievementDef, GroupInvitation, PlayerGroup, Standing, TransitReply, WeeklyAttempt, WeeklyCurrent, WeeklyDetails, WeeklyEvent, WeeklyHistoryEntry, WeeklyNotification } from "../domain/model.ts";
 
@@ -78,6 +78,7 @@ export class Api {
   avatarOptions = () => call<AvatarCatalogue>("/v1/avatar/options");
   avatarProfile = () => call<AvatarProfile>("/v1/profile/avatar");
   selectAvatar = (avatarId: string) => call<AvatarProfile>("/v1/profile/avatar", "PUT", { avatar_id: avatarId } satisfies AvatarSelectionRequest);
+  dossierOptions = () => call<DossierOptions>("/v1/dossier/options");
 
   progression = () => call<ProgressionSummary>("/v1/progression/summary");
   archive = () => call<CaseArchiveEntry[]>("/v1/progression/archive");
@@ -85,6 +86,7 @@ export class Api {
 
   /** The server picks the mission and generates the case id and seed; the body is deliberately empty. */
   assign = () => call<CaseResponse>("/v1/cases", "POST", {} satisfies AssignCaseRequest);
+  currentCase = () => call<CurrentCaseResponse>("/v1/cases/current");
   replay = (missionId: string) => call<CaseResponse>("/v1/cases/replay", "POST", { mission_id: missionId } satisfies ReplayCaseRequest);
   catalogueStatus = () => call<CatalogueProgress>("/v1/cases/catalogue-status");
   load = (caseId: string) => call<CaseResponse>(`/v1/cases/${encodeURIComponent(caseId)}`);

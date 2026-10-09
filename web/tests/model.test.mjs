@@ -45,9 +45,10 @@ test("Babylon.js is only reachable through a dynamic import", () => {
 
 test("every case screen is a component wired into the app", () => {
   const app = read("App.svelte");
-  for (const name of ["Landing", "AuthPanel", "Room", "Investigate", "Notebook", "Dossier", "Travel", "Warrant", "Results", "Settings"]) {
+  for (const name of ["Landing", "AuthPanel", "Room", "CaseTerminal", "Notebook", "Dossier", "Travel", "Warrant", "Results", "Settings"]) {
     assert.ok(component(name).length > 0, `${name} component missing`);
-    assert.match(app, new RegExp(`<${name} \\{app\\}|/${name}\\.svelte`), `${name} is not wired in`);
+    const wired = ["CaseTerminal", "Notebook", "Dossier", "Travel", "Warrant"].includes(name) ? app + read("scenes/office/Room.svelte") + read("scenes/office/CaseTerminal.svelte") : app;
+    assert.match(wired, new RegExp(`<${name} \\{app\\}|/${name}\\.svelte`), `${name} is not wired in`);
   }
   assert.match(app, /svelte:boundary/);
 });

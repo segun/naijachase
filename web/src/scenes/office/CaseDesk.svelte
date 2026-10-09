@@ -5,12 +5,11 @@
   import type { AppController } from "../../state/app.svelte";
   import { charsPerTick, dossierLines, TICK_MS, totalChars, typedRows } from "../../domain/briefing.ts";
   import { dayPart, greeting } from "./room-scene.ts";
-  import { leadInfo } from "../../domain/venues.ts";
   import { MAP_H, MAP_W, outlinePath, statePoint } from "../../domain/map.ts";
-  import { cheapest, coopActions, duration, groupQuotes, money, ratio, STATES, type QuoteGroup, type Screen } from "../../domain/model.ts";
+  import { coopActions, groupQuotes, ratio, STATES, type QuoteGroup, type Screen } from "../../domain/model.ts";
   import AvatarSilhouette from "../../avatar/AvatarSilhouette.svelte";
   import Icon from "../../ui/Icon.svelte";
-  import VenueArt from "./VenueArt.svelte";
+  import LeadGrid from "./LeadGrid.svelte";
 
   // Re-check the catalogue and release notices every time the desk opens.
   $effect(() => { void app.loadProgression(); });
@@ -189,22 +188,7 @@
             <section class="t-leads" aria-labelledby="leads-title">
               <h1 class="t-greet" id="leads-title">Local leads</h1>
               <p class="t-line">{app.game?.state.current_state}. Pick where to start asking: one witness here knows where the thief went next.</p>
-              <div class="t-lead-grid">
-                {#if !app.quotesLoaded}
-                  {#each [1, 2, 3] as n}<div class="t-lead t-wait" aria-hidden="true">Scanning…</div>{/each}
-                {:else if leads.length === 0}
-                  <p class="t-line">No one is available to question right now.</p>
-                {/if}
-                {#each leads as lead, i (lead.id)}
-                  {@const info = leadInfo(lead.id)}
-                  {@const best = cheapest(lead.options.filter(o => o.affordable))}
-                  <button class="t-opt t-lead" class:chosen={leaving === lead.id} type="button" data-nav data-primary={i === 0 ? "" : undefined} disabled={Boolean(leaving) || lead.options.length === 0} onclick={() => pick(lead)}>
-                    <span class="t-art"><VenueArt id={lead.id} /></span>
-                    <span class="t-label">{lead.label}<small>{info.who}</small><small class="t-blurb">{info.blurb}</small></span>
-                    <span class="t-fare">{#if leaving === lead.id}Heading out…{:else if best}{best.cost === 0 ? "Free" : money(best.cost)} · {duration(best.travel_minutes + best.wait_minutes)}{:else}Unavailable{/if}</span>
-                  </button>
-                {/each}
-              </div>
+              <LeadGrid {leads} loaded={app.quotesLoaded} {leaving} onpick={pick} />
               <button class="t-opt t-small t-quiet" type="button" data-nav disabled={Boolean(leaving)} onclick={() => app.finishBriefing()}>Skip to the case <Icon name="arrow" /></button>
             </section>
           {/if}

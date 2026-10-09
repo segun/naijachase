@@ -111,7 +111,7 @@ test("the rooms are lazy, primitive-built enhancements and the screens keep work
   assert.match(app, /import\("\.\/scenes\/office\/Room\.svelte"\)/, "the room is a lazy chunk: nobody needs it on the sign-in path");
   assert.match(app, /import\("\.\/scenes\/archive\/ArchiveRoom\.svelte"\)/);
   assert.doesNotMatch(app, /^\s*import\s+(Room|ArchiveRoom)/m);
-  assert.match(shell, /app\.screen !== "cases" && app\.screen !== "archive"/, "the rooms are full-screen: no side rail");
+  assert.match(shell, /\["welcome", "cases", "archive", "garage", "witness"\]\.includes\(app\.screen\)/, "the rooms are full-screen: no side rail");
   assert.match(desk, /greeting\(now\)/);
   assert.match(desk, /app\.summary\.rank/);
   for (const label of ["Start new case", "Achievements", "Career file", "Settings", "Log out"]) assert.match(desk, new RegExp(label), label);
@@ -238,7 +238,7 @@ test("the exit animation: the player stands, walks out of the door and the camer
 });
 
 test("opening a case shows the briefing on the desk; choosing a lead leaves through the scene and then opens it", () => {
-  const appSrc = read("state/app.svelte.ts"), desk = read("scenes/office/CaseDesk.svelte"), stage = read("scenes/shared/Stage.svelte"), inv = read("screens/case/Investigate.svelte"), shell = read("ui/Shell.svelte");
+  const appSrc = read("state/app.svelte.ts"), desk = read("scenes/office/CaseDesk.svelte"), stage = read("scenes/shared/Stage.svelte"), shell = read("ui/Shell.svelte");
   assert.match(appSrc, /this\.briefing = true; this\.pendingLead = "";\s*this\.go\("cases"\)/, "a new case opens on the desk, not the investigation");
   assert.match(appSrc, /finishBriefing\(lead = ""\)/);
   assert.match(desk, /await leave\(\);\s*app\.finishBriefing\(lead\.id\)/, "the exit plays before the investigation opens");
@@ -247,12 +247,13 @@ test("opening a case shows the briefing on the desk; choosing a lead leaves thro
   assert.match(desk, /step = "leads"; \}\}>/, "an explicit Continue button moves on");
   assert.match(desk, /Take your time/);
   assert.match(desk, /Skip to the case/);
-  assert.match(desk, /<VenueArt id=\{lead\.id\} \/>/);
+  assert.match(desk, /<LeadGrid /, "the leads are the shared lead tiles");
+  assert.match(read("scenes/office/LeadGrid.svelte"), /<VenueArt id=\{lead\.id\} \/>/);
   assert.match(desk, /groupQuotes\(app\.quotes, "local"\)/, "the leads are the server's local quotes");
   assert.match(stage, /LEAVE_MAX_MS/, "leaving can never hang the screen");
   assert.match(appSrc, /lead \? "garage"/, "a chosen lead continues in the garage, where the transport is picked");
   assert.doesNotMatch(desk, /command\(/, "choosing a lead sends no command from the desk");
-  assert.match(shell, /app\.screen !== "cases"\) \|\|?[^\n]*|inCase && app\.screen !== "cases"/, "no case HUD over the desk");
+  assert.match(shell, /inCase && !inRoom/, "no case HUD over the desk or the case terminal");
 });
 
 import * as garage from "../src/scenes/garage/garage-scene.ts";

@@ -23,10 +23,14 @@ export const FIELDS = ["sex","height","skin_tone","hair","hobby","vehicle","acce
 // Response shapes come from the generated API contract; do not redefine them here.
 export type {
   AuthResponse, AvatarCatalogue, AvatarPreset, AvatarProfile, CaseArchiveEntry, CaseResponse, ClientCommand, GameEvent, Player, PlayerSession,
-  CatalogueHealth, CatalogueProgress, ContentRoleResponse, MissionAdminDetails, MissionLifecycleEvent, MissionTransitionRequest, MissionValidation, ReleaseNotification, InterstateMode, LocalMode, ProfileUpdate, TransportLedgerEntry, TransportQuote, ProgressionSummary, PublicGameState as PublicState, RankHistoryEntry
+  CatalogueHealth, CatalogueProgress, ContentRoleResponse, DossierOptions, DossierOptionField, MissionAdminDetails, MissionLifecycleEvent, MissionTransitionRequest, MissionValidation, ReleaseNotification, InterstateMode, LocalMode, ProfileUpdate, TransportLedgerEntry, TransportQuote, ProgressionSummary, PublicGameState as PublicState, RankHistoryEntry
 } from "../../../contracts/typescript/api-v1.ts";
 import type { GroupMember, GroupRole, PlayerGroup, WeeklyAttempt, CompleteCooperationRequest, CooperationPreferences, CooperationReportRequest, CooperationRequest, CreateCooperationRequest, CatalogueHealth, ContentRoleResponse, InterstateMode, LocalMode, MissionAdminDetails, MissionLifecycleEvent, MissionTransitionRequest, MissionValidation, ReleaseNotification, PublicGameState as PublicState, TransportLedgerEntry, TransportQuote } from "../../../contracts/typescript/api-v1.ts";
+import type { DossierOptions } from "../../../contracts/typescript/api-v1.ts";
 export type Screen = "welcome"|"cases"|"investigate"|"notebook"|"dossier"|"travel"|"warrant"|"results"|"settings"|"archive"|"garage"|"witness"|"content"|"helpers"|"groups"|"weekly";
+/** The case's own screens. They are all shown on the office computer, so the office stays mounted while the player moves between them. */
+export const CASE_SCREENS: readonly Screen[] = ["investigate", "notebook", "dossier", "travel", "warrant"];
+export const isCaseScreen = (screen: Screen): boolean => CASE_SCREENS.includes(screen);
 
 export function clock(minutes:number):string {
   const total=420+minutes, day=Math.floor(total/1440);
@@ -86,6 +90,18 @@ export const FIELD_META:Record<(typeof FIELDS)[number],{label:string;hint:string
 
 export function dossierCount(dossier:Record<string,string>):number {
   return FIELDS.filter(field=>(dossier[field]??"").trim().length>0).length;
+}
+
+export function dossierChanges(catalogue: DossierOptions | null, values: Record<string, string>, recorded: Record<string, string>): { field: string; value: string }[] {
+  if (!catalogue) throw new Error("Dossier choices are unavailable. Retry loading them before recording details.");
+  const changes: { field: string; value: string }[] = [];
+  for (const [field, value] of Object.entries(values)) {
+    if (!value || value === recorded[field]) continue;
+    const entry = catalogue.fields.find(entry => entry.field === field);
+    if (!entry?.options.includes(value)) throw new Error(`Choose a listed value for ${entry?.label ?? field}.`);
+    changes.push({ field, value });
+  }
+  return changes;
 }
 
 export function stopPrefix(state:PublicState):string { return `${state.stage}|${state.current_state}|`; }

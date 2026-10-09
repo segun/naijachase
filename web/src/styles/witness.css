@@ -1,6 +1,7 @@
 /* The witness scene: a full-screen 3D picture with a large subtitle band along the bottom. Shares .room, .room-canvas and .room-skip with terminal.css. */
 .witness { background: #000; }
-.witness .room-skip { top: 1.25rem; bottom: auto; }
+/* Top left: the music buttons sit at the top right of every screen. */
+.witness .room-skip { top: 1.25rem; left: 1.25rem; right: auto; bottom: auto; }
 .witness-fade { position: absolute; inset: 0; z-index: 2; background: #000; pointer-events: none; }
 .witness-caption {
   position: absolute; left: 50%; bottom: max(1.25rem, 5vh); z-index: 3; transform: translateX(-50%);

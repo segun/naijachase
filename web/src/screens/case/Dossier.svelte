@@ -1,14 +1,15 @@
 <script lang="ts">
   import { untrack } from "svelte";
   import type { AppController } from "../../state/app.svelte";
-  import { FIELDS, FIELD_META, dossierCount } from "../../domain/model.ts";
+  import { FIELD_META, dossierCount } from "../../domain/model.ts";
+  import DossierOptionsStatus from "../../ui/DossierOptionsStatus.svelte";
   import Icon from "../../ui/Icon.svelte";
 
   let { app }: { app: AppController } = $props();
   const recorded = $derived(app.game!.state.dossier);
   let values = $state<Record<string, string>>(untrack(() => ({ ...app.game!.state.dossier })));
   const count = $derived(dossierCount(recorded));
-  const changed = $derived(FIELDS.filter(f => (values[f] ?? "").trim() && (values[f] ?? "").trim() !== (recorded[f] ?? "")));
+  const changed = $derived(app.dossierOptions?.fields.filter(({ field, options }) => options.includes(values[field] ?? "") && values[field] !== recorded[field]) ?? []);
   const circumference = 2 * Math.PI * 34;
 
   async function save(event: SubmitEvent) {
@@ -21,7 +22,7 @@
   <header class="page-head rise">
     <p class="eyebrow">Suspect dossier</p>
     <h1>Build the profile</h1>
-    <p>Enter only what you infer from witness wording. All eight details are needed before a warrant can be requested.</p>
+    <p>Select only what you infer from witness wording. All eight details are needed before a warrant can be requested.</p>
   </header>
 
   <div class="dossier-top card rise">
@@ -37,17 +38,23 @@
     {#if count === 8}<button class="btn btn-primary" type="button" onclick={() => app.go("warrant")}>Request warrant <Icon name="arrow" /></button>{/if}
   </div>
 
+  <DossierOptionsStatus {app} />
   <form class="dossier-grid" onsubmit={save}>
-    {#each FIELDS as field, i}
+    {#each app.dossierOptions?.fields ?? [] as entry, i}
+      {@const field = entry.field}
       {@const meta = FIELD_META[field]}
       <label class="trait card rise" class:filled={!!recorded[field]} style:animation-delay="{i * 0.04}s">
-        <span class="trait-head"><span>{meta.label}</span>{#if recorded[field]}<span class="badge badge-green"><Icon name="check" />Recorded</span>{/if}</span>
-        <input class="input" name={field} maxlength="128" bind:value={values[field]} placeholder={meta.placeholder} />
+        <span class="trait-head"><span>{entry.label}</span>{#if recorded[field]}<span class="badge badge-green"><Icon name="check" />Recorded</span>{/if}</span>
+        <select class="select" name={field} bind:value={values[field]} disabled={app.busy}>
+          <option value="">Not yet known</option>
+          {#each entry.options as option}<option value={option}>{option}</option>{/each}
+        </select>
+        {#if recorded[field] && !entry.options.includes(recorded[field])}<small class="hint warn">Previously recorded: {recorded[field]}. Choose a listed value to replace it.</small>{/if}
         <small class="muted">{meta.hint}</small>
       </label>
     {/each}
     <div class="dossier-actions">
-      <button class="btn btn-primary btn-lg" disabled={app.busy || changed.length === 0}>
+      <button class="btn btn-primary btn-lg" disabled={app.busy || !app.dossierOptions || changed.length === 0}>
         {#if app.busy}<span class="spinner"></span> {app.busyLabel}…{:else}Record {changed.length || ""} changed detail{changed.length === 1 ? "" : "s"}{/if}
       </button>
     </div>
