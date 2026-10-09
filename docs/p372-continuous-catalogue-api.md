@@ -29,6 +29,14 @@ normal validation and simulation gates, and run `make db-import`. A previously
 unknown mission is imported as `draft`; reimporting an existing mission does not
 silently publish it or reset its lifecycle.
 
+For a brand-new installation only, run `make db-publish-initial` after the first
+verified import. It validates every database mission, requires the entire
+catalogue to be uniformly draft (or already published), records all three
+lifecycle audit transitions under the system bootstrap actor, and publishes the
+initial catalogue. The command is idempotent once that catalogue is published;
+it refuses partially managed catalogues. Later content always follows the normal
+editor/publisher workflow below.
+
 The service reads a published mission's runtime fields directly from MySQL.
 Publishing therefore makes a validated case assignable without rebuilding,
 redeploying, or restarting the API.

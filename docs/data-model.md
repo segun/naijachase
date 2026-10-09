@@ -5,9 +5,12 @@ runtime representation. Content imports are replaceable and reproducible;
 player records and live cases are mutable operational data and are never
 overwritten by a content import.
 
-Connections are configured only through `MYSQL_HOST`, `MYSQL_PORT`,
-`MYSQL_USER`, `MYSQL_PASSWORD`, and `MYSQL_DATABASE`. Credentials are never
-stored in source control.
+Connections are configured through `MYSQL_HOST`, `MYSQL_PORT`, `MYSQL_USER`,
+`MYSQL_PASSWORD`, `MYSQL_DATABASE`, and `MYSQL_SSL_MODE`. Use
+`MYSQL_SSL_MODE=required` for staging and production so the connection is
+encrypted; `disabled` is the local-development default. Production database
+accounts must also use MySQL's `REQUIRE SSL` policy so a client cannot silently
+downgrade to plaintext. Credentials are never stored in source control.
 
 ## Rebuild and recovery
 

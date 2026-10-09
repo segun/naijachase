@@ -880,6 +880,18 @@ fn main() {
             verify_database_parity(&root, &store);
         }
         "verify-mysql" => verify_database_parity(&root, &mysql()),
+        "publish-initial-mysql" => {
+            validate(&root);
+            let published = mysql().publish_initial_catalogue().unwrap_or_else(|error| {
+                eprintln!("Initial MySQL catalogue publication failed: {error}");
+                std::process::exit(2)
+            });
+            if published == 0 {
+                println!("Initial MySQL catalogue was already published");
+            } else {
+                println!("Published {published} validated missions in the initial MySQL catalogue");
+            }
+        }
         "export-mysql" => {
             let target = args
                 .get(1)
@@ -920,7 +932,7 @@ fn main() {
         }
         other => {
             eprintln!(
-                "Unknown command {other}. Use validate, simulate, editorial, enrichment, enrich-state-clues, export-witness-scenes, migrate-mysql, import-mysql, rebuild-mysql, verify-mysql, export-mysql, backup-mysql, restore-mysql, or export."
+                "Unknown command {other}. Use validate, simulate, editorial, enrichment, enrich-state-clues, export-witness-scenes, migrate-mysql, import-mysql, rebuild-mysql, verify-mysql, publish-initial-mysql, export-mysql, backup-mysql, restore-mysql, or export."
             );
             std::process::exit(2)
         }

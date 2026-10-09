@@ -509,7 +509,7 @@ export class AppController {
     const account = next.events.find(e => e.event_type === "witness_account")?.data;
     if (account?.message && !next.duplicate) {
       if (payload.type === "visit_venue") {
-        this.lastWitness = { venueId: payload.venue_id, venueName: account.venue_name ?? "", role: account.witness_role ?? "Witness", message: account.message };
+        this.lastWitness = { venueId: payload.venue_id, venueName: account.local_venue_name || account.venue_name || "", role: account.witness_role ?? "Witness", message: account.message };
       }
       this.notes = [...this.notes, {
         stop: current.state.current_state,

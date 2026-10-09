@@ -1242,6 +1242,10 @@ scores, rank, detection odds, panel votes, punishment, or jail time.
 
 #### P3.11 — Release readiness
 
+- [x] Add explicit MySQL transport encryption configuration, require it in the
+  staging/production environment templates, and bind the API to loopback for
+  Nginx proxying.
+
 - [ ] Block staging-to-production promotion until the remaining P3.7
   account/session security and recovery tests pass.
 - [ ] Complete trademark, company-name, domain, web-app name, and social-handle

@@ -1,4 +1,4 @@
-use mysql::{OptsBuilder, Pool, TxOpts, params, prelude::Queryable};
+use mysql::{OptsBuilder, Pool, SslOpts, TxOpts, params, prelude::Queryable};
 use naijachase_contracts::{Event, GameState};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
@@ -394,6 +394,7 @@ pub struct MysqlConfig {
     pub user: String,
     pub password: String,
     pub database: String,
+    pub ssl_mode: String,
 }
 
 impl MysqlConfig {
@@ -406,22 +407,36 @@ impl MysqlConfig {
         let required = |lookup: &mut dyn FnMut(&str) -> Option<String>, key: &'static str| {
             lookup(key).ok_or(StorageError::MissingEnvironment(key))
         };
+        let ssl_mode = lookup("MYSQL_SSL_MODE").unwrap_or_else(|| "disabled".into());
+        if !matches!(ssl_mode.as_str(), "disabled" | "required") {
+            return Err(StorageError::InvalidMysqlSslMode(ssl_mode));
+        }
         Ok(Self {
             host: required(&mut lookup, "MYSQL_HOST")?,
             port: required(&mut lookup, "MYSQL_PORT")?.parse()?,
             user: required(&mut lookup, "MYSQL_USER")?,
             password: required(&mut lookup, "MYSQL_PASSWORD")?,
             database: required(&mut lookup, "MYSQL_DATABASE")?,
+            ssl_mode,
         })
     }
 
     fn options(&self) -> OptsBuilder {
-        OptsBuilder::new()
+        let options = OptsBuilder::new()
             .ip_or_hostname(Some(self.host.clone()))
             .tcp_port(self.port)
             .user(Some(self.user.clone()))
             .pass(Some(self.password.clone()))
-            .db_name(Some(self.database.clone()))
+            .db_name(Some(self.database.clone()));
+        if self.ssl_mode == "required" {
+            options.ssl_opts(Some(
+                SslOpts::default()
+                    .with_danger_accept_invalid_certs(true)
+                    .with_danger_skip_domain_validation(true),
+            ))
+        } else {
+            options
+        }
     }
 }
 
@@ -433,6 +448,8 @@ pub enum StorageError {
     MissingEnvironment(&'static str),
     #[error("invalid MYSQL_PORT: {0}")]
     InvalidPort(#[from] ParseIntError),
+    #[error("MYSQL_SSL_MODE must be disabled or required, got {0}")]
+    InvalidMysqlSslMode(String),
     #[error("could not load .env: {0}")]
     Dotenv(#[from] dotenvy::Error),
     #[error("csv: {0}")]
@@ -1609,6 +1626,73 @@ impl MysqlStore {
         })
     }
 
+    pub fn publish_initial_catalogue(&self) -> Result<u64, StorageError> {
+        let mut connection = self.pool.get_conn()?;
+        let missions: Vec<(String, String)> = connection
+            .query("SELECT mission_id,lifecycle_status FROM missions ORDER BY mission_id")?;
+        if missions.is_empty() {
+            return Err(StorageError::Command(
+                "cannot publish an empty catalogue; import content first".into(),
+            ));
+        }
+        if missions.iter().all(|(_, status)| status == "published") {
+            return Ok(0);
+        }
+        if missions.iter().any(|(_, status)| status != "draft") {
+            return Err(StorageError::Command(
+                "initial publication requires every mission to be draft or every mission to already be published"
+                    .into(),
+            ));
+        }
+        drop(connection);
+
+        for (mission_id, _) in &missions {
+            let validation = self.validate_mission(mission_id)?;
+            if !validation.valid {
+                return Err(StorageError::Command(format!(
+                    "mission {mission_id} failed initial publication validation: {}",
+                    validation.issues.join("; ")
+                )));
+            }
+        }
+
+        const ACTOR: &str = "system-catalogue-bootstrap";
+        let mut connection = self.pool.get_conn()?;
+        let mut transaction = connection.start_transaction(TxOpts::default())?;
+        transaction.exec_drop(
+            "INSERT INTO players(player_id,display_name,content_role) VALUES (:actor,'Catalogue Bootstrap','admin') ON DUPLICATE KEY UPDATE display_name=VALUES(display_name),content_role='admin'",
+            params! { "actor" => ACTOR },
+        )?;
+        for (from, to, reason) in [
+            (
+                "draft",
+                "editorial_review",
+                "initial canonical catalogue submitted for review",
+            ),
+            (
+                "editorial_review",
+                "validated",
+                "initial canonical catalogue passed automated validation",
+            ),
+            (
+                "validated",
+                "published",
+                "initial production catalogue publication",
+            ),
+        ] {
+            transaction.exec_drop(
+                "INSERT INTO mission_lifecycle_audit(mission_id,actor_player_id,from_status,to_status,content_version,reason) SELECT mission_id,:actor,:from_status,:to_status,content_version,:reason FROM missions WHERE lifecycle_status='draft'",
+                params! { "actor" => ACTOR, "from_status" => from, "to_status" => to, "reason" => reason },
+            )?;
+        }
+        transaction.exec_drop(
+            "UPDATE missions SET lifecycle_status='published',published_at=UTC_TIMESTAMP(),scheduled_for=NULL,retired_at=NULL,lifecycle_updated_by=:actor WHERE lifecycle_status='draft'",
+            params! { "actor" => ACTOR },
+        )?;
+        transaction.commit()?;
+        Ok(missions.len() as u64)
+    }
+
     pub fn release_notifications(
         &self,
         player_id: &str,
@@ -2591,6 +2675,7 @@ mod tests {
             ("MYSQL_USER", "naijachase"),
             ("MYSQL_PASSWORD", "secret"),
             ("MYSQL_DATABASE", "naijachase"),
+            ("MYSQL_SSL_MODE", "required"),
         ];
         let config = MysqlConfig::from_lookup(|key| {
             values
@@ -2603,6 +2688,28 @@ mod tests {
         assert_eq!(config.port, 3306);
         assert_eq!(config.user, "naijachase");
         assert_eq!(config.database, "naijachase");
+        assert_eq!(config.ssl_mode, "required");
+        assert!(mysql::Opts::from(config.options()).get_ssl_opts().is_some());
+    }
+
+    #[test]
+    fn invalid_mysql_ssl_mode_is_rejected() {
+        let values = [
+            ("MYSQL_HOST", "127.0.0.1"),
+            ("MYSQL_PORT", "3306"),
+            ("MYSQL_USER", "naijachase"),
+            ("MYSQL_PASSWORD", "secret"),
+            ("MYSQL_DATABASE", "naijachase"),
+            ("MYSQL_SSL_MODE", "sometimes"),
+        ];
+        let error = MysqlConfig::from_lookup(|key| {
+            values
+                .iter()
+                .find(|(candidate, _)| candidate == &key)
+                .map(|(_, value)| (*value).to_owned())
+        })
+        .unwrap_err();
+        assert!(matches!(error, StorageError::InvalidMysqlSslMode(_)));
     }
 
     #[test]

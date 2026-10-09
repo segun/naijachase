@@ -8,6 +8,13 @@ PNPM ?= env PATH="$(CODEX_NODE_BIN):$(PATH)" "$(CODEX_PNPM)"
 else
 PNPM ?= pnpm
 endif
+RSYNC ?= rsync
+DEPLOY_HOST ?= drawback-web01
+DEPLOY_PATH ?= /opt/naijachase/source/
+SYSTEMD_DIR ?= /etc/systemd/system
+NGINX_SITE ?= /etc/nginx/sites-available/004-naijachase.app
+NGINX_SITE_LINK ?= /etc/nginx/sites-enabled/004-naijachase.app
+WEB_ROOT ?= /var/www/naijachase.app
 MANIFEST := rust/Cargo.toml
 TOOLS := $(CARGO) run --quiet --manifest-path $(MANIFEST) -p naijachase-tools --
 SIMULATION_OUTPUT ?= data/gameplay/mission-balance-report.csv
@@ -16,10 +23,12 @@ ARGS ?=
 
 .DEFAULT_GOAL := help
 
-.PHONY: help play test test-storage check fmt fmt-check build release benchmark \
+.PHONY: help play test test-storage check fmt fmt-check build release production-build benchmark \
 	validate editorial enrichment simulate export db-migrate db-import db-rebuild \
-	db-verify db-export db-backup db-restore db-test api api-test web web-build enrich-state-clues \
-	export-witness-scenes web-mock web-mock-ui web-test p34 p35 p36 p39 p391 audit
+	db-verify db-publish-initial db-export db-backup db-restore db-test api api-test web web-build enrich-state-clues \
+	export-witness-scenes web-install web-production-build web-mock web-mock-ui web-test copy-code \
+	install-api-service restart-api api-status install-web install-nginx publish-web \
+	p34 p35 p36 p39 p391 audit
 
 help: ## Show the common project commands
 	@awk 'BEGIN {FS = ":.*## "} /^[a-zA-Z0-9_-]+:.*## / {printf "  %-16s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -46,6 +55,8 @@ build: ## Build the Rust workspace in debug mode
 
 release: ## Build the Rust workspace in release mode
 	@$(CARGO) build --manifest-path $(MANIFEST) --workspace --release
+
+production-build: release web-production-build ## Build deployable Rust and web production artifacts
 
 benchmark: ## Run the core-engine throughput benchmark
 	@$(CARGO) run --quiet --release --manifest-path $(MANIFEST) -p naijachase-core --example benchmark
@@ -83,6 +94,9 @@ db-rebuild: validate simulate ## Validate and simulate before rebuilding MySQL c
 db-verify: ## Verify MySQL checksums, row counts, export, and mission parity
 	@$(TOOLS) verify-mysql
 
+db-publish-initial: ## Validate and publish an imported first-production catalogue exactly once
+	@$(TOOLS) publish-initial-mysql
+
 db-export: ## Export MySQL content; override with EXPORT_DIR=path
 	@$(TOOLS) export-mysql $(EXPORT_DIR)
 
@@ -107,6 +121,12 @@ web: ## Start the responsive web client at http://127.0.0.1:4173
 web-build: ## Type-check and build the optimized web client
 	@cd web && $(PNPM) build
 
+web-install: ## Install the exact locked web dependencies
+	@cd web && $(PNPM) install --frozen-lockfile
+
+web-production-build: web-install ## Install dependencies and build the production web client
+	@cd web && $(PNPM) build
+
 web-mock: ## Start the in-memory mock API on port 8081 (UI development without MySQL)
 	@cd web && node dev/mock-api.mjs
 
@@ -115,6 +135,45 @@ web-mock-ui: ## Start the web client against the mock API
 
 web-test: ## Run web accessibility, privacy, mobile, and weight guards
 	@cd web && $(PNPM) test
+
+copy-code: ## Synchronize source code to the production application server
+	@$(RSYNC) -az --progress --delete-delay \
+		--exclude='.git/' \
+		--exclude='.env' \
+		--exclude='.pnpm-store/' \
+		--exclude='.vscode/' \
+		--exclude='/archive/' \
+		--exclude='rust/target/' \
+		--exclude='web/node_modules/' \
+		--exclude='web/dist/' \
+		--exclude='.DS_Store' \
+		./ "$(DEPLOY_HOST):$(DEPLOY_PATH)"
+
+install-api-service: ## Install, enable, and start the production systemd API service
+	@sudo install -m 0644 deploy/systemd/naijachase-api.service $(SYSTEMD_DIR)/naijachase-api.service
+	@sudo systemctl daemon-reload
+	@sudo systemctl enable --now naijachase-api.service
+
+restart-api: ## Restart the production API after a successful build
+	@sudo systemctl restart naijachase-api.service
+
+api-status: ## Show production API service status and recent logs
+	@sudo systemctl --no-pager --full status naijachase-api.service
+	@sudo journalctl -u naijachase-api.service --no-pager -n 30
+
+install-web: ## Publish the built static web client into the Nginx document root
+	@test -f web/dist/index.html || { echo "web/dist is missing; run make production-build first"; exit 1; }
+	@sudo install -d -m 0755 $(WEB_ROOT)
+	@sudo $(RSYNC) -rlt --delete --chmod=D755,F644 web/dist/ $(WEB_ROOT)/
+
+install-nginx: ## Install, validate, and reload the NaijaChase Nginx site
+	@if [ -f $(NGINX_SITE) ]; then sudo cp -a $(NGINX_SITE) $(NGINX_SITE).previous; fi
+	@sudo install -m 0644 deploy/nginx/naijachase.app.conf $(NGINX_SITE)
+	@sudo ln -sfn $(NGINX_SITE) $(NGINX_SITE_LINK)
+	@sudo nginx -t || { sudo cp -a $(NGINX_SITE).previous $(NGINX_SITE); sudo nginx -t; exit 1; }
+	@sudo systemctl reload nginx
+
+publish-web: install-web install-nginx ## Publish the web build and activate its Nginx configuration
 
 p34: check db-rebuild db-test ## Run the complete P3.4 persistence gate
 

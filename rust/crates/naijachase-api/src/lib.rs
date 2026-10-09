@@ -2999,13 +2999,16 @@ fn translate_command(
                 venue.interview_minutes,
                 state.state == home_base,
             );
-            let base_travel = placement_minutes(
+            let placement = picked_placement(
                 catalogue,
                 &state.state,
                 &venue_id,
                 &state.mission_id,
                 state.stage,
             )?;
+            let base_travel = placement.hub_travel_minutes.max(5);
+            data.insert("local_venue_name".into(), placement.venue_name.clone());
+            data.insert("location_name".into(), placement.location_name.clone());
             let (travel_minutes, cost) =
                 naijachase_core::local_quote(base_travel, &mode).map_err(|e| e.to_string())?;
             let wait_minutes = wait_until_open(
@@ -3169,6 +3172,24 @@ fn choose_hideout(mission_id: &str, seed: u64, state: &str, catalogue: &Catalogu
     ids[offset].clone()
 }
 
+/// The one placement (a real location's version of the venue, such as "Aba Community Market") a visit uses.
+/// Travel time and the name shown to the player come from the same pick, so they always agree.
+fn picked_placement<'a>(
+    catalogue: &'a Catalogue,
+    state: &str,
+    venue_id: &str,
+    mission_id: &str,
+    stage: u8,
+) -> Result<&'a naijachase_content::LocationVenue, String> {
+    let placements = catalogue
+        .location_venues
+        .get(&(state.to_owned(), venue_id.to_owned()))
+        .ok_or("venue is not available in this jurisdiction")?;
+    let pick =
+        (mission_id.bytes().map(usize::from).sum::<usize>() + stage as usize) % placements.len();
+    Ok(&placements[pick])
+}
+
 fn placement_minutes(
     catalogue: &Catalogue,
     state: &str,
@@ -3176,13 +3197,11 @@ fn placement_minutes(
     mission_id: &str,
     stage: u8,
 ) -> Result<u32, String> {
-    let placements = catalogue
-        .location_venues
-        .get(&(state.to_owned(), venue_id.to_owned()))
-        .ok_or("venue is not available in this jurisdiction")?;
-    let pick =
-        (mission_id.bytes().map(usize::from).sum::<usize>() + stage as usize) % placements.len();
-    Ok(placements[pick].hub_travel_minutes.max(5))
+    Ok(
+        picked_placement(catalogue, state, venue_id, mission_id, stage)?
+            .hub_travel_minutes
+            .max(5),
+    )
 }
 
 fn available_venue_ids(catalogue: &Catalogue, state: &GameState) -> Vec<String> {
@@ -3408,6 +3427,25 @@ mod tests {
             replay: vec![],
             outcome: None,
             economy: Default::default(),
+        }
+    }
+
+    #[test]
+    fn a_visit_names_the_placement_it_uses_and_agrees_with_its_travel_time() {
+        let root = FsPath::new(env!("CARGO_MANIFEST_DIR")).join("../../..");
+        let catalogue = Catalogue::load(&root).unwrap();
+        for ((state, venue_id), placements) in catalogue.location_venues.iter().take(200) {
+            let placement = picked_placement(&catalogue, state, venue_id, "NG-M0001", 0).unwrap();
+            assert!(
+                placements
+                    .iter()
+                    .any(|candidate| candidate.location_id == placement.location_id)
+            );
+            assert!(!placement.venue_name.is_empty() && !placement.location_name.is_empty());
+            assert_eq!(
+                placement_minutes(&catalogue, state, venue_id, "NG-M0001", 0).unwrap(),
+                placement.hub_travel_minutes.max(5)
+            );
         }
     }
 
