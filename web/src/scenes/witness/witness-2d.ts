@@ -51,6 +51,11 @@ export async function createWitnessScene2D(canvas: HTMLCanvasElement, options: W
     g.fillStyle = sky; g.fillRect(0, 0, W, horizon);
     if (palette.stars) { for (const [sx, sy, a] of stars) { g.fillStyle = `rgba(255,255,255,${a})`; g.fillRect(sx * W, sy * horizon, 2, 2); } }
     const orb = project(c, c.pos[0] - 40, 60, c.pos[2] + 160);
+    if (orb.x > -250 && orb.x < W + 250) {
+      const gy = Math.min(orb.y, horizon - 30), glow = g.createRadialGradient(orb.x, gy, 4, orb.x, gy, 220);
+      glow.addColorStop(0, palette.stars ? "rgba(200,215,255,.28)" : "rgba(255,238,190,.6)"); glow.addColorStop(1, "rgba(255,238,190,0)");
+      g.fillStyle = glow; g.fillRect(orb.x - 220, gy - 220, 440, 440);
+    }
     if (orb.x > -50 && orb.x < W + 50) disc(g, { x: orb.x, y: Math.min(orb.y, horizon - 30), k: 1, z: 1 }, 0, 0, palette.orb === "moon" ? 18 : 26, palette.orbColor);
     // Ground: red earth with the tarred lane, a kerb and the lane's dashes.
     g.fillStyle = dressing.ground ?? "#a35f38"; g.fillRect(0, horizon, W, H - horizon);
@@ -72,12 +77,15 @@ export async function createWitnessScene2D(canvas: HTMLCanvasElement, options: W
     const pose = playerPoseAt(plan, t);
     if (playerLook && pose.visible && pose.alpha > 0.01) {
       const legs = legAngles(pose), arms = armAngles(pose, t);
-      items.push({ z: project(c, pose.x, 0, pose.z).z, draw: () => figure(g, project(c, pose.x, 0, pose.z), { ...playerLook, heading: pose.heading, hips: legs.hips, knees: legs.knees, arms, lift: pose.y, lean: listenLean(plan, t), alpha: pose.alpha }) });
+      items.push({ z: project(c, pose.x, 0, pose.z).z, draw: () => { disc(g, project(c, pose.x, 0, pose.z), 0, 0, 0.45, "rgba(20,10,5,.25)", 1, 0.2); figure(g, project(c, pose.x, 0, pose.z), { ...playerLook, heading: pose.heading, hips: legs.hips, knees: legs.knees, arms, lift: pose.y, lean: listenLean(plan, t), alpha: pose.alpha }); } });
     }
     const w = witnessAt(plan, timings, t);
-    items.push({ z: project(c, WITNESS.x, 0, WITNESS.z).z, draw: () => figure(g, project(c, WITNESS.x, 0, WITNESS.z), { ...witnessLook, heading: w.heading, hips: [0, 0], knees: [0, 0], arms: w.arms, wave: w.wave, mouth: w.mouth, lean: w.lean, lift: w.bob }) });
+    items.push({ z: project(c, WITNESS.x, 0, WITNESS.z).z, draw: () => { disc(g, project(c, WITNESS.x, 0, WITNESS.z), 0, 0, 0.45, "rgba(20,10,5,.25)", 1, 0.2); figure(g, project(c, WITNESS.x, 0, WITNESS.z), { ...witnessLook, heading: w.heading, hips: [0, 0], knees: [0, 0], arms: w.arms, wave: w.wave, mouth: w.mouth, lean: w.lean, lift: w.bob }); } });
 
     items.sort((a, b) => b.z - a.z).forEach(i => i.draw());
+    const vignette = g.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.45, W / 2, H / 2, Math.hypot(W, H) * 0.62);
+    vignette.addColorStop(0, "rgba(0,0,0,0)"); vignette.addColorStop(1, "rgba(0,0,0,.34)");
+    g.fillStyle = vignette; g.fillRect(0, 0, W, H);
     if (shade > 0) { g.fillStyle = `rgba(6,12,40,${shade})`; g.fillRect(0, 0, W, H); }
     driver.step(t, pose as Pose);
   };
@@ -124,23 +132,56 @@ export async function createWitnessScene2D(canvas: HTMLCanvasElement, options: W
   };
 }
 
-/** The open-top runabout, side on, facing left. */
+/** A closed shape through `pts` (world x, y) with every corner rounded by about `r` metres. */
+function soften(g: Ctx, o: Proj, pts: readonly (readonly [number, number])[], r: number) {
+  const P = pts.map(([x, y]) => [px(o, x), py(o, y)] as const), n = P.length;
+  const mid = (a: readonly [number, number], b: readonly [number, number]) => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2] as const;
+  g.beginPath();
+  const start = mid(P[n - 1]!, P[0]!);
+  g.moveTo(start[0], start[1]);
+  for (let i = 0; i < n; i++) { const m = mid(P[i]!, P[(i + 1) % n]!); g.arcTo(P[i]![0], P[i]![1], m[0], m[1], r * o.k); }
+  g.closePath();
+}
+/** A body filled with light paint on top shading to darker paint underneath, so it reads as round rather than flat. */
+function paintBody(g: Ctx, o: Proj, pts: readonly (readonly [number, number])[], r: number, top: string, bottom: string, y0: number, y1: number) {
+  const grad = g.createLinearGradient(0, py(o, y1), 0, py(o, y0));
+  grad.addColorStop(0, top); grad.addColorStop(1, bottom);
+  soften(g, o, pts, r); g.fillStyle = grad; g.fill();
+}
+const groundShadow = (g: Ctx, o: Proj, half: number) => disc(g, o, 0, 0, half * 0.9, "rgba(20,10,5,.2)", 1, 0.07);
+/** A dark wheel arch cut into the bodywork, drawn before the wheel. */
+const arch = (g: Ctx, o: Proj, x: number, y: number, r: number) => disc(g, o, x, y, r + 0.08, "#0f1215");
+
+/** The open-top runabout, side on, facing left: a long rounded bonnet, a low tub and a curved tail. */
 function drawCar(g: Ctx, o: Proj, spin: number) {
-  box(g, o, -1.8, 0.22, 3.6, 0.62, "#f2c14e");
-  box(g, o, -1.8, 0.22, 1.2, 0.62, "#e0b23a"); box(g, o, -1.5, 0.84, 0.9, 0.03, "#15191c");
-  box(g, o, -1.82, 0.3, 0.1, 0.2, "#15191c"); box(g, o, 1.72, 0.3, 0.1, 0.2, "#15191c");
-  box(g, o, 1.78, 0.5, 0.05, 0.14, "#d63a2e"); disc(g, o, -1.76, 0.58, 0.1, "#fff4cf");
-  box(g, o, 0.2, 0.84, 0.18, 0.4, "#3b2a22");
-  g.beginPath(); g.moveTo(px(o, -0.55), py(o, 0.84)); g.lineTo(px(o, -0.25), py(o, 1.3)); g.lineTo(px(o, -0.18), py(o, 1.3)); g.lineTo(px(o, -0.45), py(o, 0.84)); g.closePath();
-  g.fillStyle = "rgba(159,211,240,.55)"; g.fill();
-  for (const wx of [-1.15, 1.15]) wheel(g, o, wx, 0.31, 0.31, spin);
+  groundShadow(g, o, 2.2);
+  paintBody(g, o, [[-1.85, 0.3], [1.8, 0.3], [1.86, 0.62], [1.45, 0.86], [-0.1, 0.88], [-0.55, 0.86], [-1.35, 0.76], [-1.86, 0.5]], 0.22, "#f7d160", "#d9a92d", 0.25, 0.9);
+  soften(g, o, [[-1.7, 0.3], [-0.5, 0.3], [-0.5, 0.42], [-1.7, 0.42]], 0.05); g.fillStyle = "rgba(0,0,0,.22)"; g.fill();
+  box(g, o, -1.4, 0.8, 1.0, 0.04, "#15191c");
+  soften(g, o, [[0.0, 0.86], [1.5, 0.86], [1.5, 1.02], [0.0, 1.02]], 0.06); g.fillStyle = "#3b2a22"; g.fill();
+  box(g, o, 0.55, 0.88, 0.22, 0.46, "#4a3326");
+  g.beginPath(); g.moveTo(px(o, -0.6), py(o, 0.86)); g.lineTo(px(o, -0.3), py(o, 1.32)); g.lineTo(px(o, -0.2), py(o, 1.32)); g.lineTo(px(o, -0.5), py(o, 0.86)); g.closePath();
+  g.fillStyle = "rgba(159,211,240,.55)"; g.fill(); stroke(g, o, -0.6, 0.86, -0.3, 1.32, 0.03, "#dfe5e8");
+  disc(g, o, -1.8, 0.58, 0.11, "#fff4cf"); disc(g, o, -1.8, 0.58, 0.06, "#ffffff");
+  soften(g, o, [[1.78, 0.42], [1.9, 0.42], [1.9, 0.6], [1.78, 0.6]], 0.03); g.fillStyle = "#d63a2e"; g.fill();
+  soften(g, o, [[-1.95, 0.26], [-1.7, 0.26], [-1.7, 0.36], [-1.95, 0.36]], 0.04); g.fillStyle = "#d8dde0"; g.fill();
+  for (const wx of [-1.15, 1.15]) { arch(g, o, wx, 0.31, 0.31); wheel(g, o, wx, 0.31, 0.31, spin); }
 }
 /** The shared-ride minibus, side on, facing left, with its rear door opening at the right-hand end. */
 function drawBus(g: Ctx, o: Proj, spin: number, door: number) {
-  box(g, o, -2.5, 0.45, 5, 1.95, "#f2b705"); box(g, o, -2.5, 1.0, 5, 0.2, "#15191c");
-  for (let i = 0; i < 4; i++) box(g, o, -2.2 + i * 1.1, 1.55, 0.95, 0.6, "#27414f");
-  box(g, o, -2.5, 2.4, 5, 0.05, "#2b2f33"); box(g, o, -2.15, 2.45, 4.2, 0.05, "#2b2f33");
-  disc(g, o, -2.45, 0.85, 0.12, "#fff4cf"); box(g, o, 2.42, 0.7, 0.08, 0.18, "#d63a2e");
+  groundShadow(g, o, 3.0);
+  paintBody(g, o, [[-2.5, 0.42], [2.5, 0.42], [2.5, 2.3], [2.3, 2.42], [-1.9, 2.42], [-2.35, 1.95], [-2.5, 1.2]], 0.3, "#fbd23a", "#dba400", 0.4, 2.45);
+  soften(g, o, [[-2.5, 0.98], [2.5, 0.98], [2.5, 1.12], [-2.5, 1.12]], 0.04); g.fillStyle = "#15191c"; g.fill();
+  for (let i = 0; i < 4; i++) {
+    const x = -2.0 + i * 1.1;
+    paintBody(g, o, [[x, 1.3], [x + 0.95, 1.3], [x + 0.95, 2.05], [x, 2.05]], 0.1, "#3a5a6b", "#1f3340", 1.3, 2.05);
+    stroke(g, o, x + 0.1, 1.95, x + 0.4, 1.4, 0.04, "rgba(255,255,255,.18)");
+  }
+  paintBody(g, o, [[-2.33, 1.35], [-2.1, 1.35], [-2.1, 2.0], [-2.2, 2.0]], 0.06, "#3a5a6b", "#1f3340", 1.3, 2.0);
+  soften(g, o, [[-2.45, 2.42], [2.45, 2.42], [2.45, 2.5], [-2.45, 2.5]], 0.03); g.fillStyle = "#2b2f33"; g.fill();
+  disc(g, o, -2.46, 0.82, 0.13, "#fff4cf"); disc(g, o, -2.46, 0.82, 0.07, "#ffffff");
+  soften(g, o, [[2.42, 0.62], [2.52, 0.62], [2.52, 0.82], [2.42, 0.82]], 0.03); g.fillStyle = "#d63a2e"; g.fill();
+  soften(g, o, [[-2.62, 0.4], [-2.4, 0.4], [-2.4, 0.54], [-2.62, 0.54]], 0.05); g.fillStyle = "#1c1f22"; g.fill();
   if (door > 0.02) { box(g, o, 2.3, 0.45, 0.2, 1.5, "#15191c"); g.globalAlpha = door; box(g, o, 2.5, 0.45, 0.5 * door, 1.5, "#e0a800"); g.globalAlpha = 1; }
-  for (const wx of [-1.6, 1.6]) wheel(g, o, wx, 0.38, 0.38, spin);
+  for (const wx of [-1.6, 1.6]) { arch(g, o, wx, 0.38, 0.38); wheel(g, o, wx, 0.38, 0.38, spin); }
 }

@@ -1,5 +1,5 @@
 import type {
-  AssignCaseRequest, AuthResponse, AvatarCatalogue, AvatarProfile, AvatarSelectionRequest, CaseArchiveEntry, CaseResponse, CatalogueProgress, ClientCommand, CurrentActivityResponse, CurrentCaseResponse, ExecuteRequest,
+  AbandonCaseRequest, AbandonCaseResponse, AssignCaseRequest, AuthResponse, AvatarCatalogue, AvatarProfile, AvatarSelectionRequest, CaseArchiveEntry, CaseResponse, CatalogueProgress, ClientCommand, CurrentActivityResponse, CurrentCaseResponse, ExecuteRequest,
   LoginRequest, PlayerSession, ProfileUpdate, ProgressionSummary, RecoveryCompleteRequest,
   RecoveryRequest, RegisterRequest, ReplayCaseRequest, TransportLedgerEntry, TransportQuote,
   CatalogueHealth, CompleteCooperationRequest, ContentRoleResponse, CooperationPreferences, CooperationReportRequest, CooperationRequest, CreateCooperationRequest, DossierOptions, MissionAdminDetails, MissionTransitionRequest, MissionValidation, ReleaseNotification
@@ -88,6 +88,8 @@ export class Api {
   assign = () => call<CaseResponse>("/v1/cases", "POST", {} satisfies AssignCaseRequest);
   currentCase = () => call<CurrentCaseResponse>("/v1/cases/current");
   currentActivity = () => call<CurrentActivityResponse>("/v1/activity/current");
+  abandonCase = (caseId: string, expectedVersion: number) =>
+    call<AbandonCaseResponse>(`/v1/cases/${encodeURIComponent(caseId)}/abandon`, "POST", { expected_version: expectedVersion } satisfies AbandonCaseRequest);
   replay = (missionId: string) => call<CaseResponse>("/v1/cases/replay", "POST", { mission_id: missionId } satisfies ReplayCaseRequest);
   catalogueStatus = () => call<CatalogueProgress>("/v1/cases/catalogue-status");
   load = (caseId: string) => call<CaseResponse>(`/v1/cases/${encodeURIComponent(caseId)}`);

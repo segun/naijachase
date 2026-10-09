@@ -26,13 +26,16 @@ export const buildMarket3d: Set3D = ({ stage, options }) => {
     skyline.push(box("block", w, h, 3, mat(["#8c8579", "#a8a091", "#7a8a8f", "#b3a58a"][Math.floor(r() * 4)]!), x, h / 2, 38 + r() * 6));
   }
   merge("skyline", skyline);
-  const trunk = mat("#6b4a2b"), frond = mat("#2f6b3a");
+  const trunk = mat("#6b4a2b"), frond = mat("#3f8a47", { emissive: "#17381c" });
   for (const [x, z, h] of PALMS) {
     cyl("palmTrunk", 0.25, 0.4, h, trunk, x, h / 2, z).rotation.z = (x % 3) * 0.03;
-    for (let i = 0; i < 6; i++) {
-      const leaf = box("frond", 3.2, 0.05, 0.6, frond, x + Math.cos(i * 1.05) * 1.4, h + 0.1, z + Math.sin(i * 1.05) * 1.4);
-      leaf.rotation.y = -i * 1.05; leaf.rotation.z = -0.35;
+    for (let i = 0; i < 8; i++) {
+      const a = i * 0.785 + (x % 2) * 0.3;
+      const leaf = sphere("frond", 1, frond, x + Math.cos(a) * 1.35, h + 0.05 - (i % 2) * 0.12, z + Math.sin(a) * 1.35);
+      leaf.scaling.set(3.1, 0.07, 0.62);
+      leaf.rotation.y = -a; leaf.rotation.z = -0.42;
     }
+    sphere("nuts", 0.38, trunk, x, h - 0.1, z);
   }
 
   // ---- Market stalls ----

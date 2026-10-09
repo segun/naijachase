@@ -111,6 +111,7 @@
   }
 
   function keys(e: KeyboardEvent) {
+    if (document.querySelector("dialog[open]")) return;
     if (app.briefing) {
       if (!awake || leaving || e.metaKey || e.ctrlKey || e.altKey) return;
       if ((e.key === "Enter" || e.key === " ") && step === "typing" && !(e.target instanceof HTMLButtonElement)) { e.preventDefault(); advance(); return; }
@@ -122,7 +123,7 @@
     else if (k === "m") menuOpen = !menuOpen;
     else if (k === "a") open("achievements");
     else if (k === "c") open("career");
-    else if (k === "n" && !app.busy && !app.exhausted) void app.openCase();
+    else if (k === "n" && !app.busy && !app.exhausted && app.canStartCase) void app.openCase();
     else if (k === "arrowdown" || k === "arrowup") {
       const items = [...(root?.querySelectorAll<HTMLElement>("[data-nav]:not([disabled])") ?? [])];
       if (!items.length) return;
@@ -220,7 +221,7 @@
           <div class="t-actions">
             {#if app.caseId}
               <button class="t-opt t-big" type="button" data-nav data-primary disabled={app.busy} onclick={() => app.resume()}>
-                <Icon name="notebook" /><span class="t-label">Resume case<small>Saved case file · pick up where you left off</small></span>
+                <Icon name="notebook" /><span class="t-label">{app.game?.attempt_kind === "replay" ? "Resume replay" : "Resume case"}<small>{app.game?.state.case_dossier.title ?? "Saved case file"} · pick up where you left off</small></span>
                 {#if app.busy}<span class="spinner"></span>{:else}<Icon name="arrow" />{/if}
               </button>
             {/if}
@@ -236,10 +237,15 @@
                 <Icon name="bell" /><span class="t-label">Notification settings<small>Choose how you hear about new cases and events</small></span><Icon name="arrow" />
               </button>
             {:else}
-              <button class="t-opt t-big t-hot" type="button" data-nav data-primary={app.caseId ? undefined : ""} disabled={app.busy} onclick={() => app.openCase()}>
+              <button class="t-opt t-big t-hot" type="button" data-nav data-primary={app.caseId ? undefined : ""} disabled={app.busy || !app.canStartCase} onclick={() => app.openCase()}>
                 <Icon name="search" />
-                <span class="t-label">{app.busy ? `${app.busyLabel}…` : "Start new case"}<small>{app.catalogue ? `${app.catalogue.completed.toLocaleString()} of ${app.catalogue.published.toLocaleString()} solved` : "The agency picks one you haven't solved"}</small></span>
+                <span class="t-label">{app.busy ? `${app.busyLabel}…` : "Start new case"}<small>{!app.activityKnown ? "Refresh case status before starting a new case." : app.ordinaryCaseId ? "Resume or abandon your ongoing ordinary case first" : app.catalogue ? `${app.catalogue.completed.toLocaleString()} of ${app.catalogue.published.toLocaleString()} solved` : "The agency picks one you haven't solved"}</small></span>
                 {#if app.busy}<span class="spinner"></span>{:else}<kbd>N</kbd><Icon name="arrow" />{/if}
+              </button>
+            {/if}
+            {#if !app.activityKnown}
+              <button class="t-opt" type="button" data-nav disabled={app.busy} onclick={() => app.refreshCaseDesk()}>
+                <Icon name="notebook" /><span class="t-label">Refresh case status<small>Check the server for ongoing cases</small></span><Icon name="arrow" />
               </button>
             {/if}
             <div class="t-pair">

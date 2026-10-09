@@ -157,6 +157,15 @@ export function replayTargets(archive: readonly ArchiveLike[]): Set<string> {
   return new Set([...byMission.values()].map(e => e.case_id));
 }
 
+/**
+ * The case the desk offers to resume, from `GET /v1/activity/current`: the one this tab already has open if the server
+ * still lists it, otherwise the unfinished ordinary case, otherwise the newest replay. Weekly attempts have their own screen.
+ */
+export function resumableCase<T extends { case_id: string }>(activity: { ordinary_case: T | null; replay_cases: readonly T[] }, openId = ""): T | null {
+  const all = [...(activity.ordinary_case ? [activity.ordinary_case] : []), ...activity.replay_cases];
+  return all.find(c => c.case_id === openId) ?? all[0] ?? null;
+}
+
 export type CatalogueView = { published: number; completed: number; unseen: number; exhausted: boolean; percent: number };
 export function catalogueView(s: { published_cases: number; completed_cases: number; unseen_cases: number; exhausted: boolean }): CatalogueView {
   const percent = s.published_cases > 0 ? Math.min(100, Math.round((s.completed_cases / s.published_cases) * 100)) : 0;

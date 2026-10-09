@@ -31,7 +31,7 @@ fn all_missions_complete_in_rust() {
         };
         let traits = p.traits();
         for stage in 0..route.len() {
-            let (k, v) = traits[stage];
+            let (k, v) = traits[naijachase_core::key_witness_trait_index(&s)];
             for witness in 0..3 {
                 s = apply(
                     s,

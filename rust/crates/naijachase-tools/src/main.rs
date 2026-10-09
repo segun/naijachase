@@ -44,7 +44,9 @@ fn copy_tree(from: &Path, to: &Path) {
     }
 }
 fn simulate(root: &Path, out: &Path) {
-    let data = validate(root);
+    // Simulation regenerates the balance report, so it must remain runnable
+    // when that generated file is absent, empty, or left incomplete.
+    let data = Catalogue::load(root).unwrap();
     let mut writer = csv::Writer::from_path(out).unwrap();
     writer
         .write_record([
@@ -86,7 +88,7 @@ fn simulate(root: &Path, out: &Path) {
         };
         let traits = p.traits();
         for stage in 0..route.len() {
-            let (k, v) = traits[stage];
+            let (k, v) = traits[naijachase_core::key_witness_trait_index(&s)];
             for witness in 0..3 {
                 s = apply(
                     s,
@@ -399,6 +401,70 @@ fn remove_place_names(text: &str, places: &[(String, &'static str)]) -> String {
         })
 }
 
+fn standardize_witness_english(root: &Path) {
+    let variant_path = root.join("data/gameplay/clue-dialogue-variants.csv");
+    let mut reader = csv::Reader::from_path(&variant_path).unwrap();
+    let headers = reader.headers().unwrap().clone();
+    let rows = reader
+        .records()
+        .map(|row| row.unwrap())
+        .filter(|row| row.get(3) == Some("English"))
+        .collect::<Vec<_>>();
+    let temporary = variant_path.with_extension("csv.tmp");
+    let mut writer = csv::Writer::from_path(&temporary).unwrap();
+    writer.write_record(&headers).unwrap();
+    for row in &rows {
+        writer.write_record(row).unwrap();
+    }
+    writer.flush().unwrap();
+    fs::rename(temporary, &variant_path).unwrap();
+
+    let deep_seed_path = root.join("data/gameplay/deep-state-fact-seeds.psv");
+    let deep_seeds = fs::read_to_string(&deep_seed_path).unwrap();
+    let deep_seeds = deep_seeds
+        .lines()
+        .map(|line| line.split('|').take(7).collect::<Vec<_>>().join("|"))
+        .collect::<Vec<_>>()
+        .join("\n")
+        + "\n";
+    fs::write(&deep_seed_path, deep_seeds).unwrap();
+
+    for relative in [
+        "data/gameplay/state-clue-atoms.csv",
+        "data/gameplay/clue-editorial-review.csv",
+    ] {
+        let path = root.join(relative);
+        let mut reader = csv::Reader::from_path(&path).unwrap();
+        let headers = reader.headers().unwrap().clone();
+        let review_index = headers
+            .iter()
+            .position(|field| field == "pidgin_native_review");
+        let records = reader
+            .records()
+            .map(|row| {
+                let mut fields = row.unwrap().iter().map(str::to_owned).collect::<Vec<_>>();
+                if let Some(index) = review_index {
+                    fields[index] = "not_applicable_english_only".into();
+                }
+                csv::StringRecord::from(fields)
+            })
+            .collect::<Vec<_>>();
+        let temporary = path.with_extension("csv.tmp");
+        let mut writer = csv::Writer::from_path(&temporary).unwrap();
+        writer.write_record(&headers).unwrap();
+        for row in records {
+            writer.write_record(&row).unwrap();
+        }
+        writer.flush().unwrap();
+        fs::rename(temporary, path).unwrap();
+    }
+
+    println!(
+        "Retained {} grammatical English dialogue variants and removed non-English witness variants.",
+        rows.len()
+    );
+}
+
 fn enrich_state_clues(root: &Path) {
     let seed_path = root.join("data/gameplay/state-enrichment-seeds.psv");
     let atom_path = root.join("data/gameplay/state-clue-atoms.csv");
@@ -437,7 +503,11 @@ fn enrich_state_clues(root: &Path) {
         .records()
         .map(|row| row.unwrap())
         .collect::<Vec<_>>();
-    variants.retain(|row| !row[0].starts_with("SCA-ENRICH-") && !row[0].starts_with("SCA-DEEP-"));
+    variants.retain(|row| {
+        row.get(3) == Some("English")
+            && !row[0].starts_with("SCA-ENRICH-")
+            && !row[0].starts_with("SCA-DEEP-")
+    });
     for (index, line) in seeds.lines().skip(1).enumerate() {
         let values = line.split('|').collect::<Vec<_>>();
         assert_eq!(values.len(), 10, "invalid state enrichment row: {line}");
@@ -453,10 +523,6 @@ fn enrich_state_clues(root: &Path) {
                     "The traveller asked for a state whose official slogan is ‘{}’, but carefully avoided saying its name.",
                     values[4]
                 ),
-                format!(
-                    "The person dey ask for the state wey dem dey call ‘{}’, but e no mention the state name.",
-                    values[4]
-                ),
             ),
             (
                 "city_identity",
@@ -465,10 +531,6 @@ fn enrich_state_clues(root: &Path) {
                 "driver|ticket clerk|agbero",
                 format!(
                     "The traveller asked for a vehicle heading to {}, referring to the city as ‘{}’.",
-                    values[5], values[6]
-                ),
-                format!(
-                    "The person ask which motor dey go {}, and na ‘{}’ e call the city.",
                     values[5], values[6]
                 ),
             ),
@@ -481,10 +543,6 @@ fn enrich_state_clues(root: &Path) {
                     "The traveller was researching {}: {}.",
                     values[7], values[8]
                 ),
-                format!(
-                    "The person dey find {}—the place wey get {}.",
-                    values[7], values[8]
-                ),
             ),
             (
                 "economy",
@@ -495,13 +553,9 @@ fn enrich_state_clues(root: &Path) {
                     "The traveller's list linked the destination with {}.",
                     values[9]
                 ),
-                format!(
-                    "The list wey the person carry join that place with {}.",
-                    values[9]
-                ),
             ),
         ];
-        for (offset, (dimension, venue, venue_name, roles, dialogue, pidgin)) in
+        for (offset, (dimension, venue, venue_name, roles, dialogue)) in
             records.into_iter().enumerate()
         {
             let id = format!("SCA-ENRICH-{:03}-{}", index + 1, offset + 1);
@@ -514,11 +568,10 @@ fn enrich_state_clues(root: &Path) {
                 "mixed_stable_and_current".into(), "none".into(), "automated_pass".into(),
                 "required".into(), "Verify against authoritative state, heritage, and economic sources before publication.".into(),
             ]));
-            for (difficulty, english_prefixes, pidgin_prefixes) in [
+            for (difficulty, english_prefixes) in [
                 (
                     "easy",
                     ["", "The clearest detail was this: ", "I wrote this down: "],
-                    ["", "Na this one clear pass: ", "I write this one down: "],
                 ),
                 (
                     "medium",
@@ -526,11 +579,6 @@ fn enrich_state_clues(root: &Path) {
                         "The destination was not named. ",
                         "What stayed with me was this: ",
                         "One useful detail remains: ",
-                    ],
-                    [
-                        "E no call the place name. ",
-                        "Na this detail remain for my mind: ",
-                        "One useful thing be say: ",
                     ],
                 ),
                 (
@@ -540,32 +588,17 @@ fn enrich_state_clues(root: &Path) {
                         "The indirect reference was this: ",
                         "The only trace I could confirm was this: ",
                     ],
-                    [
-                        "No place name enter the talk; na only this clue remain: ",
-                        "The person bend the talk, but this one show: ",
-                        "Na only this part I fit confirm: ",
-                    ],
                 ),
             ] {
                 for number in 0..3 {
-                    for (register, prefix, text) in [
-                        ("English", english_prefixes[number], dialogue.as_str()),
-                        ("Pidgin", pidgin_prefixes[number], pidgin.as_str()),
-                    ] {
-                        variants.push(csv::StringRecord::from(vec![
-                            format!(
-                                "{id}-{}-{}-{}",
-                                &difficulty[..1].to_uppercase(),
-                                &register[..1],
-                                number + 1
-                            ),
-                            id.clone(),
-                            difficulty.into(),
-                            register.into(),
-                            (number + 1).to_string(),
-                            format!("{prefix}{text}"),
-                        ]));
-                    }
+                    variants.push(csv::StringRecord::from(vec![
+                        format!("{id}-{}-E-{}", &difficulty[..1].to_uppercase(), number + 1),
+                        id.clone(),
+                        difficulty.into(),
+                        "English".into(),
+                        (number + 1).to_string(),
+                        format!("{}{}", english_prefixes[number], dialogue),
+                    ]));
                 }
             }
         }
@@ -574,7 +607,7 @@ fn enrich_state_clues(root: &Path) {
         fs::read_to_string(root.join("data/gameplay/deep-state-fact-seeds.psv")).unwrap();
     for (index, line) in deep_seeds.lines().skip(1).enumerate() {
         let values = line.split('|').collect::<Vec<_>>();
-        assert_eq!(values.len(), 8, "invalid deep state fact row: {line}");
+        assert_eq!(values.len(), 7, "invalid deep state fact row: {line}");
         let id = format!("SCA-DEEP-{:03}", index + 1);
         let roles = values[5].replace(';', "|");
         rows.push(csv::StringRecord::from(vec![
@@ -587,11 +620,10 @@ fn enrich_state_clues(root: &Path) {
             "mixed_historical_and_stable".into(), "none".into(), "automated_pass".into(),
             "required".into(), "Verify the precise historical or cultural claim against an authoritative source before publication.".into(),
         ]));
-        for (difficulty, english_prefixes, pidgin_prefixes) in [
+        for (difficulty, english_prefixes) in [
             (
                 "easy",
                 ["", "The clearest detail was this: ", "I wrote this down: "],
-                ["", "Na this one clear pass: ", "I write this one down: "],
             ),
             (
                 "medium",
@@ -599,11 +631,6 @@ fn enrich_state_clues(root: &Path) {
                     "The destination was not named. ",
                     "What stayed with me was this: ",
                     "One useful detail remains: ",
-                ],
-                [
-                    "E no call the place name. ",
-                    "Na this detail remain for my mind: ",
-                    "One useful thing be say: ",
                 ],
             ),
             (
@@ -613,32 +640,17 @@ fn enrich_state_clues(root: &Path) {
                     "The indirect reference was this: ",
                     "The only trace I could confirm was this: ",
                 ],
-                [
-                    "No place name enter the talk; na only this clue remain: ",
-                    "The person bend the talk, but this one show: ",
-                    "Na only this part I fit confirm: ",
-                ],
             ),
         ] {
             for number in 0..3 {
-                for (register, prefix, text) in [
-                    ("English", english_prefixes[number], values[6]),
-                    ("Pidgin", pidgin_prefixes[number], values[7]),
-                ] {
-                    variants.push(csv::StringRecord::from(vec![
-                        format!(
-                            "{id}-{}-{}-{}",
-                            &difficulty[..1].to_uppercase(),
-                            &register[..1],
-                            number + 1
-                        ),
-                        id.clone(),
-                        difficulty.into(),
-                        register.into(),
-                        (number + 1).to_string(),
-                        format!("{prefix}{text}"),
-                    ]));
-                }
+                variants.push(csv::StringRecord::from(vec![
+                    format!("{id}-{}-E-{}", &difficulty[..1].to_uppercase(), number + 1),
+                    id.clone(),
+                    difficulty.into(),
+                    "English".into(),
+                    (number + 1).to_string(),
+                    format!("{}{}", english_prefixes[number], values[6]),
+                ]));
             }
         }
     }
@@ -684,7 +696,7 @@ fn enrich_state_clues(root: &Path) {
     }
     variant_writer.flush().unwrap();
     fs::rename(variant_temporary, variant_path).unwrap();
-    println!("Added 189 state clue atoms and 3,402 English/Pidgin dialogue variants.");
+    println!("Added 189 state clue atoms and 1,701 English dialogue variants.");
 }
 fn mysql() -> MysqlStore {
     let store = MysqlStore::connect_from_env().unwrap_or_else(|error| {
@@ -760,7 +772,7 @@ fn solved_outcomes(data: &Catalogue) -> usize {
         };
         let traits = profile.traits();
         for stage in 0..route.len() {
-            let (field, value) = traits[stage];
+            let (field, value) = traits[naijachase_core::key_witness_trait_index(&state)];
             for witness in 0..3 {
                 state = apply(
                     state,
@@ -847,6 +859,7 @@ fn main() {
         "editorial" => editorial(&root),
         "enrichment" => enrichment(&root),
         "enrich-state-clues" => enrich_state_clues(&root),
+        "standardize-witness-english" => standardize_witness_english(&root),
         "export-witness-scenes" => export_witness_scenes(
             &root,
             &args
@@ -932,7 +945,7 @@ fn main() {
         }
         other => {
             eprintln!(
-                "Unknown command {other}. Use validate, simulate, editorial, enrichment, enrich-state-clues, export-witness-scenes, migrate-mysql, import-mysql, rebuild-mysql, verify-mysql, publish-initial-mysql, export-mysql, backup-mysql, restore-mysql, or export."
+                "Unknown command {other}. Use validate, simulate, editorial, enrichment, standardize-witness-english, enrich-state-clues, export-witness-scenes, migrate-mysql, import-mysql, rebuild-mysql, verify-mysql, publish-initial-mysql, export-mysql, backup-mysql, restore-mysql, or export."
             );
             std::process::exit(2)
         }

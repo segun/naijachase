@@ -10,6 +10,53 @@ The authoritative contract is `schemas/openapi-v1.json`. Stable TypeScript
 DTOs generated from that contract are in `contracts/typescript/api-v1.ts`.
 The UI may copy or import those types, but must not redefine response shapes.
 
+## Hot and cold trail handling
+
+Use `state.trail_status` as the authoritative location status on ordinary,
+replay, and weekly attempts. It is always `"hot"` or `"cold"`; do not infer it
+from the route stage or witness wording.
+
+After `travel`, inspect the command events as immediate animation/toast cues:
+
+- `arrived_on_trail`, with `data.trail_status = "hot"`: show that the trail is hot.
+- `false_destination`, with `data.trail_status = "cold"`: show that the trail has gone cold.
+
+The persistent status comes from `state.trail_status`, including after refresh.
+The server still returns three locally appropriate witness venues at a cold
+location. Their `witness_account` events have `data.trail_status = "cold"` and
+neutral messages only. Display or animate the returned account exactly as any
+other witness response. Never substitute a cached account from the previous
+location; key witness state must be keyed by the current command response and
+`current_state`.
+
+The web development mock follows the same hot/cold contract for ordinary and
+replay cases, including three neutral witness replies at wrong destinations.
+The case HUD, office terminal, and weekly attempt panel display the persistent
+status. Ordinary/replay travel feedback falls back to `state.trail_status` when
+no travel event is returned. Changing location clears pending witness scenes
+and old transport quotes while the new location's leads load; new interviews
+use only that command's returned dialogue. Regression coverage
+is in `web/tests/trail-parity.test.mjs` and
+`web/tests/mock-case-lifecycle.test.mjs`.
+
+## Seven-day deadline
+
+The Rust engine is authoritative for the 10,080-minute simulated deadline. If a
+command begins when the deadline has already passed, or the command itself
+advances the clock to or beyond the deadline, the command response contains:
+
+- `state.outcome = "deadline"`;
+- a `deadline_expired` event with `elapsed_minutes` and `deadline_minutes`;
+- the terminal case state persisted by the server and recorded as a completed
+  failed attempt.
+
+Do not leave the player on an interactive case screen when this response
+arrives. Show the timeout dialog immediately: “You're out of time. The seven-day
+deadline has passed and the suspect has escaped.” Offer **Start new case**, which
+uses the normal `POST /v1/cases {}` assignment flow, and **Close**, which clears
+the finished local case selection and returns to the case desk. A refresh must
+not resurrect the expired attempt as an ongoing case.
+
 All browser requests use `credentials: "include"`. Production mutations must
 originate from an entry in `NAIJACHASE_ALLOWED_ORIGINS`; a different or missing
 `Origin` is rejected. Passwords and session tokens must never enter browser
@@ -89,6 +136,13 @@ browser storage. It returns the complete resumable ordinary case, every active
 replay, and every active or in-transit weekly attempt. `POST /v1/cases` also
 reuses an ongoing ordinary case. The complete contracts are in
 `docs/current-activity-api.md` and `docs/current-case-api.md`.
+
+Show a confirmed **Abandon case** action only for an unfinished ordinary case.
+Call `POST /v1/cases/{case_id}/abandon` with the latest `expected_version`, then
+refresh current activity, progression, and catalogue status before offering a
+new case. Never expose it for replays or weekly attempts. Complete destructive
+confirmation copy, responses, races, and errors are in
+`docs/abandon-case-api.md`.
 
 Add a `Replay case` action to successfully solved archive entries. It calls
 `POST /v1/cases/replay` with `{ "mission_id": "NG-M0001" }`. Display replay

@@ -161,7 +161,7 @@ test("the archive zoom lands exactly on the file's sheet at every viewport", () 
 
 const game = {
   api_version: "v1", case_id: "case-4e090abc", state_version: 1, duplicate: false, attempt_kind: "ordinary", events: [],
-  state: { mission_id: "NG-M0427", case_dossier: { title: "The Vanishing Carved Ceremonial Staff \u2014 The Umuahia Case", stolen_item: "a carved ceremonial staff", premise: "Someone has taken a carved ceremonial staff from Umuahia.", opening_briefing: "The local case officer seals the scene at Umuahia." }, difficulty: 3, stage: 0, current_state: "Abia", elapsed: 0, score: 800, career_points: 4200, dossier: {}, visited_venues: [], warrant_suspect: null, outcome: null, opening_budget: 6000, balance: 6000, transport_rules_version: 1 }
+  state: { mission_id: "NG-M0427", case_dossier: { title: "The Vanishing Carved Ceremonial Staff \u2014 The Umuahia Case", stolen_item: "a carved ceremonial staff", premise: "Someone has taken a carved ceremonial staff from Umuahia.", opening_briefing: "The local case officer seals the scene at Umuahia." }, difficulty: 3, stage: 0, current_state: "Abia", trail_status: "hot", elapsed: 0, score: 800, career_points: 4200, dossier: {}, visited_venues: [], warrant_suspect: null, outcome: null, opening_budget: 6000, balance: 6000, transport_rules_version: 1 }
 };
 
 test("the briefing shows the server's case dossier (title, stolen item, premise, opening briefing), not the suspect profile", () => {

@@ -24,6 +24,8 @@ type Flags = {
   glow?: boolean;
   /** Distant scenery: hazed towards the sky in 2D, left to the fog in 3D. */
   far?: boolean;
+  /** Rounds the edges of a box by this many metres (a vehicle's body); the 2D renderer chamfers the corners of the face it shows. */
+  soft?: number;
   m?: Motion;
 };
 type Base = Flags & { /** Centre of the footprint. */ x: number; /** Height of the bottom. */ y: number; z: number; c: string };
@@ -152,11 +154,11 @@ export const boat = (x: number, z: number, len: number, hull: string, stripe: st
 
 /** A parked minibus on its side, front to the left (`dir` -1) or right (1): yellow with a dark stripe, windows, wheels and headlamps. */
 export const minibus = (x: number, z: number, dir: 1 | -1, c = "#f2b705", lamp = true, rack = true): Prop[] => [
-  box(x, 0.45, z, 5, 1.1, 2, c), box(x - dir * 0.2, 1.55, z, 4.4, 0.95, 1.95, c), box(x, 1.0, z - 1.005, 5, 0.18, 0.02, "#15191c"),
+  box(x, 0.45, z, 5, 1.1, 2, c, { soft: 0.3 }), box(x - dir * 0.2, 1.55, z, 4.4, 0.95, 1.95, c, { soft: 0.32 }), box(x, 1.0, z - 1.005, 5, 0.18, 0.02, "#15191c"),
   box(x - dir * 0.2, 1.75, z - 0.985, 4.0, 0.5, 0.02, "#27414f"), box(x + dir * 2.3, 1.65, z - 0.995, 0.02, 0.5, 0.02, "#27414f"),
   box(x + dir * 2.52, 0.55, z, 0.1, 0.4, 2, "#15191c"), box(x - dir * 2.52, 0.55, z, 0.1, 0.4, 2, "#15191c"),
   ...(rack ? [box(x - dir * 0.2, 2.55, z, 4.0, 0.06, 1.7, "#2b2f33"), box(x - dir * 0.2, 2.62, z, 1.6, 0.4, 1.0, "#9a7a4a", { hi: true })] : []),
-  ...[-1.6, 1.6].map(wx => cylz(x + wx, 0, z - 0.95, 0.78, 0.26, "#15191c")),
+  ...[-1.6, 1.6].flatMap(wx => [cylz(x + wx, 0, z - 0.95, 0.78, 0.26, "#15191c"), cylz(x + wx, 0.17, z - 1.0, 0.44, 0.2, "#aeb6bc")]),
   box(x + dir * 2.52, 0.78, z - 0.5, 0.06, 0.2, 0.34, "#fff4cf", { glow: lamp }),
   glow(x + dir * 2.7, 0.88, z - 0.5, 1.5, "#fff4cf")
 ];

@@ -147,12 +147,17 @@ impl MysqlStore {
         }
         let mut connection = self.pool.get_conn()?;
         let mut tx = connection.start_transaction(TxOpts::default())?;
+        super::lock_case_player(&mut tx, player_id)?;
         let (owner, version, bytes):(Option<String>,u64,Vec<u8>)=tx.exec_first(
             "SELECT player_id,version,state_json FROM active_cases WHERE case_id=:case FOR UPDATE",
             params!{"case"=>case_id},
         )?.ok_or(StorageError::CaseNotFound)?;
         if owner.as_deref() != Some(player_id) {
             return Err(StorageError::Forbidden);
+        }
+        let mut state: GameState = serde_json::from_slice(&bytes)?;
+        if state.outcome.as_deref() == Some("abandoned") {
+            return Err(StorageError::Command("case already abandoned".into()));
         }
         if let Some(json) = tx.exec_first::<String,_,_>(
             "SELECT CAST(result_json AS CHAR) FROM witness_pressure_attempts WHERE player_id=:player AND command_id=:command FOR UPDATE",
@@ -165,7 +170,6 @@ impl MysqlStore {
         if version != expected_version {
             return Err(StorageError::VersionConflict(case_id.into()));
         }
-        let mut state: GameState = serde_json::from_slice(&bytes)?;
         if state.outcome.is_some() {
             return Err(StorageError::Command("case is no longer active".into()));
         }

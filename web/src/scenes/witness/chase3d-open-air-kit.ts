@@ -7,6 +7,7 @@ import { TransformNode } from "@babylonjs/core/Meshes/transformNode";
 import { StandardMaterial } from "@babylonjs/core/Materials/standardMaterial";
 import type { DynamicTexture } from "@babylonjs/core/Materials/Textures/dynamicTexture";
 import { hex, merge, paint } from "../shared/chase3d-kit.ts";
+import { roundedBox } from "../shared/chase3d-shapes.ts";
 import type { Ctx } from "../shared/chase3d-stage.ts";
 import { ankara } from "../chase/chase3d-actors.ts";
 import { PRINTS } from "./market-layout.ts";
@@ -88,7 +89,7 @@ export function drawLayout3d(layout: Layout, { stage, options }: SetContext3D) {
     const glowing = !!p.glow && night;
     const m = mat(p.c, glowing ? { emissive: p.c, specular: 0 } : {});
     switch (p.k) {
-      case "box": add(box("p", p.w, p.h, p.d, m, p.x, p.y + p.h / 2, p.z), p, p.y + p.h / 2); break;
+      case "box": add(p.soft && !light ? stage.place(roundedBox(scene, "p", p.w, p.h, p.d, p.soft, true), m, p.x, p.y + p.h / 2, p.z) : box("p", p.w, p.h, p.d, m, p.x, p.y + p.h / 2, p.z), p, p.y + p.h / 2); break;
       case "cyl": add(cyl("p", p.w2 ?? p.w, p.w, p.h, m, p.x, p.y + p.h / 2, p.z), p, p.y + p.h / 2); break;
       case "cylx": { const c = cyl("p", p.h, p.h, p.w, m, p.x, p.y + p.h / 2, p.z); c.rotation.z = Math.PI / 2; add(c, p, p.y + p.h / 2); break; }
       case "cylz": { const c = cyl("p", p.w, p.w, p.d, m, p.x, p.y + p.w / 2, p.z); c.rotation.x = Math.PI / 2; add(c, p, p.y + p.w / 2); break; }

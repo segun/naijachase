@@ -1,4 +1,5 @@
 use naijachase_contracts::{Command, Event, GameState, TransportLedgerEntry};
+use sha2::{Digest, Sha256};
 use std::collections::BTreeMap;
 use thiserror::Error;
 #[derive(Debug, Error, PartialEq)]
@@ -34,6 +35,7 @@ pub fn investigation_minutes(base_minutes: u32, is_home_base: bool) -> u32 {
     }
 }
 pub const TRANSPORT_RULES_VERSION: u16 = 1;
+pub const CASE_DEADLINE_MINUTES: u32 = 10_080;
 pub fn interstate_quote(base_minutes: u32, mode: &str) -> Result<(u32, u32), Error> {
     match mode {
         "fly" => Ok((
@@ -57,6 +59,36 @@ pub fn local_quote(base_minutes: u32, mode: &str) -> Result<(u32, u32), Error> {
         "hitch_ride" => Ok((base_minutes.saturating_mul(2).saturating_add(20), 0)),
         _ => Err(Error::Invalid("invalid local transport mode".into())),
     }
+}
+pub fn key_witness_trait_index(state: &GameState) -> usize {
+    let mut order = [0, 1, 2, 3, 4, 5, 6, 7];
+    for position in (1..order.len()).rev() {
+        let material = format!(
+            "dossier-trait|{}|{}|{}|{position}",
+            state.mission_id, state.thief_id, state.hideout_venue
+        );
+        let digest = Sha256::digest(material.as_bytes());
+        order.swap(
+            position,
+            digest[position % digest.len()] as usize % (position + 1),
+        );
+    }
+    order[state.stage as usize % order.len()]
+}
+fn key_witness_questioned(state: &GameState) -> bool {
+    const PROFILE_FIELDS: [&str; 8] = [
+        "sex",
+        "height",
+        "skin_tone",
+        "hair",
+        "hobby",
+        "vehicle",
+        "accessory",
+        "feature",
+    ];
+    state
+        .observations
+        .contains_key(PROFILE_FIELDS[key_witness_trait_index(state)])
 }
 fn charge_transport(
     state: &mut GameState,
@@ -86,13 +118,23 @@ fn charge_transport(
     Ok(())
 }
 pub fn apply(mut state: GameState, command: Command) -> Result<(GameState, Vec<Event>), Error> {
-    if state.elapsed >= 10080 || state.outcome.as_deref() == Some("deadline") {
+    if state.elapsed >= CASE_DEADLINE_MINUTES || state.outcome.as_deref() == Some("deadline") {
         state.outcome = Some("deadline".into());
-        return Err(Error::Deadline);
+        let mut data = BTreeMap::new();
+        data.insert("elapsed_minutes".into(), state.elapsed.to_string());
+        data.insert("deadline_minutes".into(), CASE_DEADLINE_MINUTES.to_string());
+        return Ok((
+            state,
+            vec![Event {
+                event_type: "deadline_expired".into(),
+                data,
+            }],
+        ));
     }
     if state.outcome.is_some() {
         return Err(Error::Invalid("case already finished".into()));
     }
+    let career_points_before_command = state.career_points;
     let mut data = BTreeMap::new();
     let kind = match &command {
         Command::StartCase { .. } => return Err(Error::Invalid("case already started".into())),
@@ -177,22 +219,9 @@ pub fn apply(mut state: GameState, command: Command) -> Result<(GameState, Vec<E
             destination,
             minutes,
         } => {
-            const PROFILE_FIELDS: [&str; 8] = [
-                "sex",
-                "height",
-                "skin_tone",
-                "hair",
-                "hobby",
-                "vehicle",
-                "accessory",
-                "feature",
-            ];
-            let key_witness_found = PROFILE_FIELDS
-                .get(state.stage as usize)
-                .is_some_and(|field| state.observations.contains_key(*field));
-            if !key_witness_found {
+            if !key_witness_questioned(&state) {
                 return Err(Error::Invalid(
-                    "find the key witness's dossier hint before travelling".into(),
+                    "question the key witness before travelling".into(),
                 ));
             }
             state.elapsed += minutes;
@@ -203,11 +232,13 @@ pub fn apply(mut state: GameState, command: Command) -> Result<(GameState, Vec<E
             if correct {
                 state.stage += 1;
                 state.score += 50 + 10 * state.difficulty as u32;
+                data.insert("trail_status".into(), "hot".into());
                 "arrived_on_trail"
             } else {
                 state.score = state
                     .score
                     .saturating_sub(75 + 25 * state.difficulty as u32);
+                data.insert("trail_status".into(), "cold".into());
                 "false_destination"
             }
         }
@@ -217,22 +248,9 @@ pub fn apply(mut state: GameState, command: Command) -> Result<(GameState, Vec<E
             minutes,
             cost,
         } => {
-            const PROFILE_FIELDS: [&str; 8] = [
-                "sex",
-                "height",
-                "skin_tone",
-                "hair",
-                "hobby",
-                "vehicle",
-                "accessory",
-                "feature",
-            ];
-            let key_witness_found = PROFILE_FIELDS
-                .get(state.stage as usize)
-                .is_some_and(|field| state.observations.contains_key(*field));
-            if !key_witness_found {
+            if !key_witness_questioned(&state) {
                 return Err(Error::Invalid(
-                    "find the key witness's dossier hint before travelling".into(),
+                    "question the key witness before travelling".into(),
                 ));
             }
             charge_transport(&mut state, "interstate", destination, mode, *cost, *minutes)?;
@@ -247,11 +265,13 @@ pub fn apply(mut state: GameState, command: Command) -> Result<(GameState, Vec<E
             if correct {
                 state.stage += 1;
                 state.score += 50 + 10 * state.difficulty as u32;
+                data.insert("trail_status".into(), "hot".into());
                 "arrived_on_trail"
             } else {
                 state.score = state
                     .score
                     .saturating_sub(75 + 25 * state.difficulty as u32);
+                data.insert("trail_status".into(), "cold".into());
                 "false_destination"
             }
         }
@@ -383,6 +403,20 @@ pub fn apply(mut state: GameState, command: Command) -> Result<(GameState, Vec<E
         }
     };
     state.replay.push(command);
+    if state.elapsed >= CASE_DEADLINE_MINUTES {
+        state.outcome = Some("deadline".into());
+        state.career_points = career_points_before_command;
+        let mut deadline_data = BTreeMap::new();
+        deadline_data.insert("elapsed_minutes".into(), state.elapsed.to_string());
+        deadline_data.insert("deadline_minutes".into(), CASE_DEADLINE_MINUTES.to_string());
+        return Ok((
+            state,
+            vec![Event {
+                event_type: "deadline_expired".into(),
+                data: deadline_data,
+            }],
+        ));
+    }
     Ok((
         state,
         vec![Event {
@@ -395,9 +429,7 @@ pub fn apply(mut state: GameState, command: Command) -> Result<(GameState, Vec<E
 mod tests {
     use super::*;
     fn state() -> GameState {
-        let mut observations = BTreeMap::new();
-        observations.insert("sex".into(), "male".into());
-        GameState {
+        let mut state = GameState {
             version: 1,
             mission_id: "M".into(),
             thief_id: "T".into(),
@@ -414,7 +446,7 @@ mod tests {
             score: 800,
             career_points: 0,
             dossier: BTreeMap::new(),
-            observations,
+            observations: BTreeMap::new(),
             visited_venues: vec![
                 "0|Lagos|one".into(),
                 "0|Lagos|two".into(),
@@ -425,7 +457,22 @@ mod tests {
             replay: vec![],
             outcome: None,
             economy: Default::default(),
-        }
+        };
+        state.observations.insert(
+            [
+                "sex",
+                "height",
+                "skin_tone",
+                "hair",
+                "hobby",
+                "vehicle",
+                "accessory",
+                "feature",
+            ][key_witness_trait_index(&state)]
+            .into(),
+            "observed".into(),
+        );
+        state
     }
 
     #[test]
@@ -526,20 +573,30 @@ mod tests {
         assert_eq!(e[0].event_type, "false_destination");
     }
     #[test]
-    fn deadline_blocks_commands() {
+    fn an_already_expired_case_is_closed_authoritatively() {
         let mut s = state();
         s.elapsed = 10080;
-        assert_eq!(
-            apply(
-                s,
-                Command::Travel {
-                    destination: "Kano".into(),
-                    minutes: 1
-                }
-            )
-            .unwrap_err(),
-            Error::Deadline
-        );
+        let (expired, events) = apply(
+            s,
+            Command::Travel {
+                destination: "Kano".into(),
+                minutes: 1,
+            },
+        )
+        .unwrap();
+        assert_eq!(expired.outcome.as_deref(), Some("deadline"));
+        assert_eq!(expired.elapsed, 10080);
+        assert_eq!(events[0].event_type, "deadline_expired");
+    }
+
+    #[test]
+    fn an_action_that_reaches_the_deadline_ends_the_case() {
+        let mut s = state();
+        s.elapsed = 10079;
+        let (expired, events) = apply(s, Command::Wait { minutes: 1 }).unwrap();
+        assert_eq!(expired.outcome.as_deref(), Some("deadline"));
+        assert_eq!(expired.elapsed, 10080);
+        assert_eq!(events[0].event_type, "deadline_expired");
     }
     #[test]
     fn property_random_travel_never_overflows_or_skips_stage() {
@@ -569,11 +626,11 @@ mod tests {
     }
 
     #[test]
-    fn travel_requires_the_key_witness_hint() {
+    fn travel_requires_the_current_key_witness_interview() {
         let mut s = state();
         s.observations.clear();
         let error = apply(
-            s,
+            s.clone(),
             Command::Travel {
                 destination: "Kano".into(),
                 minutes: 90,
@@ -582,8 +639,40 @@ mod tests {
         .unwrap_err();
         assert_eq!(
             error,
-            Error::Invalid("find the key witness's dossier hint before travelling".into())
+            Error::Invalid("question the key witness before travelling".into())
         );
+        let error = apply(
+            s,
+            Command::TravelBy {
+                destination: "Kano".into(),
+                mode: "hitch_ride".into(),
+                minutes: 90,
+                cost: 0,
+            },
+        )
+        .unwrap_err();
+        assert_eq!(
+            error,
+            Error::Invalid("question the key witness before travelling".into())
+        );
+    }
+
+    #[test]
+    fn questioning_key_witness_allows_travel_without_recording_dossier() {
+        let s = state();
+        assert!(s.dossier.is_empty());
+        let (after, _) = apply(
+            s,
+            Command::TravelBy {
+                destination: "Kano".into(),
+                mode: "hitch_ride".into(),
+                minutes: 90,
+                cost: 0,
+            },
+        )
+        .unwrap();
+        assert_eq!(after.state, "Kano");
+        assert!(after.dossier.is_empty());
     }
 
     #[test]
@@ -597,6 +686,16 @@ mod tests {
             "3|Abuja|museum".into(),
         ];
         s.hideout_venue = "market".into();
+        assert_eq!(
+            apply(
+                s.clone(),
+                Command::RequestWarrant {
+                    suspect_id: Some("T".into()),
+                },
+            )
+            .unwrap_err(),
+            Error::Invalid("incomplete dossier".into())
+        );
         for (index, key) in [
             "sex",
             "height",

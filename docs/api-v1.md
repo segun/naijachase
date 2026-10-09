@@ -97,8 +97,23 @@ examples in `docs/ui-api-handoff.md`.
 - `GET /health/live` reports process liveness.
 - `GET /health/ready` checks MySQL readiness.
 - `GET /metrics` exposes aggregate counters without private labels.
+- `GET /v1/activity/current` is the canonical case-desk bootstrap. It returns
+  the player's unfinished ordinary case, all unfinished replays, and all active
+  or in-transit weekly attempts. Complete response shapes, field definitions,
+  ID usage, refresh rules, and UI decisions are documented in
+  [`current-activity-api.md`](current-activity-api.md).
+- `GET /v1/cases/current` is the narrower compatibility endpoint for the
+  ordinary case only. It deliberately does not report replays or weekly
+  attempts. See [`current-case-api.md`](current-case-api.md).
+- `POST /v1/cases/{case_id}/abandon` permanently ends an unfinished ordinary
+  case, discards its uncommitted progression, releases its mission assignment,
+  and permits a new case. Replays and weekly attempts are excluded. The full
+  confirmation, request, response, race, and error contract is in
+  [`abandon-case-api.md`](abandon-case-api.md).
 - `POST /v1/cases` accepts `{}` and assigns a server-selected, published mission
-  the player has never solved. It returns `catalogue_exhausted` when none remain.
+  the player has never solved. When an unfinished ordinary case already exists,
+  it returns that case instead of creating another. It returns
+  `catalogue_exhausted` when none remain.
 - `POST /v1/cases/replay` accepts `mission_id` and starts a completed mission as
   an explicit replay. Replays are labelled and cannot repeat progression or
   first-completion rewards.

@@ -53,7 +53,10 @@ export function drawLayout2d(layout: Layout, { g, options, palette }: SetContext
         if (c.pos[1] > y1) polygon(g, c, [[x0, y1, z0], [x1, y1, z0], [x1, y1, z1], [x0, y1, z1]], s.top);
         if (c.pos[0] < x0) polygon(g, c, [[x0, y, z0], [x0, y, z1], [x0, y1, z1], [x0, y1, z0]], s.side);
         else if (c.pos[0] > x1) polygon(g, c, [[x1, y, z0], [x1, y, z1], [x1, y1, z1], [x1, y1, z0]], s.side);
-        polygon(g, c, [[x0, y, z0], [x1, y, z0], [x1, y1, z0], [x0, y1, z0]], s.front);
+        if (p.soft) {
+          const r = Math.min(p.soft, p.w / 3, p.h / 3);
+          polygon(g, c, [[x0 + r, y, z0], [x1 - r, y, z0], [x1, y + r, z0], [x1, y1 - r, z0], [x1 - r, y1, z0], [x0 + r, y1, z0], [x0, y1 - r, z0], [x0, y + r, z0]], s.front);
+        } else polygon(g, c, [[x0, y, z0], [x1, y, z0], [x1, y1, z0], [x0, y1, z0]], s.front);
         break;
       }
       case "cyl": {

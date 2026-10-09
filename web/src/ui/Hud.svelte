@@ -15,6 +15,7 @@
     <Icon name="pin" />
     <div><span class="hud-label">{app.isReplay ? "Replay · Location" : "Location"}</span><span class="hud-value">{gs.current_state}</span></div>
     {#if zoneOf(gs.current_state)}<span class="badge hide-sm">{zoneOf(gs.current_state)}</span>{/if}
+    <span class="badge" class:urgent-text={gs.trail_status === "cold"}>{gs.trail_status === "hot" ? "Trail hot" : "Trail cold"}</span>
   </div>
   <div class="hud-item hud-clock">
     <Icon name={night ? "moon" : "sun"} />

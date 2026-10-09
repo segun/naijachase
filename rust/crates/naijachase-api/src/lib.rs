@@ -73,6 +73,11 @@ pub struct ReplayCaseRequest {
 }
 
 #[derive(Debug, Deserialize)]
+pub struct AbandonCaseRequest {
+    pub expected_version: u64,
+}
+
+#[derive(Debug, Deserialize)]
 pub struct MissionTransitionRequest {
     pub target_status: String,
     pub scheduled_for: Option<String>,
@@ -398,6 +403,7 @@ pub struct PublicGameState {
     pub difficulty: u8,
     pub stage: u8,
     pub current_state: String,
+    pub trail_status: String,
     pub elapsed: u32,
     pub score: u32,
     pub career_points: u32,
@@ -429,6 +435,7 @@ fn public_game_state(
         difficulty: state.difficulty,
         stage: state.stage,
         current_state: state.state.clone(),
+        trail_status: if is_on_trail(state) { "hot" } else { "cold" }.into(),
         elapsed: state.elapsed,
         score: state.score,
         career_points: state.career_points,
@@ -569,6 +576,16 @@ impl From<StorageError> for ApiError {
                 StatusCode::CONFLICT,
                 "catalogue_exhausted",
                 "all currently published missions are complete; replay an archived case or return when new cases publish",
+            ),
+            StorageError::CaseNotAbandonable => Self::new(
+                StatusCode::CONFLICT,
+                "case_not_abandonable",
+                "only an ongoing ordinary case can be abandoned",
+            ),
+            StorageError::OrdinaryCaseExists(_) => Self::new(
+                StatusCode::CONFLICT,
+                "ordinary_case_exists",
+                "resume or abandon your ongoing ordinary case before starting another",
             ),
             other => {
                 tracing::error!(error = %other, "storage operation failed");
@@ -910,6 +927,7 @@ pub fn router(state: Arc<AppState>) -> Router {
             post(admin_transition_mission),
         )
         .route("/v1/cases/{case_id}", get(get_case))
+        .route("/v1/cases/{case_id}/abandon", post(abandon_case))
         .route(
             "/v1/cases/{case_id}/transport-quotes",
             get(transport_quotes),
@@ -2337,11 +2355,16 @@ async fn assign_case(
     let store = state.store.clone();
     let saved_case_id = case_id.clone();
     let saved = game.clone();
-    tokio::task::spawn_blocking(move || {
+    let assignment = tokio::task::spawn_blocking(move || {
         store.create_case_with_kind(&saved_case_id, &player, &mission_id, &saved, "ordinary")
     })
     .await
-    .map_err(task_error)??;
+    .map_err(task_error)?;
+    let (case_id, duplicate) = match assignment {
+        Ok(_) => (case_id, false),
+        Err(StorageError::OrdinaryCaseExists(existing)) => (existing, true),
+        Err(error) => return Err(error.into()),
+    };
     let store = state.store.clone();
     let player = authenticate(&headers, &state).await?.player_id;
     let lookup_id = case_id.clone();
@@ -2350,12 +2373,16 @@ async fn assign_case(
             .await
             .map_err(task_error)??;
     Ok((
-        StatusCode::CREATED,
+        if duplicate {
+            StatusCode::OK
+        } else {
+            StatusCode::CREATED
+        },
         Json(CaseResponse {
             api_version: API_VERSION,
             case_id,
             state_version: version,
-            duplicate: false,
+            duplicate,
             attempt_kind: "ordinary".into(),
             state: public_game_state(&stored_game, &state.catalogue)?,
             events: vec![],
@@ -2749,6 +2776,28 @@ async fn get_case(
     }))
 }
 
+async fn abandon_case(
+    State(state): State<Arc<AppState>>,
+    Path(case_id): Path<String>,
+    headers: HeaderMap,
+    Json(request): Json<AbandonCaseRequest>,
+) -> Result<Json<naijachase_storage::AbandonCaseResult>, ApiError> {
+    ensure_origin(&headers, &state.config)?;
+    let player = authorize(&headers, &state).await?.player_id;
+    validate_id(&case_id, "case_id").map_err(bad_request)?;
+    if request.expected_version == 0 {
+        return Err(bad_request("expected_version must be at least 1"));
+    }
+    let store = state.store.clone();
+    Ok(Json(
+        tokio::task::spawn_blocking(move || {
+            store.abandon_ordinary_case(&case_id, &player, request.expected_version)
+        })
+        .await
+        .map_err(task_error)??,
+    ))
+}
+
 async fn transport_ledger(
     State(state): State<Arc<AppState>>,
     Path(case_id): Path<String>,
@@ -2774,6 +2823,9 @@ async fn transport_quotes(
     let (_, game) = tokio::task::spawn_blocking(move || store.load_owned_case(&case_id, &player))
         .await
         .map_err(task_error)??;
+    if game.outcome.is_some() {
+        return Ok(Json(vec![]));
+    }
     let mut quotes = Vec::new();
     let mut destinations = state
         .catalogue
@@ -2800,7 +2852,7 @@ async fn transport_quotes(
             })
         }
     }
-    for venue_id in available_venue_ids(&state.catalogue, &game) {
+    for venue_id in unquestioned_venue_ids(&state.catalogue, &game) {
         let venue = &state.catalogue.venues[&venue_id];
         let base = placement_minutes(
             &state.catalogue,
@@ -2927,7 +2979,9 @@ async fn pressure_witness(
     if !venues.contains(&request.venue_id) {
         return Err(bad_request("venue is not available at this stop"));
     }
-    let assigned = pressure_assignment(&case_id, &game, &venues);
+    let assigned = is_on_trail(&game)
+        .then(|| pressure_assignment(&case_id, &game, &venues))
+        .flatten();
     let has_extra = assigned.as_deref() == Some(request.venue_id.as_str());
     let clue = if has_extra {
         supplemental_clue(&state.catalogue, &game, &request.venue_id)
@@ -3043,7 +3097,9 @@ async fn execute_command(
                 translate_command(&catalogue, &game, client_command, &account.home_base)?;
             let (next, mut events) =
                 naijachase_core::apply(game, command).map_err(|error| error.to_string())?;
-            if let Some(event) = public_event {
+            if next.outcome.as_deref() != Some("deadline")
+                && let Some(event) = public_event
+            {
                 events.push(event);
             }
             Ok((next, events))
@@ -3127,9 +3183,11 @@ fn translate_command(
                 return Err("venue is not available at this stop".into());
             }
             let venue = catalogue.venues.get(&venue_id).ok_or("unknown venue_id")?;
-            let key_witness_venue =
-                dossier_witness_venue(catalogue, state).ok_or("dossier witness unavailable")?;
-            let (trait_name, trait_value) = if venue_id == key_witness_venue {
+            let on_trail = is_on_trail(state);
+            let key_witness_venue = on_trail
+                .then(|| dossier_witness_venue(catalogue, state))
+                .flatten();
+            let (trait_name, trait_value) = if key_witness_venue.as_deref() == Some(&venue_id) {
                 let profile = catalogue
                     .profiles
                     .get(&state.thief_id)
@@ -3142,23 +3200,6 @@ fn translate_command(
             } else {
                 (String::new(), String::new())
             };
-            let clue_state = state
-                .route
-                .get(state.stage as usize + 1)
-                .unwrap_or(&state.state);
-            let atoms = catalogue
-                .atoms
-                .get(clue_state)
-                .ok_or("witness clue unavailable")?;
-            let matching = atoms
-                .iter()
-                .filter(|atom| atom.venue_id == venue_id)
-                .collect::<Vec<_>>();
-            let pool = if matching.is_empty() {
-                atoms.iter().collect::<Vec<_>>()
-            } else {
-                matching
-            };
             let clue_key = state
                 .mission_id
                 .bytes()
@@ -3167,42 +3208,62 @@ fn translate_command(
                 .map(usize::from)
                 .sum::<usize>()
                 + state.stage as usize;
-            let atom = pool[clue_key % pool.len()];
-            let roles = atom.witness_roles.split('|').collect::<Vec<_>>();
-            let witness_role = roles[clue_key % roles.len()];
-            let informal = [
-                "agbero",
-                "conductor",
-                "driver",
-                "guard",
-                "security",
-                "loader",
-                "seller",
-                "trader",
-                "boatman",
-                "dockworker",
-            ]
-            .iter()
-            .any(|word| witness_role.to_lowercase().contains(word));
-            let register = if informal { "Pidgin" } else { "English" };
-            let difficulty = match state.difficulty {
-                1 | 2 => "easy",
-                3 => "medium",
-                _ => "hard",
+            let (dialogue, atom_roles) = if on_trail {
+                let clue_state = state
+                    .route
+                    .get(state.stage as usize + 1)
+                    .unwrap_or(&state.state);
+                let atoms = catalogue
+                    .atoms
+                    .get(clue_state)
+                    .ok_or("witness clue unavailable")?;
+                let matching = atoms
+                    .iter()
+                    .filter(|atom| atom.venue_id == venue_id)
+                    .collect::<Vec<_>>();
+                let pool = if matching.is_empty() {
+                    atoms.iter().collect::<Vec<_>>()
+                } else {
+                    matching
+                };
+                let atom = pool[clue_key % pool.len()];
+                let difficulty = match state.difficulty {
+                    1 | 2 => "easy",
+                    3 => "medium",
+                    _ => "hard",
+                };
+                let variants = catalogue
+                    .dialogue_variants
+                    .get(&atom.atom_id)
+                    .into_iter()
+                    .flatten()
+                    .filter(|variant| {
+                        variant.difficulty == difficulty && variant.speech_register == "English"
+                    })
+                    .collect::<Vec<_>>();
+                let dialogue = variants
+                    .get(clue_key % variants.len().max(1))
+                    .map(|variant| variant.dialogue.as_str())
+                    .unwrap_or(&atom.dialogue);
+                (dialogue.to_owned(), atom.witness_roles.as_str())
+            } else {
+                const COLD_RESPONSES: [&str; 8] = [
+                    "I am sorry, but I have not seen anyone matching that description.",
+                    "I have not heard anything that could help you.",
+                    "No one matching that description has passed through here today.",
+                    "I do not know anything about the person you are looking for.",
+                    "Nothing unusual has happened here today.",
+                    "I cannot help you; I have not seen the suspect.",
+                    "Nobody here remembers seeing anyone matching that description.",
+                    "I think you may be following the wrong trail.",
+                ];
+                (
+                    COLD_RESPONSES[clue_key % COLD_RESPONSES.len()].to_owned(),
+                    venue.witness_roles.as_str(),
+                )
             };
-            let dialogue = catalogue
-                .dialogue_variants
-                .get(&atom.atom_id)
-                .into_iter()
-                .flatten()
-                .filter(|variant| {
-                    variant.difficulty == difficulty && variant.speech_register == register
-                })
-                .collect::<Vec<_>>();
-            let dialogue = dialogue
-                .get(clue_key % dialogue.len().max(1))
-                .map(|variant| variant.dialogue.as_str())
-                .unwrap_or(&atom.dialogue);
+            let roles = atom_roles.split('|').collect::<Vec<_>>();
+            let witness_role = roles[clue_key % roles.len()];
             let profile_sentence = if trait_name.is_empty() {
                 String::new()
             } else {
@@ -3215,6 +3276,10 @@ fn translate_command(
             data.insert(
                 "message".into(),
                 format!("{}{}", dialogue.trim(), profile_sentence),
+            );
+            data.insert(
+                "trail_status".into(),
+                if on_trail { "hot" } else { "cold" }.into(),
             );
             data.insert("venue_name".into(), venue.venue_name.clone());
             data.insert("witness_role".into(), witness_role.into());
@@ -3361,17 +3426,7 @@ fn translate_command(
 }
 
 fn natural_trait(field: &str, value: &str) -> String {
-    match field {
-        "sex" => format!("the suspect was {value}"),
-        "height" => format!("the suspect was {value}"),
-        "skin_tone" => format!("the suspect was {value}"),
-        "hair" => format!("the suspect had {value}"),
-        "hobby" => format!("the suspect spoke enthusiastically about {value}"),
-        "vehicle" => format!("the suspect arrived in {value}"),
-        "accessory" => format!("the suspect wore {value}"),
-        "feature" => format!("the suspect had {value}"),
-        _ => format!("the suspect matched {value}"),
-    }
+    naijachase_content::natural_trait_clause("the suspect", field, value)
 }
 
 fn choose_hideout(mission_id: &str, seed: u64, state: &str, catalogue: &Catalogue) -> String {
@@ -3434,7 +3489,23 @@ fn available_venue_ids(catalogue: &Catalogue, state: &GameState) -> Vec<String> 
         &state.route,
         &state.mission_id,
         state.stage as usize,
+        &state.state,
     )
+}
+
+fn is_on_trail(state: &GameState) -> bool {
+    state.route.get(state.stage as usize) == Some(&state.state)
+}
+
+fn unquestioned_venue_ids(catalogue: &Catalogue, state: &GameState) -> Vec<String> {
+    available_venue_ids(catalogue, state)
+        .into_iter()
+        .filter(|venue_id| {
+            !state
+                .visited_venues
+                .contains(&format!("{}|{}|{}", state.stage, state.state, venue_id))
+        })
+        .collect()
 }
 
 fn dossier_random_byte(state: &GameState, scope: &str, position: usize) -> u8 {
@@ -3459,6 +3530,9 @@ fn dossier_trait_index(state: &GameState, stage: usize) -> usize {
 }
 
 fn dossier_witness_venue(catalogue: &Catalogue, state: &GameState) -> Option<String> {
+    if !is_on_trail(state) {
+        return None;
+    }
     let venues = available_venue_ids(catalogue, state);
     (!venues.is_empty()).then(|| {
         let index = dossier_random_byte(state, "dossier-witness", state.stage as usize) as usize
@@ -3472,12 +3546,18 @@ fn available_venue_ids_for(
     route: &[String],
     mission_id: &str,
     stage: usize,
+    actual_state: &str,
 ) -> Vec<String> {
-    let Some(current_state) = route.get(stage) else {
+    let Some(route_state) = route.get(stage) else {
         return vec![];
     };
-    let clue_state = route.get(stage + 1).unwrap_or(current_state);
-    let Some(atoms) = catalogue.atoms.get(clue_state) else {
+    let on_trail = route_state == actual_state;
+    let atom_state = if on_trail {
+        route.get(stage + 1).unwrap_or(route_state)
+    } else {
+        actual_state
+    };
+    let Some(atoms) = catalogue.atoms.get(atom_state) else {
         return vec![];
     };
     let start = (mission_id.bytes().map(usize::from).sum::<usize>() + stage * 7) % atoms.len();
@@ -3486,7 +3566,7 @@ fn available_venue_ids_for(
         let venue = &atoms[(start + offset) % atoms.len()].venue_id;
         if catalogue
             .location_venues
-            .contains_key(&(current_state.clone(), venue.clone()))
+            .contains_key(&(actual_state.to_owned(), venue.clone()))
             && !ids.contains(venue)
         {
             ids.push(venue.clone());
@@ -3553,7 +3633,9 @@ fn mission_budget_baseline(catalogue: &Catalogue, mission: &Mission) -> Result<u
         )
     }
     for (stage, state) in route.iter().enumerate() {
-        for venue in available_venue_ids_for(catalogue, &route, &mission.mission_id, stage) {
+        for venue in
+            available_venue_ids_for(catalogue, &route, &mission.mission_id, stage, &route[stage])
+        {
             let base =
                 placement_minutes(catalogue, state, &venue, &mission.mission_id, stage as u8)
                     .map_err(bad_request)?;
@@ -3671,6 +3753,27 @@ mod tests {
                 placement.hub_travel_minutes.max(5)
             );
         }
+    }
+
+    #[test]
+    fn local_quotes_exclude_questioned_witnesses_without_changing_dossier_assignment() {
+        let root = FsPath::new(env!("CARGO_MANIFEST_DIR")).join("../../..");
+        let catalogue = Catalogue::load(&root).unwrap();
+        let mission = catalogue.missions.values().next().unwrap();
+        let mut game = state();
+        game.mission_id = mission.mission_id.clone();
+        game.route = catalogue.route(mission).unwrap();
+        game.state = game.route[0].clone();
+        let venues = unquestioned_venue_ids(&catalogue, &game);
+        assert!(!venues.is_empty());
+        let witness = dossier_witness_venue(&catalogue, &game);
+        let visited = venues[0].clone();
+        game.visited_venues
+            .push(format!("0|{}|{}", game.state, visited));
+        assert!(!unquestioned_venue_ids(&catalogue, &game).contains(&visited));
+        assert_eq!(dossier_witness_venue(&catalogue, &game), witness);
+        game.visited_venues = vec![format!("1|{}|{}", game.state, visited)];
+        assert!(unquestioned_venue_ids(&catalogue, &game).contains(&visited));
     }
 
     #[test]
@@ -3965,6 +4068,87 @@ mod tests {
     }
 
     #[test]
+    fn wrong_jurisdictions_are_cold_and_never_replay_route_clues() {
+        let root = FsPath::new(env!("CARGO_MANIFEST_DIR")).join("../../..");
+        let catalogue = Catalogue::load(&root).unwrap();
+        let mission = catalogue.missions.values().next().unwrap();
+        let route = catalogue.route(mission).unwrap();
+        let wrong_state = catalogue
+            .atoms
+            .keys()
+            .find(|candidate| {
+                !route.contains(candidate)
+                    && catalogue
+                        .location_venues
+                        .keys()
+                        .filter(|(state, _)| state == *candidate)
+                        .count()
+                        >= 3
+            })
+            .unwrap()
+            .clone();
+        let game = GameState {
+            version: 1,
+            mission_id: mission.mission_id.clone(),
+            thief_id: mission.thief_id.clone(),
+            difficulty: mission.difficulty,
+            stage: 0,
+            state: wrong_state,
+            route,
+            elapsed: 0,
+            score: 500,
+            career_points: 0,
+            dossier: Default::default(),
+            observations: Default::default(),
+            visited_venues: vec![],
+            warrant_suspect: None,
+            hideout_venue: "hideout".into(),
+            replay: vec![],
+            outcome: None,
+            economy: Default::default(),
+        };
+
+        assert!(!is_on_trail(&game));
+        assert_eq!(
+            public_game_state(&game, &catalogue).unwrap().trail_status,
+            "cold"
+        );
+        assert!(dossier_witness_venue(&catalogue, &game).is_none());
+        let venues = available_venue_ids(&catalogue, &game);
+        assert_eq!(venues.len(), 3);
+        for venue_id in venues {
+            let (command, event) = translate_command(
+                &catalogue,
+                &game,
+                ClientCommand::VisitVenue {
+                    venue_id,
+                    mode: "drive".into(),
+                },
+                "Lagos",
+            )
+            .unwrap();
+            match command {
+                Command::VisitVenueBy {
+                    trait_name,
+                    trait_value,
+                    ..
+                } => {
+                    assert!(trait_name.is_empty());
+                    assert!(trait_value.is_empty());
+                }
+                _ => panic!("expected a local witness visit"),
+            }
+            let event = event.unwrap();
+            assert_eq!(event.event_type, "witness_account");
+            assert_eq!(
+                event.data.get("trail_status").map(String::as_str),
+                Some("cold")
+            );
+            assert!(!event.data["message"].contains("I also noticed"));
+        }
+    }
+
+    #[test]
     fn load_guard_handles_many_subjects_without_cross_tenant_throttling() {
         let limiter = RateLimiter::default();
         for player in 0..10_000 {
@@ -4065,6 +4249,9 @@ mod tests {
             "/v1/weekly/history",
             "/v1/weekly/notifications",
             "/v1/cases",
+            "/v1/activity/current",
+            "/v1/cases/current",
+            "/v1/cases/{case_id}/abandon",
             "/v1/cases/catalogue-status",
             "/v1/cases/catalogue-notifications",
             "/v1/cases/{case_id}/transport-quotes",
@@ -4103,6 +4290,8 @@ mod tests {
             "TokenBalance",
             "TokenLedgerEntry",
             "JailStatus",
+            "AbandonCaseRequest",
+            "AbandonCaseResponse",
         ] {
             assert!(
                 generated.contains(&format!("type {type_name}=")),

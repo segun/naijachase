@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://naijachase.app/schemas/api-abandon-case-v1.schema.json",
+  "title": "NaijaChase abandon ordinary case",
+  "$defs": {
+    "request": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["expected_version"],
+      "properties": {
+        "expected_version": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "response": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["case_id", "mission_id", "status", "previous_state_version", "state_version", "points_reverted", "points_after", "rank_after"],
+      "properties": {
+        "case_id": { "type": "string" },
+        "mission_id": { "type": "string" },
+        "status": { "const": "abandoned" },
+        "previous_state_version": { "type": "integer", "minimum": 1 },
+        "state_version": { "type": "integer", "minimum": 2 },
+        "points_reverted": { "type": "integer", "minimum": 0 },
+        "points_after": { "type": "integer", "minimum": 0 },
+        "rank_after": { "type": "string" }
+      }
+    }
+  }
+}

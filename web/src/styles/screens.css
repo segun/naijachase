@@ -181,6 +181,8 @@
 
 /* Results */
 .results { min-height: 80vh; display: grid; place-items: center; }
+.results.timeout { position: fixed; inset: 0; z-index: 50; min-height: 100vh; padding: 1rem; background: rgb(1 18 14 / .82); backdrop-filter: blur(6px); }
+.results.timeout .results-card { box-shadow: 0 24px 100px rgb(0 0 0 / .65); }
 .results-card { width: min(100%, 36rem); display: grid; justify-items: center; gap: 1rem; text-align: center; padding: 2.4rem 1.6rem; border-color: color-mix(in srgb, var(--red) 55%, var(--line)); }
 .results.solved .results-card { border-color: color-mix(in srgb, var(--green) 60%, var(--line)); box-shadow: 0 0 80px rgb(43 217 133 / .18), var(--shadow); }
 .verdict-mark { width: 5rem; height: 5rem; display: grid; place-items: center; border-radius: 50%; font-size: 2.2rem; background: var(--bg); border: 3px solid var(--red); color: var(--red); }

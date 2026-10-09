@@ -91,6 +91,18 @@ pub struct CaseArchiveEntry {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
+pub struct AbandonCaseResult {
+    pub case_id: String,
+    pub mission_id: String,
+    pub status: String,
+    pub previous_state_version: u64,
+    pub state_version: u64,
+    pub points_reverted: u64,
+    pub points_after: u64,
+    pub rank_after: String,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct Achievement {
     pub achievement_id: String,
     pub earned_at: String,
@@ -199,6 +211,18 @@ pub struct MissionValidation {
 
 type PreparedCsv = (String, String, Vec<String>, Vec<Vec<String>>);
 
+fn lock_case_player(
+    transaction: &mut mysql::Transaction<'_>,
+    player_id: &str,
+) -> Result<(), StorageError> {
+    // Case writers lock the player before the case to match assignment lock order.
+    transaction.exec_drop(
+        "SELECT player_id FROM players WHERE player_id=:player FOR UPDATE",
+        params! { "player" => player_id },
+    )?;
+    Ok(())
+}
+
 fn rank_name(points: u64) -> &'static str {
     [
         (35000, "Master Detective"),
@@ -213,6 +237,13 @@ fn rank_name(points: u64) -> &'static str {
     .find(|(minimum, _)| points >= *minimum)
     .unwrap()
     .1
+}
+
+fn abandoned_case_points(state_points: u64, committed_points: u64) -> (u64, u64) {
+    (
+        state_points.saturating_sub(committed_points),
+        committed_points,
+    )
 }
 fn rank_achievement(rank: &str) -> Option<&'static str> {
     match rank {
@@ -476,6 +507,10 @@ pub enum StorageError {
     ReplayNotAvailable,
     #[error("no unseen published missions remain")]
     CatalogueExhausted,
+    #[error("only an ongoing ordinary case can be abandoned")]
+    CaseNotAbandonable,
+    #[error("player already has an ongoing ordinary case: {0}")]
+    OrdinaryCaseExists(String),
 }
 
 pub fn repository_dotenv_path() -> Option<PathBuf> {
@@ -989,6 +1024,7 @@ impl MysqlStore {
         let mut token_awards = Vec::new();
         let mut connection = self.pool.get_conn()?;
         let mut transaction = connection.start_transaction(TxOpts::default())?;
+        lock_case_player(&mut transaction, player_id)?;
         let attempt_kind: String = transaction
             .exec_first(
                 "SELECT attempt_kind FROM active_cases WHERE case_id=:case_id AND player_id=:player FOR UPDATE",
@@ -1275,6 +1311,13 @@ impl MysqlStore {
         let data = serde_json::to_vec(state)?;
         let mut connection = self.pool.get_conn()?;
         let mut transaction = connection.start_transaction(TxOpts::default())?;
+        // All ordinary assignments for a player share this row lock, including
+        // concurrent requests that selected different missions.
+        transaction.exec_drop(
+            "INSERT INTO players(player_id,display_name) VALUES (:player,:player)
+             ON DUPLICATE KEY UPDATE player_id=VALUES(player_id)",
+            params! { "player" => player_id },
+        )?;
         let jailed: Option<u8> = transaction.exec_first(
             "SELECT 1 FROM players WHERE player_id=:player AND jailed_until>UTC_TIMESTAMP()",
             params! { "player" => player_id },
@@ -1293,6 +1336,18 @@ impl MysqlStore {
             Some(_) => return Err(StorageError::Forbidden),
             None => {}
         }
+        if attempt_kind == "ordinary" {
+            let rows: Vec<(String, Vec<u8>)> = transaction.exec(
+                "SELECT case_id,state_json FROM active_cases WHERE player_id=:player AND attempt_kind='ordinary' ORDER BY updated_at DESC,created_at DESC FOR UPDATE",
+                params! { "player" => player_id },
+            )?;
+            for (id, data) in rows {
+                let ongoing: GameState = serde_json::from_slice(&data)?;
+                if ongoing.outcome.is_none() {
+                    return Err(StorageError::OrdinaryCaseExists(id));
+                }
+            }
+        }
         let completed: Option<u8> = transaction.exec_first(
             "SELECT 1 FROM player_mission_completions WHERE player_id=:player AND mission_id=:mission",
             params!{"player"=>player_id,"mission"=>mission_id},
@@ -1309,11 +1364,6 @@ impl MysqlStore {
             "ordinary" | "replay" | "weekly" => {}
             _ => return Err(StorageError::InvalidContent("invalid attempt kind".into())),
         }
-        transaction.exec_drop(
-            "INSERT INTO players(player_id,display_name) VALUES (:player,:player)
-             ON DUPLICATE KEY UPDATE player_id=VALUES(player_id)",
-            params! { "player" => player_id },
-        )?;
         transaction.exec_drop(
             "INSERT INTO active_cases(case_id,player_id,mission_id,version,state_json,attempt_kind,content_version)
              VALUES (:case_id,:player,:mission,1,:state,:attempt_kind,:content_version)",
@@ -1786,6 +1836,76 @@ impl MysqlStore {
         Ok(active)
     }
 
+    pub fn abandon_ordinary_case(
+        &self,
+        case_id: &str,
+        player_id: &str,
+        expected_version: u64,
+    ) -> Result<AbandonCaseResult, StorageError> {
+        let mut connection = self.pool.get_conn()?;
+        let mut transaction = connection.start_transaction(TxOpts::default())?;
+        lock_case_player(&mut transaction, player_id)?;
+        let row: Option<(Option<String>, String, String, u64, Vec<u8>)> = transaction.exec_first(
+            "SELECT player_id,mission_id,attempt_kind,version,state_json FROM active_cases WHERE case_id=:case_id FOR UPDATE",
+            params! { "case_id" => case_id },
+        )?;
+        let Some((owner, mission_id, attempt_kind, version, data)) = row else {
+            return Err(StorageError::CaseNotFound);
+        };
+        if owner.as_deref() != Some(player_id) {
+            return Err(StorageError::Forbidden);
+        }
+        if attempt_kind != "ordinary" {
+            return Err(StorageError::CaseNotAbandonable);
+        }
+        if version != expected_version {
+            return Err(StorageError::VersionConflict(case_id.into()));
+        }
+        let mut state: GameState = serde_json::from_slice(&data)?;
+        if state.outcome.is_some() {
+            return Err(StorageError::CaseNotAbandonable);
+        }
+
+        // Career gains are committed only when a case completes. Discarding the
+        // unfinished state therefore removes every prospective point/rank gain
+        // without overwriting sanctions or progress earned outside this case.
+        let points_after: u64 = transaction
+            .exec_first(
+                "SELECT points FROM careers WHERE player_id=:player FOR UPDATE",
+                params! { "player" => player_id },
+            )?
+            .unwrap_or(0);
+        let (points_reverted, points_after) =
+            abandoned_case_points(state.career_points as u64, points_after);
+        state.career_points = points_after.min(u32::MAX as u64) as u32;
+        state.outcome = Some("abandoned".into());
+        let next_version = version + 1;
+        transaction.exec_drop(
+            "UPDATE active_cases SET version=:version,state_json=:state WHERE case_id=:case_id",
+            params! { "version" => next_version, "state" => serde_json::to_vec(&state)?, "case_id" => case_id },
+        )?;
+        transaction.exec_drop(
+            "DELETE FROM active_mission_assignments WHERE case_id=:case_id",
+            params! { "case_id" => case_id },
+        )?;
+        transaction.exec_drop(
+            "INSERT INTO service_audit(player_id,case_id,command_id,outcome) VALUES (:player,:case_id,'case-abandon','abandoned')",
+            params! { "player" => player_id, "case_id" => case_id },
+        )?;
+        transaction.commit()?;
+
+        Ok(AbandonCaseResult {
+            case_id: case_id.into(),
+            mission_id,
+            status: "abandoned".into(),
+            previous_state_version: version,
+            state_version: next_version,
+            points_reverted,
+            points_after,
+            rank_after: rank_name(points_after).into(),
+        })
+    }
+
     pub fn execute_case_command<F>(
         &self,
         case_id: &str,
@@ -1799,6 +1919,7 @@ impl MysqlStore {
     {
         let mut connection = self.pool.get_conn()?;
         let mut transaction = connection.start_transaction(TxOpts::default())?;
+        lock_case_player(&mut transaction, player_id)?;
         let row: Option<(Option<String>, u64, Vec<u8>)> = transaction.exec_first(
             "SELECT player_id,version,state_json FROM active_cases WHERE case_id=:case_id FOR UPDATE",
             params! { "case_id"=>case_id },
@@ -1808,6 +1929,10 @@ impl MysqlStore {
         };
         if owner.as_deref() != Some(player_id) {
             return Err(StorageError::Forbidden);
+        }
+        let state: GameState = serde_json::from_slice(&data)?;
+        if state.outcome.as_deref() == Some("abandoned") {
+            return Err(StorageError::Command("case already abandoned".into()));
         }
         let duplicate: Option<(u64, String)> = transaction.exec_first(
             "SELECT state_version,event_json FROM case_events WHERE case_id=:case_id AND command_id=:command_id",
@@ -1825,7 +1950,6 @@ impl MysqlStore {
         if version != expected_version {
             return Err(StorageError::VersionConflict(case_id.into()));
         }
-        let state: GameState = serde_json::from_slice(&data)?;
         let (next, events) = execute(state).map_err(StorageError::Command)?;
         let next_version = version + 1;
         transaction.exec_drop(
@@ -2636,6 +2760,9 @@ fn project_normalized_content(
             params! { "id"=>&row[0],"state"=>&row[1],"venue"=>&row[5],"candidates"=>&row[4],"knowledge"=>knowledge,"content"=>serde_json::to_string(row)? },
         )?;
     }
+    // Dialogue variants are a replaceable catalogue projection. Clearing this
+    // table ensures removed editorial variants do not survive a later import.
+    transaction.query_drop("DELETE FROM dialogue_variants")?;
     for row in rows_for(prepared, "gameplay/clue-dialogue-variants.csv")? {
         transaction.exec_drop(
             "INSERT INTO dialogue_variants(variant_id,atom_id,difficulty,speech_register,variant_number,dialogue)
@@ -2698,6 +2825,260 @@ pub fn sha256(bytes: &[u8]) -> String {
 mod tests {
     use super::*;
     static MYSQL_TEST_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
+
+    #[test]
+    fn abandonment_discards_only_uncommitted_case_gains() {
+        assert_eq!(abandoned_case_points(2_300, 1_700), (600, 1_700));
+        assert_eq!(abandoned_case_points(1_700, 1_700), (0, 1_700));
+        // A live disciplinary deduction is not restored by abandonment.
+        assert_eq!(abandoned_case_points(700, 700), (0, 700));
+    }
+
+    #[test]
+    fn live_mysql_ordinary_case_lifecycle_is_atomic_and_new_attempts_are_fresh() {
+        if env::var("NAIJACHASE_MYSQL_TEST").ok().as_deref() != Some("1") {
+            return;
+        }
+        let _guard = MYSQL_TEST_LOCK.lock().unwrap();
+        use naijachase_contracts::Command;
+        use std::sync::{Arc, Barrier};
+        let store = Arc::new(MysqlStore::connect_from_env().unwrap());
+        store.migrate().unwrap();
+        let suffix = uuid::Uuid::new_v4().simple().to_string();
+        let player = format!("lifecycle-{suffix}");
+        let mut db = store.pool.get_conn().unwrap();
+        let missions: Vec<String> = db
+            .query("SELECT mission_id FROM missions ORDER BY mission_id LIMIT 2")
+            .unwrap();
+        assert_eq!(
+            missions.len(),
+            2,
+            "import the fixture catalogue before live tests"
+        );
+        db.exec_drop(
+            "INSERT INTO players(player_id,display_name,bribe_tokens) VALUES (:player,'Lifecycle test',2)",
+            params! { "player" => &player },
+        ).unwrap();
+        db.exec_drop(
+            "INSERT INTO careers(player_id,points,solved_missions_json) VALUES (:player,1600,'[]')",
+            params! { "player" => &player },
+        )
+        .unwrap();
+        drop(db);
+        let fresh = GameState {
+            version: 1,
+            mission_id: missions[0].clone(),
+            thief_id: "TH-001".into(),
+            difficulty: 1,
+            stage: 0,
+            state: "Lagos".into(),
+            route: vec!["Lagos".into(), "Kano".into()],
+            elapsed: 0,
+            score: 500,
+            career_points: 1600,
+            dossier: Default::default(),
+            observations: Default::default(),
+            visited_venues: vec![],
+            warrant_suspect: None,
+            hideout_venue: "market".into(),
+            replay: vec![],
+            outcome: None,
+            economy: Default::default(),
+        };
+        let barrier = Arc::new(Barrier::new(3));
+        let workers = missions
+            .iter()
+            .enumerate()
+            .map(|(index, mission)| {
+                let store = store.clone();
+                let barrier = barrier.clone();
+                let player = player.clone();
+                let id = format!("lifecycle-{suffix}-{index}");
+                let mut game = fresh.clone();
+                game.mission_id = mission.clone();
+                std::thread::spawn(move || {
+                    barrier.wait();
+                    let result = store.create_case(&id, &player, &game.mission_id, &game);
+                    (id, result)
+                })
+            })
+            .collect::<Vec<_>>();
+        barrier.wait();
+        let results = workers
+            .into_iter()
+            .map(|worker| worker.join().unwrap())
+            .collect::<Vec<_>>();
+        assert_eq!(
+            results.iter().filter(|(_, result)| result.is_ok()).count(),
+            1,
+            "{results:?}"
+        );
+        assert_eq!(
+            results
+                .iter()
+                .filter(|(_, result)| matches!(result, Err(StorageError::OrdinaryCaseExists(_))))
+                .count(),
+            1,
+            "{results:?}"
+        );
+        let (id, version, initial) = store.current_ordinary_case(&player).unwrap().unwrap();
+        assert_eq!(version, 1);
+        assert_eq!(
+            store
+                .ongoing_cases_by_kind(&player, "ordinary")
+                .unwrap()
+                .len(),
+            1
+        );
+        let interview = |state| {
+            naijachase_core::apply(
+                state,
+                Command::VisitVenue {
+                    venue_id: "market".into(),
+                    trait_name: "sex".into(),
+                    trait_value: "male".into(),
+                    minutes: 45,
+                },
+            )
+            .map_err(|error| error.to_string())
+        };
+        store
+            .execute_case_command(&id, &player, "first-interview", 1, interview)
+            .unwrap();
+        let (_, _, resumed) = store.current_ordinary_case(&player).unwrap().unwrap();
+        assert_eq!(resumed.visited_venues, vec!["0|Lagos|market"]);
+        assert!(matches!(
+            store.abandon_ordinary_case(&id, &player, 1),
+            Err(StorageError::VersionConflict(_))
+        ));
+        let abandoned = store.abandon_ordinary_case(&id, &player, 2).unwrap();
+        assert_eq!(abandoned.state_version, 3);
+        assert_eq!(abandoned.points_after, 1600);
+        assert!(store.current_ordinary_case(&player).unwrap().is_none());
+        assert!(
+            store
+                .ongoing_cases_by_kind(&player, "ordinary")
+                .unwrap()
+                .is_empty()
+        );
+        assert_eq!(
+            store
+                .load_owned_case(&id, &player)
+                .unwrap()
+                .1
+                .outcome
+                .as_deref(),
+            Some("abandoned")
+        );
+        assert!(matches!(
+            store.execute_case_command(&id, &player, "first-interview", 1, |_| panic!(
+                "abandoned command must not execute"
+            )),
+            Err(StorageError::Command(_))
+        ));
+        assert!(matches!(
+            store.pressure_witness(
+                &player,
+                &id,
+                "old-pressure",
+                2,
+                "market",
+                "bribe",
+                false,
+                None
+            ),
+            Err(StorageError::Command(_))
+        ));
+        let assignments: u64 = store
+            .pool
+            .get_conn()
+            .unwrap()
+            .exec_first(
+                "SELECT COUNT(*) FROM active_mission_assignments WHERE player_id=:player",
+                params! { "player" => &player },
+            )
+            .unwrap()
+            .unwrap();
+        assert_eq!(assignments, 0);
+        let next_id = format!("lifecycle-{suffix}-new");
+        store
+            .create_case(&next_id, &player, &initial.mission_id, &initial)
+            .unwrap();
+        let (next_version, next) = store.load_owned_case(&next_id, &player).unwrap();
+        assert_eq!(next_version, 1);
+        assert!(next.visited_venues.is_empty());
+        assert!(next.dossier.is_empty());
+        assert_eq!(next.elapsed, 0);
+        store
+            .execute_case_command(&next_id, &player, "first-interview", 1, interview)
+            .unwrap();
+        assert_eq!(
+            store
+                .load_owned_case(&next_id, &player)
+                .unwrap()
+                .1
+                .visited_venues,
+            vec!["0|Lagos|market"]
+        );
+        let tokens: u32 = store
+            .pool
+            .get_conn()
+            .unwrap()
+            .exec_first(
+                "SELECT bribe_tokens FROM players WHERE player_id=:player",
+                params! { "player" => &player },
+            )
+            .unwrap()
+            .unwrap();
+        assert_eq!(tokens, 2);
+        let race = Arc::new(Barrier::new(3));
+        let command_store = store.clone();
+        let command_race = race.clone();
+        let command_player = player.clone();
+        let command_case = next_id.clone();
+        let command = std::thread::spawn(move || {
+            command_race.wait();
+            command_store
+                .execute_case_command(
+                    &command_case,
+                    &command_player,
+                    "concurrent-wait",
+                    2,
+                    |state| {
+                        naijachase_core::apply(state, Command::Wait { minutes: 10 })
+                            .map_err(|error| error.to_string())
+                    },
+                )
+                .is_ok()
+        });
+        let abandon_store = store.clone();
+        let abandon_race = race.clone();
+        let abandon_player = player.clone();
+        let abandon_case = next_id.clone();
+        let abandon = std::thread::spawn(move || {
+            abandon_race.wait();
+            abandon_store
+                .abandon_ordinary_case(&abandon_case, &abandon_player, 2)
+                .is_ok()
+        });
+        race.wait();
+        assert_ne!(
+            command.join().unwrap(),
+            abandon.join().unwrap(),
+            "exactly one mutation may commit against version 2"
+        );
+        let mut db = store.pool.get_conn().unwrap();
+        db.exec_drop(
+            "DELETE FROM service_audit WHERE player_id=:player",
+            params! { "player" => &player },
+        )
+        .unwrap();
+        db.exec_drop(
+            "DELETE FROM players WHERE player_id=:player",
+            params! { "player" => &player },
+        )
+        .unwrap();
+    }
 
     #[test]
     fn environment_configuration_is_explicit() {

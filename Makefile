@@ -25,7 +25,7 @@ ARGS ?=
 
 .PHONY: help play test test-storage check fmt fmt-check build release production-build benchmark \
 	validate editorial enrichment simulate export db-migrate db-import db-rebuild \
-	db-verify db-publish-initial db-export db-backup db-restore db-test api api-test web web-build enrich-state-clues \
+	db-verify db-publish-initial db-export db-backup db-restore db-test api api-test web web-build enrich-state-clues standardize-witness-english \
 	export-witness-scenes web-install web-production-build web-mock web-mock-ui web-test copy-code \
 	install-api-service restart-api api-status install-web install-nginx publish-web \
 	p34 p35 p36 p39 p391 audit
@@ -73,6 +73,9 @@ enrichment: ## Report semantic knowledge coverage
 enrich-state-clues: ## Rebuild state motto, city, landmark, and economy witness clues
 	@$(TOOLS) enrich-state-clues
 
+standardize-witness-english: ## Remove non-English witness variants and standardize editorial metadata
+	@$(TOOLS) standardize-witness-english
+
 export-witness-scenes: ## Export Babylon.js witness venue and location scene descriptions
 	@$(TOOLS) export-witness-scenes data/exports/witness-location-scenes.json
 
@@ -116,7 +119,7 @@ api-test: ## Run API unit, contract, load, and security tests
 	@$(CARGO) test --manifest-path $(MANIFEST) -p naijachase-api
 
 web: ## Start the responsive web client at http://127.0.0.1:4173
-	@cd web && $(PNPM) dev
+	@cd web && $(PNPM) dev --force
 
 web-build: ## Type-check and build the optimized web client
 	@cd web && $(PNPM) build

@@ -2,9 +2,10 @@ import { untrack } from "svelte";
 import { Api, ApiError } from "../api/api";
 import { MenuMusic } from "../music/music.svelte.ts";
 import { GroupsController } from "./groups.svelte.ts";
+import type { CurrentActivityResponse } from "../../../contracts/typescript/api-v1.ts";
 import {
   dossierChanges, RATE_LIMIT_MESSAGE, errorKind, groupNotes, nearestHomeBase, parseNotes,
-  catalogueView, unreadReleases, type ReportCategory, type AchievementDef, type CaseArchiveEntry, type CaseResponse, type CatalogueProgress, type ClientCommand, type Note,
+  catalogueView, resumableCase, unreadReleases, type ReportCategory, type AchievementDef, type CaseArchiveEntry, type CaseResponse, type CatalogueProgress, type ClientCommand, type Note,
   type AvatarCatalogue, type AvatarPreset, type DossierOptions, type CooperationPreferences, type CooperationRequest, type Player, type PlayerSession, type ReleaseNotification, type TransportLedgerEntry, type TransportQuote, type ProfileUpdate, type ProgressionSummary, type Screen
 } from "../domain/model.ts";
 
@@ -35,9 +36,12 @@ export class AppController {
   private refreshTimer: ReturnType<typeof setInterval> | undefined;
   private dossierLoad: Promise<void> | undefined;
   private sessionGeneration = 0;
+  private caseGeneration = 0;
 
   screen = $state<Screen>("welcome");
   game = $state<CaseResponse | null>(null);
+  ordinaryCaseId = $state<string | null>(null);
+  activityKnown = $state(false);
   player = $state<Player | null>(null);
   booting = $state(true);
   busy = $state(false);
@@ -87,6 +91,7 @@ export class AppController {
   groupedNotes = $derived(groupNotes(this.notes));
   catalogue = $derived(this.catalogueStatus ? catalogueView(this.catalogueStatus) : null);
   isReplay = $derived(this.game?.attempt_kind === "replay");
+  get canStartCase() { return this.activityKnown && this.ordinaryCaseId === null; }
   promotion = $derived(
     this.rankAtStart && this.summary && this.game?.state.outcome && this.summary.rank !== this.rankAtStart ? this.summary.rank : null
   );
@@ -152,6 +157,8 @@ export class AppController {
   private endSession(message?: string) {
     clearInterval(this.refreshTimer);
     this.sessionGeneration++;
+    this.caseGeneration++;
+    this.ordinaryCaseId = null; this.activityKnown = false;
     this.dossierLoad = undefined;
     this.dossierOptions = null; this.dossierOptionsLoading = false; this.dossierOptionsError = "";
     this.player = null; this.game = null; this.caseId = ""; this.briefing = false; this.pendingLead = ""; this.lastWitness = null; this.witnessVisit = null; this.returning = false;
@@ -170,6 +177,7 @@ export class AppController {
 
   /** `handle` may claim an ApiError (return true) so it is not reported as a generic failure. */
   async run<T>(label: string, work: () => Promise<T>, handle?: (e: ApiError) => boolean): Promise<T | undefined> {
+    if (this.busy) return;
     this.busy = true;
     this.busyLabel = label;
     this.toasts = this.toasts.filter(t => t.kind !== "error");
@@ -208,7 +216,10 @@ export class AppController {
         this.startRefresh();
         await this.api.refresh().catch(() => undefined);
         await this.loadProgression();
-        if (this.caseId) {
+        // A reload of a tab that had the case open goes straight back in; a case found only on the server waits on the desk.
+        const restored = this.caseId;
+        await this.syncCurrentCase();
+        if (this.caseId && this.caseId === restored) {
           this.game = await this.api.load(this.caseId);
           this.ensureTrail();
           void this.refreshQuotes();
@@ -232,7 +243,43 @@ export class AppController {
     this.syncRoute();
     this.toast(`Welcome back, ${this.investigator}.`, "success");
     await this.loadProgression();
+    await this.syncCurrentCase();
     return true;
+  }
+
+  /**
+   * Asks the server (`GET /v1/activity/current`) for the unfinished case, so a fresh sign-in or another device offers
+   * "Resume case" rather than "Start new case". Browser storage is only a hint; an HTTP error never means "no case".
+   */
+  private async syncCurrentCase() {
+    const generation = this.sessionGeneration;
+    const caseGeneration = this.caseGeneration;
+    let activity;
+    try { activity = await this.api.currentActivity(); }
+    catch (e) {
+      if (generation === this.sessionGeneration && caseGeneration === this.caseGeneration) {
+        this.activityKnown = false; this.fail(e);
+      }
+      return false;
+    }
+    if (generation !== this.sessionGeneration || caseGeneration !== this.caseGeneration) return false;
+    this.applyActivity(activity);
+    return true;
+  }
+
+  private applyActivity(activity: CurrentActivityResponse) {
+    let found = resumableCase(activity, this.caseId);
+    if (found && this.game?.case_id === found.case_id && this.game.state_version > found.state_version) found = this.game;
+    if (found?.case_id !== this.caseId) this.clearCase();
+    this.ordinaryCaseId = activity.ordinary_case?.case_id ?? null;
+    this.activityKnown = true;
+    this.game = found; this.caseId = found?.case_id ?? "";
+    this.ensureTrail();
+    if (found) this.persist();
+  }
+
+  async refreshCaseDesk() {
+    await this.run("Refreshing case status", () => this.syncCurrentCase());
   }
 
   async register(form: { email: string; password: string; confirm: string; username: string; homeBase: string }) {
@@ -366,7 +413,7 @@ export class AppController {
     return (this.progressionLoad ??= this.fetchProgression().finally(() => { this.progressionLoad = undefined; }));
   }
 
-  private async fetchProgression() {
+  private async fetchProgression(reportErrors = false) {
     try {
       // Read untracked: this runs inside the desk's effect and must not re-trigger itself when the catalogue is stored.
       const known = untrack(() => this.catalog);
@@ -380,7 +427,7 @@ export class AppController {
       void this.loadReleases();
       void this.loadCoop();
       void this.groups.load();
-    } catch (e) { if (e instanceof ApiError && e.status === 401) this.fail(e); }
+    } catch (e) { if (reportErrors || (e instanceof ApiError && e.status === 401)) this.fail(e); }
   }
 
   /** "New case available" notices; they never carry hidden case data. */
@@ -444,10 +491,13 @@ export class AppController {
   }
 
   private begin(created: CaseResponse) {
+    this.clearCase();
     this.caseId = created.case_id; this.game = created;
     this.notes = []; this.trail = [created.state.current_state];
     this.rankAtStart = this.summary?.rank ?? null;
     this.quotes = []; this.quotesLoaded = false; this.ledger = [];
+    if (created.attempt_kind === "ordinary") this.ordinaryCaseId = created.case_id;
+    this.activityKnown = true;
     this.persist();
     void this.refreshQuotes();
     this.briefing = true; this.pendingLead = "";
@@ -490,16 +540,37 @@ export class AppController {
 
   /** Ordinary assignment: the server picks an unseen mission and returns the case id. */
   async openCase() {
-    const created = await this.run("Opening case file", () => this.api.assign(), e => {
+    if (this.busy) return;
+    const session = this.sessionGeneration, generation = this.caseGeneration;
+    this.activityKnown = false;
+    const created = await this.run("Opening case file", async () => {
+      const activity = await this.api.currentActivity();
+      if (session !== this.sessionGeneration || generation !== this.caseGeneration) return;
+      this.ordinaryCaseId = activity.ordinary_case?.case_id ?? null;
+      this.activityKnown = true;
+      if (activity.ordinary_case) return { ...activity.ordinary_case, duplicate: true };
+      return this.api.assign();
+    }, e => {
       if (e.code === "catalogue_exhausted") { this.exhausted = true; void this.loadProgression(); return true; }
       if (e.code === "mission_already_completed") { void this.loadProgression(); this.toast(e.message, "info"); return true; }
       return false;
     });
-    if (created) this.begin(created);
+    if (!created || session !== this.sessionGeneration || generation !== this.caseGeneration) return;
+    if (created.duplicate) {
+      if (this.caseId !== created.case_id) this.clearCase();
+      this.game = created; this.caseId = created.case_id; this.ordinaryCaseId = created.case_id;
+      this.activityKnown = true;
+      this.ensureTrail(); this.persist();
+      this.briefing = false; this.pendingLead = "";
+      void this.refreshQuotes();
+      this.toast("Resuming your existing case. No new case was created.", "info");
+      this.go(created.state.outcome ? "results" : "investigate");
+    } else this.begin(created);
   }
 
   /** Explicit replay of a solved mission. The server suppresses points, achievements and completion credit. */
   async replayCase(missionId: string) {
+    const session = this.sessionGeneration, generation = this.caseGeneration;
     const created = await this.run("Opening replay", () => this.api.replay(missionId), e => {
       if (e.code === "replay_not_available") {
         void this.loadProgression();
@@ -508,12 +579,76 @@ export class AppController {
       }
       return false;
     });
-    if (created) { this.toast("Replay started. Replays award no points or achievements.", "info"); this.begin(created); }
+    if (created && session === this.sessionGeneration && generation === this.caseGeneration) {
+      this.toast("Replay started. Replays award no points or achievements.", "info"); this.begin(created);
+    }
+  }
+
+  async abandonCurrentCase(): Promise<boolean> {
+    const current = this.game;
+    if (!current || current.attempt_kind !== "ordinary" || current.state.outcome !== null || this.busy) return false;
+    const session = this.sessionGeneration, generation = this.caseGeneration;
+    const isCurrent = () => session === this.sessionGeneration && generation === this.caseGeneration && this.caseId === current.case_id;
+
+    const refreshDesk = async () => {
+      this.clearCase();
+      this.ordinaryCaseId = null; this.activityKnown = false;
+      this.go("cases");
+      await Promise.all([this.syncCurrentCase(), this.fetchProgression(true)]);
+    };
+
+    const abandoned = await this.run("Abandoning case", async () => {
+      try {
+        const result = await this.api.abandonCase(current.case_id, current.state_version);
+        if (!isCurrent()) return false;
+        if (this.summary) this.summary = { ...this.summary, points: result.points_after, rank: result.rank_after };
+      } catch (e) {
+        if (!isCurrent()) return false;
+        if (e instanceof ApiError && e.code === "stale_version") {
+          const checked = await this.api.currentActivity();
+          if (!isCurrent()) return false;
+          this.applyActivity(checked);
+          if (!this.game) this.go("cases");
+          this.toast("This case changed in another tab or device. Review the latest case and confirm abandonment again.", "error");
+          return false;
+        }
+        if (e instanceof ApiError && (e.status === 404 || e.code === "case_not_abandonable")) {
+          await refreshDesk();
+          this.toast("This case can no longer be abandoned. The case desk has been refreshed.", "info");
+          return false;
+        }
+        if (e instanceof ApiError && e.status === 0) {
+          const checked = await this.api.currentActivity();
+          if (!isCurrent()) return false;
+          if (checked.ordinary_case?.case_id !== current.case_id) {
+            await refreshDesk();
+            this.toast("Case abandoned. You can start a new case whenever you're ready.", "success");
+            return true;
+          }
+          this.applyActivity(checked);
+        }
+        if (e instanceof ApiError && e.status === 429) await new Promise(resolve => setTimeout(resolve, 1000));
+        throw e;
+      }
+
+      await refreshDesk();
+      this.toast("Case abandoned. You can start a new case whenever you're ready.", "success");
+      return true;
+    });
+    return abandoned === true;
   }
 
   async resume() {
+    if (this.busy || !this.caseId) return;
+    const id = this.caseId, generation = this.caseGeneration;
     const loaded = await this.run("Retrieving case file", () => this.api.load(this.caseId));
-    if (!loaded) return;
+    if (!loaded || id !== this.caseId || generation !== this.caseGeneration) return;
+    if (this.game && loaded.state_version < this.game.state_version) return;
+    if (loaded.state.outcome === "abandoned") {
+      this.clearCase(); this.go("cases");
+      await this.syncCurrentCase();
+      return;
+    }
     this.game = loaded;
     this.ensureTrail();
     this.briefing = false; this.pendingLead = "";
@@ -524,31 +659,52 @@ export class AppController {
 
   private async reloadCase() {
     if (!this.caseId) return;
-    try { this.game = await this.api.load(this.caseId); void this.refreshQuotes(); } catch (e) { this.fail(e); }
+    const id = this.caseId, generation = this.caseGeneration;
+    try {
+      const loaded = await this.api.load(id);
+      if (id !== this.caseId || generation !== this.caseGeneration) return;
+      if (this.game && loaded.state_version < this.game.state_version) return;
+      if (loaded.state.outcome === "abandoned") {
+        this.clearCase(); this.go("cases");
+        await this.syncCurrentCase();
+      } else { this.game = loaded; void this.refreshQuotes(); }
+    } catch (e) { if (id === this.caseId && generation === this.caseGeneration) this.fail(e); }
   }
 
   /** Quotes depend on case state, venues and balance, so they are refreshed after every state change. */
   async refreshQuotes() {
-    const id = this.caseId;
+    const id = this.caseId, generation = this.caseGeneration, version = this.game?.state_version;
+    const isCurrent = () => id === this.caseId && generation === this.caseGeneration && version === this.game?.state_version;
     if (!id || !this.game || this.game.state.outcome) { this.quotes = []; this.quotesLoaded = true; return; }
     try {
       const quotes = await this.api.quotes(id);
-      if (id === this.caseId) this.quotes = quotes;
-    } catch (e) { if (e instanceof ApiError && e.status === 401) this.fail(e); else this.quotes = []; }
-    finally { this.quotesLoaded = true; }
+      if (isCurrent()) this.quotes = quotes;
+    } catch (e) {
+      if (isCurrent()) { this.quotes = []; this.fail(e); }
+    } finally { if (isCurrent()) this.quotesLoaded = true; }
   }
 
   async refreshLedger() {
     if (!this.caseId) return;
-    try { this.ledger = await this.api.ledger(this.caseId); } catch (e) { if (e instanceof ApiError && e.status === 401) this.fail(e); }
+    const id = this.caseId, generation = this.caseGeneration;
+    try {
+      const ledger = await this.api.ledger(id);
+      if (id === this.caseId && generation === this.caseGeneration) this.ledger = ledger;
+    } catch (e) { if (id === this.caseId && generation === this.caseGeneration) this.fail(e); }
   }
 
   async command(payload: ClientCommand, message: string, label = "Working", quiet = false): Promise<boolean> {
     const current = this.game;
-    if (!current) return false;
+    if (!current || current.state.outcome !== null || this.busy) return false;
+    const generation = this.caseGeneration;
     if (payload.type === "visit_venue") this.lastWitness = null;
     const next = await this.run(label, () => this.api.command(current.case_id, current.state_version, payload));
-    if (!next) return false;
+    if (this.caseId !== current.case_id || generation !== this.caseGeneration) return false;
+    if (!next) { await this.reloadCase(); return false; }
+    if (this.game && next.state_version < this.game.state_version) {
+      await this.reloadCase();
+      return true;
+    }
     this.game = next;
     const account = next.events.find(e => e.event_type === "witness_account")?.data;
     if (account?.message && !next.duplicate) {
@@ -562,11 +718,26 @@ export class AppController {
       }];
     }
     if (next.state.current_state !== current.state.current_state) {
+      this.lastWitness = null;
+      this.witnessVisit = null;
+      this.quotes = []; this.quotesLoaded = false;
       this.trail = [...this.trail, next.state.current_state];
     }
     this.persist();
     if (!next.state.outcome && payload.type !== "record_trait") void this.refreshQuotes();
-    if (!quiet) this.toast(account?.message ? "Witness account added to your notebook." : message, "success");
+    const travelEvent = payload.type === "travel"
+      ? next.events.find(e => e.event_type === "arrived_on_trail" || e.event_type === "false_destination")
+      : undefined;
+    const feedback = travelEvent?.event_type === "arrived_on_trail"
+      ? "The trail is hot."
+      : travelEvent?.event_type === "false_destination"
+        ? "The trail has gone cold."
+        : payload.type === "travel"
+          ? next.state.trail_status === "cold" ? "The trail has gone cold." : "The trail is hot."
+        : account?.message
+          ? "Witness account added to your notebook."
+          : message;
+    if (!quiet) this.toast(feedback, payload.type === "travel" && next.state.trail_status === "cold" ? "error" : "success");
     if (next.state.outcome) {
       await this.loadProgression();
       this.go("results");
@@ -587,9 +758,27 @@ export class AppController {
     return true;
   }
 
-  newDesk() {
+  private clearCase() {
+    this.caseGeneration++;
     this.game = null; this.caseId = ""; this.notes = []; this.trail = []; this.rankAtStart = null;
+    this.briefing = false; this.pendingLead = ""; this.lastWitness = null; this.witnessVisit = null; this.returning = false;
+    this.quotes = []; this.quotesLoaded = false; this.ledger = [];
     ["nc-case", "nc-notes", "nc-trail", "nc-rank"].forEach(k => sessionStorage.removeItem(k));
+  }
+
+  newDesk() {
+    this.clearCase();
+    this.activityKnown = false;
     this.go("cases");
+    void this.syncCurrentCase();
+  }
+
+  async startNewCaseAfterResult() {
+    if (!this.game?.state.outcome || this.busy) return;
+    this.clearCase();
+    this.ordinaryCaseId = null;
+    this.activityKnown = true;
+    this.go("cases");
+    await this.openCase();
   }
 }

@@ -8,6 +8,7 @@ import type { Texture } from "@babylonjs/core/Materials/Textures/texture";
 import { hex, seeded } from "../shared/chase3d-kit.ts";
 import { createStage, type Stage } from "../shared/chase3d-stage.ts";
 import { danfo, runabout } from "../shared/chase3d-cars.ts";
+import { contactShadow, roundedBox } from "../shared/chase3d-shapes.ts";
 import { armAngles, legAngles, type CameraShot } from "../shared/scene-core.ts";
 import { setFor } from "./chase3d-sets.ts";
 import { createDriver, fitShot, type WitnessFrame, type WitnessHandle, type WitnessOptions } from "./witness-driver.ts";
@@ -15,9 +16,20 @@ import { ROAD_Z, VEHICLE_FROM_X, WITNESS, busDoorAt, cameraAt, listenLean, playe
 
 export type { WitnessFrame, WitnessHandle, WitnessOptions };
 
+// ImageProcessingConfiguration.TONEMAPPING_ACES, as a plain number: importing that module on its own breaks Babylon's shader loading under the vite dev server.
+const TONEMAPPING_ACES = 1;
 const HEAD_Y = 1.72;
 /** Where the sun or moon sits across the painted sky, in texture pixels. */
 const SKY_ORB_X = 256;
+
+/** The stage's box, but with eased edges for chunky untextured pieces (walls, crates, stalls); thin pieces and textured ones stay sharp. */
+function softBox(stage: Stage): Stage["box"] {
+  return (name, w, h, d, mtl, x, y, z, parent) => {
+    const smallest = Math.min(w, h, d);
+    if (smallest < 0.24 || Math.max(w, h, d) > 14 || mtl.diffuseTexture || mtl.emissiveTexture) return stage.box(name, w, h, d, mtl, x, y, z, parent);
+    return stage.place(roundedBox(stage.scene, name, w, h, d, Math.min(0.1, smallest / 4), true), mtl, x, y, z, parent);
+  };
+}
 
 export async function createWitnessScene(canvas: HTMLCanvasElement, options: WitnessOptions): Promise<WitnessHandle> {
   const stage = createStage(canvas, { hour: options.hour, quality: options.quality });
@@ -30,6 +42,12 @@ export async function createWitnessScene(canvas: HTMLCanvasElement, options: Wit
   scene.fogColor = hex(palette.skyBottom);
   camera.maxZ = 400;
 
+  // A gentle film grade: tone mapping stops the sun-lit ground blowing out, with a little contrast and a soft vignette. It costs nothing extra on screen.
+  const grade = scene.imageProcessingConfiguration;
+  grade.toneMappingEnabled = true; grade.toneMappingType = TONEMAPPING_ACES;
+  grade.exposure = night ? 1.05 : 1.15; grade.contrast = 1.18;
+  if (!light) { grade.vignetteEnabled = true; grade.vignetteWeight = 2.2; grade.vignetteStretch = 0.4; grade.vignetteColor.set(0, 0, 0, 0); }
+
   // The sky is a painted dome that follows the camera, so it never runs out however the camera turns.
   const skyPaint = textured("sky", 1, 1, g => {
     const gradient = g.createLinearGradient(0, 0, 0, 512);
@@ -37,9 +55,21 @@ export async function createWitnessScene(canvas: HTMLCanvasElement, options: Wit
     g.fillStyle = gradient; g.fillRect(0, 0, 1024, 512);
     const sr = seeded(5);
     if (palette.stars) for (let i = 0; i < 260; i++) { g.fillStyle = `rgba(255,255,255,${0.4 + sr() * 0.5})`; g.fillRect(sr() * 1024, sr() * 240, 2, 2); }
-    g.fillStyle = palette.orbColor; g.beginPath(); g.arc(SKY_ORB_X, palette.orb === "moon" ? 150 : 190, palette.orb === "moon" ? 18 : 26, 0, Math.PI * 2); g.fill();
-    // Soft clouds by day.
-    if (!palette.stars) { g.fillStyle = "rgba(255,255,255,.35)"; for (let i = 0; i < 14; i++) g.fillRect(sr() * 960, 90 + sr() * 120, 60 + sr() * 90, 9 + sr() * 9); }
+    // A soft glow round the sun or moon, then the disc itself.
+    const oy = palette.orb === "moon" ? 150 : 190, glow = g.createRadialGradient(SKY_ORB_X, oy, 4, SKY_ORB_X, oy, palette.orb === "moon" ? 90 : 190);
+    glow.addColorStop(0, palette.stars ? "rgba(200,215,255,.35)" : "rgba(255,238,190,.75)"); glow.addColorStop(1, "rgba(255,238,190,0)");
+    g.fillStyle = glow; g.fillRect(0, 0, 1024, 512);
+    g.fillStyle = palette.orbColor; g.beginPath(); g.arc(SKY_ORB_X, oy, palette.orb === "moon" ? 18 : 26, 0, Math.PI * 2); g.fill();
+    // Cloud puffs by day: a few overlapping soft blobs each, flatter underneath.
+    if (!palette.stars) for (let i = 0; i < 9; i++) {
+      const cx = sr() * 1000, cy = 100 + sr() * 110, sz = 26 + sr() * 36;
+      for (let k = 0; k < 6; k++) {
+        const px = cx + (k - 2.5) * sz * 0.7, py = cy + Math.sin(k * 1.7) * sz * 0.2, rr = sz * (0.7 + 0.4 * Math.sin(k * 1.3 + 1));
+        const puff = g.createRadialGradient(px, py, 0, px, py, rr);
+        puff.addColorStop(0, "rgba(255,255,255,.62)"); puff.addColorStop(1, "rgba(255,255,255,0)");
+        g.fillStyle = puff; g.fillRect(px - rr, py - rr, rr * 2, rr * 2);
+      }
+    }
   }, 1024, 512);
   skyPaint.material.emissiveTexture = skyPaint.material.diffuseTexture; skyPaint.material.disableLighting = true; skyPaint.material.fogEnabled = false;
   const dome = CreateSphere("sky", { diameter: 300, segments: 24, sideOrientation: Mesh.BACKSIDE }, scene);
@@ -49,6 +79,7 @@ export async function createWitnessScene(canvas: HTMLCanvasElement, options: Wit
   const earth = textured("earth", 80, 70, g => {
     g.fillStyle = "#a35f38"; g.fillRect(0, 0, 512, 512);
     const er = seeded(11);
+    for (let i = 0; i < 40; i++) { const x = er() * 512, y = er() * 512, rr = 30 + er() * 60, patch = g.createRadialGradient(x, y, 0, x, y, rr); patch.addColorStop(0, er() < 0.5 ? "rgba(110,55,32,.28)" : "rgba(214,150,100,.25)"); patch.addColorStop(1, "rgba(0,0,0,0)"); g.fillStyle = patch; g.fillRect(x - rr, y - rr, rr * 2, rr * 2); }
     for (let i = 0; i < 1800; i++) { const v = er(); g.fillStyle = v < 0.5 ? "rgba(120,62,35,.5)" : "rgba(196,128,84,.45)"; g.fillRect(er() * 512, er() * 512, 2 + er() * 4, 2 + er() * 4); }
   }, 512, 512);
   const earthMap = earth.material.diffuseTexture as Texture;
@@ -58,14 +89,18 @@ export async function createWitnessScene(canvas: HTMLCanvasElement, options: Wit
   // The box's top maps u across the lane and v along it, so one dash per tile, repeated along the road.
   const tar = textured("tar", 3.4, 120, g => {
     g.fillStyle = "#3a3b40"; g.fillRect(0, 0, 64, 512);
+    const tr = seeded(3);
+    for (let i = 0; i < 260; i++) { g.fillStyle = tr() < 0.5 ? "rgba(20,20,24,.35)" : "rgba(95,95,100,.3)"; g.fillRect(tr() * 64, tr() * 512, 1 + tr() * 3, 1 + tr() * 6); }
+    g.fillStyle = "rgba(15,15,18,.28)"; g.fillRect(12, 0, 8, 512); g.fillRect(44, 0, 8, 512);
     g.fillStyle = "#e8e2cf"; g.fillRect(29, 0, 6, 256);
+    g.fillStyle = "rgba(232,226,207,.8)"; g.fillRect(0, 0, 2, 512); g.fillRect(62, 0, 2, 512);
   }, 64, 512);
   (tar.material.diffuseTexture as Texture).vScale = 15;
   box("lane", 120, 0.03, 3.4, tar.material, 0, 0.015, ROAD_Z);
   box("kerb", 120, 0.12, 0.18, mat("#9b9486"), 0, 0.06, ROAD_Z + 1.78);
 
   // ---- The set: everything that makes this venue look like itself (see chase3d-sets.ts) ----
-  const dressing = setFor(options.recipe.set)({ stage, options });
+  const dressing = setFor(options.recipe.set)({ stage: light ? stage : { ...stage, box: softBox(stage) }, options });
 
   // ---- The vehicle ----
   const car = options.arrival === "drive" ? runabout(stage) : null;
@@ -82,6 +117,8 @@ export async function createWitnessScene(canvas: HTMLCanvasElement, options: Wit
   const witnessLook = driver.witness;
   const witness = stage.addFigure(witnessLook)!;
   witness.root.position.set(WITNESS.x, 0, WITNESS.z);
+  contactShadow(scene, witness.root, 0.9, 0.7);
+  if (player && !light) contactShadow(scene, player.root, 0.9, 0.7);
   const head = witness.root.getChildMeshes().find(m => m.name === "head");
   const mouth = sphere("mouth", 1, mat("#4a1414", { specular: 0.1 }), 0, HEAD_Y - 0.11, -0.25);
   mouth.parent = witness.root;

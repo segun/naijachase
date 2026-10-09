@@ -68,7 +68,8 @@ test("the UI never calculates fares and always submits a server-quoted mode", ()
 test("quotes are refreshed whenever case state changes and are never stale across cases", () => {
   const app = read("state/app.svelte.ts");
   assert.match(app, /async refreshQuotes\(\)/);
-  assert.match(app, /if \(id === this\.caseId\) this\.quotes = quotes/);
+  assert.match(app, /version === this\.game\?\.state_version/);
+  assert.match(app, /if \(isCurrent\(\)\) this\.quotes = quotes/);
   assert.match(app, /payload\.type !== "record_trait"/);
   assert.ok((app.match(/refreshQuotes\(\)/g) ?? []).length >= 5);
 });

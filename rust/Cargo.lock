@@ -978,6 +978,7 @@ version = "0.1.0"
 dependencies = [
  "naijachase-content",
  "naijachase-contracts",
+ "sha2",
  "thiserror",
 ]
 
@@ -989,6 +990,7 @@ dependencies = [
  "dotenvy",
  "mysql",
  "naijachase-contracts",
+ "naijachase-core",
  "serde",
  "serde_json",
  "sha2",

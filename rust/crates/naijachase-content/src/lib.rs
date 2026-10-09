@@ -39,6 +39,24 @@ fn contains_place_name(text: &str, name: &str) -> bool {
         before_ok && after_ok
     })
 }
+
+fn has_non_english_witness_pattern(text: &str) -> bool {
+    let lower = format!(" {} ", text.to_lowercase());
+    [
+        " na wetin ",
+        " wey ",
+        " dey ",
+        " e no ",
+        " make you ",
+        " i remember am ",
+        " the person ask ",
+        " the person say ",
+        " the person price ",
+        " the person carry ",
+    ]
+    .iter()
+    .any(|pattern| lower.contains(pattern))
+}
 pub fn row_count(path: &Path) -> Result<usize, Error> {
     Ok(count(path)?)
 }
@@ -59,7 +77,7 @@ pub fn validate_repository(root: &Path) -> Result<(), Vec<String>> {
         (
             "dialogue variants",
             "data/gameplay/clue-dialogue-variants.csv",
-            12726,
+            6363,
         ),
         (
             "mission narratives",
@@ -127,6 +145,26 @@ pub fn validate_repository(root: &Path) -> Result<(), Vec<String>> {
                     errors.push(format!("{state}: only {} clue atoms", atoms.len()))
                 }
                 for atom in atoms {
+                    if has_non_english_witness_pattern(&atom.dialogue) {
+                        errors.push(format!(
+                            "{}: non-English or malformed witness grammar remains",
+                            atom.atom_id
+                        ));
+                    }
+                    for variant in c.dialogue_variants.get(&atom.atom_id).into_iter().flatten() {
+                        if variant.speech_register != "English" {
+                            errors.push(format!(
+                                "{}: non-English witness register remains",
+                                variant.variant_id
+                            ));
+                        }
+                        if has_non_english_witness_pattern(&variant.dialogue) {
+                            errors.push(format!(
+                                "{}: non-English or malformed witness grammar remains",
+                                variant.variant_id
+                            ));
+                        }
+                    }
                     if atom.candidate_states.split('|').all(|x| x != state) {
                         errors.push(format!(
                             "{}: destination absent from candidates",
@@ -345,6 +383,29 @@ impl Profile {
         ]
     }
 }
+
+pub fn natural_trait_clause(subject: &str, field: &str, value: &str) -> String {
+    match field {
+        "sex" | "height" | "skin_tone" => format!("{subject} was {value}"),
+        "hair" => format!("{subject} had {value}"),
+        "hobby" => format!("{subject} spoke enthusiastically about {value}"),
+        "vehicle" => format!("{subject} arrived in {value}"),
+        "accessory" => {
+            let verb = match value {
+                "a camera bag"
+                | "a carved walking stick"
+                | "a leather satchel"
+                | "a silver briefcase" => "carried",
+                _ => "wore",
+            };
+            format!("{subject} {verb} {value}")
+        }
+        // Features are predicates such as "quotes old proverbs" and
+        // "walks with a limp", rather than noun phrases.
+        "feature" => format!("{subject} {value}"),
+        _ => format!("{subject} matched {value}"),
+    }
+}
 impl Catalogue {
     pub fn route(&self, m: &Mission) -> Result<Vec<String>, Error> {
         let anchors = [
@@ -488,7 +549,7 @@ impl Catalogue {
                 .values()
                 .map(Vec::len)
                 .sum::<usize>()
-                != 12726
+                != 6363
         {
             return Err(Error::Incomplete(CatalogueSummary {
                 missions: value.missions.len(),
@@ -517,6 +578,12 @@ mod tests {
             (1000, 100, 37, 1332, 500)
         );
         assert_eq!(c.atoms.values().map(Vec::len).sum::<usize>(), 707);
+        assert!(c.dialogue_variants.values().all(|variants| {
+            variants.len() == 9
+                && variants
+                    .iter()
+                    .all(|variant| variant.speech_register == "English")
+        }));
         for (state, atoms) in &c.atoms {
             let spotlight = ["Lagos", "Kano", "Niger", "Oyo", "Rivers"].contains(&state.as_str());
             assert_eq!(
@@ -557,6 +624,26 @@ mod tests {
     #[test]
     fn malformed_or_missing_content_is_rejected() {
         assert!(Catalogue::load(Path::new("/definitely/missing/naijachase")).is_err());
+    }
+
+    #[test]
+    fn profile_traits_use_grammatical_predicates() {
+        assert_eq!(
+            natural_trait_clause("the suspect", "accessory", "a silver briefcase"),
+            "the suspect carried a silver briefcase"
+        );
+        assert_eq!(
+            natural_trait_clause("the suspect", "accessory", "round spectacles"),
+            "the suspect wore round spectacles"
+        );
+        assert_eq!(
+            natural_trait_clause("the suspect", "feature", "quotes old proverbs"),
+            "the suspect quotes old proverbs"
+        );
+        assert_eq!(
+            natural_trait_clause("the suspect", "feature", "walks with a limp"),
+            "the suspect walks with a limp"
+        );
     }
     #[test]
     fn repository_integrity_gate_passes() {

@@ -3,11 +3,10 @@
 // climbs in and drives off or heads for the roadside with a thumb out. Built from primitives and painted textures. Timing and framing live in garage-scene.ts.
 import { PointLight } from "@babylonjs/core/Lights/pointLight";
 import { Vector3 } from "@babylonjs/core/Maths/math.vector";
-import { TransformNode } from "@babylonjs/core/Meshes/transformNode";
 import type { StandardMaterial } from "@babylonjs/core/Materials/standardMaterial";
 import { hex, seeded } from "../shared/chase3d-kit.ts";
-import { createStage, type SceneHandle, type SceneOptions, type Stage } from "../shared/chase3d-stage.ts";
-import { runabout } from "../shared/chase3d-cars.ts";
+import { createStage, type SceneHandle, type SceneOptions } from "../shared/chase3d-stage.ts";
+import { runabout, saloon } from "../shared/chase3d-cars.ts";
 import { ROOM, armAngles, legAngles } from "../shared/scene-core.ts";
 import {
   CAR, DOOR, T_DRIVE_END, T_END, T_HITCH_END, carPitchAt, carZAt, doorAt, drivePoseAt, glassAt, introAlphaAt, introPoseAt, introShotAt, outroGlassAt, outroShotAt,
@@ -16,43 +15,6 @@ import {
 
 export type GarageHandle = SceneHandle;
 export type GarageOptions = SceneOptions;
-
-type Wheels = TransformNode[];
-
-/** A closed saloon in the given colour. The car faces -z, so its front (and headlights) are at the camera end. */
-function saloon(stage: Stage, name: string, colour: string, x: number, z: number): { root: TransformNode; wheels: Wheels } {
-  const { box, cyl, mat, caster, textured, plane, scene } = stage;
-  const root = new TransformNode(name, scene);
-  root.position.set(x, 0, z);
-  const body = mat(colour, { specular: 0.35 });
-  const dark = mat("#15191c", { specular: 0.1 });
-  const glass = mat("#1b2f3d", { specular: 0.6 });
-  caster(box("lower", 1.6, 0.5, 3.6, body, 0, 0.55, 0, root));
-  caster(box("cabin", 1.4, 0.55, 1.9, body, 0, 1.07, 0.25, root));
-  box("windows", 1.43, 0.3, 1.78, glass, 0, 1.08, 0.25, root);
-  box("bumperF", 1.62, 0.16, 0.12, dark, 0, 0.36, -1.8, root);
-  box("bumperB", 1.62, 0.16, 0.12, dark, 0, 0.36, 1.8, root);
-  box("grille", 0.7, 0.18, 0.04, dark, 0, 0.62, -1.81, root);
-  for (const s of [-1, 1]) {
-    box("headlight", 0.3, 0.14, 0.04, mat("#fff4cf", { emissive: "#fff4cf", specular: 0 }), s * 0.55, 0.64, -1.81, root);
-    box("taillight", 0.26, 0.12, 0.04, mat("#d63a2e", { emissive: "#8a1c14", specular: 0 }), s * 0.58, 0.64, 1.81, root);
-  }
-  const plate = textured(`${name}Plate`, 0.5, 0.13, g => {
-    g.fillStyle = "#f6f1e1"; g.fillRect(0, 0, 256, 64); g.fillStyle = "#176b4d"; g.fillRect(0, 0, 256, 12);
-    g.fillStyle = "#1b1b1b"; g.font = "bold 28px monospace"; g.fillText("KJA 482 AB", 28, 48);
-  }, 256, 64);
-  const front = plane("plate", plate.width, plate.height, plate.material, 0, 0.42, -1.815);
-  front.parent = root;
-  const wheels: Wheels = [];
-  for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
-    const hub = new TransformNode("wheel", scene);
-    hub.parent = root; hub.position.set(sx * 0.8, 0.31, sz * 1.15);
-    const tyre = cyl("tyre", 0.62, 0.62, 0.22, dark, 0, 0, 0, hub); tyre.rotation.z = Math.PI / 2;
-    const cap = cyl("cap", 0.3, 0.3, 0.24, mat("#aeb6bb", { specular: 0.5 }), 0, 0, 0, hub); cap.rotation.z = Math.PI / 2;
-    wheels.push(hub);
-  }
-  return { root, wheels };
-}
 
 export async function createGarageScene(canvas: HTMLCanvasElement, options: GarageOptions): Promise<GarageHandle> {
   const stage = createStage(canvas, { hour: options.hour, quality: options.quality, minLamp: 0.6 });

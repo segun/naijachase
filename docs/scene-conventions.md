@@ -67,3 +67,19 @@ A venue is a recipe plus a scenery set per renderer; the choreography is shared 
 - The witness scene is the whole round trip: arrival, conversation and the walk back to the vehicle. Keep the corridor from the
   witness to the vehicle clear in a set (the player walks it twice), and do not draw anything on the lane near the stopping point.
   The office part of the return is separate (`room-scene.ts`, `T_RETURN_FROM`).
+
+## Looks: cheap upgrades, no artist
+
+Everything is still built in code (no GLB or other model files). What keeps it from looking like building blocks:
+
+- `shared/chase3d-shapes.ts`: `loft` sweeps rounded cross-sections along a length (car and bus bodies, with a paint colour per face),
+  `roundedBox` softens a box, `tyre` is a lathe, `contactShadow` is a soft blob under things that stand on the ground.
+- `shared/chase3d-cars.ts` builds the runabout, minibus and saloon from those. Keep their wheel positions, the driver's seat and the
+  bus's rear-door pivot where they are: the witness timeline and the garage depend on them.
+- The witness scene grades the picture (tone mapping, contrast, vignette), paints a sun glow and cloud puffs, and softens chunky
+  untextured boxes (`softBox` in `chase3d-witness.ts`; thin and textured boxes stay sharp, and light quality keeps plain boxes).
+  A rounded box built with `plain` has the same vertex data as a Babylon box, so it can still be merged with boxes.
+- A prop can set `soft` (a radius in metres): 3D rounds the box and 2D chamfers the corners of the face it shows. The parked minibuses use it.
+- The 2D renderer matches: curved bodies with a light-to-dark gradient, wheel arches, a ground shadow, a sun glow and a vignette.
+- Dev note: previewing 3D in a vite dev server with a fresh cache can leave the canvas black because Babylon's shaders fail to load.
+  A production build is fine; it is not a scene bug.

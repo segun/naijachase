@@ -98,22 +98,14 @@ fn profile_value<'a>(p: &'a Profile, key: &str) -> &'a str {
     }
 }
 fn trait_sentence(key: &str, value: &str, sex: &str) -> String {
-    match key {
-        "sex" => format!(
-            "The traveller was a {}.",
-            if value == "male" { "man" } else { "woman" }
-        ),
-        "height" => format!("The person was {value}."),
-        "skin_tone" => format!("The traveller was {value}."),
-        "hair" => format!("The traveller had {value}."),
-        "hobby" => format!("They mentioned an interest in {value}."),
-        "vehicle" => format!(
-            "I saw {} arrive in {value}.",
-            if sex == "male" { "him" } else { "her" }
-        ),
-        "accessory" => format!("They wore {value}."),
-        _ => format!("One detail stood out: {value}."),
-    }
+    let _ = sex;
+    let clause = naijachase_content::natural_trait_clause("the traveller", key, value);
+    let mut characters = clause.chars();
+    let sentence = match characters.next() {
+        Some(first) => first.to_uppercase().collect::<String>() + characters.as_str(),
+        None => clause,
+    };
+    format!("{sentence}.")
 }
 fn clock(minutes: u32) -> String {
     let total = 420 + minutes;
@@ -242,29 +234,12 @@ fn dialogue<'a>(data: &'a Catalogue, atom: &'a ClueAtom, difficulty: u8, seed: u
         3 => "medium",
         _ => "hard",
     };
-    let role = atom.witness_roles.split('|').next().unwrap_or("");
-    let role_lower = role.to_lowercase();
-    let informal = [
-        "agbero",
-        "conductor",
-        "driver",
-        "guard",
-        "security",
-        "loader",
-        "seller",
-        "trader",
-        "boatman",
-        "dockworker",
-    ]
-    .iter()
-    .any(|word| role_lower.contains(word));
-    let register = if informal { "Pidgin" } else { "English" };
     let choices = data
         .dialogue_variants
         .get(&atom.atom_id)
         .into_iter()
         .flatten()
-        .filter(|v| v.difficulty == level && v.speech_register == register)
+        .filter(|v| v.difficulty == level && v.speech_register == "English")
         .collect::<Vec<_>>();
     choices
         .get(seed as usize % choices.len().max(1))

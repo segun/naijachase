@@ -56,6 +56,14 @@ completed.
 - [x] Rookie starting rank
 - [x] Career points and promotions
 - [x] Automatic saving and case resumption
+- [x] Confirmed ordinary-case abandonment with complete local-state cleanup,
+  authoritative activity refresh, and explicit retry after stale versions
+- [x] Atomic per-player ordinary assignment; existing attempts resume instead
+  of resetting the briefing, and a replay cannot masquerade as a new ordinary case
+- [x] Case lifecycle regressions: executable web controllers, concurrent
+  real-MySQL assignment/abandonment/reassignment, and questioned-witness quote filtering
+- [ ] Review any historical duplicate unfinished ordinary attempts before
+  repairing affected accounts; never silently discard their investigation progress
 - [x] Seven-day case deadline beginning Monday at 07:00
 - [x] Case score, travel penalties, arrest, and failure states
 - [x] Eight-stop cases: opening jurisdiction plus seven successful state/FCT trips
@@ -80,8 +88,10 @@ completed.
 - [x] Shuffle all eight dossier fields per case instead of revealing them in the
   fixed sex, height, skin-tone, hair, hobby, vehicle, accessory, feature order.
   Keep the shuffle deterministic for saves, retries, and weekly play.
-- [x] Travel unlocks as soon as the key witness at the current stop provides
-  that stop's dossier hint; the other two interviews remain optional
+- [x] Travel unlocks once the key witness at the current stop is questioned;
+  recording the clue in the dossier can happen later
+- [x] A warrant requires all eight dossier details; players may fill them in
+  before or after travelling to the next stop
 - [x] Different destination evidence from each witness
 - [x] Individual clues remain ambiguous
 - [x] Three-clue intersection resolves to exactly one state
@@ -89,8 +99,9 @@ completed.
 - [x] Notebook shows the narrowing destination shortlist
 - [x] Nigerian roles such as agbero, market woman, conductor, boatman,
   clearing agent, cattle trader, and palace guard
-- [x] Nigerian Pidgin for appropriate informal and non-formal witnesses
-- [x] Standard English for most formal and professional witnesses
+- [x] Use grammatically correct English for every witness role; informal job
+  titles remain locally appropriate, but dialogue is no longer mechanically
+  generated Nigerian Pidgin.
 - [x] Removed generic phrases such as "route cipher" and "specialist detail"
 
 ### Suspects and warrants
@@ -100,8 +111,8 @@ completed.
 - [x] Unique profile for every thief
 - [x] Profile evidence described during ordinary witness interviews and entered
   manually by the player
-- [x] Physical descriptors are embedded naturally in both English and Nigerian
-  Pidgin witness accounts
+- [x] Physical descriptors, carried/worn accessories, and predicate-style
+  distinguishing features are embedded as grammatical English clauses.
 - [x] Completed profile opens a three-suspect comparison led by the player
 - [x] All eight fields are required before a warrant can be issued
 - [x] Correct warrant and capture state required to close a case
@@ -128,9 +139,9 @@ completed.
 ## Current limitations
 
 - [x] Every jurisdiction has 18 distinct clue atoms.
-- [x] Every clue atom has three formulations per difficulty and speech register.
-- [ ] Nigerian Pidgin variants are mechanically generated and still require
-  regional, native-speaker editorial review.
+- [x] Every clue atom has three grammatical English formulations per difficulty.
+- [x] Remove all mechanically generated Nigerian Pidgin witness variants and
+  remove runtime/generator selection of those variants.
 - [x] Venue context is state-, city-, LGA-, landmark-, and institution-aware.
 - [x] Local travel uses verified LGA boundary centroids wherever matched.
 - [ ] Sixty-five non-LGA landmarks and institutions still use the documented
@@ -143,8 +154,8 @@ completed.
   leads, time, scoring, and explicitly labelled witness reliability.
 - [x] All cultural, historical, and linguistic clues have systematic editorial
   metadata and source coverage.
-- [ ] Publication remains blocked on 280 exact source-line checks, 78 human
-  sensitivity reviews, and native-speaker review of the Pidgin variants.
+- [ ] Publication remains blocked on 280 exact source-line checks and 78 human
+  sensitivity reviews.
 - [x] Venue encounters now have an atmospheric terminal presentation.
 - [x] The wider terminal presentation now includes structured dossiers,
   notebooks, route analysis, warrant paperwork, scenes, help, and accessible
@@ -164,15 +175,14 @@ completed.
 - [x] South South batch: Akwa Ibom, Bayelsa, Cross River, Delta, Edo, and
   Rivers.
 - [x] South East batch: Abia, Anambra, Ebonyi, Enugu, and Imo.
-- [x] Target 500–750 curated clue atoms nationally. Current total: 666.
+- [x] Target 500–750 curated clue atoms nationally. Current total: 707.
 - [x] Cover history, kingdoms, independence, civil-war history, languages,
   traditions, food, festivals, literature, music, architecture, geography,
   ecology, agriculture, industry, institutions, monuments, and heritage.
-- [x] Give every clue at least three dialogue formulations per difficulty and
-  speech register.
+- [x] Give every clue at least three English dialogue formulations per difficulty.
 - [x] Add easy, medium, and hard versions of clue phrasing.
-- [ ] User editorial task: manually review Nigerian Pidgin rather than relying
-  only on mechanical transformations.
+- [ ] Human-edit the remaining English witness lines for voice, rhythm, and
+  regional context after the automated grammar and predicate checks.
 - [x] Prevent recent clue and dialogue repetition within a career where unused
   alternatives remain available.
 
@@ -228,8 +238,8 @@ completed.
 - [x] Attach a reliable source or knowledge record to every clue atom.
 - [ ] Verify geographic, historical, cultural, and institutional claims. Current
   status: 238 reference-cross-checked; 280 require exact source-line checks.
-- [ ] Review Nigerian English and Pidgin with native speakers from multiple
-  regions; avoid presenting one variety as universal.
+- [ ] Review Nigerian English with editors from multiple regions; retain local
+  vocabulary without using mechanically generated dialect.
 - [ ] Check names, spelling, diacritics, and capitalisation. Automated Nigerian
   English and capitalisation checks pass; human name and diacritic review remains.
 - [x] Distinguish historical facts from current institutions and conditions.
@@ -430,6 +440,13 @@ local replay, or client-side prediction becomes a concrete product requirement.
   case, every resumable replay, and every active or in-transit weekly attempt;
   document `GET /v1/activity/current` for the frontend and keep the narrower
   ordinary endpoint for compatibility.
+- [x] Fix: the web case desk asks `GET /v1/activity/current` after login and on
+  load, so a fresh sign-in offers **Resume case** for an unfinished case instead
+  of always **Start new case**.
+- [x] Add an authenticated, version-checked ordinary-case abandonment operation
+  that discards case-local progression, preserves sanctions and unrelated
+  account state, releases the mission assignment, permits a new case, rejects
+  replays/weekly attempts, and includes a complete frontend handoff.
 - [x] Replace ordinary and weekly web dossier free-text inputs with server-owned
   select choices, session-cached loading, inline retry, saved-value preselection,
   and exact listed-value submission.
@@ -631,6 +648,22 @@ local replay, or client-side prediction becomes a concrete product requirement.
 
 **API, presentation, and verification**
 
+- [x] End a case authoritatively when an action reaches or crosses the simulated
+  seven-day deadline. Persist `outcome = deadline`, emit `deadline_expired`,
+  suppress the interrupted witness account, archive the failed attempt, and
+  show a timeout dialog with **Start new case** and **Close** actions. See
+  `docs/ui-api-handoff.md`.
+- [x] Treat wrong interstate destinations as cold trails across the engine and
+  API. Persist `state.trail_status`, emit explicit hot/cold travel events, offer
+  three venues from the jurisdiction actually visited, and return only neutral
+  English witness accounts there—never route clues, dossier evidence, cached
+  dialogue from the previous stop, or pressure-action bonus clues. Display the
+  authoritative status in the web case HUD and terminal. See
+  `docs/ui-api-handoff.md`.
+- [x] Bring the web development mock into hot/cold parity: wrong destinations
+  keep three local witnesses with neutral replies and no profile hints; recovery
+  restores the hot trail. Verify controller dialogue/notebook handling, travel
+  feedback without events, and persistent status including weekly attempts.
 - [x] Add transport quotes, current balance, opening budget, selected mode,
   fare charged, duration, and remaining balance to versioned contracts and
   renderer-neutral events. Update OpenAPI and generated TypeScript DTOs.
@@ -1193,6 +1226,9 @@ scores, rank, detection odds, panel votes, punishment, or jail time.
       the convention is in `docs/scene-conventions.md`.
       The player now walks back to the vehicle and is driven away, and the office plays a short return to a case
       terminal (status strip, leads, notebook, dossier, travel, warrant) instead of the old Investigate page.
+      Cheap look upgrades (no artist, no GLB): rounded lofted cars and buses, softened boxes, tone-mapped grade,
+      sun glow and clouds, contact shadows, and matching curved vehicles in 2D (`docs/scene-conventions.md`).
+      Not yet checked on real phones: frame rate, and whether the extra geometry is fine on low-end devices.
       Remaining: the other 34 venue scenes (split between two agents: `docs/agents/Agent1.md` and
       `docs/agents/Agent2.md`), the road journey with an LGA sign, the arrest
       sequence, and measuring frame rate on real mobile devices.
@@ -1265,7 +1301,7 @@ scores, rank, detection odds, panel votes, punishment, or jail time.
   account/session security and recovery tests pass.
 - [ ] Complete trademark, company-name, domain, web-app name, and social-handle
   clearance for Naija Chase before public branding or launch.
-- [ ] Complete outstanding source-line, sensitivity, Nigerian English, Pidgin,
+- [ ] Complete outstanding source-line, sensitivity, Nigerian English,
   spelling, name, and diacritic reviews from P2.
 - [ ] Define supported devices, performance budgets, uptime objectives, data
   retention, privacy policy, terms, community rules, and support process.

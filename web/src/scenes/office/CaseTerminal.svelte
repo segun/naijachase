@@ -27,6 +27,8 @@
   const waiting = $derived(app.coop.requests.filter(r => coopActions(r, app.player?.username ?? "").length).length);
 
   let menuOpen = $state(false);
+  let abandonOpen = $state(false);
+  let abandonDialog = $state<HTMLDialogElement>();
   let leaving = $state("");
   let now = $state(new Date());
   let root = $state<HTMLElement>();
@@ -56,6 +58,14 @@
     { screen: "settings", label: "Settings", icon: "sliders" }
   ];
   const title = $derived(items.find(i => i.screen === app.screen)?.label ?? "Case");
+
+  $effect(() => {
+    const dialog = abandonDialog;
+    if (!abandonOpen || !dialog) return;
+    const opener = document.activeElement as HTMLElement | null;
+    if (!dialog.open) dialog.showModal();
+    return () => { if (dialog.open) dialog.close(); opener?.focus?.(); };
+  });
 
   onMount(() => {
     const tick = setInterval(() => { now = new Date(); }, 20000);
@@ -115,7 +125,7 @@
         <span class="t-clock" aria-label="Local time">{day} · {clock}</span>
       </header>
       <section class="t-case" aria-label="Case status">
-        <div class="t-stat"><span class="t-tag">Location</span><strong>{gs.current_state}</strong><small>{zoneOf(gs.current_state) ?? "Nigeria"} · stop {Math.min(gs.stage + 1, TOTAL_STOPS)} of {TOTAL_STOPS}</small></div>
+        <div class="t-stat"><span class="t-tag">Location</span><strong>{gs.current_state}</strong><small>{zoneOf(gs.current_state) ?? "Nigeria"} · stop {Math.min(gs.stage + 1, TOTAL_STOPS)} of {TOTAL_STOPS} · trail {gs.trail_status}</small></div>
         <div class="t-stat"><span class="t-tag">Case clock</span><strong><Icon name={night ? "moon" : "sun"} /> {parts.day} {parts.time}</strong><small class:urgent={left.urgent}>{left.label}</small></div>
         <div class="t-stat t-deadline">
           <span class="t-tag">Deadline Monday 07:00</span>
@@ -146,6 +156,9 @@
               {@const n = item.count?.() ?? 0}
               <li><button class="t-opt" type="button" data-nav onclick={() => open(item.screen)}><Icon name={item.icon} /><span class="t-label">{item.label}</span>{#if n}<span class="t-count">{n}</span>{/if}</button></li>
             {/each}
+            {#if app.game?.attempt_kind === "ordinary" && app.game.state.outcome === null}
+              <li><button class="t-opt t-danger" type="button" data-nav disabled={app.busy || Boolean(leaving)} onclick={() => (abandonOpen = true)}><Icon name="logout" /><span class="t-label">Abandon case</span></button></li>
+            {/if}
             <li><button class="t-opt t-danger" type="button" data-nav disabled={app.busy} onclick={() => app.logout()}><Icon name="logout" /><span class="t-label">Log out</span></button></li>
           </ul>
         {/if}
@@ -155,7 +168,7 @@
         {#if app.screen === "investigate"}
           <section class="t-leads" aria-labelledby="leads-title">
             <h1 class="t-greet" id="leads-title">Local leads</h1>
-            <p class="t-line">{gs.current_state}: {done.length} of {venues.length || "…"} witnesses questioned. Listen for a destination clue and a detail about the suspect; one witness here knows where the thief went next.</p>
+            <p class="t-line">{gs.current_state}: {done.length} of {venues.length || "…"} witnesses questioned. {gs.trail_status === "hot" ? "The trail is hot. Listen for a destination clue and a detail about the suspect; one witness here knows where the thief went next." : "The trail is cold. Local witnesses may confirm that the suspect did not come this way."}</p>
             <LeadGrid leads={venues} loaded={app.quotesLoaded} {leaving} questioned={done} onpick={pick} />
 
             {#if here.length}
@@ -190,3 +203,16 @@
   </div>
   <div class="crt-fx" aria-hidden="true"></div>
 </div>
+
+{#if abandonOpen}
+  <dialog class="move-dialog card" bind:this={abandonDialog} aria-labelledby="abandon-case-title" aria-describedby="abandon-case-description" oncancel={e => { if (app.busy) e.preventDefault(); }} onclose={() => (abandonOpen = false)} onclick={e => { if (!app.busy && e.target === abandonDialog) abandonOpen = false; }}>
+    <div class="move-dialog-body">
+      <h2 id="abandon-case-title">Abandon this case?</h2>
+      <p id="abandon-case-description" class="muted">Your investigation progress, evidence, remaining case budget, score, and any uncommitted rank progress from this case will be lost. Disciplinary penalties and spent tokens will not be restored. This cannot be undone.</p>
+      <div class="row-actions">
+        <button class="btn btn-ghost" type="button" disabled={app.busy} onclick={() => (abandonOpen = false)}>Keep investigating</button>
+        <button class="btn btn-danger" type="button" disabled={app.busy} onclick={async () => { await app.abandonCurrentCase(); abandonOpen = false; }}>{app.busy ? "Abandoning…" : "Abandon case"}</button>
+      </div>
+    </div>
+  </dialog>
+{/if}

@@ -83,9 +83,10 @@ draws from all 1,000 missions and all 100 thieves. At every stop, three locally
 appropriate venues offer different, conversational witness clues. Each clue
 leaves several states plausible; the notebook intersects the evidence until the
 three accounts point to one destination. Suspect traits are embedded in what
-each witness remembers instead of being printed as a separate clue. Informal
-witnesses such as agberos, conductors, market women and dockworkers speak
-Nigerian Pidgin; formal witnesses generally use standard English. Venues have
+each witness remembers instead of being printed as a separate clue. Every
+witness now speaks grammatical English; locally appropriate roles and terms
+such as agbero remain part of the setting without mechanically generated
+dialect. Venues have
 opening hours, interviews consume time, and travel time depends on the
 distance between state capitals. Travel is limited to Nigeria's 36 states and
 the Federal Capital Territory. Consecutive stops within one state use a local
@@ -97,8 +98,8 @@ takes five to six in-game days, preserving no more than two days for mistakes.
 
 A warrant becomes available only after the player manually completes eight
 dossier fields: sex, height, skin tone, hair, hobby, vehicle, accessory, and a
-distinguishing feature. Each detail is embedded naturally in witness dialogue,
-including role-appropriate Nigerian Pidgin, but the game does not copy it into
+distinguishing feature. Each detail is embedded naturally in grammatical
+English witness dialogue, but the game does not copy it into
 the dossier. The player interprets the statement, chooses the appropriate
 field value, and may revise it later. At the capture state, the game presents
 three plausible suspect profiles and the player chooses the warrant target.
@@ -174,20 +175,18 @@ The ambiguity-aware Nigerian witness catalogue covers all 36 states and the FCT 
 regional groups, with a validated three-clue solution for every jurisdiction.
 The P0 depth pass and state-identity enrichment give every state and the FCT
 at least 18 distinct atoms. The catalogue currently contains 707 atoms and covers the complete P0 thematic
-checklist. The dialogue layer contains 12,726
-formulations: three variants for each clue,
-difficulty level, and speech register. Career saves retain the 60 most recent
+checklist. The dialogue layer contains 6,363 English formulations: three
+variants for each clue and difficulty level. Career saves retain the 60 most recent
 clue atoms and 120 most recent dialogue variants so later cases prefer unused
 material when alternatives exist.
 
 The editorial catalogue preserves every clue ID and adds an internal knowledge link,
 source URL, source authority, reference-alignment status, temporal scope,
-sensitivity flags, Nigerian-English status, Pidgin-review status, and editorial
+sensitivity flags, Nigerian-English status, legacy dialect-review status, and editorial
 notes. All 518 atoms have source URLs; 406 link to internal knowledge records;
 238 are reference-cross-checked. The remaining 280 are deliberately labelled
 for exact page-or-passage verification. The audit also separates historical,
-stable, and changeable claims, flags 78 sensitive clues for human review, and
-keeps all Pidgin variants pending regional native-speaker sign-off.
+stable, and changeable claims and flags 78 sensitive clues for human review.
 
 The complete queue is stored in
 `data/gameplay/clue-editorial-review.csv`. Automated checks are publication

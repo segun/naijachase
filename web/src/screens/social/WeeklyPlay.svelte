@@ -42,6 +42,7 @@
   <div class="row-between"><h2 id="play-title">Your attempt</h2><span class="badge badge-{status.tone === 'muted' ? '' : status.tone}">{status.label}</span></div>
   <dl class="facts">
     <div><dt>Location</dt><dd>{s.current_state}</dd></div>
+    <div><dt>Trail</dt><dd class:urgent-text={s.trail_status === "cold"}>{s.trail_status === "hot" ? "Trail hot" : "Trail cold"}</dd></div>
     <div><dt>Case clock</dt><dd>{clock.day} {clock.time}</dd></div>
     <div><dt>Challenge funds</dt><dd>{money(s.balance)}</dd></div>
     <div><dt>Dossier</dt><dd>{dossierCount(s.dossier)}/8</dd></div>

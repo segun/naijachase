@@ -3,7 +3,7 @@
 // Set MOCK_PUBLISHED=3 to try the "every case solved" milestone. Any email/password signs in. Use the password "wrong" to see a failed login, and email "limit@x.com" for a 429.
 import http from "node:http";
 
-const STATES = ["Lagos", "Oyo", "Kwara", "Federal Capital Territory", "Kaduna", "Kano", "Borno", "Rivers", "Abia", "Enugu"];
+const STATES = ["Lagos", "Oyo", "Kwara", "Federal Capital Territory", "Kaduna", "Kano", "Borno", "Rivers", "Abia", "Enugu", "Sokoto"];
 const TRAITS = ["female", "tall", "dark-skinned", "long braided hair", "chess", "a black motorcycle", "a gold wristwatch", "walks with a limp"];
 const DOSSIER_OPTIONS = {
   catalogue_version: 1,
@@ -28,7 +28,12 @@ const WITNESS = {
   library: "The librarian whispers that someone studied maps of the north and left before closing.",
   motor_park: "An agbero says a tall passenger bargained hard for a seat heading toward the savannah."
 };
-const LOCAL_NAME = { market: "Abuja Community Market", library: "Abuja Central Library", motor_park: "Abuja Motor Park" };
+const LOCAL_NAME = { market: "Community Market", library: "Central Library", motor_park: "Motor Park" };
+const COLD_WITNESS = {
+  market: "I am sorry, but I have not seen anyone matching that description.",
+  library: "I have not heard anything that could help you.",
+  motor_park: "No one matching that description has passed through here today."
+};
 const WITNESS_ROLE = { market: "market woman", library: "librarian", motor_park: "agbero" };
 const RANKS = [[0, "Rookie"], [1500, "Investigator"], [4000, "Senior Investigator"], [8000, "Inspector"]];
 const CATALOG = [
@@ -62,7 +67,7 @@ groupsDb.set("grp-seed", { group_id: "grp-seed", name: "Lagos Detectives", capac
 const challenges = new Map(), attempts = new Map(), wEvents = [];
 let weeklyNotify = [{ notification_id: 1, type: "challenge_scheduled", channel: "web", payload: {}, read_at: null }];
 const TRANSIT_SECONDS = Number(process.env.MOCK_TRANSIT ?? 6);
-const wkState = () => ({ mission_id: "NG-M0100", case_dossier: { title: "The Weekly Case", stolen_item: "a weekly prize", premise: "A weekly challenge.", opening_briefing: "Catch the thief before the week ends." }, difficulty: 2, stage: 0, current_state: "Lagos", elapsed: 0, score: 650, career_points: 0, dossier: {}, visited_venues: [], warrant_suspect: null, outcome: null, opening_budget: 3, balance: 3, transport_rules_version: 1 });
+const wkState = () => ({ mission_id: "NG-M0100", case_dossier: { title: "The Weekly Case", stolen_item: "a weekly prize", premise: "A weekly challenge.", opening_briefing: "Catch the thief before the week ends." }, difficulty: 2, stage: 0, current_state: "Lagos", trail_status: "hot", elapsed: 0, score: 650, career_points: 0, dossier: {}, visited_venues: [], warrant_suspect: null, outcome: null, opening_budget: 3, balance: 3, transport_rules_version: 1 });
 function challengeFor(groupId) {
   if (!challenges.has(groupId)) {
     const id = `wk-${groupId}`; const now = Math.floor(Date.now() / 1000);
@@ -107,8 +112,9 @@ const caseDossier = mission => ({
   premise: "Someone has taken a carved ceremonial staff from Lagos. The route suggests an artifact theft operation, and the object may be moved again before the week is over.",
   opening_briefing: "The local case officer seals the scene in Lagos. Recover a carved ceremonial staff, identify the thief from eight dossier details, and obtain a warrant before the seven-day deadline."
 });
+const trailStatus = c => c.state === c.route[c.stage] ? "hot" : "cold";
 const publicState = c => ({
-  mission_id: c.mission, case_dossier: caseDossier(c.mission), difficulty: 2, stage: c.stage, current_state: c.state, elapsed: c.elapsed, score: c.score,
+  mission_id: c.mission, case_dossier: caseDossier(c.mission), difficulty: 2, stage: c.stage, current_state: c.state, trail_status: trailStatus(c), elapsed: c.elapsed, score: c.score,
   career_points: points, dossier: c.dossier, visited_venues: c.visited, warrant_suspect: c.warrant, outcome: c.outcome,
   opening_budget: c.opening, balance: c.balance, transport_rules_version: 1
 });
@@ -141,6 +147,7 @@ const FARES = {
 const VENUE_LABEL = { market: "Market", library: "Library", motor_park: "Motor park" };
 function quotesFor(c) {
   if (c.outcome) return [];
+  if (c.outcome) return [];
   const out = [];
   const add = (scope, id, label, extra = 0) => {
     for (const [mode, [cost, minutes]] of Object.entries(FARES[scope])) {
@@ -172,8 +179,10 @@ function apply(c, cmd) {
       const first = !c.visited.some(v => v.startsWith(`${c.stage}|${c.state}|`));
       pay(c, "local", cmd.venue_id, cmd.mode, c.state, VENUE_LABEL[cmd.venue_id]);
       c.visited.push(key); c.elapsed += 45;
-      const hint = first ? ` I also noticed the suspect was ${TRAITS[c.stage % 8]}.` : "";
-      events.push({ event_type: "witness_account", data: { message: WITNESS[cmd.venue_id] + hint, venue_name: cmd.venue_id.replace("_", " "), local_venue_name: LOCAL_NAME[cmd.venue_id], location_name: "Abuja", witness_role: WITNESS_ROLE[cmd.venue_id] } });
+      const status = trailStatus(c);
+      const hint = first && status === "hot" ? ` I also noticed the suspect was ${TRAITS[c.stage % 8]}.` : "";
+      const message = status === "hot" ? WITNESS[cmd.venue_id] + hint : COLD_WITNESS[cmd.venue_id];
+      events.push({ event_type: "witness_account", data: { message, trail_status: status, venue_name: cmd.venue_id.replace("_", " "), local_venue_name: `${c.state} ${LOCAL_NAME[cmd.venue_id]}`, location_name: c.state, witness_role: WITNESS_ROLE[cmd.venue_id] } });
       break;
     }
     case "record_trait": c.dossier[cmd.trait_name] = cmd.value; break;
@@ -182,6 +191,7 @@ function apply(c, cmd) {
       pay(c, "interstate", cmd.destination, cmd.mode, c.state, cmd.destination);
       c.state = cmd.destination; c.trail.push(cmd.destination);
       if (cmd.destination === c.route[c.stage + 1]) c.stage += 1; else { c.score = Math.max(0, c.score - 150); c.wrongTravels += 1; }
+      events.push({ event_type: trailStatus(c) === "hot" ? "arrived_on_trail" : "false_destination", data: { trail_status: trailStatus(c) } });
       break;
     case "request_warrant": c.warrant = cmd.suspect_id; c.elapsed += 120; break;
     case "search_hideout":
@@ -413,12 +423,35 @@ const server = http.createServer(async (req, res) => {
       return send(201, reply(c));
     };
     const solvedMissions = () => new Set(archive.filter(a => a.outcome === "solved" && a.attempt_kind === "ordinary").map(a => a.mission_id));
+    const ongoing = kind => [...cases.values()].filter(c => c.kind === kind && c.outcome === null);
+    if (path === "/v1/activity/current" && req.method === "GET") {
+      const ordinary = ongoing("ordinary")[0] ?? null, replays = ongoing("replay");
+      const weekly = [...attempts.values()].filter(a => ["active", "in_transit"].includes(a.status));
+      return send(200, { has_ongoing_activity: Boolean(ordinary || replays.length || weekly.length), ordinary_case: ordinary ? reply(ordinary) : null, replay_cases: replays.map(c => reply(c)), weekly_attempts: weekly.map(a => attemptView(a)) });
+    }
+    if (path === "/v1/cases/current" && req.method === "GET") {
+      const current = ongoing("ordinary")[0] ?? null;
+      return send(200, { has_ongoing_case: Boolean(current), case: current ? reply(current) : null });
+    }
+    const abandon = path.match(/^\/v1\/cases\/([^/]+)\/abandon$/);
+    if (abandon && req.method === "POST") {
+      const current = cases.get(abandon[1]);
+      if (!current) throw new HttpError(404, "case_not_found", "case not found");
+      if (!Number.isInteger(body.expected_version) || body.expected_version < 1) throw new HttpError(400, "invalid_request", "expected_version must be at least 1");
+      if (current.kind !== "ordinary" || current.outcome !== null) throw new HttpError(409, "case_not_abandonable", "only an ongoing ordinary case can be abandoned");
+      if (body.expected_version !== current.version) throw new HttpError(409, "stale_version", "state version is stale");
+      const previous = current.version;
+      current.outcome = "abandoned"; current.version++;
+      return send(200, { case_id: current.id, mission_id: current.mission, status: "abandoned", previous_state_version: previous, state_version: current.version, points_reverted: 0, points_after: points, rank_after: rank() });
+    }
     if (path === "/v1/cases/catalogue-status") {
       const done = solvedMissions().size;
       return send(200, { published_cases: PUBLISHED, completed_cases: done, unseen_cases: PUBLISHED - done, exhausted: done >= PUBLISHED });
     }
     if (path === "/v1/cases" && req.method === "POST") {
       if (Object.keys(body).length) throw new HttpError(400, "bad_request", "the request body must be empty; the server chooses the case");
+      const current = ongoing("ordinary")[0];
+      if (current) return send(200, reply(current, [], true));
       const done = solvedMissions();
       const unseen = Array.from({ length: PUBLISHED }, (_, i) => `NG-M${String(i + 1).padStart(4, "0")}`).filter(id => !done.has(id));
       if (!unseen.length) throw new HttpError(409, "catalogue_exhausted", "all currently published missions are complete; replay an archived case or return when new cases publish");
@@ -438,6 +471,7 @@ const server = http.createServer(async (req, res) => {
     const c = match && cases.get(match[1]);
     if (!c) throw new HttpError(404, "not_found", "case not found");
     if (!match[2]) return send(200, reply(c));
+    if (c.outcome === "abandoned") throw new HttpError(422, "invalid_command", "case already abandoned");
     if (c.seen.has(body.command_id)) return send(200, reply(c, [], true));
     if (body.expected_version !== c.version) throw new HttpError(409, "stale_version", "state version is stale");
     if (c.outcome) throw new HttpError(422, "rejected", "This case is already closed.");
@@ -453,4 +487,4 @@ const server = http.createServer(async (req, res) => {
 });
 
 const port = Number(process.env.PORT ?? 8081);
-server.listen(port, "127.0.0.1", () => console.log(`Mock API on http://127.0.0.1:${port}`));
+server.listen(port, "127.0.0.1", () => console.log(`Mock API on http://127.0.0.1:${server.address().port}`));
