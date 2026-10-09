@@ -156,7 +156,7 @@ test("the witness is still until she notices the player, greets, and then talks 
   assert.ok(w.witnessAt(p, t, p.walkEnd + 0.3).wave > 0, "she waves in greeting");
   const speaking = Array.from({ length: 40 }, (_, i) => w.witnessAt(p, t, p.speechStart + 0.5 + i * 0.1));
   assert.ok(speaking.some(m => m.mouth > 0.4), "her mouth moves while she speaks");
-  assert.ok(speaking.every(m => m.arms[1] > 0.3), "she gestures while she speaks");
+  assert.ok(speaking.every(m => m.arms[1] > 0.15 && m.elbows[1] > 0.4), "she gestures while she speaks");
   assert.equal(w.witnessAt(p, t, p.end).mouth, 0, "mouth shut at the end");
   assert.ok(w.witnessAt(p, t, p.speechStart + 1).heading > 0.1, "she has turned towards the player");
 });

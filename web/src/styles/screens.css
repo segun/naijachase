@@ -311,7 +311,12 @@
 
 /* Compact register form and music toggle */
 .form-grid { grid-template-columns: 1fr 1fr; gap: .7rem .9rem; }
-.form-grid .home-row, .form-grid .pw-meta, .form-grid .submit { grid-column: 1 / -1; }
+.form-grid .home-row, .form-grid .dob-row, .form-grid .pw-meta, .form-grid .submit { grid-column: 1 / -1; }
+.dob-row { border: 0; padding: 0; margin: 0; min-width: 0; }
+.dob-row legend { margin-bottom: .35rem; }
+.dob-inputs { display: grid; grid-template-columns: 1fr 1fr 1.4fr; gap: .5rem; }
+.dob-inputs .input { min-width: 0; width: 100%; }
+.dob-row .hint { margin: .35rem 0 0; }
 .home-inputs { display: flex; gap: .5rem; }
 .home-inputs .select { flex: 1; min-width: 0; }
 .home-inputs .btn { white-space: nowrap; min-height: 46px; }
@@ -341,7 +346,7 @@
 @media (min-width: 961px) and (min-height: 620px) {
   .auth { height: 100vh; height: 100dvh; min-height: 0; overflow: hidden; }
   .auth-side { min-height: 0; padding-block: 1.5rem; }
-  .auth-main { padding: 1rem 1.25rem; min-height: 0; }
+  .auth-main { padding: 1rem 1.25rem; min-height: 0; overflow-y: auto; }
   .auth-card { gap: .8rem; padding: 1.2rem 1.4rem; }
   .auth-card h1 { font-size: 1.9rem; }
   .auth-card:has(.form-grid) { width: min(100%, 34rem); }

@@ -28,7 +28,7 @@
   );
 
   async function go(quote: TransportQuote) {
-    if (!selected) return;
+    if (!selected || !quote.affordable || (gs.balance === 0 && quote.cost > 0)) return;
     const destination = selected;
     if (await app.command({ type: "travel", destination, mode: quote.mode }, `Arrived in ${destination}.`, `Travelling to ${destination}`)) {
       selected = null;

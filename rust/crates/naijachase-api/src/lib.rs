@@ -10,7 +10,7 @@ use base64::{Engine, engine::general_purpose::URL_SAFE_NO_PAD};
 use naijachase_content::{Catalogue, Mission};
 use naijachase_contracts::{Command, Event, GameState};
 use naijachase_storage::{
-    Achievement, CaseArchiveEntry, CaseCommandResult, CatalogueHealth, CatalogueProgress,
+    Achievement, BirthDate, CaseArchiveEntry, CaseCommandResult, CatalogueHealth, CatalogueProgress,
     MissionValidation, MysqlStore, PlayerAccount, PlayerSession, ProgressionSummary,
     ReleaseNotification, StorageError,
 };
@@ -189,6 +189,9 @@ pub struct RegisterRequest {
     confirm_password: String,
     username: String,
     home_base: String,
+    dob_day: u32,
+    dob_month: u32,
+    dob_year: u32,
 }
 #[derive(Deserialize)]
 pub struct LoginRequest {
@@ -1036,6 +1039,8 @@ async fn register(
     Json(request): Json<RegisterRequest>,
 ) -> Result<(StatusCode, Json<serde_json::Value>), ApiError> {
     ensure_origin(&headers, &state.config)?;
+    let birth_date =
+        BirthDate::new(request.dob_day, request.dob_month, request.dob_year).map_err(bad_request)?;
     let email = request.email.trim().to_lowercase();
     enforce_auth_limit(&state, &email, "register", 5).await?;
     let username = request.username.trim().to_owned();
@@ -1075,7 +1080,7 @@ async fn register(
     );
     tokio::task::spawn_blocking(move || {
         store.register_player(
-            &values.0, &values.1, &values.2, &values.3, &values.4, &values.5,
+            &values.0, &values.1, &values.2, &values.3, &values.4, &values.5, birth_date,
         )
     })
     .await
@@ -3908,6 +3913,125 @@ mod tests {
             ensure_origin(&headers, &config).unwrap_err().code,
             "csrf_rejected"
         );
+    }
+
+    #[test]
+    fn registration_requires_integer_birth_date_fields() {
+        let valid = serde_json::json!({
+            "email": "adult@example.invalid", "password": "a-long-password",
+            "confirm_password": "a-long-password", "username": "adult", "home_base": "Lagos",
+            "dob_day": 29, "dob_month": 2, "dob_year": 2000
+        });
+        let request: RegisterRequest = serde_json::from_value(valid.clone()).unwrap();
+        assert!(BirthDate::new(request.dob_day, request.dob_month, request.dob_year).is_ok());
+        for field in ["dob_day", "dob_month", "dob_year"] {
+            let mut missing = valid.clone();
+            missing.as_object_mut().unwrap().remove(field);
+            assert!(serde_json::from_value::<RegisterRequest>(missing).is_err());
+            for value in [
+                serde_json::json!("1"),
+                serde_json::json!(null),
+                serde_json::json!(-1),
+                serde_json::json!(1.5),
+            ] {
+                let mut invalid = valid.clone();
+                invalid[field] = value;
+                assert!(serde_json::from_value::<RegisterRequest>(invalid).is_err());
+            }
+        }
+    }
+
+    #[tokio::test]
+    async fn live_mysql_registration_enforces_birth_date_before_creating_account() {
+        if env::var("NAIJACHASE_MYSQL_TEST").ok().as_deref() != Some("1") {
+            return;
+        }
+        use axum::body::{Body, to_bytes};
+        use axum::http::Request;
+        use tower::ServiceExt;
+
+        let store = Arc::new(MysqlStore::connect_from_env().unwrap());
+        store.migrate().unwrap();
+        let root = FsPath::new(env!("CARGO_MANIFEST_DIR")).join("../../..");
+        let app = router(Arc::new(AppState {
+            store: store.clone(),
+            catalogue: Arc::new(Catalogue::load(&root).unwrap()),
+            config: ServiceConfig::test(),
+            metrics: Metrics::default(),
+            limiter: RateLimiter::default(),
+        }));
+        let id = uuid::Uuid::new_v4().simple().to_string();
+        let email = format!("dob-{id}@example.invalid");
+        let mut body = serde_json::json!({
+            "email": email, "password": "a-long-password",
+            "confirm_password": "a-long-password", "username": &id[..24], "home_base": "Lagos",
+            "dob_day": 31, "dob_month": 4, "dob_year": 2000
+        });
+        for (day, month, year, message) in [
+            (31, 4, 2000, "Enter a valid date of birth."),
+            (1, 1, 9999, "Date of birth cannot be in the future."),
+            (1, 1, 2020, "You must be 18 years or older."),
+        ] {
+            body["dob_day"] = day.into();
+            body["dob_month"] = month.into();
+            body["dob_year"] = year.into();
+            let response = app
+                .clone()
+                .oneshot(
+                    Request::builder()
+                        .method("POST")
+                        .uri("/v1/auth/register")
+                        .header(header::CONTENT_TYPE, "application/json")
+                        .body(Body::from(body.to_string()))
+                        .unwrap(),
+                )
+                .await
+                .unwrap();
+            assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+            let error: serde_json::Value =
+                serde_json::from_slice(&to_bytes(response.into_body(), 4096).await.unwrap()).unwrap();
+            assert_eq!(error["message"], message);
+            assert!(store.login_record(&email).unwrap().is_none());
+        }
+        for invalid in [
+            serde_json::json!(null),
+            serde_json::json!("29"),
+            serde_json::json!(1.5),
+        ] {
+            body["dob_day"] = invalid;
+            let response = app
+                .clone()
+                .oneshot(
+                    Request::builder()
+                        .method("POST")
+                        .uri("/v1/auth/register")
+                        .header(header::CONTENT_TYPE, "application/json")
+                        .body(Body::from(body.to_string()))
+                        .unwrap(),
+                )
+                .await
+                .unwrap();
+            assert_eq!(response.status(), StatusCode::UNPROCESSABLE_ENTITY);
+            assert!(store.login_record(&email).unwrap().is_none());
+        }
+        body["dob_day"] = 29.into();
+        body["dob_month"] = 2.into();
+        body["dob_year"] = 2000.into();
+        let response = app
+            .oneshot(
+                Request::builder()
+                    .method("POST")
+                    .uri("/v1/auth/register")
+                    .header(header::CONTENT_TYPE, "application/json")
+                    .body(Body::from(body.to_string()))
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::CREATED);
+        let (account, _) = store.login_record(&email).unwrap().unwrap();
+        assert!(!account.email_verified);
+        store.delete_unverified_player(&account.player_id).unwrap();
     }
 
     #[test]

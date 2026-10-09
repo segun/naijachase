@@ -80,7 +80,7 @@ export async function createWitnessScene2D(canvas: HTMLCanvasElement, options: W
       items.push({ z: project(c, pose.x, 0, pose.z).z, draw: () => { disc(g, project(c, pose.x, 0, pose.z), 0, 0, 0.45, "rgba(20,10,5,.25)", 1, 0.2); figure(g, project(c, pose.x, 0, pose.z), { ...playerLook, heading: pose.heading, hips: legs.hips, knees: legs.knees, arms, lift: pose.y, lean: listenLean(plan, t), alpha: pose.alpha }); } });
     }
     const w = witnessAt(plan, timings, t);
-    items.push({ z: project(c, WITNESS.x, 0, WITNESS.z).z, draw: () => { disc(g, project(c, WITNESS.x, 0, WITNESS.z), 0, 0, 0.45, "rgba(20,10,5,.25)", 1, 0.2); figure(g, project(c, WITNESS.x, 0, WITNESS.z), { ...witnessLook, heading: w.heading, hips: [0, 0], knees: [0, 0], arms: w.arms, wave: w.wave, mouth: w.mouth, lean: w.lean, lift: w.bob }); } });
+    items.push({ z: project(c, WITNESS.x, 0, WITNESS.z).z, draw: () => { disc(g, project(c, WITNESS.x, 0, WITNESS.z), 0, 0, 0.45, "rgba(20,10,5,.25)", 1, 0.2); figure(g, project(c, WITNESS.x, 0, WITNESS.z), { ...witnessLook, heading: w.heading, hips: [0, 0], knees: [0, 0], arms: w.arms, elbows: w.elbows, wave: w.wave, mouth: w.mouth, lean: w.lean, lift: w.bob }); } });
 
     items.sort((a, b) => b.z - a.z).forEach(i => i.draw());
     const vignette = g.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.45, W / 2, H / 2, Math.hypot(W, H) * 0.62);

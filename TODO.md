@@ -50,6 +50,12 @@ completed.
 
 ## Completed game systems
 
+### Registration
+
+- [x] Required Day, Month, Year date-of-birth fields with frontend and backend
+  calendar-date validation and an 18+ registration gate; persist the private DOB
+  on the player record (existing accounts remain null).
+
 ### Career and cases
 
 - [x] Investigator identity
@@ -648,6 +654,10 @@ local replay, or client-side prediction becomes a concrete product requirement.
 
 **API, presentation, and verification**
 
+- [x] Enforce exhausted case funds in both layers: disable Fly and Drive for
+  interstate, witness, weekly-challenge, and hideout journeys at zero balance;
+  automatically retain Hitch a ride; and reject paid commands authoritatively
+  in Rust even if a client bypasses the disabled controls.
 - [x] End a case authoritatively when an action reaches or crosses the simulated
   seven-day deadline. Persist `outcome = deadline`, emit `deadline_expired`,
   suppress the interrupted witness account, archive the failed attempt, and
@@ -1362,3 +1372,11 @@ section of `README.md`.
 
 - [ ] Buying music
 - [ ] Hire an assistant (paid feature, not available in weekly group matches to level the playing field)
+
+## Marketing site (naijachase.com)
+
+- [x] Static landing site in `landing/` (home, privacy, terms, disclaimer); play buttons open `https://naijachase.app`.
+  Publish with `make publish-landing` (nginx: `deploy/nginx/naijachase.com.conf`, root `/var/www/naijachase.com`).
+- [ ] Update the legal pages whenever data collection, analytics, checkout or advertising change.
+- [ ] Add an Open Graph PNG (1200×630) and `og:image` tags to `landing/index.html`.
+- [ ] Link Privacy/Terms/Disclaimer from the registration screen in `web/` and require acceptance.

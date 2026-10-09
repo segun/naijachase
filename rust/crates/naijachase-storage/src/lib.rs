@@ -13,6 +13,8 @@ mod weekly;
 pub use weekly::*;
 mod pressure;
 pub use pressure::*;
+mod birth_date;
+pub use birth_date::BirthDate;
 
 const MIGRATION_1: &str = include_str!("../migrations/0001_initial.sql");
 const MIGRATION_2: &str = include_str!("../migrations/0002_content_and_terminal.sql");
@@ -29,6 +31,7 @@ const MIGRATION_12: &str = include_str!("../migrations/0012_cooperative_investig
 const MIGRATION_13: &str = include_str!("../migrations/0013_groups_weekly_challenges.sql");
 const MIGRATION_14: &str = include_str!("../migrations/0014_witness_pressure.sql");
 const MIGRATION_15: &str = include_str!("../migrations/0015_avatar_selection.sql");
+const MIGRATION_16: &str = include_str!("../migrations/0016_player_date_of_birth.sql");
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum CaseCommandResult {
@@ -651,6 +654,12 @@ impl MysqlStore {
         if version < 15 {
             apply_migration(&mut connection, MIGRATION_15)?;
         }
+        let version: u32 = connection
+            .query_first("SELECT COALESCE(MAX(version),0) FROM schema_migrations")?
+            .unwrap_or(0);
+        if version < 16 {
+            apply_migration(&mut connection, MIGRATION_16)?;
+        }
         Ok(())
     }
 
@@ -673,13 +682,14 @@ impl MysqlStore {
         home_base: &str,
         password_hash: &str,
         verification_hash: &str,
+        birth_date: BirthDate,
     ) -> Result<(), StorageError> {
         let mut connection = self.pool.get_conn()?;
         let mut transaction = connection.start_transaction(TxOpts::default())?;
         if let Err(error)=transaction.exec_drop(
-            "INSERT INTO players(player_id,display_name,email,username,home_base,password_hash)
-             VALUES (:id,:username,:email,:username,:home,:password)",
-            params!{"id"=>player_id,"username"=>username,"email"=>email,"home"=>home_base,"password"=>password_hash},
+            "INSERT INTO players(player_id,display_name,email,username,home_base,password_hash,date_of_birth)
+             VALUES (:id,:username,:email,:username,:home,:password,:dob)",
+            params!{"id"=>player_id,"username"=>username,"email"=>email,"home"=>home_base,"password"=>password_hash,"dob"=>birth_date.database_value()},
         ) { if matches!(&error,mysql::Error::MySqlError(server) if server.code==1062){return Err(StorageError::DuplicateAccount)} return Err(error.into()) }
         transaction.exec_drop(
             "INSERT INTO email_verifications(token_hash,player_id,expires_at)
@@ -3224,6 +3234,9 @@ mod tests {
         let avatar_upgrade: serde_json::Value =
             serde_json::from_str(include_str!("../fixtures/schema-upgrade-v14-to-v15.json"))
                 .unwrap();
+        let birth_date_upgrade: serde_json::Value =
+            serde_json::from_str(include_str!("../fixtures/schema-upgrade-v15-to-v16.json"))
+                .unwrap();
         assert_eq!(career["name"], "Fixture Detective");
         assert_eq!(upgrade["from_version"], 2);
         assert_eq!(upgrade["to_version"], 3);
@@ -3250,6 +3263,8 @@ mod tests {
         assert_eq!(discipline_upgrade["to_version"], 14);
         assert_eq!(avatar_upgrade["from_version"], 14);
         assert_eq!(avatar_upgrade["to_version"], 15);
+        assert_eq!(birth_date_upgrade["from_version"], 15);
+        assert_eq!(birth_date_upgrade["to_version"], 16);
     }
 
     #[test]
@@ -3260,7 +3275,7 @@ mod tests {
         let _guard = MYSQL_TEST_LOCK.lock().unwrap();
         let store = std::sync::Arc::new(MysqlStore::connect_from_env().unwrap());
         store.migrate().unwrap();
-        assert_eq!(store.schema_version().unwrap(), 15);
+        assert_eq!(store.schema_version().unwrap(), 16);
         let id = "storage-integration-test";
         let next = store.state_version(id).unwrap().unwrap_or(0) + 1;
         store.save(id, next, b"test-state").unwrap();
@@ -3693,73 +3708,79 @@ mod tests {
         let _guard = MYSQL_TEST_LOCK.lock().unwrap();
         let store = MysqlStore::connect_from_env().unwrap();
         store.migrate().unwrap();
-        let player = "auth-integration-player";
-        store
-            .pool
-            .get_conn()
-            .unwrap()
-            .exec_drop(
-                "DELETE FROM players WHERE player_id=:id",
-                params! {"id"=>player},
-            )
-            .unwrap();
+        let id = uuid::Uuid::new_v4().simple().to_string();
+        let player_id = format!("auth-{id}");
+        let player = player_id.as_str();
+        let email = format!("auth-{id}@example.invalid");
+        let token = |label: &str| format!("{:x}", Sha256::digest(format!("{id}-{label}")))[..32].to_owned();
         store
             .register_player(
                 player,
-                "auth-test@example.invalid",
-                "auth_tester",
+                &email,
+                &id[..24],
                 "Lagos",
                 "argon-hash",
-                "verification-hash",
+                &token("verification"),
+                BirthDate::new(29, 2, 2000).unwrap(),
             )
             .unwrap();
+        let birth_date: Option<String> = store
+            .pool
+            .get_conn()
+            .unwrap()
+            .exec_first(
+                "SELECT CAST(date_of_birth AS CHAR) FROM players WHERE player_id=:id",
+                params! {"id"=>player},
+            )
+            .unwrap();
+        assert_eq!(birth_date.as_deref(), Some("2000-02-29"));
         let (account, password) = store
-            .login_record("auth-test@example.invalid")
+            .login_record(&email)
             .unwrap()
             .unwrap();
         assert!(!account.email_verified);
         assert_eq!(password, "argon-hash");
         assert!(!store.verify_email("wrong-hash").unwrap());
-        assert!(store.verify_email("verification-hash").unwrap());
+        assert!(store.verify_email(&token("verification")).unwrap());
         store
             .create_session(
                 player,
-                "session-hash",
-                "family-1",
+                &token("session"),
+                &token("family-1"),
                 Some("Integration browser"),
             )
             .unwrap();
         assert_eq!(
             store
-                .authenticate_session("session-hash")
+                .authenticate_session(&token("session"))
                 .unwrap()
                 .unwrap()
                 .home_base,
             "Lagos"
         );
-        store.revoke_session("session-hash").unwrap();
+        store.revoke_session(&token("session")).unwrap();
         assert!(
             store
-                .authenticate_session("session-hash")
+                .authenticate_session(&token("session"))
                 .unwrap()
                 .is_none()
         );
         store
-            .create_session(player, "old-session", "family-2", None)
+            .create_session(player, &token("old-session"), &token("family-2"), None)
             .unwrap();
-        assert!(store.rotate_session("old-session", "new-session").unwrap());
-        assert!(store.authenticate_session("old-session").unwrap().is_none());
-        assert!(store.authenticate_session("new-session").unwrap().is_some());
+        assert!(store.rotate_session(&token("old-session"), &token("new-session")).unwrap());
+        assert!(store.authenticate_session(&token("old-session")).unwrap().is_none());
+        assert!(store.authenticate_session(&token("new-session")).unwrap().is_some());
         assert!(
             !store
-                .rotate_session("old-session", "attacker-session")
+                .rotate_session(&token("old-session"), &token("attacker-session"))
                 .unwrap()
         );
-        assert!(store.authenticate_session("new-session").unwrap().is_none());
+        assert!(store.authenticate_session(&token("new-session")).unwrap().is_none());
         store
-            .create_session(player, "recovery-session", "family-recovery", None)
+            .create_session(player, &token("recovery-session"), &token("family-recovery"), None)
             .unwrap();
-        let sessions = store.sessions(player, "recovery-session").unwrap();
+        let sessions = store.sessions(player, &token("recovery-session")).unwrap();
         assert!(sessions.iter().any(|session| session.current));
         let session_id = sessions
             .iter()
@@ -3769,7 +3790,7 @@ mod tests {
             .clone();
         assert!(store.revoke_session_id(player, &session_id).unwrap());
         store
-            .create_session(player, "reset-session", "family-reset", None)
+            .create_session(player, &token("reset-session"), &token("family-reset"), None)
             .unwrap();
         store
             .update_profile(
@@ -3785,7 +3806,7 @@ mod tests {
             .unwrap();
         assert_eq!(
             store
-                .login_record("auth-test@example.invalid")
+                .login_record(&email)
                 .unwrap()
                 .unwrap()
                 .0
@@ -3794,28 +3815,31 @@ mod tests {
         );
         assert_eq!(
             store
-                .create_password_reset("auth-test@example.invalid", "reset-hash")
+                .create_password_reset(&email, &token("reset"))
                 .unwrap(),
             Some(player.into())
         );
         assert!(
             store
-                .complete_password_reset("reset-hash", "new-argon-hash")
+                .complete_password_reset(&token("reset"), "new-argon-hash")
                 .unwrap()
         );
         assert!(
             store
-                .authenticate_session("reset-session")
+                .authenticate_session(&token("reset-session"))
                 .unwrap()
                 .is_none()
         );
         store
-            .create_session(player, "expiry-session", "family-3", None)
+            .create_session(player, &token("expiry-session"), &token("family-3"), None)
             .unwrap();
-        store.pool.get_conn().unwrap().exec_drop("UPDATE player_sessions SET expires_at=DATE_SUB(UTC_TIMESTAMP(),INTERVAL 1 MINUTE) WHERE token_hash='expiry-session'",()).unwrap();
+        store.pool.get_conn().unwrap().exec_drop(
+            "UPDATE player_sessions SET expires_at=DATE_SUB(UTC_TIMESTAMP(),INTERVAL 1 MINUTE) WHERE token_hash=:token",
+            params! {"token"=>token("expiry-session")},
+        ).unwrap();
         assert!(
             store
-                .authenticate_session("expiry-session")
+                .authenticate_session(&token("expiry-session"))
                 .unwrap()
                 .is_none()
         );
@@ -3844,7 +3868,7 @@ mod tests {
         };
         store
             .create_case_with_kind(
-                "p37-archive-case",
+                &token("archive-case"),
                 player,
                 "NG-M0001",
                 &completed,
@@ -3852,14 +3876,14 @@ mod tests {
             )
             .unwrap();
         store
-            .record_case_completion(player, "p37-archive-case", &completed)
+            .record_case_completion(player, &token("archive-case"), &completed)
             .unwrap();
         assert!(
             store
                 .case_archive(player)
                 .unwrap()
                 .iter()
-                .any(|entry| entry.case_id == "p37-archive-case")
+                .any(|entry| entry.case_id == token("archive-case"))
         );
         assert!(
             store
@@ -3873,20 +3897,19 @@ mod tests {
         assert_eq!(summary.rank, "Investigator");
         assert_eq!(summary.solved_cases, 1);
         assert!(summary.visited_states.contains(&"Abia".into()));
-        store.pool.get_conn().unwrap().exec_drop("DELETE FROM auth_rate_limits WHERE subject_hash='integration-subject' AND action='login'",()).unwrap();
         assert!(
             store
-                .allow_auth_attempt("integration-subject", "login", 2)
+                .allow_auth_attempt(&token("subject"), "login", 2)
                 .unwrap()
         );
         assert!(
             store
-                .allow_auth_attempt("integration-subject", "login", 2)
+                .allow_auth_attempt(&token("subject"), "login", 2)
                 .unwrap()
         );
         assert!(
             !store
-                .allow_auth_attempt("integration-subject", "login", 2)
+                .allow_auth_attempt(&token("subject"), "login", 2)
                 .unwrap()
         );
     }

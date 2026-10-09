@@ -82,5 +82,18 @@ test("movement needs an accessible confirmation step", () => {
   assert.match(opts, /type="radio"/);
   assert.match(opts, /aria-live="polite"/);
   assert.match(opts, /role="alert"/);
-  assert.match(opts, /disabled=\{!o\.affordable\}/);
+  assert.match(opts, /disabled=\{!canUse\(o\)\}/);
+  assert.match(opts, /balance === 0 && o\.cost > 0/);
+});
+
+test("zero balance leaves only hitch a ride enabled in ordinary and weekly play", () => {
+  const shared = read("screens/case/MoveOptions.svelte");
+  const garage = read("scenes/garage/GarageRoom.svelte");
+  const weekly = read("screens/social/WeeklyPlay.svelte");
+  assert.match(shared, /chosen !== "hitch_ride"/);
+  assert.match(shared, /o\.mode === "hitch_ride"/);
+  assert.match(garage, /gs\?\.balance === 0 && quote\.cost > 0/);
+  assert.match(weekly, /mode !== "hitch_ride"/);
+  assert.match(weekly, /localMode = "hitch_ride"/);
+  assert.match(weekly, /interMode = "hitch_ride"/);
 });

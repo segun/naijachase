@@ -28,6 +28,13 @@
   $effect(() => { if (!destination || destination === s.current_state) destination = options[0] ?? ""; });
 
   const locals: LocalMode[] = ["drive", "hitch_ride"], inters: InterstateMode[] = ["fly", "drive", "hitch_ride"];
+  const paidModeDisabled = (mode: InterstateMode | LocalMode) => s.balance === 0 && mode !== "hitch_ride";
+  $effect(() => {
+    if (s.balance === 0) {
+      localMode = "hitch_ride";
+      interMode = "hitch_ride";
+    }
+  });
   async function saveDossier(event: SubmitEvent) {
     event.preventDefault();
     const selected = app.selectedDossierChanges(values, s.dossier);
@@ -69,13 +76,15 @@
     {#if tab === "question"}
       <form class="form" onsubmit={(e) => { e.preventDefault(); void g.command({ type: "visit_venue", venue_id: venue, mode: localMode }, "Witness interviewed.", "Interviewing witness"); }}>
         <label class="field"><span>Witness</span><select class="select" bind:value={venue}>{#each KNOWN_VENUES as v}<option value={v}>{v.replaceAll("_", " ")} · {venueInfo(v).who}</option>{/each}</select></label>
-        <fieldset class="mode-pick"><legend>How will you get there?</legend>{#each locals as m}<label class="check"><input type="radio" bind:group={localMode} value={m} /> {MODE_LABEL[m]}</label>{/each}</fieldset>
+        <fieldset class="mode-pick"><legend>How will you get there?</legend>{#each locals as m}<label class="check"><input type="radio" bind:group={localMode} value={m} disabled={paidModeDisabled(m)} /> {MODE_LABEL[m]}</label>{/each}</fieldset>
+        {#if s.balance === 0}<small class="hint warn">Your challenge funds are exhausted. Only Hitch a ride is available.</small>{/if}
         <button class="btn btn-primary" disabled={app.busy}>Go and question witnesses</button>
       </form>
     {:else if tab === "travel"}
       <form class="form" onsubmit={(e) => { e.preventDefault(); void g.command({ type: "travel", destination, mode: interMode }, "Journey started.", "Booking journey"); }}>
         <label class="field"><span>Destination</span><select class="select" bind:value={destination}>{#each options as x}<option>{x}</option>{/each}</select></label>
-        <fieldset class="mode-pick"><legend>Mode</legend>{#each inters as m}<label class="check"><input type="radio" bind:group={interMode} value={m} /> {MODE_LABEL[m]}</label>{/each}</fieldset>
+        <fieldset class="mode-pick"><legend>Mode</legend>{#each inters as m}<label class="check"><input type="radio" bind:group={interMode} value={m} disabled={paidModeDisabled(m)} /> {MODE_LABEL[m]}</label>{/each}</fieldset>
+        {#if s.balance === 0}<small class="hint warn">Your challenge funds are exhausted. Fly and Drive are unavailable; Hitch a ride remains free.</small>{/if}
         <button class="btn btn-primary" disabled={app.busy || !destination}>Travel</button>
       </form>
     {:else if tab === "dossier"}
@@ -105,7 +114,8 @@
         <form class="form" onsubmit={(e) => { e.preventDefault(); void g.command({ type: "search_hideout", venue_id: venue, mode: localMode }, "Hideout searched.", "Searching hideout"); }}>
           <p class="badge badge-gold">Warrant issued · {s.warrant_suspect}</p>
           <label class="field"><span>Hideout to search</span><select class="select" bind:value={venue}>{#each KNOWN_VENUES as v}<option value={v}>{v.replaceAll("_", " ")}</option>{/each}</select></label>
-          <fieldset class="mode-pick"><legend>How will you get there?</legend>{#each locals as m}<label class="check"><input type="radio" bind:group={localMode} value={m} /> {MODE_LABEL[m]}</label>{/each}</fieldset>
+          <fieldset class="mode-pick"><legend>How will you get there?</legend>{#each locals as m}<label class="check"><input type="radio" bind:group={localMode} value={m} disabled={paidModeDisabled(m)} /> {MODE_LABEL[m]}</label>{/each}</fieldset>
+          {#if s.balance === 0}<small class="hint warn">Your challenge funds are exhausted. Only Hitch a ride is available.</small>{/if}
           <button class="btn btn-primary" disabled={app.busy}>Raid this hideout</button>
         </form>
       {/if}

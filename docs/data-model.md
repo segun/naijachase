@@ -47,7 +47,9 @@ by checksum but are not required by the live game transaction path.
 
 ## Mutable operational data
 
-- `players` owns identity only.
+- `players` owns identity only, including private `date_of_birth` (`DATE`).
+  Migration 0016 leaves DOB null for existing accounts; new registrations require
+  a valid DOB and enforce an age of at least 18 before inserting the account.
 - `careers` owns points, solved missions, and an optimistic-lock version.
 - `active_cases` owns the serialized versioned engine state and its optimistic
   lock version.

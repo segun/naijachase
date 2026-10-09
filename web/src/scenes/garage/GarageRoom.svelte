@@ -34,7 +34,7 @@
   }));
 
   async function go(how: Exit, quote: TransportQuote, leave: (how?: string) => Promise<void>) {
-    if (chosen || app.busy || !quote.affordable) return;
+    if (chosen || app.busy || !quote.affordable || (gs?.balance === 0 && quote.cost > 0)) return;
     chosen = how; failed = false;
     const ok = await app.command({ type: "visit_venue", venue_id: venueId, mode: quote.mode as "drive" | "hitch_ride" }, "Witness interviewed.", "Interviewing witness");
     if (!ok) { chosen = ""; failed = true; return; }
@@ -60,7 +60,7 @@
       </header>
       <div class="garage-options" role="group" aria-label="Transport">
         {#each options as { how, quote, plan } (how)}
-          <button class="ride" class:picked={chosen === how} type="button" disabled={Boolean(chosen) || !quote || !quote.affordable} onclick={() => quote && go(how, quote, leave)}>
+          <button class="ride" class:picked={chosen === how} type="button" disabled={Boolean(chosen) || !quote || !quote.affordable || (gs?.balance === 0 && quote.cost > 0)} onclick={() => quote && go(how, quote, leave)}>
             <span class="ride-art" aria-hidden="true">
               {#if how === "drive"}
                 <svg viewBox="0 0 160 70" focusable="false">

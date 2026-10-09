@@ -156,7 +156,10 @@ export async function createWitnessScene(canvas: HTMLCanvasElement, options: Wit
     witness.root.position.y = w.bob;
     witness.rig.shoulders[0]!.rotation.x = w.arms[0];
     witness.rig.shoulders[1]!.rotation.x = w.arms[1];
-    witness.rig.shoulders[1]!.rotation.z = w.wave;
+    witness.rig.shoulders[1]!.rotation.z = w.wave * 0.5;
+    witness.rig.elbows[0]!.rotation.x = w.elbows[0];
+    witness.rig.elbows[1]!.rotation.x = w.elbows[1];
+    witness.rig.elbows[1]!.rotation.z = w.wave * 0.6;
     mouth.scaling.set(0.1, 0.012 + 0.07 * w.mouth, 0.04);
 
     dressing.update?.(t);

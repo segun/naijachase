@@ -57,6 +57,22 @@ uses the normal `POST /v1/cases {}` assignment flow, and **Close**, which clears
 the finished local case selection and returns to the case desk. A refresh must
 not resurrect the expired attempt as an ongoing case.
 
+## Exhausted case funds
+
+Transport quotes are authoritative. Disable every quote whose `affordable` is
+`false`. When `state.balance` is zero, Fly and Drive must be disabled everywhere:
+interstate travel, local witness visits, and the final hideout journey. Keep
+Hitch a ride enabled because its fare is zero, although its longer duration may
+still exhaust the case deadline. Weekly challenge screens currently have no
+separate quote endpoint, so they must select Hitch a ride automatically and
+disable their Fly/Drive radio controls whenever the attempt balance reaches zero.
+
+Frontend disabling is only presentation. The Rust engine independently rejects
+any Fly or Drive command at zero balance, and rejects any transport command whose
+server-calculated fare exceeds the current balance, with
+`insufficient case budget; hitch a ride instead`. Never treat a disabled button
+as the security boundary.
+
 All browser requests use `credentials: "include"`. Production mutations must
 originate from an entry in `NAIJACHASE_ALLOWED_ORIGINS`; a different or missing
 `Origin` is rejected. Passwords and session tokens must never enter browser

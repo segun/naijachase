@@ -1,5 +1,6 @@
 import { untrack } from "svelte";
 import { Api, ApiError } from "../api/api";
+import { birthDateError } from "../domain/birth-date.mjs";
 import { MenuMusic } from "../music/music.svelte.ts";
 import { GroupsController } from "./groups.svelte.ts";
 import type { CurrentActivityResponse } from "../../../contracts/typescript/api-v1.ts";
@@ -282,10 +283,13 @@ export class AppController {
     await this.run("Refreshing case status", () => this.syncCurrentCase());
   }
 
-  async register(form: { email: string; password: string; confirm: string; username: string; homeBase: string }) {
+  async register(form: { email: string; password: string; confirm: string; username: string; homeBase: string; dobDay: number; dobMonth: number; dobYear: number }) {
+    const error = birthDateError(form.dobDay, form.dobMonth, form.dobYear);
+    if (error) { this.toast(error, "error"); return false; }
     const out = await this.run("Creating account", () => this.api.register({
       email: form.email, password: form.password, confirm_password: form.confirm,
-      username: form.username, home_base: form.homeBase
+      username: form.username, home_base: form.homeBase,
+      dob_day: form.dobDay, dob_month: form.dobMonth, dob_year: form.dobYear
     }));
     if (out) this.toast(out.message ?? "Account created. Check your email to confirm it.", "success");
     return Boolean(out);

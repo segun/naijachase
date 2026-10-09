@@ -305,6 +305,8 @@ export type WitnessMotion = {
   mouth: number;
   /** Shoulder swing for her left and right arms (positive reaches towards the camera). */
   arms: readonly [number, number];
+  /** Elbow bend for her left and right forearms (positive folds the forearm forward and up). */
+  elbows: readonly [number, number];
   /** A sideways lift of the right arm: the greeting wave. */
   wave: number;
   /** Body turn towards the player, radians from facing the camera. */
@@ -326,7 +328,11 @@ export function witnessAt(plan: Plan, timings: readonly WordTiming[], t: number)
   const hand = Math.max(greet, bye);
   return {
     mouth: talking ? mouthAt(timings, t - plan.speechStart) : 0,
-    arms: [0.25 * emphasis + idle + 0.3 * hand, 0.7 * emphasis + 0.25 * emphasis * beat + 0.9 * hand] as const,
+    arms: [0.12 * emphasis + idle + 0.2 * hand, 0.3 * emphasis + 0.1 * emphasis * beat + 0.45 * hand] as const,
+    elbows: [
+      0.12 + 0.45 * emphasis + 0.15 * emphasis * Math.sin((t - plan.speechStart) * 3.1 + 1),
+      0.12 + 0.8 * emphasis + 0.3 * emphasis * beat + 1.0 * hand
+    ] as const,
     wave: hand * (0.3 + 0.25 * Math.sin((t - (bye > greet ? plan.speechEnd : plan.walkEnd)) * 11)),
     heading: turnTo(0, WITNESS_FACES_PLAYER, notice * 0.6),
     lean: emphasis * (0.02 + 0.03 * Math.max(0, beat)),

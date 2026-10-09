@@ -98,7 +98,8 @@ fn charge_transport(
     cost: u32,
     minutes: u32,
 ) -> Result<(), Error> {
-    if cost > state.economy.balance {
+    let paid_mode = matches!(mode, "fly" | "drive");
+    if (paid_mode && state.economy.balance == 0) || cost > state.economy.balance {
         return Err(Error::Invalid(
             "insufficient case budget; hitch a ride instead".into(),
         ));
@@ -527,6 +528,25 @@ mod tests {
         assert_eq!(after.economy.balance, 0);
         assert_eq!(after.economy.ledger.len(), 1);
         assert_eq!(events[0].data["mode"], "hitch_ride");
+    }
+
+    #[test]
+    fn zero_balance_rejects_paid_transport_in_every_scope() {
+        for kind in ["interstate", "local_venue", "apprehension"] {
+            let mut paid = state();
+            paid.economy.balance = 0;
+            assert_eq!(
+                charge_transport(&mut paid, kind, "destination", "drive", 1, 10).unwrap_err(),
+                Error::Invalid("insufficient case budget; hitch a ride instead".into())
+            );
+
+            let mut free = state();
+            free.economy.balance = 0;
+            charge_transport(&mut free, kind, "destination", "hitch_ride", 0, 30).unwrap();
+            assert_eq!(free.economy.balance, 0);
+            assert_eq!(free.economy.ledger[0].kind, kind);
+            assert_eq!(free.economy.ledger[0].cost, 0);
+        }
     }
 
     #[test]

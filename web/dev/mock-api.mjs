@@ -2,6 +2,7 @@
 // Usage: node dev/mock-api.mjs   (PORT defaults to 8081; run Vite with API_TARGET=http://127.0.0.1:8081)
 // Set MOCK_PUBLISHED=3 to try the "every case solved" milestone. Any email/password signs in. Use the password "wrong" to see a failed login, and email "limit@x.com" for a 429.
 import http from "node:http";
+import { birthDateError } from "../src/domain/birth-date.mjs";
 
 const STATES = ["Lagos", "Oyo", "Kwara", "Federal Capital Territory", "Kaduna", "Kano", "Borno", "Rivers", "Abia", "Enugu", "Sokoto"];
 const TRAITS = ["female", "tall", "dark-skinned", "long braided hair", "chess", "a black motorcycle", "a gold wristwatch", "walks with a limp"];
@@ -220,6 +221,8 @@ const server = http.createServer(async (req, res) => {
     const iso = t => new Date(t).toISOString();
 
     if (path === "/v1/auth/register") {
+      const error = birthDateError(body.dob_day, body.dob_month, body.dob_year);
+      if (error) throw new HttpError(400, "bad_request", error);
       if (body.password !== body.confirm_password) throw new HttpError(400, "bad_request", "Passwords do not match.");
       return send(201, { message: "Account created. Check your email to confirm it." });
     }

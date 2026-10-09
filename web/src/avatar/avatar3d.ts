@@ -18,8 +18,8 @@ import { CreateCylinder } from "@babylonjs/core/Meshes/Builders/cylinderBuilder"
 import { material } from "../scenes/shared/chase3d-kit.ts";
 import { build, hairParts, tintColor, type AvatarPreset, type Part, type Tint } from "./avatar-model.ts";
 
-/** Joints a caller can pose: hips and knees swing about x (positive swings forward, i.e. towards -z), as do the shoulders. */
-export type AvatarRig = { hips: TransformNode[]; knees: TransformNode[]; shoulders: TransformNode[] };
+/** Joints a caller can pose: hips and knees swing about x (positive swings forward, i.e. towards -z), as do the shoulders and elbows (an elbow bends the forearm forward). */
+export type AvatarRig = { hips: TransformNode[]; knees: TransformNode[]; shoulders: TransformNode[]; elbows: TransformNode[] };
 
 export type SnapshotOptions = {
   width?: number;
@@ -62,7 +62,7 @@ export function buildAvatar(scene: Scene, preset: AvatarPreset): TransformNode &
   const shape = build(preset);
 
   // Legs and boots. Each leg is a thigh and a shin on their own pivots so the figure can walk and sit; at rest it looks identical to a straight leg.
-  const rig: AvatarRig = { hips: [], knees: [], shoulders: [] };
+  const rig: AvatarRig = { hips: [], knees: [], shoulders: [], elbows: [] };
   const pivot = (name: string, x: number, y: number, parent: TransformNode) => {
     const node = new TransformNode(name, scene);
     node.parent = parent; node.position = new Vector3(x, y, 0);
@@ -93,10 +93,13 @@ export function buildAvatar(scene: Scene, preset: AvatarPreset): TransformNode &
   for (const side of [-1, 1]) {
     const x = side * (shape.shoulder / 2 + shape.arm / 2 + 0.01);
     const shoulder = pivot("shoulder", x, 1.5, root);
-    const arm = attach(CreateCapsule("arm", { radius: shape.arm / 2, height: 0.7, tessellation: 12, capSubdivisions: 4 }, scene), "primary", shoulder, 0, -0.3, 0);
-    arm.rotation.z = side * 0.06;
-    attach(CreateCylinder("cuff", { height: 0.05, diameter: shape.arm * 1.08, tessellation: 12 }, scene), "secondary", shoulder, side * 0.02, -0.6, 0);
-    attach(CreateSphere("hand", { diameter: shape.arm * 0.95, segments: 10 }, scene), "skin", shoulder, side * 0.025, -0.68, 0);
+    const elbow = pivot("elbow", side * 0.02, -0.32, shoulder);
+    const upper = attach(CreateCapsule("arm", { radius: shape.arm / 2, height: 0.36, tessellation: 12, capSubdivisions: 4 }, scene), "primary", shoulder, 0, -0.16, 0);
+    upper.rotation.z = side * 0.06;
+    attach(CreateCapsule("forearm", { radius: shape.arm / 2, height: 0.4, tessellation: 12, capSubdivisions: 4 }, scene), "primary", elbow, 0, -0.18, 0);
+    attach(CreateCylinder("cuff", { height: 0.05, diameter: shape.arm * 1.08, tessellation: 12 }, scene), "secondary", elbow, 0, -0.28, 0);
+    attach(CreateSphere("hand", { diameter: shape.arm * 0.95, segments: 10 }, scene), "skin", elbow, 0.005, -0.36, 0);
+    rig.elbows.push(elbow);
     rig.shoulders.push(shoulder);
   }
   // Head, eyes and hair.

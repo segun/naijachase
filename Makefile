@@ -14,6 +14,9 @@ DEPLOY_PATH ?= /opt/naijachase/source/
 SYSTEMD_DIR ?= /etc/systemd/system
 NGINX_SITE ?= /etc/nginx/sites-available/004-naijachase.app
 NGINX_SITE_LINK ?= /etc/nginx/sites-enabled/004-naijachase.app
+LANDING_ROOT ?= /var/www/naijachase.com
+LANDING_NGINX_SITE ?= /etc/nginx/sites-available/003-naijachase.com
+LANDING_NGINX_SITE_LINK ?= /etc/nginx/sites-enabled/003-naijachase.com
 WEB_ROOT ?= /var/www/naijachase.app
 MANIFEST := rust/Cargo.toml
 TOOLS := $(CARGO) run --quiet --manifest-path $(MANIFEST) -p naijachase-tools --
@@ -28,6 +31,7 @@ ARGS ?=
 	db-verify db-publish-initial db-export db-backup db-restore db-test api api-test web web-build enrich-state-clues standardize-witness-english \
 	export-witness-scenes web-install web-production-build web-mock web-mock-ui web-test copy-code \
 	install-api-service restart-api api-status install-web install-nginx publish-web \
+	publish-landing \
 	p34 p35 p36 p39 p391 audit
 
 help: ## Show the common project commands
@@ -177,6 +181,15 @@ install-nginx: ## Install, validate, and reload the NaijaChase Nginx site
 	@sudo systemctl reload nginx
 
 publish-web: install-web install-nginx ## Publish the web build and activate its Nginx configuration
+
+publish-landing: ## Publish the static landing site (naijachase.com) and its Nginx site
+	@sudo install -d -m 0755 $(LANDING_ROOT)
+	@sudo $(RSYNC) -rlt --delete --chmod=D755,F644 landing/ $(LANDING_ROOT)/
+	@if [ -f $(LANDING_NGINX_SITE) ]; then sudo cp -a $(LANDING_NGINX_SITE) $(LANDING_NGINX_SITE).previous; fi
+	@sudo install -m 0644 deploy/nginx/naijachase.com.conf $(LANDING_NGINX_SITE)
+	@sudo ln -sfn $(LANDING_NGINX_SITE) $(LANDING_NGINX_SITE_LINK)
+	@sudo nginx -t || { sudo cp -a $(LANDING_NGINX_SITE).previous $(LANDING_NGINX_SITE); sudo nginx -t; exit 1; }
+	@sudo systemctl reload nginx
 
 p34: check db-rebuild db-test ## Run the complete P3.4 persistence gate
 

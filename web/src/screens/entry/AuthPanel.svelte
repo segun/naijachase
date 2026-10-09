@@ -5,6 +5,7 @@
   import ChaseStage from "../../scenes/chase/ChaseStage.svelte";
   import MusicToggle from "../../music/MusicToggle.svelte";
   import Icon from "../../ui/Icon.svelte";
+  import { birthDateError } from "../../domain/birth-date.mjs";
 
   let { app }: { app: AppController } = $props();
   type Mode="login"|"register"|"forgot"|"forgot-sent"|"reset";
@@ -12,6 +13,12 @@
   let mode = $state<Mode>(resetToken?"reset":"login");
   let email = $state(""), password = $state(""), confirm = $state(""), username = $state("");
   let homeBase = $state("Lagos"), showPassword = $state(false), locating = $state(false), locationNote = $state("");
+  let dobDay = $state<number>(), dobMonth = $state<number>(), dobYear = $state<number>();
+  let dobSubmitted = $state(false);
+  const dobError = $derived(
+    dobSubmitted || (dobDay !== undefined && dobMonth !== undefined && dobYear !== undefined)
+      ? birthDateError(dobDay, dobMonth, dobYear) : ""
+  );
 
   const passwordOk = $derived(password.length >= 12);
   const matches = $derived(confirm.length > 0 && confirm === password);
@@ -21,8 +28,12 @@
     event.preventDefault();
     if (mode === "login") {
       if (await app.login(email, password)) { password = ""; app.go("cases"); }
-    } else if(mode==="register" && await app.register({ email, password, confirm, username, homeBase })) {
-      password = ""; confirm = ""; mode = "login";
+    } else if(mode==="register") {
+      dobSubmitted = true;
+      if (dobDay === undefined || dobMonth === undefined || dobYear === undefined || birthDateError(dobDay, dobMonth, dobYear)) return;
+      if (await app.register({ email, password, confirm, username, homeBase, dobDay, dobMonth, dobYear })) {
+        password = ""; confirm = ""; dobDay = undefined; dobMonth = undefined; dobYear = undefined; dobSubmitted = false; mode = "login";
+      }
     } else if(mode==="forgot" && await app.requestPasswordReset(email)){
       mode="forgot-sent";
     } else if(mode==="reset" && matches && await app.completePasswordReset(resetToken,password,confirm)){
@@ -65,6 +76,15 @@
         {#if mode !== "reset"}<label class="field"><span>Email</span><input class="input" bind:value={email} required type="email" autocomplete="email" /></label>{/if}
         {#if mode === "register"}
           <label class="field"><span>Investigator name</span><input class="input" bind:value={username} required minlength="3" maxlength="32" autocomplete="username" /></label>
+          <fieldset class="dob-row" aria-describedby="dob-help">
+            <legend>Date of birth</legend>
+            <div class="dob-inputs">
+              <label class="field"><span>Day</span><input class="input" type="number" bind:value={dobDay} required min="1" max="31" step="1" autocomplete="bday-day" aria-invalid={Boolean(dobError)} /></label>
+              <label class="field"><span>Month</span><input class="input" type="number" bind:value={dobMonth} required min="1" max="12" step="1" autocomplete="bday-month" aria-invalid={Boolean(dobError)} /></label>
+              <label class="field"><span>Year</span><input class="input" type="number" bind:value={dobYear} required min="1000" max={new Date().getUTCFullYear()} step="1" autocomplete="bday-year" aria-invalid={Boolean(dobError)} /></label>
+            </div>
+            <p id="dob-help" class="muted hint" class:warn={Boolean(dobError)} aria-live="polite">{dobError || "You must be 18 years or older to register."}</p>
+          </fieldset>
           <div class="field home-row">
             <span id="home-label">Home base</span>
             <div class="home-inputs">
@@ -90,7 +110,7 @@
           <label class="check"><input type="checkbox" bind:checked={showPassword} /> Show password</label>
         {/if}
         {#if mode === "login"}<button class="auth-link" type="button" onclick={() => (mode = "forgot")}>Forgot password?</button>{/if}
-        <button class="btn btn-primary btn-lg btn-block submit" disabled={app.busy || ((mode === "register" || mode === "reset") && !matches)}>
+        <button class="btn btn-primary btn-lg btn-block submit" disabled={app.busy || ((mode === "register" || mode === "reset") && !matches) || (mode === "register" && Boolean(dobError))}>
           {#if app.busy}<span class="spinner"></span> {app.busyLabel}…{:else}{mode === "login" ? "Log in" : mode === "register" ? "Create account" : mode === "forgot" ? "Send reset link" : "Change password"}{/if}
         </button>
         {#if mode === "forgot" || mode === "reset"}<button class="auth-link" type="button" onclick={() => (mode = "login")}>Back to login</button>{/if}

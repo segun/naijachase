@@ -69,7 +69,7 @@ export type Figure = {
   /** A wrapper skirt (market women) instead of legs. */
   skirt?: readonly [string, string, string];
   tie?: string; cap?: string; basket?: { basket: string; goods: string };
-  heading: number; hips: readonly [number, number]; knees: readonly [number, number]; arms: readonly [number, number];
+  heading: number; hips: readonly [number, number]; knees: readonly [number, number]; arms: readonly [number, number]; elbows?: readonly [number, number];
   wave?: number; sit?: number; mouth?: number; lean?: number; lift?: number; alpha?: number; talker?: boolean;
 };
 
@@ -99,10 +99,16 @@ export function figure(g: Ctx, o: Proj, f: Figure) {
     const side = (index === 0 ? -1 : 1) * sgn;
     const a = f.arms[index]!;
     const shoulderX = side * (0.3 * wf) * (1 - 0.6 * s), shoulderY = 1.5 + lift;
-    const out = (f.wave && index === 1 ? f.wave : 0) + a * 0.9;
-    const hx = shoulderX + dir * Math.sin(a) * 0.62 * s + side * Math.sin(out) * 0.62 * (1 - s);
-    const hy = shoulderY - Math.cos(Math.min(1.9, Math.abs(a) + (index === 1 ? Math.abs(f.wave ?? 0) : 0))) * 0.62;
-    stroke(g, o, shoulderX, shoulderY, hx, hy, 0.15, f.top);
+    const e = f.elbows?.[index] ?? 0, wv = f.wave && index === 1 ? f.wave : 0;
+    const L = 0.31;
+    const out = wv + a * 0.9, out2 = out + e * 0.3 + wv * 0.8;
+    const ex = shoulderX + dir * Math.sin(a) * L * s + side * Math.sin(out) * L * (1 - s);
+    const ey = shoulderY - Math.cos(Math.min(1.9, Math.abs(a) + Math.abs(wv))) * L;
+    const hx = ex + dir * Math.sin(a + e) * L * s + side * Math.sin(out2) * L * (1 - s);
+    const hy = ey - Math.cos(Math.min(2.6, Math.abs(a + e) + Math.abs(wv))) * L;
+    stroke(g, o, shoulderX, shoulderY, ex, ey, 0.15, f.top);
+    stroke(g, o, ex, ey, hx, hy, 0.14, f.top);
+    disc(g, o, ex, ey, 0.07, f.top);
     disc(g, o, hx, hy - 0.03, 0.075, f.skin);
   };
 
