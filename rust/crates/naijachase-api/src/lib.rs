@@ -31,6 +31,7 @@ pub const API_VERSION: &str = "v1";
 #[derive(Clone, Debug, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum ClientCommand {
+    HireAssistant,
     VisitVenue {
         venue_id: String,
         #[serde(default = "default_drive")]
@@ -108,6 +109,11 @@ pub struct DossierOptionField {
 pub struct DossierOptionsResponse {
     pub catalogue_version: u16,
     pub fields: Vec<DossierOptionField>,
+}
+
+#[derive(Clone, Debug, Serialize, PartialEq, Eq)]
+pub struct AssistantRoutesResponse {
+    pub suggestions: Vec<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -438,6 +444,9 @@ pub struct PublicGameState {
     pub opening_budget: u32,
     pub balance: u32,
     pub transport_rules_version: u16,
+    pub assistant_hired: bool,
+    pub assistant_available: bool,
+    pub assistant_cost: u32,
 }
 
 fn public_game_state(
@@ -476,6 +485,12 @@ fn public_game_state(
         opening_budget: state.economy.opening_budget,
         balance: state.economy.balance,
         transport_rules_version: state.economy.rules_version,
+        assistant_hired: state.economy.assistant_hired,
+        assistant_available: state.outcome.is_none()
+            && !state.economy.assistant_hired
+            && state.visited_venues.is_empty()
+            && naijachase_core::rank(state.career_points) != "Rookie",
+        assistant_cost: state.economy.opening_budget.div_ceil(3),
     })
 }
 
@@ -1047,6 +1062,10 @@ pub fn router(state: Arc<AppState>) -> Router {
             get(transport_quotes),
         )
         .route("/v1/cases/{case_id}/ledger", get(transport_ledger))
+        .route(
+            "/v1/cases/{case_id}/assistant/routes",
+            get(assistant_routes),
+        )
         .route("/v1/cases/{case_id}/pressure", post(pressure_witness))
         .route("/v1/economy/bribe-tokens", get(bribe_token_balance))
         .route("/v1/economy/bribe-tokens/ledger", get(bribe_token_history))
@@ -2104,6 +2123,11 @@ async fn execute_weekly_command(
     Json(request): Json<ExecuteRequest>,
 ) -> Result<Json<serde_json::Value>, ApiError> {
     ensure_origin(&h, &s.config)?;
+    if matches!(&request.command, ClientCommand::HireAssistant) {
+        return Err(bad_request(
+            "assistants are not available in weekly challenges",
+        ));
+    }
     let account = authorize(&h, &s).await?;
     let p = account.player_id.clone();
     let store = s.store.clone();
@@ -2857,6 +2881,8 @@ fn build_game_from_mission(
                 minutes: 0,
                 balance_after: opening_budget,
             }],
+            assistant_hired: false,
+            assistant_cost: 0,
         },
     })
 }
@@ -2928,6 +2954,83 @@ async fn transport_ledger(
     Ok(Json(game.economy.ledger))
 }
 
+async fn assistant_routes(
+    State(state): State<Arc<AppState>>,
+    Path(case_id): Path<String>,
+    headers: HeaderMap,
+) -> Result<Json<AssistantRoutesResponse>, ApiError> {
+    let player = authorize(&headers, &state).await?.player_id;
+    validate_id(&case_id, "case_id").map_err(bad_request)?;
+    let store = state.store.clone();
+    let (_, game) = tokio::task::spawn_blocking(move || store.load_owned_case(&case_id, &player))
+        .await
+        .map_err(task_error)??;
+    if !game.economy.assistant_hired {
+        return Err(StorageError::Forbidden.into());
+    }
+    if game.outcome.is_some() {
+        return Ok(Json(AssistantRoutesResponse {
+            suggestions: vec![],
+        }));
+    }
+    Ok(Json(AssistantRoutesResponse {
+        suggestions: assistant_route_suggestions(&state.catalogue, &game),
+    }))
+}
+
+fn assistant_route_suggestions(catalogue: &Catalogue, state: &GameState) -> Vec<String> {
+    let Some(correct) = state.route.get(state.stage as usize + 1).cloned() else {
+        return vec![];
+    };
+    let mut choices = vec![correct.clone()];
+    if is_on_trail(state) {
+        for atom in witness_clue_plan(catalogue, state)
+            .into_iter()
+            .filter(|atom| atom.dimension != "landmark")
+        {
+            for candidate in atom.candidate_states.split('|') {
+                if candidate != correct
+                    && candidate != state.state
+                    && !choices.iter().any(|x| x == candidate)
+                {
+                    choices.push(candidate.to_owned());
+                }
+            }
+        }
+    }
+    let mut hubs = catalogue.hubs.keys().cloned().collect::<Vec<_>>();
+    hubs.sort_by_key(|candidate| {
+        Sha256::digest(
+            format!(
+                "assistant-route|{}|{}|{candidate}",
+                state.mission_id, state.stage
+            )
+            .as_bytes(),
+        )
+        .to_vec()
+    });
+    for candidate in hubs {
+        if candidate != state.state && !choices.contains(&candidate) {
+            choices.push(candidate);
+        }
+        if choices.len() == 3 {
+            break;
+        }
+    }
+    choices.truncate(3);
+    choices.sort_by_key(|candidate| {
+        Sha256::digest(
+            format!(
+                "assistant-position|{}|{}|{candidate}",
+                state.mission_id, state.stage
+            )
+            .as_bytes(),
+        )
+        .to_vec()
+    });
+    choices
+}
+
 async fn transport_quotes(
     State(state): State<Arc<AppState>>,
     Path(case_id): Path<String>,
@@ -2981,6 +3084,7 @@ async fn transport_quotes(
         for mode in ["drive", "hitch_ride"] {
             let (minutes, cost) =
                 naijachase_core::local_quote(base, mode).map_err(|e| bad_request(e.to_string()))?;
+            let minutes = assistant_witness_minutes(minutes, game.economy.assistant_hired);
             let wait = wait_until_open(
                 game.elapsed.saturating_add(minutes),
                 venue.opens_hour,
@@ -3295,6 +3399,12 @@ fn translate_command(
     home_base: &str,
 ) -> Result<(Command, Option<Event>), String> {
     match request {
+        ClientCommand::HireAssistant => Ok((
+            Command::HireAssistant {
+                cost: state.economy.opening_budget.div_ceil(3),
+            },
+            None,
+        )),
         ClientCommand::VisitVenue { venue_id, mode } => {
             validate_id(&venue_id, "venue_id")?;
             if !available_venue_ids(catalogue, state).contains(&venue_id) {
@@ -3403,6 +3513,8 @@ fn translate_command(
             data.insert("location_name".into(), placement.location_name.clone());
             let (travel_minutes, cost) =
                 naijachase_core::local_quote(base_travel, &mode).map_err(|e| e.to_string())?;
+            let travel_minutes =
+                assistant_witness_minutes(travel_minutes, state.economy.assistant_hired);
             let wait_minutes = wait_until_open(
                 state.elapsed.saturating_add(travel_minutes),
                 venue.opens_hour,
@@ -3835,6 +3947,14 @@ fn wait_until_open(elapsed: u32, opens: u32, closes: u32) -> u32 {
         open - minute
     } else {
         1440 - minute + open
+    }
+}
+
+fn assistant_witness_minutes(minutes: u32, hired: bool) -> u32 {
+    if hired {
+        minutes.saturating_mul(975).div_ceil(1_000).max(1)
+    } else {
+        minutes
     }
 }
 
@@ -4574,6 +4694,28 @@ mod tests {
     }
 
     #[test]
+    fn hired_assistant_suggests_three_routes_and_reduces_only_witness_travel_time() {
+        let root = FsPath::new(env!("CARGO_MANIFEST_DIR")).join("../../..");
+        let catalogue = Catalogue::load(&root).unwrap();
+        for mission in catalogue.missions.values() {
+            let route = catalogue.route(mission).unwrap();
+            let mut game = state();
+            game.mission_id = mission.mission_id.clone();
+            game.thief_id = mission.thief_id.clone();
+            game.route = route.clone();
+            game.state = route[0].clone();
+            game.economy.assistant_hired = true;
+            let suggestions = assistant_route_suggestions(&catalogue, &game);
+            assert_eq!(suggestions.len(), 3);
+            assert!(suggestions.contains(&route[1]));
+            assert_eq!(suggestions, assistant_route_suggestions(&catalogue, &game));
+        }
+        assert_eq!(assistant_witness_minutes(100, false), 100);
+        assert_eq!(assistant_witness_minutes(100, true), 98);
+        assert_eq!(assistant_witness_minutes(40, true), 39);
+    }
+
+    #[test]
     fn wrong_jurisdictions_are_cold_and_never_replay_route_clues() {
         let root = FsPath::new(env!("CARGO_MANIFEST_DIR")).join("../../..");
         let catalogue = Catalogue::load(&root).unwrap();
@@ -4762,6 +4904,7 @@ mod tests {
             "/v1/cases/catalogue-notifications",
             "/v1/cases/{case_id}/transport-quotes",
             "/v1/cases/{case_id}/ledger",
+            "/v1/cases/{case_id}/assistant/routes",
             "/v1/cases/{case_id}/pressure",
             "/v1/economy/bribe-tokens",
             "/v1/economy/bribe-tokens/ledger",
@@ -4798,6 +4941,7 @@ mod tests {
             "JailStatus",
             "AbandonCaseRequest",
             "AbandonCaseResponse",
+            "AssistantRoutesResponse",
         ] {
             assert!(
                 generated.contains(&format!("type {type_name}=")),

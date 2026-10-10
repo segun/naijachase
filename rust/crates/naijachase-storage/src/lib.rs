@@ -4081,6 +4081,8 @@ mod tests {
                 opening_budget: 5000,
                 balance: 5000,
                 ledger: vec![],
+                assistant_hired: false,
+                assistant_cost: 0,
             },
         };
         let now = std::time::SystemTime::now()

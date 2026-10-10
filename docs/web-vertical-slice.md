@@ -53,12 +53,17 @@ Rules of the layout: Babylon.js may only be imported by TypeScript modules under
 ## Experience
 
 - **Landing and sign-in**: animated route map, split-screen login/registration
-  with password-strength and match feedback, required Day/Month/Year DOB fields
+  with password-strength and match feedback, required Year/Month/Day DOB dropdowns
   and an inline 18+ eligibility error, location-assisted home base, and an
   animated chase scene (three officers in black uniforms pursuing a masked
   thief through a Nigerian city at night). On desktop the sign-in screen, including the compact
   two-column registration form, uses the viewport; the form panel can scroll
   when the additional fields cannot fit. Small screens scroll as needed.
+  DOB years run backwards from the current UTC year minus 18; month options
+  use month names, and day options follow the selected year's month length
+  (including leap years). Changing year/month clears a day that is no longer
+  valid. The full birthday must still meet the 18+ check; the server validates
+  independently against its own UTC clock, never trusting the client's clock.
 - **3D chase scene (Babylon.js)**: the sign-in chase is rendered in real time with
   Babylon.js. Three officers in black uniforms chase a masked thief with a sack of
   loot through three Nigerian locations on one endless loop: **Lagos** (night: the

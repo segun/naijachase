@@ -9,6 +9,9 @@ pub enum Command {
         mission_id: String,
         seed: u64,
     },
+    HireAssistant {
+        cost: u32,
+    },
     VisitVenue {
         venue_id: String,
         trait_name: String,
@@ -82,6 +85,10 @@ pub struct CaseEconomy {
     pub opening_budget: u32,
     pub balance: u32,
     pub ledger: Vec<TransportLedgerEntry>,
+    #[serde(default)]
+    pub assistant_hired: bool,
+    #[serde(default)]
+    pub assistant_cost: u32,
 }
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub struct GameState {

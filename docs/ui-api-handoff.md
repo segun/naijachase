@@ -59,6 +59,44 @@ the key witness first may travel immediately.
 Do not label clues as “ambiguous”, “decisive”, or “key” in the player UI. Those
 roles exist to shape deduction and progression, not to reveal the solution.
 
+## Hire Assistant
+
+This is an ordinary-case feature and is not available in weekly challenges.
+The case state supplies `assistant_available`, `assistant_hired`, and
+`assistant_cost`. Show **Hire Assistant** only while `assistant_available` is
+true. The server makes it true only when the player is above Rookie rank, the
+case is unfinished, no assistant is already active, and no witness has yet been
+questioned. It becomes false permanently for that attempt after the first
+interview.
+
+The confirmation must say that the assistant will automatically file suspect
+dossier evidence, suggest three possible onward routes, and make local witness
+journeys quicker. Do not display or describe the internal travel-time percentage.
+Display the server-provided `assistant_cost`, which is one-third of the opening
+case allocation, rounded up to the nearest whole naira and paid from the case
+balance.
+
+Hire through the normal idempotent command endpoint:
+
+```json
+{
+  "command_id": "assistant-01",
+  "expected_version": 1,
+  "command": { "type": "hire_assistant" }
+}
+```
+
+On success, refresh state, quotes, and the ledger. Subsequent key-witness
+responses cause the backend to add the observed trait directly to `state.dossier`;
+the browser must not infer or submit that value itself. Local witness quotes
+already contain the adjusted authoritative duration.
+
+When the player asks for route advice, call
+`GET /v1/cases/{case_id}/assistant/routes`. It returns
+`{ "suggestions": ["State A", "State B", "State C"] }`; exactly one suggestion
+is the correct next destination. Present all three neutrally. A 403 means no
+assistant is active. At the final stop, `suggestions` is empty.
+
 ## Seven-day deadline
 
 The Rust engine is authoritative for the 10,080-minute simulated deadline. If a

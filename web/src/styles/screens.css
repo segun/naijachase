@@ -194,6 +194,9 @@
 .settings { display: grid; gap: 1.4rem; }
 .settings fieldset { border: 0; padding: 0; margin: 0; display: grid; gap: .6rem; }
 .settings legend { font-weight: 800; padding: 0; margin-bottom: .5rem; }
+.profile-fact { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: .65rem; margin: 0; padding: .8rem 1rem; border: 1px solid var(--line); border-radius: 12px; background: var(--surface-2); }
+.profile-fact svg { width: 1.1rem; height: 1.1rem; color: var(--gold); }
+.profile-fact span { color: var(--muted); }
 
 @media (max-width: 960px) {
   .split, .hero, .auth, .steps, .missions, .suspects, .phases { grid-template-columns: 1fr; }
@@ -314,8 +317,8 @@
 .form-grid .home-row, .form-grid .dob-row, .form-grid .pw-meta, .form-grid .submit { grid-column: 1 / -1; }
 .dob-row { border: 0; padding: 0; margin: 0; min-width: 0; }
 .dob-row legend { margin-bottom: .35rem; }
-.dob-inputs { display: grid; grid-template-columns: 1fr 1fr 1.4fr; gap: .5rem; }
-.dob-inputs .input { min-width: 0; width: 100%; }
+.dob-inputs { display: grid; grid-template-columns: 1fr 1.4fr 1fr; gap: .5rem; }
+.dob-inputs .select { min-width: 0; width: 100%; }
 .dob-row .hint { margin: .35rem 0 0; }
 .home-inputs { display: flex; gap: .5rem; }
 .home-inputs .select { flex: 1; min-width: 0; }
@@ -455,3 +458,4 @@ textarea.input { resize: vertical; min-height: 5rem; }
 .toggle-end { display: flex; justify-content: flex-end; }
 .view-toggle { margin-bottom: .75rem; }
 .btn.btn-icon { min-width: 48px; padding-inline: .75rem; }
+.auth .check.legal{align-items:flex-start;grid-column:1/-1}.auth .check.legal a{text-decoration:underline}

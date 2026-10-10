@@ -9,6 +9,7 @@
     "expected_version": {"type": "integer", "minimum": 1},
     "command": {
       "oneOf": [
+        {"type":"object","required":["type"],"properties":{"type":{"const":"hire_assistant"}},"additionalProperties":false},
         {"type":"object","required":["type","venue_id","mode"],"properties":{"type":{"const":"visit_venue"},"venue_id":{"type":"string"},"mode":{"enum":["drive","hitch_ride"]}},"additionalProperties":false},
         {"type":"object","required":["type","minutes"],"properties":{"type":{"const":"wait"},"minutes":{"type":"integer","minimum":1,"maximum":720}},"additionalProperties":false},
         {"type":"object","required":["type","trait_name","value"],"properties":{"type":{"const":"record_trait"},"trait_name":{"type":"string"},"value":{"type":"string"}},"additionalProperties":false},

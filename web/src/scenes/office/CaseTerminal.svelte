@@ -12,6 +12,7 @@
   import Notebook from "../../screens/case/Notebook.svelte";
   import Travel from "../../screens/case/Travel.svelte";
   import Warrant from "../../screens/case/Warrant.svelte";
+  import HireAssistant from "../../screens/case/HireAssistant.svelte";
   import Icon from "../../ui/Icon.svelte";
   import LeadGrid from "./LeadGrid.svelte";
   import "../../styles/case-terminal.css";
@@ -167,9 +168,13 @@
       <main class="t-main" id="terminal-main" aria-label={title}>
         {#if app.screen === "investigate"}
           <section class="t-leads" aria-labelledby="leads-title">
-            <h1 class="t-greet" id="leads-title">Local leads</h1>
+            <h1 class="t-greet" id="leads-title">Local leads <HireAssistant {app} /></h1>
             <p class="t-line">{gs.current_state}: {done.length} of {venues.length || "…"} witnesses questioned. {gs.trail_status === "hot" ? "The trail is hot. Listen for a destination clue and a detail about the suspect; one witness here knows where the thief went next." : "The trail is cold. Local witnesses may confirm that the suspect did not come this way."}</p>
             <LeadGrid leads={venues} loaded={app.quotesLoaded} {leaving} questioned={done} onpick={pick} />
+
+            {#if gs.assistant_hired}
+              <p class="t-line t-hint">Your assistant is working on this case.</p>
+            {/if}
 
             {#if here.length}
               <section class="t-log" aria-label="Latest witness accounts">

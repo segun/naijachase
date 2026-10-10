@@ -57,7 +57,8 @@ inherited from an IDE or parent shell.
 - `POST /v1/auth/register`: `email`, `username`, `home_base`, `password`,
   `confirm_password`, and required integer `dob_day`, `dob_month`, `dob_year`;
   both clients and the server reject invalid/future dates and applicants under
-  18 (using today's UTC date). The 18th birthday is eligible; February 29
+  18 (using today's UTC date). The server uses its own clock independently of
+  client time or dropdown restrictions. The 18th birthday is eligible; February 29
   birthdays become eligible on March 1 in a non-leap year. Underage requests
   return `400` with "You must be 18 years or older."; missing or wrongly typed
   fields return `422`. DOB is persisted privately as `players.date_of_birth`

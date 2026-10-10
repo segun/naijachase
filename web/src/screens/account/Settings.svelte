@@ -9,12 +9,22 @@
   const p = untrack(() => app.player);
   let displayName = $state(p?.display_name ?? ""), pronouns = $state(p?.pronouns ?? ""), sex = $state(p?.sex ?? "");
   let homeBase = $state(p?.home_base ?? "Lagos");
+  let loadedPlayer = $state(p?.player_id ?? "");
   let confirmAll = $state(false);
   const homeOptions = $derived(HOME_BASES.includes(homeBase as never) ? HOME_BASES : STATES);
   const when = (iso: string) => new Date(iso).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
   const blank = (v: string) => (v.trim() === "" ? null : v.trim());
 
   $effect(() => { if (app.signedIn) untrack(() => { void app.loadSessions(); }); });
+  $effect(() => {
+    const player = app.player;
+    if (!player || player.player_id === loadedPlayer) return;
+    loadedPlayer = player.player_id;
+    displayName = player.display_name ?? "";
+    pronouns = player.pronouns ?? "";
+    sex = player.sex ?? "";
+    homeBase = player.home_base;
+  });
 
   async function save(event: SubmitEvent) {
     event.preventDefault();
@@ -63,11 +73,12 @@
     <section class="card settings rise">
       <h2>Profile</h2>
       <p class="muted">Signed in as <strong>{app.player.username}</strong> ({app.player.email}). Optional fields are visible only to you.</p>
+      <p class="profile-fact"><Icon name="pin" /><span>Current home base</span><strong>{app.player.home_base}</strong></p>
       <form class="form" onsubmit={save}>
         <label class="field"><span>Display name</span><input class="input" bind:value={displayName} maxlength="64" placeholder="Shown instead of your username" /></label>
         <label class="field"><span>Pronouns (optional)</span><input class="input" bind:value={pronouns} maxlength="64" /></label>
         <label class="field"><span>Sex (optional)</span><input class="input" bind:value={sex} maxlength="64" /></label>
-        <label class="field"><span>Home base</span>
+        <label class="field"><span>Change home base</span>
           <select class="select" bind:value={homeBase}>{#each homeOptions as s}<option>{s}</option>{/each}</select>
         </label>
         <button class="btn btn-primary" disabled={app.busy}>Save profile</button>

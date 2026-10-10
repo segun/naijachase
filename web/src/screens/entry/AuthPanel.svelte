@@ -5,7 +5,7 @@
   import ChaseStage from "../../scenes/chase/ChaseStage.svelte";
   import MusicToggle from "../../music/MusicToggle.svelte";
   import Icon from "../../ui/Icon.svelte";
-  import { birthDateError } from "../../domain/birth-date.mjs";
+  import { birthDateError, birthDays, birthYears } from "../../domain/birth-date.mjs";
 
   let { app }: { app: AppController } = $props();
   type Mode="login"|"register"|"forgot"|"forgot-sent"|"reset";
@@ -14,7 +14,14 @@
   let email = $state(""), password = $state(""), confirm = $state(""), username = $state("");
   let homeBase = $state("Lagos"), showPassword = $state(false), locating = $state(false), locationNote = $state("");
   let dobDay = $state<number>(), dobMonth = $state<number>(), dobYear = $state<number>();
-  let dobSubmitted = $state(false);
+  let dobSubmitted = $state(false), accepted = $state(false);
+  const LEGAL = "https://naijachase.com";
+  const years = birthYears();
+  const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  const days = $derived(birthDays(dobYear, dobMonth));
+  $effect(() => {
+    if (dobDay !== undefined && !days.includes(dobDay)) dobDay = undefined;
+  });
   const dobError = $derived(
     dobSubmitted || (dobDay !== undefined && dobMonth !== undefined && dobYear !== undefined)
       ? birthDateError(dobDay, dobMonth, dobYear) : ""
@@ -30,9 +37,10 @@
       if (await app.login(email, password)) { password = ""; app.go("cases"); }
     } else if(mode==="register") {
       dobSubmitted = true;
+      if (!accepted) return;
       if (dobDay === undefined || dobMonth === undefined || dobYear === undefined || birthDateError(dobDay, dobMonth, dobYear)) return;
       if (await app.register({ email, password, confirm, username, homeBase, dobDay, dobMonth, dobYear })) {
-        password = ""; confirm = ""; dobDay = undefined; dobMonth = undefined; dobYear = undefined; dobSubmitted = false; mode = "login";
+        password = ""; confirm = ""; dobDay = undefined; dobMonth = undefined; dobYear = undefined; dobSubmitted = false; accepted = false; mode = "login";
       }
     } else if(mode==="forgot" && await app.requestPasswordReset(email)){
       mode="forgot-sent";
@@ -79,9 +87,18 @@
           <fieldset class="dob-row" aria-describedby="dob-help">
             <legend>Date of birth</legend>
             <div class="dob-inputs">
-              <label class="field"><span>Day</span><input class="input" type="number" bind:value={dobDay} required min="1" max="31" step="1" autocomplete="bday-day" aria-invalid={Boolean(dobError)} /></label>
-              <label class="field"><span>Month</span><input class="input" type="number" bind:value={dobMonth} required min="1" max="12" step="1" autocomplete="bday-month" aria-invalid={Boolean(dobError)} /></label>
-              <label class="field"><span>Year</span><input class="input" type="number" bind:value={dobYear} required min="1000" max={new Date().getUTCFullYear()} step="1" autocomplete="bday-year" aria-invalid={Boolean(dobError)} /></label>
+              <label class="field"><span>Year</span><select class="select" bind:value={dobYear} required autocomplete="bday-year" aria-invalid={Boolean(dobError)}>
+                <option value={undefined} disabled>Year</option>
+                {#each years as year}<option value={year}>{year}</option>{/each}
+              </select></label>
+              <label class="field"><span>Month</span><select class="select" bind:value={dobMonth} required autocomplete="bday-month" aria-invalid={Boolean(dobError)}>
+                <option value={undefined} disabled>Month</option>
+                {#each months as month, index}<option value={index + 1}>{month}</option>{/each}
+              </select></label>
+              <label class="field"><span>Day</span><select class="select" bind:value={dobDay} required disabled={days.length === 0} autocomplete="bday-day" aria-invalid={Boolean(dobError)}>
+                <option value={undefined} disabled>Day</option>
+                {#each days as day}<option value={day}>{day}</option>{/each}
+              </select></label>
             </div>
             <p id="dob-help" class="muted hint" class:warn={Boolean(dobError)} aria-live="polite">{dobError || "You must be 18 years or older to register."}</p>
           </fieldset>
@@ -109,8 +126,9 @@
         {:else if mode === "login"}
           <label class="check"><input type="checkbox" bind:checked={showPassword} /> Show password</label>
         {/if}
+        {#if mode === "register"}<label class="check legal"><input type="checkbox" bind:checked={accepted} required /> <span>I am at least 13 and accept the <a href="{LEGAL}/terms.html" target="_blank" rel="noopener">Terms</a>, <a href="{LEGAL}/privacy.html" target="_blank" rel="noopener">Privacy Policy</a> and <a href="{LEGAL}/disclaimer.html" target="_blank" rel="noopener">Disclaimer</a>.</span></label>{/if}
         {#if mode === "login"}<button class="auth-link" type="button" onclick={() => (mode = "forgot")}>Forgot password?</button>{/if}
-        <button class="btn btn-primary btn-lg btn-block submit" disabled={app.busy || ((mode === "register" || mode === "reset") && !matches) || (mode === "register" && Boolean(dobError))}>
+        <button class="btn btn-primary btn-lg btn-block submit" disabled={app.busy || ((mode === "register" || mode === "reset") && !matches) || (mode === "register" && (Boolean(dobError) || !accepted))}>
           {#if app.busy}<span class="spinner"></span> {app.busyLabel}…{:else}{mode === "login" ? "Log in" : mode === "register" ? "Create account" : mode === "forgot" ? "Send reset link" : "Change password"}{/if}
         </button>
         {#if mode === "forgot" || mode === "reset"}<button class="auth-link" type="button" onclick={() => (mode = "login")}>Back to login</button>{/if}

@@ -51,6 +51,21 @@ mod tests {
     }
 
     #[test]
+    fn birth_date_eligibility_uses_server_date_not_client_year_cutoff() {
+        let server_today = NaiveDate::from_ymd_opt(2026, 10, 9).unwrap();
+        // A client clock one year ahead would offer 2009 in its year dropdown.
+        assert_eq!(
+            BirthDate::on(1, 1, 2009, server_today).unwrap_err(),
+            "You must be 18 years or older."
+        );
+        // Even an allowed year is underage until the full birthday has passed.
+        assert_eq!(
+            BirthDate::on(10, 10, 2008, server_today).unwrap_err(),
+            "You must be 18 years or older."
+        );
+    }
+
+    #[test]
     fn birth_date_rejects_invalid_calendar_dates_and_ranges() {
         let today = NaiveDate::from_ymd_opt(2026, 10, 9).unwrap();
         for (day, month, year) in [

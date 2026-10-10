@@ -139,6 +139,41 @@ pub fn apply(mut state: GameState, command: Command) -> Result<(GameState, Vec<E
     let mut data = BTreeMap::new();
     let kind = match &command {
         Command::StartCase { .. } => return Err(Error::Invalid("case already started".into())),
+        Command::HireAssistant { cost } => {
+            if rank(state.career_points) == "Rookie" {
+                return Err(Error::Invalid(
+                    "assistants are available after promotion from Rookie".into(),
+                ));
+            }
+            if state.economy.assistant_hired {
+                return Err(Error::Invalid("assistant already hired".into()));
+            }
+            if !state.visited_venues.is_empty() {
+                return Err(Error::Invalid(
+                    "assistant must be hired before questioning any witness".into(),
+                ));
+            }
+            let expected = state.economy.opening_budget.div_ceil(3);
+            if *cost != expected || *cost > state.economy.balance {
+                return Err(Error::Invalid("invalid assistant fee".into()));
+            }
+            state.economy.balance -= *cost;
+            state.economy.assistant_hired = true;
+            state.economy.assistant_cost = *cost;
+            state.economy.ledger.push(TransportLedgerEntry {
+                sequence: state.economy.ledger.len() as u32 + 1,
+                kind: "assistant".into(),
+                origin: state.state.clone(),
+                destination: String::new(),
+                mode: "case_support".into(),
+                cost: *cost,
+                minutes: 0,
+                balance_after: state.economy.balance,
+            });
+            data.insert("cost".into(), cost.to_string());
+            data.insert("balance".into(), state.economy.balance.to_string());
+            "assistant_hired"
+        }
         Command::VisitVenue {
             venue_id,
             trait_name,
@@ -158,6 +193,12 @@ pub fn apply(mut state: GameState, command: Command) -> Result<(GameState, Vec<E
                     .observations
                     .entry(trait_name.clone())
                     .or_insert(trait_value.clone());
+                if state.economy.assistant_hired {
+                    state
+                        .dossier
+                        .entry(trait_name.clone())
+                        .or_insert(trait_value.clone());
+                }
             }
             "witness_interviewed"
         }
@@ -188,6 +229,12 @@ pub fn apply(mut state: GameState, command: Command) -> Result<(GameState, Vec<E
                     .observations
                     .entry(trait_name.clone())
                     .or_insert(trait_value.clone());
+                if state.economy.assistant_hired {
+                    state
+                        .dossier
+                        .entry(trait_name.clone())
+                        .or_insert(trait_value.clone());
+                }
             }
             data.insert("mode".into(), mode.clone());
             data.insert("cost".into(), cost.to_string());
@@ -774,5 +821,48 @@ mod tests {
         assert_eq!(events[0].event_type, "wrong_warrant");
         assert_eq!(s.score, 1375);
         assert_eq!(s.career_points, 420);
+    }
+
+    #[test]
+    fn assistant_is_a_pre_interview_non_rookie_purchase_and_files_evidence() {
+        let mut rookie = state();
+        rookie.visited_venues.clear();
+        rookie.economy.opening_budget = 9_000;
+        rookie.economy.balance = 9_000;
+        rookie.career_points = 0;
+        assert!(apply(rookie, Command::HireAssistant { cost: 3_000 }).is_err());
+
+        let mut eligible = state();
+        eligible.visited_venues.clear();
+        eligible.career_points = 1_500;
+        eligible.economy.opening_budget = 9_000;
+        eligible.economy.balance = 9_000;
+        let (mut hired, events) = apply(eligible, Command::HireAssistant { cost: 3_000 }).unwrap();
+        assert_eq!(events[0].event_type, "assistant_hired");
+        assert!(hired.economy.assistant_hired);
+        assert_eq!(hired.economy.balance, 6_000);
+        assert_eq!(hired.economy.ledger.last().unwrap().kind, "assistant");
+        hired = apply(
+            hired,
+            Command::VisitVenue {
+                venue_id: "market".into(),
+                trait_name: "hair".into(),
+                trait_value: "long braided hair".into(),
+                minutes: 20,
+            },
+        )
+        .unwrap()
+        .0;
+        assert_eq!(
+            hired.dossier.get("hair").map(String::as_str),
+            Some("long braided hair")
+        );
+        assert!(apply(hired, Command::HireAssistant { cost: 3_000 }).is_err());
+
+        let mut too_late = state();
+        too_late.career_points = 1_500;
+        too_late.economy.opening_budget = 9_000;
+        too_late.economy.balance = 9_000;
+        assert!(apply(too_late, Command::HireAssistant { cost: 3_000 }).is_err());
     }
 }

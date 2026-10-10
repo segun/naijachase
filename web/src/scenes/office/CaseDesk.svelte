@@ -10,6 +10,7 @@
   import AvatarSilhouette from "../../avatar/AvatarSilhouette.svelte";
   import Icon from "../../ui/Icon.svelte";
   import LeadGrid from "./LeadGrid.svelte";
+  import HireAssistant from "../../screens/case/HireAssistant.svelte";
 
   // Re-check the catalogue and release notices every time the desk opens.
   $effect(() => { void app.loadProgression(); });
@@ -161,6 +162,7 @@
             <span class="t-portrait" aria-hidden="true">{#if app.avatar}<AvatarSilhouette preset={app.avatar} crop="bust" />{:else}<Icon name="user" />{/if}</span>
             <strong class="t-name">{app.investigator}</strong>
             <span class="t-sub">{app.summary?.rank ?? "Investigator"}</span>
+            {#if app.player}<span class="t-sub"><Icon name="pin" /> Home base · {app.player.home_base}</span>{/if}
           </div>
           <svg class="t-map" viewBox="0 0 {MAP_W} {MAP_H}" role="img" aria-label="{visited.length} of {STATES.length} jurisdictions visited">
             <path d={outlinePath()} />
@@ -187,7 +189,7 @@
             </section>
           {:else}
             <section class="t-leads" aria-labelledby="leads-title">
-              <h1 class="t-greet" id="leads-title">Local leads</h1>
+              <h1 class="t-greet" id="leads-title">Local leads{#if app.game}<HireAssistant {app} />{/if}</h1>
               <p class="t-line">{app.game?.state.current_state}. Pick where to start asking: one witness here knows where the thief went next.</p>
               <LeadGrid {leads} loaded={app.quotesLoaded} {leaving} onpick={pick} />
               <button class="t-opt t-small t-quiet" type="button" data-nav disabled={Boolean(leaving)} onclick={() => app.finishBriefing()}>Skip to the case <Icon name="arrow" /></button>

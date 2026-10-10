@@ -2,7 +2,7 @@ import type {
   AbandonCaseRequest, AbandonCaseResponse, AssignCaseRequest, AuthResponse, AvatarCatalogue, AvatarProfile, AvatarSelectionRequest, CaseArchiveEntry, CaseResponse, CatalogueProgress, ClientCommand, CurrentActivityResponse, CurrentCaseResponse, ExecuteRequest,
   LoginRequest, PlayerSession, ProfileUpdate, ProgressionSummary, RecoveryCompleteRequest,
   RecoveryRequest, RegisterRequest, ReplayCaseRequest, TransportLedgerEntry, TransportQuote,
-  CatalogueHealth, CompleteCooperationRequest, ContentRoleResponse, CooperationPreferences, CooperationReportRequest, CooperationRequest, CreateCooperationRequest, DossierOptions, MissionAdminDetails, MissionTransitionRequest, MissionValidation, ReleaseNotification
+  AssistantRoutesResponse, CatalogueHealth, CompleteCooperationRequest, ContentRoleResponse, CooperationPreferences, CooperationReportRequest, CooperationRequest, CreateCooperationRequest, DossierOptions, MissionAdminDetails, MissionTransitionRequest, MissionValidation, ReleaseNotification
 } from "../../../contracts/typescript/api-v1.ts";
 import type { AchievementDef, GroupInvitation, PlayerGroup, Standing, TransitReply, WeeklyAttempt, WeeklyCurrent, WeeklyDetails, WeeklyEvent, WeeklyHistoryEntry, WeeklyNotification } from "../domain/model.ts";
 
@@ -131,6 +131,7 @@ export class Api {
   readRelease = (id: number) => call<Message>(`/v1/cases/catalogue-notifications/${id}/read`, "POST", {});
   quotes = (caseId: string) => call<TransportQuote[]>(`/v1/cases/${encodeURIComponent(caseId)}/transport-quotes`);
   ledger = (caseId: string) => call<TransportLedgerEntry[]>(`/v1/cases/${encodeURIComponent(caseId)}/ledger`);
+  assistantRoutes = (caseId: string) => call<AssistantRoutesResponse>(`/v1/cases/${encodeURIComponent(caseId)}/assistant/routes`);
   command = (caseId: string, version: number, command: ClientCommand) =>
     call<CaseResponse>(`/v1/cases/${encodeURIComponent(caseId)}/commands`, "POST", {
       command_id: crypto.randomUUID(), expected_version: version, command

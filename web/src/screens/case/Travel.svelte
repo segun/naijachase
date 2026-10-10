@@ -18,6 +18,8 @@
   let view = $state<"map" | "list">("map");
   let query = $state("");
   let showInfo = $state(false);
+  let advice = $state<string[]>([]);
+  let adviceLoading = $state(false);
   let sideEl = $state<HTMLElement | null>(null);
 
   $effect(() => {
@@ -40,6 +42,18 @@
     if (await app.command({ type: "travel", destination, mode: quote.mode }, `Arrived in ${destination}.`, `Travelling to ${destination}`)) {
       selected = null;
       app.startJourney(origin, destination, quote.mode);
+    }
+  }
+
+  async function askAssistant() {
+    if (!app.caseId || adviceLoading) return;
+    adviceLoading = true;
+    try {
+      advice = (await app.api.assistantRoutes(app.caseId)).suggestions;
+    } catch {
+      app.toast("Your assistant could not check the routes. Please try again.", "error");
+    } finally {
+      adviceLoading = false;
     }
   }
 </script>
@@ -112,6 +126,18 @@
     </section>
 
     <aside class="stack side-rail">
+      {#if gs.assistant_hired}
+        <section class="card rise" aria-live="polite">
+          <h2>Assistant's route notes</h2>
+          {#if advice.length}
+            <p>Investigate these three possibilities:</p>
+            <ol>{#each advice as destination}<li>{destination}</li>{/each}</ol>
+          {:else}
+            <p class="muted">Ask your assistant to narrow the trail to three possible destinations.</p>
+          {/if}
+          <button class="btn btn-ghost" type="button" disabled={app.busy || adviceLoading} onclick={askAssistant}>{adviceLoading ? "Checking…" : advice.length ? "Check routes again" : "Ask assistant"}</button>
+        </section>
+      {/if}
       <section class="card boarding rise" aria-live="polite" bind:this={sideEl}>
         <p class="eyebrow">Boarding pass</p>
         <div class="route"><div><small>From</small><strong>{here}</strong></div><Icon name="plane" /><div><small>To</small><strong>{selected ?? "—"}</strong></div></div>

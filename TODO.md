@@ -52,8 +52,11 @@ completed.
 
 ### Registration
 
-- [x] Required Day, Month, Year date-of-birth fields with frontend and backend
-  calendar-date validation and an 18+ registration gate; persist the private DOB
+- [x] Required Year, Month, Day date-of-birth dropdowns, with years capped at
+  the current year minus 18 and days adjusted for month length/leap years.
+  Clear invalid day selections when year/month changes; validate calendar dates
+  and enforce the 18+ registration gate in the frontend and independently against
+  the server clock in the backend; persist the private DOB
   on the player record (existing accounts remain null).
 
 ### Career and cases
@@ -1394,7 +1397,12 @@ change. If counts change, update both **Current baseline** here and the relevant
 section of `README.md`.
 
 - [ ] Buying music
-- [ ] Hire an assistant (paid feature, not available in weekly group matches to level the playing field)
+- [x] Hire an assistant using one-third of the virtual opening case budget,
+  available above Rookie rank only before the first witness interview. The
+  assistant files observed dossier traits, returns three route suggestions and
+  quietly shortens local witness travel time; it remains unavailable in weekly
+  group challenges to preserve competitive parity.
+- [x] After assistant testing, restore the above-Rookie hiring restriction.
 
 ## Marketing site (naijachase.com)
 
@@ -1402,4 +1410,4 @@ section of `README.md`.
   Publish with `make publish-landing` (nginx: `deploy/nginx/naijachase.com.conf`, root `/var/www/naijachase.com`).
 - [ ] Update the legal pages whenever data collection, analytics, checkout or advertising change.
 - [ ] Add an Open Graph PNG (1200×630) and `og:image` tags to `landing/index.html`.
-- [ ] Link Privacy/Terms/Disclaimer from the registration screen in `web/` and require acceptance.
+- [x] Link Privacy/Terms/Disclaimer from the registration screen in `web/` and require acceptance.
