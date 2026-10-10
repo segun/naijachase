@@ -923,6 +923,24 @@ pub struct AppState {
     limiter: RateLimiter,
 }
 
+/// Keeps persisted weekly status aligned with the authoritative wall clock even
+/// when nobody opens the weekly-challenge screens after a deadline.
+pub async fn weekly_expiration_loop(store: Arc<MysqlStore>) {
+    let mut interval = tokio::time::interval(Duration::from_secs(60));
+    loop {
+        interval.tick().await;
+        let store = store.clone();
+        match tokio::task::spawn_blocking(move || store.expire_weekly_challenges()).await {
+            Ok(Ok(expired)) if expired > 0 => {
+                tracing::info!(expired, "expired weekly challenges")
+            }
+            Ok(Ok(_)) => {}
+            Ok(Err(error)) => tracing::error!(%error, "weekly challenge expiry failed"),
+            Err(error) => tracing::error!(%error, "weekly challenge expiry task failed"),
+        }
+    }
+}
+
 pub fn router(state: Arc<AppState>) -> Router {
     Router::new()
         .route("/health/live", get(live))
@@ -2107,7 +2125,7 @@ async fn get_weekly_attempt(
     State(s): State<Arc<AppState>>,
     Path(attempt): Path<String>,
     h: HeaderMap,
-) -> Result<Json<naijachase_storage::WeeklyAttemptView>, ApiError> {
+) -> Result<Json<PublicWeeklyAttempt>, ApiError> {
     let p = authorize(&h, &s).await?.player_id;
     let store = s.store.clone();
     let a = attempt.clone();
@@ -2116,11 +2134,10 @@ async fn get_weekly_attempt(
         .map_err(task_error)??;
     let p = authenticate(&h, &s).await?.player_id;
     let store = s.store.clone();
-    Ok(Json(
-        tokio::task::spawn_blocking(move || store.weekly_attempt(&p, &attempt))
-            .await
-            .map_err(task_error)??,
-    ))
+    let view = tokio::task::spawn_blocking(move || store.weekly_attempt(&p, &attempt))
+        .await
+        .map_err(task_error)??;
+    Ok(Json(public_weekly_attempt(view, &s.catalogue)?))
 }
 async fn execute_weekly_command(
     State(s): State<Arc<AppState>>,
@@ -2206,7 +2223,10 @@ async fn execute_weekly_command(
         })
         .await
         .map_err(task_error)??;
-        Ok(Json(serde_json::to_value(updated).unwrap()))
+        Ok(Json(
+            serde_json::to_value(public_weekly_attempt(updated, &s.catalogue)?)
+                .expect("public weekly attempt serializes"),
+        ))
     }
 }
 async fn delete_group(

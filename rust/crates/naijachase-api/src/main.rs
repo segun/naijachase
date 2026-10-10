@@ -1,4 +1,4 @@
-use naijachase_api::{load_state, router};
+use naijachase_api::{load_state, router, weekly_expiration_loop};
 use tracing_subscriber::EnvFilter;
 
 #[tokio::main]
@@ -15,6 +15,7 @@ async fn main() {
         std::process::exit(2)
     });
     let bind = state.config.bind.clone();
+    tokio::spawn(weekly_expiration_loop(state.store.clone()));
     let listener = tokio::net::TcpListener::bind(&bind)
         .await
         .unwrap_or_else(|error| {

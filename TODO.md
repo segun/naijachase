@@ -806,6 +806,8 @@ the weekly attempt is travelling.
   fixed challenge start/end window; joining late grants no deadline extension.
 - [x] The challenge expires without a winner if no eligible member records a
   valid capture before the closing instant.
+- [x] Run weekly expiry in the production API every minute so winnerless
+  challenges and their active attempts close even when nobody opens the UI.
 
 **Parallel cases and real-time movement**
 

@@ -18,6 +18,7 @@
   let venue = $state(KNOWN_VENUES[0] ?? "market"), localMode = $state<LocalMode>("drive");
   let destination = $state(""), interMode = $state<InterstateMode>("drive");
   let suspect = $state<string>("");
+  const suspectFiles = $derived(s.suspect_files ?? []);
   let values = $state<Record<string, string>>(untrack(() => ({ ...app.groups.attempt!.state.dossier })));
   let startedAt = $state(0);
   // The "show travel route" view: an endless animation of the journey. It never speeds up or ends the real wait; Esc returns to the text.
@@ -34,7 +35,7 @@
   const progress = $derived(startedAt > 0 && a.transit ? Math.round((1 - a.transit.remaining_seconds / startedAt) * 100) : 0);
   const options = $derived(STATES.filter(x => x !== s.current_state));
   $effect(() => { if (!destination || destination === s.current_state) destination = options[0] ?? ""; });
-  $effect(() => { if (!s.suspect_files.some(file => file.suspect_id === suspect)) suspect = s.suspect_files[0]?.suspect_id ?? ""; });
+  $effect(() => { if (!suspectFiles.some(file => file.suspect_id === suspect)) suspect = suspectFiles[0]?.suspect_id ?? ""; });
 
   const locals: LocalMode[] = ["drive", "hitch_ride"], inters: InterstateMode[] = ["fly", "drive", "hitch_ride"];
   const paidModeDisabled = (mode: InterstateMode | LocalMode) => s.balance === 0 && mode !== "hitch_ride";
@@ -112,8 +113,8 @@
     {:else}
       {#if !s.warrant_suspect}
         <form class="form" onsubmit={(e) => { e.preventDefault(); void g.command({ type: "request_warrant", suspect_id: suspect }, "Warrant processed.", "Filing warrant"); }}>
-          <label class="field"><span>Suspect file</span><select class="select" bind:value={suspect}>{#each s.suspect_files as file}<option value={file.suspect_id}>{file.name} · {file.alias}</option>{/each}</select></label>
-          {#each s.suspect_files as file}<article class="card"><strong>{file.name}</strong><p>{file.summary}</p></article>{/each}
+          <label class="field"><span>Suspect file</span><select class="select" bind:value={suspect}>{#each suspectFiles as file}<option value={file.suspect_id}>{file.name} · {file.alias}</option>{/each}</select></label>
+          {#each suspectFiles as file}<article class="card"><strong>{file.name}</strong><p>{file.summary}</p></article>{/each}
           <button class="btn btn-primary" disabled={app.busy || dossierCount(s.dossier) < 8}>Request warrant</button>
           {#if dossierCount(s.dossier) < 8}<small class="hint warn">Complete all eight dossier details first.</small>{/if}
         </form>

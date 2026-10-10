@@ -4,6 +4,11 @@ Weekly challenges are private to group members and use authoritative server time
 
 Group endpoints are `POST /v1/groups`, `GET /v1/groups/{group_id}`, invitation creation/response, member role/removal, leave, ownership transfer, and soft deletion. Rosters are returned only to members.
 
+Challenge windows are half-open intervals: Monday 07:00 WAT is included and
+the following Monday 07:00 WAT is excluded. The next challenge begins at that
+same instant, so the two challenges never overlap. A production background task
+expires winnerless challenges and active attempts within one minute of the end.
+
 `GET /v1/groups/{group_id}/weekly/current` idempotently returns the shared challenge. `POST /v1/weekly/{challenge_id}/attempt` creates or resumes the caller's independent attempt. `GET /v1/weekly/attempts/{attempt_id}` returns state, countdown boundaries, winner status, and current transit.
 
 Commands use `POST /v1/weekly/attempts/{attempt_id}/commands` with the ordinary command envelope. Movement responds with `status: in_transit`, `transit_id`, and `duration_seconds`. While in transit all commands are rejected. At or after arrival, any attempt read or command completes arrival idempotently from persisted server state. The player may continue an ordinary case in parallel.

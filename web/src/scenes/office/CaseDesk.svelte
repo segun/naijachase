@@ -38,6 +38,15 @@
   const date = (iso: string) => new Date(iso).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
   const hello = $derived(`${greeting(now)}, ${app.investigator}.`);
   const waiting = $derived(app.coop.requests.filter(r => coopActions(r, app.player?.username ?? "").length).length);
+  const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+  // Things that need the player's attention, shown on the desk so they don't have to open the menu to find them.
+  const pending = $derived.by(() => {
+    const items: { screen: Screen; icon: string; label: string; hint: string }[] = [];
+    const inv = app.groups.invitations;
+    if (inv.length) items.push({ screen: "groups", icon: "users", label: `Groups: ${plural(inv.length, "pending invitation", "pending invitations")}`, hint: inv.length === 1 ? `${inv[0]!.group_name} is waiting for your answer` : "Accept or decline them" });
+    if (waiting) items.push({ screen: "helpers", icon: "helper", label: `Helpers: ${plural(waiting, "request needs", "requests need")} you`, hint: "A co-op request is waiting for your action" });
+    return items;
+  });
   const clock = $derived(now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }));
   const day = $derived(now.toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" }));
   const quiet = () => matchMedia("(prefers-reduced-motion: reduce)").matches || app.settings.motion === "reduced";
@@ -267,6 +276,11 @@
               <button class="t-opt" type="button" data-nav onclick={() => open("achievements")}><Icon name="trophy" /><span class="t-label">Achievements<small>{earned.size} of {app.catalog.length}</small></span><kbd>A</kbd></button>
               <button class="t-opt" type="button" data-nav onclick={() => open("career")}><Icon name="id" /><span class="t-label">Career file<small>Accuracy &amp; promotions</small></span><kbd>C</kbd></button>
             </div>
+            {#each pending as p (p.screen)}
+              <button class="t-opt" type="button" data-nav onclick={() => app.go(p.screen)}>
+                <Icon name={p.icon} /><span class="t-label">{p.label}<small>{p.hint}</small></span><Icon name="arrow" />
+              </button>
+            {/each}
           </div>
           {#if app.catalogue}
             <div class="t-progress">

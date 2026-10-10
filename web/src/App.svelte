@@ -26,6 +26,9 @@
   } as const;
 
   const app = new AppController();
+  function reportRenderError(error: unknown) {
+    console.error("[NaijaChase] Unhandled screen render error", error);
+  }
   // The music starts on the home screen and carries on through sign-in and the game.
   $effect(() => { app.music.setActive(!app.booting); });
   onMount(() => app.boot());
@@ -54,7 +57,7 @@
   <div class="boot" role="status"><Brand /><p>Opening the case files…</p></div>
 {:else}
   <Shell {app}>
-    <svelte:boundary>
+    <svelte:boundary onerror={reportRenderError}>
       {#if app.signedIn && app.needsAvatar}{#await lazy.avatar() then { default: Screen }}<div class="page"><Screen {app} first /></div>{/await}
       {:else if app.screen === "welcome"}<Landing {app} />
       {:else if app.screen === "settings"}{#await lazy.settings() then { default: Screen }}<Screen {app} />{/await}
