@@ -238,7 +238,7 @@ impl MysqlStore {
         attempt: &str,
     ) -> Result<WeeklyAttemptView, StorageError> {
         let mut c = self.pool.get_conn()?;
-        let row:Option<(String,String,u64,String,String,String,Option<String>,Option<String>,Option<String>,Option<u32>)>=c.exec_first("SELECT a.challenge_id,a.status,a.state_version,CAST(a.state_json AS CHAR),DATE_FORMAT(w.starts_at,'%Y-%m-%dT%H:%i:%sZ'),DATE_FORMAT(w.ends_at,'%Y-%m-%dT%H:%i:%sZ'),w.winner_attempt_id,t.destination,t.mode,TIMESTAMPDIFF(SECOND,UTC_TIMESTAMP(),t.arrives_at) FROM weekly_attempts a JOIN weekly_challenges w ON w.challenge_id=a.challenge_id LEFT JOIN weekly_transits t ON t.attempt_id=a.attempt_id AND t.completed_at IS NULL WHERE a.attempt_id=:attempt AND a.player_id=:player",params!{"attempt"=>attempt,"player"=>player})?;
+        let row:Option<(String,String,u64,String,String,String,Option<String>,Option<String>,Option<String>,Option<i64>,Option<u32>,u32)>=c.exec_first("SELECT a.challenge_id,a.status,a.state_version,CAST(a.state_json AS CHAR),DATE_FORMAT(w.starts_at,'%Y-%m-%dT%H:%i:%sZ'),DATE_FORMAT(w.ends_at,'%Y-%m-%dT%H:%i:%sZ'),w.winner_attempt_id,t.destination,t.mode,TIMESTAMPDIFF(SECOND,UTC_TIMESTAMP(),t.arrives_at),t.duration_seconds,GREATEST(0,TIMESTAMPDIFF(MINUTE,DATE_SUB(w.ends_at,INTERVAL 7 DAY),UTC_TIMESTAMP())) FROM weekly_attempts a JOIN weekly_challenges w ON w.challenge_id=a.challenge_id LEFT JOIN weekly_transits t ON t.attempt_id=a.attempt_id AND t.completed_at IS NULL WHERE a.attempt_id=:attempt AND a.player_id=:player",params!{"attempt"=>attempt,"player"=>player})?;
         let (
             challenge_id,
             status,
@@ -250,8 +250,15 @@ impl MysqlStore {
             destination,
             mode,
             remaining,
+            duration,
+            real_minutes,
         ) = row.ok_or(StorageError::Forbidden)?;
-        Ok(WeeklyAttemptView{attempt_id:attempt.into(),challenge_id,status,state_version,state:serde_json::from_str(&state)?,starts_at,ends_at,winner:winner.as_deref()==Some(attempt),transit:destination.map(|destination|serde_json::json!({"destination":destination,"mode":mode,"remaining_seconds":remaining.unwrap_or(0)}))})
+        let mut state: GameState = serde_json::from_str(&state)?;
+        // A weekly case runs on the real clock, counted back from the closing time: the case week is the seven days before it ends (Monday 07:00 to Monday 07:00).
+        if matches!(status.as_str(), "active" | "in_transit") {
+            state.elapsed = real_minutes;
+        }
+        Ok(WeeklyAttemptView{attempt_id:attempt.into(),challenge_id,status,state_version,state,starts_at,ends_at,winner:winner.as_deref()==Some(attempt),transit:destination.map(|destination|serde_json::json!({"destination":destination,"mode":mode,"remaining_seconds":remaining.unwrap_or(0),"duration_seconds":duration}))})
     }
 
     pub fn ongoing_weekly_attempts(
@@ -279,6 +286,7 @@ impl MysqlStore {
         fare: u32,
         duration_seconds: u32,
         arrival: &GameState,
+        event: Option<&serde_json::Value>,
     ) -> Result<String, StorageError> {
         if !matches!(mode, "fly" | "drive" | "hitch_ride") || duration_seconds == 0 {
             return Err(StorageError::Command("invalid transit".into()));
@@ -301,11 +309,25 @@ impl MysqlStore {
         }
         current.economy.balance -= fare;
         let id = uuid::Uuid::new_v4().to_string();
-        tx.exec_drop("INSERT INTO weekly_transits(transit_id,attempt_id,command_id,origin,destination,mode,fare,duration_seconds,departed_at,arrives_at,arrival_state_json) VALUES(:id,:attempt,:command,:origin,:destination,:mode,:fare,:duration,UTC_TIMESTAMP(),DATE_ADD(UTC_TIMESTAMP(),INTERVAL :duration SECOND),:arrival)",params!{"id"=>&id,"attempt"=>attempt,"command"=>command_id,"origin"=>&current.state,"destination"=>destination,"mode"=>mode,"fare"=>fare,"duration"=>duration_seconds,"arrival"=>serde_json::to_string(arrival)?})?;
+        tx.exec_drop("INSERT INTO weekly_transits(transit_id,attempt_id,command_id,origin,destination,mode,fare,duration_seconds,departed_at,arrives_at,arrival_state_json,event_json) VALUES(:id,:attempt,:command,:origin,:destination,:mode,:fare,:duration,UTC_TIMESTAMP(),DATE_ADD(UTC_TIMESTAMP(),INTERVAL :duration SECOND),:arrival,:event)",params!{"id"=>&id,"attempt"=>attempt,"command"=>command_id,"origin"=>&current.state,"destination"=>destination,"mode"=>mode,"fare"=>fare,"duration"=>duration_seconds,"arrival"=>serde_json::to_string(arrival)?,"event"=>event.map(serde_json::to_string).transpose()?})?;
         tx.exec_drop("UPDATE weekly_attempts SET status='in_transit',state_json=:state,state_version=state_version+1 WHERE attempt_id=:attempt",params!{"attempt"=>attempt,"state"=>serde_json::to_string(&current)?})?;
         tx.exec_drop("INSERT INTO weekly_events(challenge_id,attempt_id,player_id,event_type,event_json) VALUES(:challenge,:attempt,:player,'departed',JSON_OBJECT('transit_id',:id,'destination',:destination,'mode',:mode,'fare',:fare,'duration_seconds',:duration))",params!{"challenge"=>challenge,"attempt"=>attempt,"player"=>player,"id"=>&id,"destination"=>destination,"mode"=>mode,"fare"=>fare,"duration"=>duration_seconds})?;
         tx.commit()?;
         Ok(id)
+    }
+    /// The witness accounts the player has already reached: events of completed journeys only, oldest first.
+    pub fn weekly_accounts(
+        &self,
+        player: &str,
+        attempt: &str,
+    ) -> Result<Vec<serde_json::Value>, StorageError> {
+        let rows: Vec<String> = self.pool.get_conn()?.exec(
+            "SELECT CAST(t.event_json AS CHAR) FROM weekly_transits t JOIN weekly_attempts a ON a.attempt_id=t.attempt_id WHERE t.attempt_id=:attempt AND a.player_id=:player AND t.completed_at IS NOT NULL AND t.event_json IS NOT NULL ORDER BY t.departed_at,t.transit_id",
+            params! {"attempt"=>attempt,"player"=>player},
+        )?;
+        rows.into_iter()
+            .map(|json| Ok(serde_json::from_str(&json)?))
+            .collect()
     }
     pub fn complete_weekly_arrival(
         &self,
@@ -339,8 +361,8 @@ impl MysqlStore {
     {
         let mut c = self.pool.get_conn()?;
         let mut tx = c.start_transaction(TxOpts::default())?;
-        let row:Option<(String,String,u64,String,String)>=tx.exec_first("SELECT a.challenge_id,a.status,a.state_version,CAST(a.state_json AS CHAR),w.status FROM weekly_attempts a JOIN weekly_challenges w ON w.challenge_id=a.challenge_id WHERE a.attempt_id=:attempt AND a.player_id=:player AND UTC_TIMESTAMP()<w.ends_at FOR UPDATE",params!{"attempt"=>attempt,"player"=>player})?;
-        let (challenge, status, version, state, challenge_status) =
+        let row:Option<(String,String,u64,String,String,u32)>=tx.exec_first("SELECT a.challenge_id,a.status,a.state_version,CAST(a.state_json AS CHAR),w.status,GREATEST(0,TIMESTAMPDIFF(MINUTE,DATE_SUB(w.ends_at,INTERVAL 7 DAY),UTC_TIMESTAMP())) FROM weekly_attempts a JOIN weekly_challenges w ON w.challenge_id=a.challenge_id WHERE a.attempt_id=:attempt AND a.player_id=:player AND UTC_TIMESTAMP()<w.ends_at FOR UPDATE",params!{"attempt"=>attempt,"player"=>player})?;
+        let (challenge, status, version, state, challenge_status, real_minutes) =
             row.ok_or(StorageError::Forbidden)?;
         if version != expected {
             return Err(StorageError::VersionConflict(attempt.into()));
@@ -350,7 +372,9 @@ impl MysqlStore {
                 "attempt is in transit or challenge closed".into(),
             ));
         }
-        let next = execute(serde_json::from_str(&state)?).map_err(StorageError::Command)?;
+        let mut current: GameState = serde_json::from_str(&state)?;
+        current.elapsed = real_minutes;
+        let next = execute(current).map_err(StorageError::Command)?;
         let solved = next.outcome.as_deref() == Some("solved");
         tx.exec_drop("UPDATE weekly_attempts SET state_json=:state,state_version=state_version+1,status=IF(:solved,'solved','active'),finished_at=IF(:solved,UTC_TIMESTAMP(),NULL) WHERE attempt_id=:attempt",params!{"state"=>serde_json::to_string(&next)?,"solved"=>solved,"attempt"=>attempt})?;
         tx.exec_drop("INSERT INTO weekly_events(challenge_id,attempt_id,player_id,event_type,event_json) VALUES(:challenge,:attempt,:player,:event,JSON_OBJECT())",params!{"challenge"=>&challenge,"attempt"=>attempt,"player"=>player,"event"=>if solved{"member_finished"}else{"command_applied"}})?;

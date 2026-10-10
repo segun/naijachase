@@ -218,18 +218,26 @@ export function groupQuotes(quotes: readonly TransportQuote[], scope: Scope): Qu
 
 export type Projection = { arrivalMinutes: number; arrival: string; balanceAfter: number; totalMinutes: number; missesDeadline: boolean };
 /** Presentation-only projection from the current elapsed time and balance. */
-export function project(elapsed: number, balance: number, q: Pick<TransportQuote, "cost" | "travel_minutes" | "wait_minutes">): Projection {
-  const totalMinutes = q.wait_minutes + q.travel_minutes;
-  const arrivalMinutes = elapsed + totalMinutes;
+/** Everything the case clock (and a weekly journey) really spends: the trip, any wait for opening hours, and the questioning or search there. */
+export const quoteMinutes = (q: Pick<TransportQuote, "travel_minutes" | "wait_minutes" | "interview_minutes">): number => q.travel_minutes + q.wait_minutes + (q.interview_minutes ?? 0);
+/** When a venue that is shut on arrival opens (the case-clock label), or null if it is open when you would get there. */
+export function opensAt(elapsed: number, q: Pick<TransportQuote, "travel_minutes" | "wait_minutes">): string | null {
+  if (q.wait_minutes <= 0) return null;
+  const p = clockParts(elapsed + q.travel_minutes + q.wait_minutes);
+  return `${p.day} ${p.time}`;
+}
+export function project(elapsed: number, balance: number, q: Pick<TransportQuote, "cost" | "travel_minutes" | "wait_minutes" | "interview_minutes">): Projection {
+  const totalMinutes = quoteMinutes(q);
+  const arrivalMinutes = elapsed + q.wait_minutes + q.travel_minutes;
   const parts = clockParts(arrivalMinutes);
-  return { arrivalMinutes, arrival: `${parts.day} ${parts.time}`, balanceAfter: balance - q.cost, totalMinutes, missesDeadline: arrivalMinutes > DEADLINE_MINUTES };
+  return { arrivalMinutes, arrival: `${parts.day} ${parts.time}`, balanceAfter: balance - q.cost, totalMinutes, missesDeadline: elapsed + totalMinutes > DEADLINE_MINUTES };
 }
 /** The option to preselect: the cheapest affordable one that still beats the deadline, else the first affordable. */
 export function defaultOption(options: readonly TransportQuote[], elapsed: number, balance: number): TransportQuote | null {
   const usable = options.filter(o => o.affordable);
   const safe = usable.filter(o => !project(elapsed, balance, o).missesDeadline);
   const pool = safe.length ? safe : usable;
-  return pool.slice().sort((a, b) => a.travel_minutes + a.wait_minutes - (b.travel_minutes + b.wait_minutes))[0] ?? null;
+  return pool.slice().sort((a, b) => quoteMinutes(a) - quoteMinutes(b))[0] ?? null;
 }
 export const cheapest = (options: readonly TransportQuote[]): TransportQuote | null =>
   options.slice().sort((a, b) => a.cost - b.cost || a.travel_minutes - b.travel_minutes)[0] ?? null;

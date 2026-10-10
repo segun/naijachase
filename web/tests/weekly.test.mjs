@@ -59,7 +59,7 @@ test("transit replies are recognised and standings put the winner first", () => 
 });
 
 test("eligibility, arrival, closure and winners are never computed in the browser", () => {
-  const ui = components(["Weekly", "WeeklyPlay", "Groups"]) + read("state/groups.svelte.ts");
+  const ui = components(["Weekly", "Groups"]) + read("state/groups.svelte.ts");
   assert.match(read("screens/social/Weekly.svelte"), /display aid; the server clock decides/);
   assert.doesNotMatch(ui, /isWinner\s*=|determineWinner|first to finish|finished_at\s*[<>]|\.sort\([^)]*finished_at/i, "no browser-side winner logic");
   assert.match(ui, /find\(s => s\.attempt_id === g\.details!\.winner_attempt_id\)/, "a winner is only ever looked up from the server's winner_attempt_id");
@@ -67,20 +67,22 @@ test("eligibility, arrival, closure and winners are never computed in the browse
   assert.match(ui, /a\.winner/);
   assert.match(read("state/groups.svelte.ts"), /remaining_seconds/, "arrival timing is read from the server's transit data");
   assert.match(read("state/groups.svelte.ts"), /private schedulePoll\(\)/);
-  assert.match(read("screens/social/WeeklyPlay.svelte"), /animations never speed this up/);
+  assert.match(read("scenes/office/CaseTerminal.svelte"), /nothing you watch speeds it up/);
 });
 
 test("while travelling no commands are offered, and a stale attempt is reloaded", () => {
-  const play = read("screens/social/WeeklyPlay.svelte"), ctl = read("state/groups.svelte.ts");
-  assert.match(play, /\{#if inTransit && a\.transit\}[\s\S]*?\{:else if over\}[\s\S]*?\{:else\}[\s\S]*?role="group" aria-label="Actions"/);
+  const desk = read("scenes/office/CaseTerminal.svelte"), ctl = read("state/app.svelte.ts");
+  assert.match(desk, /\{#if transit\}\{@render travelling\(\)\}\{:else\}[\s\S]*?<LeadGrid/, "no leads while travelling");
+  assert.match(desk, /\{:else if transit\}\{@render travelling\(\)\}\s*\{:else if app\.screen === "dossier"\}/, "no dossier, travel or warrant while travelling");
+  assert.match(ctl, /if \(this\.weeklyTransit\) \{ this\.toast\("You are travelling/);
   assert.match(ctl, /e\.code === "stale_version"/);
   assert.match(ctl, /isTransitReply\(reply\)/);
-  assert.match(ctl, /command_id|attemptCommand/);
+  assert.match(ctl, /attemptCommand/);
   assert.match(read("api/api.ts"), /crypto\.randomUUID\(\), expected_version: version, command/);
 });
 
 test("weekly play is independent of the ordinary case and exposes no hidden data", () => {
-  const ui = components(["Weekly", "WeeklyPlay", "Groups"]);
+  const ui = components(["Weekly", "Groups"]);
   assert.match(ui, /independent of your ordinary case|carries on in parallel/);
   assert.doesNotMatch(ui, /thief_id|hideout_venue|observations|route:/);
   assert.doesNotMatch(read("state/groups.svelte.ts"), /app\.game\b|this\.app\.game|sessionStorage/, "weekly state never touches the ordinary case");

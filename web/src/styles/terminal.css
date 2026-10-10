@@ -137,8 +137,8 @@
   .t-stats { grid-column: 1 / -1; justify-content: space-between; }
   .t-stats div { text-align: left; }
   .t-pair, .t-career { grid-template-columns: 1fr; }
-  .t-title small, .t-status span:not(.t-blink) { display: none; }
-  .t-status { justify-content: flex-end; }
+  .t-title small, .t-status[aria-hidden] span:not(.t-blink) { display: none; }
+  .t-status[aria-hidden] { justify-content: flex-end; }
 }
 @media (max-width: 639px) { .t-body { overflow-y: auto; } .t-main { overflow: visible; } }
 
@@ -265,3 +265,11 @@
 .t-trail { display: inline-flex; align-items: center; gap: .4em; margin-top: .3em; font-size: .8em; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #ff9a4d; }
 .t-trail.cold { color: #7cc4ff; }
 .t-trail .icon { width: 1.1em; height: 1.1em; }
+
+/* Weekly challenge: the same desk in a violet scheme (the phosphor green is turned towards violet), so it is never mistaken for the ordinary case. */
+html[data-mode="weekly"] .crt-screen, html[data-mode="weekly"] .garage { filter: hue-rotate(135deg) saturate(1.1); }
+html[data-mode="weekly"] .room.flat .glass { box-shadow: 0 0 0 1.8vmin #c9bfe0, 0 0 0 2.5vmin #8678ad, 0 2.5vmin 6vmin 2vmin rgb(0 0 0 / .55), 0 0 12vmin rgb(176 125 255 / .22); }
+.t-weekly-tag { display: inline-block; margin-left: .6em; padding: .05em .6em; border: 1px solid var(--amber); color: var(--amber); letter-spacing: .14em; font-size: .75em; font-weight: 800; text-transform: uppercase; }
+.t-transit { display: grid; gap: .6em; padding: 1em 1.2em; border: 1px dashed var(--amber); background: var(--p-faint); }
+.t-transit strong { color: var(--amber); font-size: 1.3em; letter-spacing: .08em; text-transform: uppercase; }
+.t-transit .t-opt { width: fit-content; }

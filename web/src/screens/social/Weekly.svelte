@@ -1,11 +1,10 @@
 <script lang="ts">
   import { untrack } from "svelte";
   import type { AppController } from "../../state/app.svelte";
-  import { canManageGroup, countdown, eventLabel, myRole, notificationLabel, parseUtc, sortStandings, utcFromUnix, weeklyStatus } from "../../domain/model.ts";
+  import { canManageGroup, countdown, eventLabel, myRole, notificationLabel, parseUtc, secondsLabel, sortStandings, utcFromUnix, weeklyStatus } from "../../domain/model.ts";
   import { formatWhen } from "../../domain/pressure.ts";
   import Icon from "../../ui/Icon.svelte";
   import MoveDialog from "../case/MoveDialog.svelte";
-  import WeeklyPlay from "./WeeklyPlay.svelte";
 
   let { app }: { app: AppController } = $props();
   const g = $derived(app.groups);
@@ -25,6 +24,8 @@
   const ends = $derived(g.current ? countdown(utcFromUnix(g.current.ends_at_unix), now) : null);
   const startsIn = $derived(g.current ? countdown(utcFromUnix(g.current.starts_at_unix), now) : null);
   const notStarted = $derived(g.current ? now < utcFromUnix(g.current.starts_at_unix) : false);
+  // The server reports seconds remaining when it answers; turn that into an arrival time so the count keeps falling between answers.
+  const arrivesAt = $derived.by(() => { const t = g.attempt?.transit; return t ? Date.now() + t.remaining_seconds * 1000 : 0; });
   const fmt = (ms: number) => new Date(ms).toLocaleString(undefined, { weekday: "short", hour: "2-digit", minute: "2-digit" });
 </script>
 
@@ -75,7 +76,25 @@
           {/if}
         </section>
 
-        {#if g.attempt}<WeeklyPlay {app} />{/if}
+        {#if g.attempt}
+          {@const a = g.attempt}
+          {@const mine = weeklyStatus(a.status)}
+          <section class="card rise weekly-play" aria-labelledby="play-title">
+            <div class="row-between"><h2 id="play-title">Your attempt</h2><span class="badge badge-{mine.tone === 'muted' ? '' : mine.tone}">{mine.label}</span></div>
+            {#if a.status === "in_transit" && a.transit}
+              <p class="badge" role="status"><Icon name="plane" />On the way to {app.weeklyPlace(a.transit.destination)} · arriving in {secondsLabel(Math.max(0, Math.round((arrivesAt - now) / 1000)))}</p>
+            {:else if a.winner}
+              <p class="badge badge-gold" role="status"><Icon name="trophy" />You won the challenge!</p>
+            {/if}
+            {#if a.status === "active" || a.status === "in_transit"}
+              <button class="btn btn-primary btn-lg" type="button" disabled={app.busy} onclick={() => app.enterWeekly(a.attempt_id)}>Open the challenge desk <Icon name="arrow" /></button>
+            {:else if a.status === "solved"}
+              <button class="btn" type="button" disabled={app.busy} onclick={() => app.enterWeekly(a.attempt_id)}>View the result</button>
+            {:else}
+              <p class="muted">Your attempt has ended.</p>
+            {/if}
+          </section>
+        {/if}
 
         <section class="card rise" aria-labelledby="stand-title">
           <h2 id="stand-title">Standings</h2>

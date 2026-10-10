@@ -31,6 +31,8 @@
   }
   // The music starts on the home screen and carries on through sign-in and the game.
   $effect(() => { app.music.setActive(!app.booting); });
+  // Weekly play has its own colour scheme so the player always knows which case they are on.
+  $effect(() => { document.documentElement.dataset.mode = app.isWeekly ? "weekly" : "ordinary"; });
   onMount(() => app.boot());
 </script>
 
@@ -71,7 +73,7 @@
       {:else if app.screen === "cases" || (app.game && isCaseScreen(app.screen))}{@render room()}
       {:else if app.game && app.screen === "garage"}{#await lazy.garage() then { default: Screen }}<Screen {app} />{/await}
       {:else if app.game && app.screen === "witness" && app.witnessVisit}{#await lazy.witness() then { default: Screen }}<Screen {app} />{/await}
-      {:else if app.game && app.screen === "journey" && app.journey}{#await lazy.journey() then { default: Screen }}<Screen {app} />{/await}
+      {:else if app.game && app.screen === "journey" && app.journey}{#await lazy.journey() then { default: Screen }}<Screen {app} loop={app.journey.loop === true} onclose={() => app.leaveJourney()} />{/await}
       {:else if app.game && app.screen === "results"}<Results {app} />
       {:else}{@render room()}{/if}
 

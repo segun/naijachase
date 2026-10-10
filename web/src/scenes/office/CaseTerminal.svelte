@@ -5,7 +5,7 @@
   import { onMount } from "svelte";
   import type { AppController } from "../../state/app.svelte";
   import {
-    TOTAL_STOPS, clockParts, coopActions, cooperationAvailable, dayPart, dossierCount, groupQuotes, money, questionedHere, timeLeft, zoneOf, type QuoteGroup, type Screen
+    TOTAL_STOPS, clockParts, opensAt, coopActions, countdown, secondsLabel, cooperationAvailable, dayPart, dossierCount, groupQuotes, money, questionedHere, timeLeft, zoneOf, type QuoteGroup, type Screen
   } from "../../domain/model.ts";
   import AskForHelp from "../../screens/case/AskForHelp.svelte";
   import Dossier from "../../screens/case/Dossier.svelte";
@@ -21,8 +21,11 @@
   let { app, awake = true, leave = async () => {} }: { app: AppController; awake?: boolean; leave?: () => Promise<void> } = $props();
 
   const gs = $derived(app.game!.state);
-  const parts = $derived(clockParts(gs.elapsed));
-  const left = $derived(timeLeft(gs.elapsed));
+  let tick = $state(Date.now());
+  // A weekly case runs on the real clock, so it keeps moving while the player reads; an ordinary case only moves when they act.
+  const elapsed = $derived(app.isWeekly && gs.outcome === null ? gs.elapsed + Math.max(0, Math.floor((tick - app.weeklyFetchedAt) / 60000)) : gs.elapsed);
+  const parts = $derived(clockParts(elapsed));
+  const left = $derived(timeLeft(elapsed));
   const night = $derived(dayPart(parts.hour) === "night");
   const done = $derived(questionedHere(gs));
   const here = $derived(app.notes.filter(n => n.stop === gs.current_state).slice(-3));
@@ -33,6 +36,10 @@
   let abandonDialog = $state<HTMLDialogElement>();
   let leaving = $state("");
   let now = $state(new Date());
+  const weekly = $derived(app.isWeekly);
+  const transit = $derived(app.weeklyTransit);
+  const remaining = $derived(transit ? Math.max(0, Math.round((transit.arrivesAt - tick) / 1000)) : 0);
+  const closes = $derived(weekly ? countdown(app.weeklyEnds, tick) : null);
   let root = $state<HTMLElement>();
   const day = $derived(now.toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" }));
   const clock = $derived(now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }));
@@ -52,7 +59,12 @@
     { screen: "travel", label: "Travel", icon: "plane", key: "T" },
     { screen: "warrant", label: "Warrant", icon: "warrant", key: "W" }
   ]);
-  const menu: { screen: Screen; label: string; icon: string; count?: () => number }[] = [
+  const weeklyMenu: { screen: Screen; label: string; icon: string; count?: () => number }[] = [
+    { screen: "weekly", label: "Weekly lobby", icon: "trophy" },
+    { screen: "cases", label: "Ordinary cases", icon: "home" },
+    { screen: "settings", label: "Settings", icon: "sliders" }
+  ];
+  const ordinaryMenu: { screen: Screen; label: string; icon: string; count?: () => number }[] = [
     { screen: "archive", label: "Case archive", icon: "archive", count: () => app.archive.length },
     { screen: "groups", label: "Groups", icon: "users", count: () => app.groups.invitations.length },
     { screen: "weekly", label: "Weekly", icon: "trophy" },
@@ -60,6 +72,7 @@
     { screen: "tokens", label: "Bribe tokens", icon: "star", count: () => app.tokenBalance ?? 0 },
     { screen: "settings", label: "Settings", icon: "sliders" }
   ];
+  const menu = $derived(weekly ? weeklyMenu : ordinaryMenu);
   const title = $derived(items.find(i => i.screen === app.screen)?.label ?? "Case");
 
   $effect(() => {
@@ -71,8 +84,9 @@
   });
 
   onMount(() => {
-    const tick = setInterval(() => { now = new Date(); }, 20000);
-    return () => clearInterval(tick);
+    const timer = setInterval(() => { now = new Date(); }, 20000);
+    const second = setInterval(() => { tick = Date.now(); }, 1000);
+    return () => { clearInterval(timer); clearInterval(second); };
   });
 
   // Hand keyboard focus to the first action once the screen wakes, and again whenever the panel changes.
@@ -90,7 +104,7 @@
   }
 
   async function pick(lead: QuoteGroup) {
-    if (leaving) return;
+    if (leaving || transit) return;
     leaving = lead.id;
     await leave();
     app.finishBriefing(lead.id);
@@ -120,23 +134,27 @@
 
 <svelte:window onkeydown={keys} />
 
+{#snippet travelling()}
+  {#if transit}
+    <section class="t-transit" role="status" aria-live="polite">
+      <strong><Icon name="plane" /> On the way</strong>
+      <p class="t-line">Heading for {app.weeklyPlace(transit.destination)}. Arriving in {secondsLabel(remaining)}. The journey takes its real time; nothing you watch speeds it up, and no commands are accepted until you arrive. Your notebook stays open.</p>
+      <button class="t-opt t-hot" type="button" data-nav data-primary onclick={() => app.watchWeeklyTransit()}><Icon name="arrow" /><span class="t-label">Watch the journey</span></button>
+    </section>
+  {/if}
+{/snippet}
+
 <div class="crt-screen" class:on={awake} bind:this={root} aria-label="Agency terminal: case" role="region">
   <div class="t-content t-case-content">
     <div class="t-top">
       <header class="t-bar">
-        <span class="t-title"><Icon name="pin" /> NAIJA CHASE <small>// {app.isReplay ? "REPLAY · NO POINTS" : "CASE FILE"}</small></span>
+        <span class="t-title"><Icon name="pin" /> NAIJA CHASE <small>// {weekly ? "WEEKLY CHALLENGE" : app.isReplay ? "REPLAY · NO POINTS" : "CASE FILE"}</small>{#if weekly}<span class="t-weekly-tag">First catch wins</span>{/if}</span>
         <span class="t-clock" aria-label="Local time">{day} · {clock}</span>
       </header>
       <section class="t-case" aria-label="Case status">
         <div class="t-stat"><span class="t-tag">Location</span><strong>{gs.current_state}</strong><small>{zoneOf(gs.current_state) ?? "Nigeria"} · stop {Math.min(gs.stage + 1, TOTAL_STOPS)} of {TOTAL_STOPS} · trail {gs.trail_status}</small><span class="t-trail" class:cold={gs.trail_status === "cold"}><Icon name={gs.trail_status === "hot" ? "flame" : "snow"} /> Trail {gs.trail_status === "hot" ? "hot" : "cold"}</span></div>
+        {#if transit}<div class="t-stat"><span class="t-tag">Journey</span><strong>{secondsLabel(remaining)}</strong><small>to {app.weeklyPlace(transit.destination)}</small></div>{/if}
         <div class="t-stat"><span class="t-tag">Case clock</span><strong><Icon name={night ? "moon" : "sun"} /> {parts.day} {parts.time}</strong><small class:urgent={left.urgent}>{left.label}</small></div>
-        <div class="t-stat t-deadline">
-          <span class="t-tag">Deadline Monday 07:00</span>
-          <div class="t-meter" class:urgent={left.urgent} role="progressbar" aria-label="Case time used" aria-valuemin="0" aria-valuemax="100" aria-valuenow={left.percentUsed}><span style:width="{left.percentUsed}%"></span></div>
-        </div>
-        <div class="t-stat"><span class="t-tag">Funds</span><strong>{money(gs.balance)}</strong></div>
-        <div class="t-stat"><span class="t-tag">Score</span><strong>{gs.score.toLocaleString()}</strong></div>
-        <div class="t-stat"><span class="t-tag">Bribe tokens</span><strong aria-label="{app.tokenBalance ?? 'unknown'} earned bribe tokens">{app.tokenBalance ?? "…"}</strong></div>
       </section>
     </div>
 
@@ -171,9 +189,11 @@
       <main class="t-main" id="terminal-main" aria-label={title}>
         {#if app.screen === "investigate"}
           <section class="t-leads" aria-labelledby="leads-title">
-            <h1 class="t-greet" id="leads-title">Local leads <HireAssistant {app} /></h1>
+            <h1 class="t-greet" id="leads-title">Local leads {#if !weekly}<HireAssistant {app} />{/if}</h1>
             <p class="t-line">{gs.current_state}: {done.length} of {venues.length || "…"} witnesses questioned. {gs.trail_status === "hot" ? "The trail is hot. Listen for a destination clue and a detail about the suspect; one witness here knows where the thief went next." : "The trail is cold. Local witnesses may confirm that the suspect did not come this way."}</p>
-            <LeadGrid leads={venues} loaded={app.quotesLoaded} {leaving} questioned={done} onpick={pick} />
+            {#if transit}{@render travelling()}{:else}
+            <LeadGrid leads={venues} closedUntil={app.isWeekly ? q => opensAt(app.game?.state.elapsed ?? 0, q) : undefined} loaded={app.quotesLoaded} {leaving} questioned={done} onpick={pick} />
+            {/if}
 
             {#if gs.assistant_hired}
               <p class="t-line t-hint">Your assistant is working on this case.</p>
@@ -188,7 +208,7 @@
               </section>
             {/if}
 
-            <Pressure {app} {venues} questioned={done} />
+            {#if !weekly}<Pressure {app} {venues} questioned={done} />{/if}
 
             {#if cooperationAvailable(app.coop.prefs) && app.coop.prefs?.enabled && app.game?.attempt_kind === "ordinary"}
               <div class="t-embed t-inline"><AskForHelp {app} /></div>
@@ -198,6 +218,7 @@
         {:else}
           <div class="t-embed">
             {#if app.screen === "notebook"}<Notebook {app} />
+            {:else if transit}{@render travelling()}
             {:else if app.screen === "dossier"}<Dossier {app} />
             {:else if app.screen === "travel"}<Travel {app} />
             {:else if app.screen === "warrant"}<Warrant {app} />{/if}
@@ -206,9 +227,13 @@
       </main>
     </div>
 
-    <footer class="t-status" aria-hidden="true">
-      <span><kbd>↑</kbd><kbd>↓</kbd> select</span><span><kbd>L</kbd><kbd>B</kbd><kbd>D</kbd><kbd>T</kbd><kbd>W</kbd> open</span><span><kbd>Esc</kbd> back to leads</span>
-      <span class="t-blink">● online</span>
+    <footer class="t-status" aria-label="Case figures">
+      {#if closes}<span class="t-fig"><span class="t-tag">Challenge closes</span> <strong class:urgent={closes.urgent}>{closes.label.replace(" left", "")}</strong></span>
+      {:else}<span class="t-fig"><span class="t-tag">Deadline Monday 07:00</span> <strong class:urgent={left.urgent}>{left.percentUsed}% used</strong></span>{/if}
+      <span class="t-fig"><span class="t-tag">Funds</span> <strong>{money(gs.balance)}</strong></span>
+      <span class="t-fig"><span class="t-tag">Score</span> <strong>{gs.score.toLocaleString()}</strong></span>
+      {#if !weekly}<span class="t-fig"><span class="t-tag">Bribe tokens</span> <strong aria-label="{app.tokenBalance ?? 'unknown'} earned bribe tokens">{app.tokenBalance ?? "…"}</strong></span>{/if}
+      <span class="t-blink" aria-hidden="true">● online</span>
     </footer>
   </div>
   <div class="crt-fx" aria-hidden="true"></div>

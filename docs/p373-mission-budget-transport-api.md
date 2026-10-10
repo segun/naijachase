@@ -12,6 +12,19 @@ Every case response includes these fields inside `state`:
 
 Case money is isolated virtual money. It cannot be bought, exchanged, or carried into another case.
 
+## Catalogue balance gate
+
+The permanent Rust catalogue audit plays all 1,000 missions through all three
+witness visits at every stop, paid local driving, flights between correct
+states, dossier completion, warrant issuance and paid apprehension. It checks
+all six witness orders because opening hours change waiting time. Every mission
+must have a complete itinerary inside the 10,080-minute deadline and retain a
+positive balance; the opening budget must also remain at least 20% above the
+mission's conservative transport baseline and is rounded up to ₦5,000.
+
+Slow choices may still consume the deadline. That is an intended game outcome,
+not a catalogue failure; hitching and inefficient venue order remain tradeoffs.
+
 ## Request current choices
 
 ```http

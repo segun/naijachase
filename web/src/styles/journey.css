@@ -3,3 +3,10 @@
 .journey .room-skip { top: 1.25rem; left: 1.25rem; right: auto; bottom: auto; }
 .journey-caption { padding: .6rem 1.4rem .75rem; width: auto; max-width: min(94vw, 48rem); }
 .journey-caption .caption-line { min-height: 0; color: #fff; font-size: clamp(1.1rem, 2.4vw, 1.8rem); }
+
+.journey-progress { position: absolute; left: 50%; bottom: 5.5rem; transform: translateX(-50%); width: min(92vw, 46rem); display: grid; gap: .35rem; padding: .7rem 1rem; border-radius: 12px; background: rgb(0 0 0 / .62); color: #fff; z-index: 3; }
+.jp-ends, .jp-figures { display: flex; justify-content: space-between; gap: 1rem; font-size: .9rem; }
+.jp-ends { font-weight: 700; }
+.jp-track { position: relative; height: .6rem; border-radius: 99px; background: rgb(255 255 255 / .25); }
+.jp-fill { display: block; height: 100%; border-radius: inherit; background: var(--gold, #f2c14e); transition: width 1s linear; }
+.jp-marker { position: absolute; top: 50%; width: 1.1rem; height: 1.1rem; border-radius: 50%; background: #fff; border: 3px solid var(--gold, #f2c14e); transform: translate(-50%, -50%); transition: left 1s linear; }

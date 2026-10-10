@@ -6,7 +6,7 @@
   import "../../styles/witness.css";
   import "../../styles/journey.css";
   import type { AppController } from "../../state/app.svelte";
-  import { clockParts } from "../../domain/model.ts";
+  import { clockParts, secondsLabel } from "../../domain/model.ts";
   import { MIN_WIDTH, decideScene, readDevice } from "../shared/scene-capability.ts";
   import type { JourneyHandle } from "./journey-driver.ts";
 
@@ -16,7 +16,7 @@
   const FIRST_FRAME_MS = 9000;
   const STALL_MS = 3000;
 
-  type Visit = { from: string; to: string; mode: "drive" | "hitch" | "fly"; seed: number };
+  type Visit = { from: string; to: string; mode: "drive" | "hitch" | "fly"; seed: number; label?: string };
   // `loop` is the weekly "show travel route" view: the same scenery with no departure or arrival, running until Esc calls `onclose`.
   // `note` replaces the caption there (for example once the journey has really ended), and `startHour` is the case hour for the lighting.
   let { app, visit: given, loop = false, onclose, note, startHour }: { app: AppController; visit?: Visit; loop?: boolean; onclose?: () => void; note?: string; startHour?: number } = $props();
@@ -40,6 +40,13 @@
   let resumeAt = 0;
   // svelte-ignore state_referenced_locally
   const hour = startHour ?? clockParts(app.game?.state.elapsed ?? 0).hour;
+
+  // The weekly journey really takes this long: the bar and the figure follow the server's arrival time, never the animation.
+  let tick = $state(Date.now());
+  $effect(() => { if (!loop) return; const t = setInterval(() => (tick = Date.now()), 1000); return () => clearInterval(t); });
+  const trip = $derived(loop ? app.weeklyTransit : null);
+  const left = $derived(trip ? Math.max(0, Math.round((trip.arrivesAt - tick) / 1000)) : 0);
+  const done = $derived(trip && trip.seconds > 0 ? Math.min(100, Math.max(0, Math.round((1 - left / trip.seconds) * 100))) : 0);
 
   function finish() {
     if (finished) return;
@@ -67,7 +74,7 @@
     }, 500) : undefined;
 
     const options = {
-      preset: app.avatar, hour, quality, mode: visit.mode, from: visit.from, to: visit.to, reducedMotion, loop,
+      preset: app.avatar, hour, quality, mode: visit.mode, from: visit.from, to: visit.to, label: visit.label, reducedMotion, loop,
       // The 3D scene may hand over to 2D mid-way, so 2D must show the same landscapes: the seed is the same for both.
       seed: visit.seed,
       onTick: () => { lastTick = performance.now(); ready = true; },
@@ -105,7 +112,7 @@
 
 <svelte:window onkeydown={key} />
 
-<div class="room witness journey" role="region" aria-label="Travelling to {visit?.to ?? 'the next state'}">
+<div class="room witness journey" role="region" aria-label="Travelling to {visit?.label ?? visit?.to ?? 'the next state'}">
   {#key mode}<canvas class="room-canvas" class:ready data-mode={mode} bind:this={canvas} aria-hidden="true"></canvas>{/key}
   <div class="witness-fade" style:opacity={1 - fade}></div>
   {#if failure}
@@ -114,9 +121,16 @@
       <p class="mono">{failure}</p>
       <button class="btn btn-primary" type="button" onclick={finish}>{loop ? "Back" : "Continue to the desk"}</button>
     </div>
-  {:else if !ready}<p class="room-loading" role="status">Travelling to {visit?.to}…</p>{/if}
+  {:else if !ready}<p class="room-loading" role="status">Travelling to {visit?.label ?? visit?.to}…</p>{/if}
   {#if note ?? caption}
     <div class="witness-caption journey-caption" aria-hidden="true"><p class="caption-line">{note ?? caption}</p></div>
+  {/if}
+  {#if trip}
+    <div class="journey-progress" role="progressbar" aria-label="Journey progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow={done}>
+      <div class="jp-ends"><span>{visit?.from}</span><span>{visit?.label ?? visit?.to}</span></div>
+      <div class="jp-track"><span class="jp-fill" style:width="{done}%"></span><span class="jp-marker" style:left="{done}%"></span></div>
+      <div class="jp-figures"><span>{done}% of the way</span><span>{secondsLabel(left)} to go · {secondsLabel(Math.max(0, trip.seconds - left))} travelled</span></div>
+    </div>
   {/if}
   <p class="sr-only" role="status">{note ?? (loop ? "" : caption) ?? ""}</p>
   <button class="room-skip" type="button" onclick={() => { if (loop || failure || !ready) finish(); else skip(); }}>{loop ? "Back" : "Skip"} <kbd>Esc</kbd></button>

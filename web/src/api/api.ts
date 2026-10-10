@@ -1,5 +1,5 @@
 import type {
-  AbandonCaseRequest, AbandonCaseResponse, AssignCaseRequest, AuthResponse, AvatarCatalogue, AvatarProfile, AvatarSelectionRequest, CaseArchiveEntry, CaseResponse, CatalogueProgress, ClientCommand, CurrentActivityResponse, CurrentCaseResponse, ExecuteRequest,
+  AbandonCaseRequest, AbandonCaseResponse, AssignCaseRequest, AuthResponse, AvatarCatalogue, AvatarProfile, AvatarSelectionRequest, CaseArchiveEntry, CaseResponse, CatalogueProgress, ClientCommand, CurrentActivityResponse, CurrentCaseResponse, ExecuteRequest, GameEvent,
   LoginRequest, PlayerSession, ProfileUpdate, ProgressionSummary, RecoveryCompleteRequest,
   RecoveryRequest, RegisterRequest, ReplayCaseRequest, TransportLedgerEntry, TransportQuote,
   DisciplinaryCase, JailStatus, PressureAttemptRecord, PressureResult, PressureWitnessRequest, TokenBalance, TokenLedgerEntry,
@@ -109,6 +109,8 @@ export class Api {
   attempt = (attemptId: string) => call<WeeklyAttempt>(`/v1/weekly/attempts/${encodeURIComponent(attemptId)}`);
   attemptCommand = (attemptId: string, version: number, command: ClientCommand) =>
     call<WeeklyAttempt | TransitReply>(`/v1/weekly/attempts/${encodeURIComponent(attemptId)}/commands`, "POST", { command_id: crypto.randomUUID(), expected_version: version, command } satisfies ExecuteRequest);
+  weeklyQuotes = (attemptId: string) => call<TransportQuote[]>(`/v1/weekly/attempts/${encodeURIComponent(attemptId)}/transport-quotes`);
+  weeklyAccounts = (attemptId: string) => call<GameEvent[]>(`/v1/weekly/attempts/${encodeURIComponent(attemptId)}/accounts`);
   weekly = (challengeId: string) => call<WeeklyDetails & { standings: Standing[] }>(`/v1/weekly/${encodeURIComponent(challengeId)}`);
   weeklyEvents = (challengeId: string) => call<WeeklyEvent[]>(`/v1/weekly/${encodeURIComponent(challengeId)}/events`);
   cancelChallenge = (challengeId: string, reason: string) => call<Message>(`/v1/weekly/${encodeURIComponent(challengeId)}/cancel`, "POST", { reason });

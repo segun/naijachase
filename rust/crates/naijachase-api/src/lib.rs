@@ -95,6 +95,8 @@ pub struct TransportQuote {
     pub cost: u32,
     pub travel_minutes: u32,
     pub wait_minutes: u32,
+    /// Time spent questioning the witness or searching once there; the case clock advances by this as well.
+    pub interview_minutes: u32,
     pub affordable: bool,
     pub rules_version: u16,
 }
@@ -1031,6 +1033,14 @@ pub fn router(state: Arc<AppState>) -> Router {
         .route(
             "/v1/weekly/attempts/{attempt_id}/commands",
             post(execute_weekly_command),
+        )
+        .route(
+            "/v1/weekly/attempts/{attempt_id}/transport-quotes",
+            get(weekly_transport_quotes),
+        )
+        .route(
+            "/v1/weekly/attempts/{attempt_id}/accounts",
+            get(weekly_accounts),
         )
         .route("/v1/weekly/{challenge_id}", get(weekly_challenge_details))
         .route("/v1/weekly/{challenge_id}/events", get(weekly_events))
@@ -2167,7 +2177,7 @@ async fn execute_weekly_command(
     if view.state_version != request.expected_version {
         return Err(StorageError::VersionConflict(attempt).into());
     }
-    let (command, _) = translate_command(
+    let (command, public_event) = translate_command(
         &s.catalogue,
         &view.state,
         request.command,
@@ -2179,6 +2189,10 @@ async fn execute_weekly_command(
         Command::TravelBy { .. } | Command::VisitVenueBy { .. } | Command::SearchHideoutBy { .. }
     );
     if movement {
+        let event_json = public_event.map(|mut event| {
+            event.data.insert("stop".into(), view.state.state.clone());
+            serde_json::to_value(event).expect("event serializes")
+        });
         let (next, _) = naijachase_core::apply(view.state.clone(), command.clone())
             .map_err(|e| bad_request(e.to_string()))?;
         let ledger = next
@@ -2203,6 +2217,7 @@ async fn execute_weekly_command(
                 fare,
                 duration,
                 &next,
+                event_json.as_ref(),
             )
         })
         .await
@@ -3054,14 +3069,64 @@ async fn transport_quotes(
     Path(case_id): Path<String>,
     headers: HeaderMap,
 ) -> Result<Json<Vec<TransportQuote>>, ApiError> {
-    let player = authorize(&headers, &state).await?.player_id;
+    let account = authorize(&headers, &state).await?;
+    let player = account.player_id.clone();
     validate_id(&case_id, "case_id").map_err(bad_request)?;
     let store = state.store.clone();
     let (_, game) = tokio::task::spawn_blocking(move || store.load_owned_case(&case_id, &player))
         .await
         .map_err(task_error)??;
-    if game.outcome.is_some() {
+    Ok(Json(build_transport_quotes(
+        &state,
+        &game,
+        &account.home_base,
+    )?))
+}
+
+async fn weekly_transport_quotes(
+    State(state): State<Arc<AppState>>,
+    Path(attempt): Path<String>,
+    headers: HeaderMap,
+) -> Result<Json<Vec<TransportQuote>>, ApiError> {
+    let account = authorize(&headers, &state).await?;
+    let player = account.player_id.clone();
+    validate_id(&attempt, "attempt_id").map_err(bad_request)?;
+    let store = state.store.clone();
+    let view = tokio::task::spawn_blocking(move || store.weekly_attempt(&player, &attempt))
+        .await
+        .map_err(task_error)??;
+    if view.status != "active" {
         return Ok(Json(vec![]));
+    }
+    Ok(Json(build_transport_quotes(
+        &state,
+        &view.state,
+        &account.home_base,
+    )?))
+}
+
+async fn weekly_accounts(
+    State(state): State<Arc<AppState>>,
+    Path(attempt): Path<String>,
+    headers: HeaderMap,
+) -> Result<Json<Vec<serde_json::Value>>, ApiError> {
+    let account = authorize(&headers, &state).await?;
+    let player = account.player_id.clone();
+    validate_id(&attempt, "attempt_id").map_err(bad_request)?;
+    let store = state.store.clone();
+    let accounts = tokio::task::spawn_blocking(move || store.weekly_accounts(&player, &attempt))
+        .await
+        .map_err(task_error)??;
+    Ok(Json(accounts))
+}
+
+fn build_transport_quotes(
+    state: &AppState,
+    game: &GameState,
+    home_base: &str,
+) -> Result<Vec<TransportQuote>, ApiError> {
+    if game.outcome.is_some() {
+        return Ok(vec![]);
     }
     let mut quotes = Vec::new();
     let mut destinations = state
@@ -3084,6 +3149,7 @@ async fn transport_quotes(
                 cost,
                 travel_minutes: minutes,
                 wait_minutes: 0,
+                interview_minutes: 0,
                 affordable: cost <= game.economy.balance,
                 rules_version: game.economy.rules_version,
             })
@@ -3116,6 +3182,10 @@ async fn transport_quotes(
                 cost,
                 travel_minutes: minutes,
                 wait_minutes: wait,
+                interview_minutes: naijachase_core::investigation_minutes(
+                    venue.interview_minutes,
+                    game.state == home_base,
+                ),
                 affordable: cost <= game.economy.balance,
                 rules_version: game.economy.rules_version,
             })
@@ -3144,13 +3214,14 @@ async fn transport_quotes(
                     cost,
                     travel_minutes: minutes,
                     wait_minutes: 0,
+                    interview_minutes: venue.interview_minutes,
                     affordable: cost <= game.economy.balance,
                     rules_version: game.economy.rules_version,
                 })
             }
         }
     }
-    Ok(Json(quotes))
+    Ok(quotes)
 }
 
 fn pressure_assignment(case_id: &str, game: &GameState, venues: &[String]) -> Option<String> {
@@ -3530,6 +3601,7 @@ fn translate_command(
             );
             data.insert("venue_name".into(), venue.venue_name.clone());
             data.insert("witness_role".into(), witness_role.into());
+            data.insert("venue_id".into(), venue_id.clone());
             let minutes = naijachase_core::investigation_minutes(
                 venue.interview_minutes,
                 state.state == home_base,
@@ -4506,6 +4578,17 @@ mod tests {
         let catalogue = Catalogue::load(&root).unwrap();
         let mut tier_usage = std::collections::BTreeMap::<u32, usize>::new();
         let mut budgets_by_difficulty = std::collections::BTreeMap::<u8, u32>::new();
+        let mut least_minutes_remaining = naijachase_core::CASE_DEADLINE_MINUTES;
+        let mut least_cash_remaining = u32::MAX;
+        let mut deadline_exhausted_orders = 0usize;
+        let witness_orders = [
+            [0, 1, 2],
+            [0, 2, 1],
+            [1, 0, 2],
+            [1, 2, 0],
+            [2, 0, 1],
+            [2, 1, 0],
+        ];
         assert_eq!(catalogue.missions.len(), 1_000);
         for mission in catalogue.missions.values() {
             let baseline = mission_budget_baseline(&catalogue, mission).unwrap();
@@ -4531,6 +4614,151 @@ mod tests {
             }
             assert!(mixed_cost <= budget);
 
+            let stage_venues = route
+                .iter()
+                .enumerate()
+                .map(|(stage, state)| {
+                    available_venue_ids_for(&catalogue, &route, &mission.mission_id, stage, state)
+                })
+                .collect::<Vec<_>>();
+
+            // Exercise the actual API-to-engine path for all three witnesses at
+            // every stop, paid local driving, the fastest interstate travel,
+            // dossier completion, warrant and paid apprehension. Run every
+            // possible witness order because venue opening hours can change the
+            // wait incurred by the following interview. A case passes when at
+            // least one complete three-witness itinerary fits the week; slower
+            // choices remain a deliberate way for a player to lose on time.
+            let mut mission_has_complete_itinerary = false;
+            for order in witness_orders {
+                let mut game = build_game_from_mission(&catalogue, mission, 0, 0).unwrap();
+                for stage in 0..game.route.len() {
+                    let venues = &stage_venues[stage];
+                    assert_eq!(venues.len(), 3, "{} stage {stage}", mission.mission_id);
+                    let profile = &catalogue.profiles[&mission.thief_id];
+                    let (field, value) = profile.traits()[dossier_trait_index(&game, stage)];
+                    for (position, index) in order.into_iter().enumerate() {
+                        let venue_id = &venues[index];
+                        let venue = &catalogue.venues[venue_id];
+                        let base_travel = placement_minutes(
+                            &catalogue,
+                            &game.state,
+                            venue_id,
+                            &game.mission_id,
+                            game.stage,
+                        )
+                        .unwrap();
+                        let (travel_minutes, cost) =
+                            naijachase_core::local_quote(base_travel, "drive").unwrap();
+                        let wait_minutes = wait_until_open(
+                            game.elapsed.saturating_add(travel_minutes),
+                            venue.opens_hour,
+                            venue.closes_hour,
+                        );
+                        game = naijachase_core::apply(
+                            game,
+                            Command::VisitVenueBy {
+                                venue_id: venue_id.clone(),
+                                trait_name: if position == 0 {
+                                    field.into()
+                                } else {
+                                    String::new()
+                                },
+                                trait_value: if position == 0 {
+                                    value.into()
+                                } else {
+                                    String::new()
+                                },
+                                mode: "drive".into(),
+                                travel_minutes,
+                                wait_minutes,
+                                interview_minutes: venue.interview_minutes,
+                                cost,
+                            },
+                        )
+                        .unwrap()
+                        .0;
+                    }
+                    game = naijachase_core::apply(
+                        game,
+                        Command::RecordTrait {
+                            trait_name: field.into(),
+                            value: value.into(),
+                        },
+                    )
+                    .unwrap()
+                    .0;
+                    if stage + 1 < game.route.len() {
+                        let destination = game.route[stage + 1].clone();
+                        let base = catalogue.travel[&(game.state.clone(), destination.clone())]
+                            .travel_minutes;
+                        let (minutes, cost) =
+                            naijachase_core::interstate_quote(base, "fly").unwrap();
+                        game = naijachase_core::apply(
+                            game,
+                            Command::TravelBy {
+                                destination,
+                                mode: "fly".into(),
+                                minutes,
+                                cost,
+                            },
+                        )
+                        .unwrap()
+                        .0;
+                    }
+                }
+                game = naijachase_core::apply(
+                    game,
+                    Command::RequestWarrant {
+                        suspect_id: Some(mission.thief_id.clone()),
+                    },
+                )
+                .unwrap()
+                .0;
+                let hideout = game.hideout_venue.clone();
+                let venue = &catalogue.venues[&hideout];
+                let base_travel = placement_minutes(
+                    &catalogue,
+                    &game.state,
+                    &hideout,
+                    &game.mission_id,
+                    game.stage,
+                )
+                .unwrap();
+                let (travel_minutes, cost) =
+                    naijachase_core::local_quote(base_travel, "drive").unwrap();
+                game = naijachase_core::apply(
+                    game,
+                    Command::SearchHideoutBy {
+                        venue_id: hideout,
+                        mode: "drive".into(),
+                        travel_minutes,
+                        search_minutes: venue.interview_minutes,
+                        cost,
+                    },
+                )
+                .unwrap()
+                .0;
+                if game.outcome.as_deref() != Some("solved") {
+                    deadline_exhausted_orders += 1;
+                    continue;
+                }
+                mission_has_complete_itinerary = true;
+                assert!(
+                    game.economy.balance > 0,
+                    "{} exhausted its opening budget",
+                    mission.mission_id
+                );
+                least_minutes_remaining = least_minutes_remaining
+                    .min(naijachase_core::CASE_DEADLINE_MINUTES.saturating_sub(game.elapsed));
+                least_cash_remaining = least_cash_remaining.min(game.economy.balance);
+            }
+            assert!(
+                mission_has_complete_itinerary,
+                "{} has no complete three-witness itinerary within seven days",
+                mission.mission_id
+            );
+
             let origin = &route[0];
             if let Some((_, edge)) = catalogue
                 .travel
@@ -4545,6 +4773,9 @@ mod tests {
         }
         assert!(tier_usage.values().all(|uses| *uses > 1));
         assert!(tier_usage.len() <= 5);
+        eprintln!(
+            "catalogue audit: 1000 missions passed; minimum remaining time={least_minutes_remaining} minutes; minimum remaining cash=₦{least_cash_remaining}; deliberately slow witness orders that exhausted the deadline={deadline_exhausted_orders}"
+        );
     }
 
     #[test]
@@ -4924,6 +5155,8 @@ mod tests {
             "/v1/weekly/{challenge_id}/attempt",
             "/v1/weekly/attempts/{attempt_id}",
             "/v1/weekly/attempts/{attempt_id}/commands",
+            "/v1/weekly/attempts/{attempt_id}/transport-quotes",
+            "/v1/weekly/attempts/{attempt_id}/accounts",
             "/v1/weekly/{challenge_id}",
             "/v1/weekly/{challenge_id}/events",
             "/v1/weekly/{challenge_id}/cancel",

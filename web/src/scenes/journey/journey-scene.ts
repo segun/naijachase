@@ -103,6 +103,8 @@ export type JourneyPlan = {
   mode: JourneyMode;
   from: string;
   to: string;
+  /** What the loop caption calls the destination: a lead such as "Museum" rather than the state it is in. */
+  label: string;
   spans: Span[];
   props: Prop[];
   /** How wide (metres) the blend between two landscapes is, each side of the boundary. */
@@ -126,7 +128,7 @@ export type JourneyPlan = {
   period: number;
 };
 
-export type PlanOptions = { mode: JourneyMode; from: string; to: string; hour?: number; seed?: number; /** An endless route with no departure and no arrival. */ loop?: boolean };
+export type PlanOptions = { mode: JourneyMode; from: string; to: string; label?: string; hour?: number; seed?: number; /** An endless route with no departure and no arrival. */ loop?: boolean };
 
 // ---- Small pure helpers ----
 export function seededRandom(seed: number): () => number {
@@ -167,7 +169,7 @@ export function planJourney(o: PlanOptions): JourneyPlan {
   const seed = o.seed ?? Math.floor(Math.random() * 2147483000);
   const r = seededRandom(seed);
   const dim = DIM[lightAt(o.hour ?? 12)];
-  const common = { mode: o.mode, from: o.from, to: o.to, blend: 16, dim, airportFrom: `${o.from} Airport`, airportTo: `${o.to} Airport`, loop: false, period: 0 };
+  const common = { mode: o.mode, from: o.from, to: o.to, label: o.label ?? o.to, blend: 16, dim, airportFrom: `${o.from} Airport`, airportTo: `${o.to} Airport`, loop: false, period: 0 };
   if (o.loop) return planLoop(o, r, common);
 
   if (o.mode === "fly") {
@@ -206,7 +208,7 @@ export const circ = (v: number, period: number) => v - period * Math.round(v / p
 /** Where a prop is drawn for a camera at `camX`: on a looping route the nearest copy of it. */
 export const propX = (plan: JourneyPlan, p: Prop, camX: number) => (plan.period ? camX + circ(p.x - camX, plan.period) : p.x);
 
-function planLoop(o: PlanOptions, r: () => number, common: Pick<JourneyPlan, "mode" | "from" | "to" | "blend" | "dim" | "airportFrom" | "airportTo" | "loop" | "period">): JourneyPlan {
+function planLoop(o: PlanOptions, r: () => number, common: Pick<JourneyPlan, "mode" | "from" | "to" | "label" | "blend" | "dim" | "airportFrom" | "airportTo" | "loop" | "period">): JourneyPlan {
   const base = { ...common, loop: true, end: Infinity, settle: 0, cuts: [], go: 0 };
   if (o.mode === "fly") {
     const period = AIR_PERIOD;
@@ -332,7 +334,7 @@ export function frameAt(plan: JourneyPlan, tIn: number): JourneyFrame {
 /** The weekly "show travel route" view: already under way, nothing to board and nowhere to arrive. */
 function loopFrame(plan: JourneyPlan, t: number): JourneyFrame {
   const fade = clamp01(t / FADE_IN);
-  const caption = `On the way to ${plan.to}.`;
+  const caption = `On the way to ${plan.label}.`;
   const run = plan.speed * t;
   const x = run % plan.period;
   if (plan.mode === "fly") {

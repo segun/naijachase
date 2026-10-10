@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { AppController } from "../../state/app.svelte";
-  import { FIELDS, FIELD_META, cheapest, dossierCount, duration, groupQuotes, money, venueInfo, type QuoteGroup, type TransportQuote } from "../../domain/model.ts";
+  import { FIELDS, FIELD_META, cheapest, dossierCount, duration, groupQuotes, money, quoteMinutes, venueInfo, type QuoteGroup, type TransportQuote } from "../../domain/model.ts";
   import Icon from "../../ui/Icon.svelte";
   import MoveDialog from "./MoveDialog.svelte";
   import MoveOptions from "./MoveOptions.svelte";
@@ -17,7 +17,7 @@
 
   async function raid(group: QuoteGroup, quote: TransportQuote) {
     const ok = await app.command({ type: "search_hideout", venue_id: group.id, mode: quote.mode as "drive" | "hitch_ride" }, "Hideout searched.", "Searching hideout");
-    if (ok) raiding = null;
+    if (ok) { raiding = null; app.watchWeeklyTransit(quote.mode); }
   }
 
   async function apply() {
@@ -97,7 +97,7 @@
         <button type="button" class="venue rise" disabled={app.busy} style:animation-delay="{i * 0.08}s" onclick={() => (raiding = venue)}>
           <span class="venue-icon"><Icon name={info.icon} /></span>
           <span class="venue-body"><strong>Search the {venue.label.toLowerCase()}</strong><span class="muted">{info.who}</span></span>
-          <span class="venue-status">{#if best}{best.cost === 0 ? "Free" : money(best.cost)} · {duration(best.travel_minutes + best.wait_minutes)}{:else}Unaffordable{/if} <Icon name="arrow" /></span>
+          <span class="venue-status">{#if best}{best.cost === 0 ? "Free" : money(best.cost)} · {duration(quoteMinutes(best))}{:else}Unaffordable{/if} <Icon name="arrow" /></span>
         </button>
       {/each}
     </section>

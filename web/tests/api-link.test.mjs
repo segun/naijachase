@@ -114,8 +114,8 @@ test("the dev mock API honours the contract shapes the UI relies on", async () =
   } finally { child.kill(); }
 });
 
-test("ordinary and weekly dossier editors render the shared server catalogue, never free text", () => {
-  for (const name of ["Dossier", "WeeklyPlay"]) {
+test("the dossier editor renders the shared server catalogue, never free text", () => {
+  for (const name of ["Dossier"]) {
     const source = component(name);
     assert.match(source, /app\.dossierOptions\?\.fields/);
     assert.match(source, /entry\.label/);

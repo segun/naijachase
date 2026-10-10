@@ -32,6 +32,7 @@ const MIGRATION_13: &str = include_str!("../migrations/0013_groups_weekly_challe
 const MIGRATION_14: &str = include_str!("../migrations/0014_witness_pressure.sql");
 const MIGRATION_15: &str = include_str!("../migrations/0015_avatar_selection.sql");
 const MIGRATION_16: &str = include_str!("../migrations/0016_player_date_of_birth.sql");
+const MIGRATION_17: &str = include_str!("../migrations/0017_weekly_transit_events.sql");
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum CaseCommandResult {
@@ -660,6 +661,12 @@ impl MysqlStore {
             .unwrap_or(0);
         if version < 16 {
             apply_migration(&mut connection, MIGRATION_16)?;
+        }
+        let version: u32 = connection
+            .query_first("SELECT COALESCE(MAX(version),0) FROM schema_migrations")?
+            .unwrap_or(0);
+        if version < 17 {
+            apply_migration(&mut connection, MIGRATION_17)?;
         }
         Ok(())
     }
@@ -4126,6 +4133,7 @@ mod tests {
                 100,
                 1,
                 &arrival,
+                None,
             )
             .unwrap();
         assert!(store.execute_weekly(&owner, &first, 2, |s| Ok(s)).is_err());

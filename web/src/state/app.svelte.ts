@@ -8,7 +8,7 @@ import type { CurrentActivityResponse } from "../../../contracts/typescript/api-
 import { alreadyPressured, parseUtc, tokenAwards, type DisciplinaryCase, type JailStatus, type PressureAttemptRecord, type PressureMethod, type PressureResult, type TokenAward, type TokenLedgerEntry } from "../domain/pressure.ts";
 import {
   dossierChanges, RATE_LIMIT_MESSAGE, errorKind, groupNotes, nearestHomeBase, parseNotes,
-  catalogueView, resumableCase, unreadReleases, type ReportCategory, type AchievementDef, type CaseArchiveEntry, type CaseResponse, type CatalogueProgress, type ClientCommand, type Note,
+  catalogueView, isTransitReply, resumableCase, STATES, unreadReleases, type WeeklyAttempt, type ReportCategory, type AchievementDef, type CaseArchiveEntry, type CaseResponse, type CatalogueProgress, type ClientCommand, type GameEvent, type Note,
   type AvatarCatalogue, type AvatarPreset, type DossierOptions, type CooperationPreferences, type CooperationRequest, type Player, type PlayerSession, type ReleaseNotification, type TransportLedgerEntry, type TransportQuote, type ProfileUpdate, type ProgressionSummary, type Screen
 } from "../domain/model.ts";
 
@@ -16,7 +16,9 @@ export type Toast = { id: number; kind: "info" | "error" | "success"; text: stri
 /** The witness just questioned, for the arrival scene that follows the journey to the venue. */
 export type WitnessVisit = { venueId: string; venueName: string; role: string; message: string; arrival: "drive" | "hitch" };
 /** A journey between states about to be played: where from and to, how, and the seed that fixes which landscapes it passes through. */
-export type JourneyVisit = { from: string; to: string; mode: "drive" | "hitch" | "fly"; seed: number };
+export type JourneyVisit = { from: string; to: string; mode: "drive" | "hitch" | "fly"; seed: number; loop?: boolean; label?: string };
+/** Where a weekly attempt is travelling, as the server told us: the journey really takes this long and animations never shorten it. */
+export type WeeklyTransit = { destination: string; mode: string; arrivesAt: number; seconds: number };
 /** A disciplinary panel the player has yet to see: the server's own result, played back and then acknowledged. */
 export type PanelVisit = { result: PressureResult | null; panel: DisciplinaryCase; venue: string | null };
 export type Settings = { textSize: "normal" | "large"; contrast: "normal" | "high"; motion: "system" | "reduced" };
@@ -110,6 +112,16 @@ export class AppController {
   /** Set when the player has just come back from a venue: the office plays a short return (seated, then the zoom) instead of the long walk-in. */
   returning = $state(false);
 
+  /** Weekly challenge desk: while set, the case desk plays this attempt instead of the ordinary case. */
+  weeklyId = $state<string | null>(null);
+  weeklyTransit = $state<WeeklyTransit | null>(null);
+  weeklyEnds = $state(0);
+  /** When the weekly state was fetched: its case clock is the real clock, so the desk adds the minutes that have passed since. */
+  weeklyFetchedAt = $state(0);
+  private weeklyTimer: ReturnType<typeof setTimeout> | undefined;
+  private weeklyAccounts: GameEvent[] = [];
+  private weeklyLabels = new Map<string, string>();
+  isWeekly = $derived(this.weeklyId !== null);
   signedIn = $derived(this.player !== null);
   /** First login: the avatar picker comes before the case desk and nothing else is reachable. */
   needsAvatar = $derived(this.player !== null && !this.player.avatar_setup_complete);
@@ -145,7 +157,11 @@ export class AppController {
     else if (this.screen === "content" && location.hash !== "#/content") this.go("cases");
   }
 
+  /** Screens that belong to the weekly desk; any other screen leaves it and brings the ordinary case back. */
+  private static readonly WEEKLY_SCREENS: readonly Screen[] = ["investigate", "notebook", "dossier", "travel", "warrant", "results", "garage", "witness", "journey"];
+
   go(next: Screen) {
+    if (this.weeklyId && !AppController.WEEKLY_SCREENS.includes(next) && !(next === "cases" && this.briefing)) this.leaveWeekly();
     this.screen = next;
     queueMicrotask(() => {
       document.querySelector<HTMLElement>("#main")?.focus({ preventScroll: true });
@@ -192,6 +208,7 @@ export class AppController {
     this.ordinaryCaseId = null; this.activityKnown = false;
     this.dossierLoad = undefined;
     this.dossierOptions = null; this.dossierOptionsLoading = false; this.dossierOptionsError = "";
+    this.weeklyId = null; this.weeklyTransit = null; clearTimeout(this.weeklyTimer); this.weeklyAccounts = [];
     this.player = null; this.game = null; this.caseId = ""; this.briefing = false; this.pendingLead = ""; this.lastWitness = null; this.witnessVisit = null; this.journey = null; this.returning = false;
     this.summary = null; this.archive = []; this.sessions = []; this.avatar = null; this.catalogueStatus = null; this.exhausted = false; this.quotes = []; this.ledger = []; this.notes = []; this.trail = []; this.rankAtStart = null;
     this.tokenBalance = null; this.tokenLedger = []; this.tokenLedgerLoaded = false; this.awards = []; this.jail = null; this.discipline = []; this.disciplineLoaded = false; this.panel = null; this.pressured = []; this.pressurePrompt = null; this.pressureNotice = null; this.pendingPressure.clear();
@@ -201,6 +218,7 @@ export class AppController {
   }
 
   private persist() {
+    if (this.weeklyId) return;
     sessionStorage.setItem("nc-case", this.caseId);
     sessionStorage.setItem("nc-notes", JSON.stringify(this.notes));
     sessionStorage.setItem("nc-trail", JSON.stringify(this.trail));
@@ -502,7 +520,7 @@ export class AppController {
   /** The server remembers every attempt, so a reload or another device still shows which witnesses are spent. */
   async loadPressure() {
     const id = this.caseId, generation = this.caseGeneration;
-    if (!id) return;
+    if (!id || this.weeklyId) return;
     try {
       const attempts: PressureAttemptRecord[] = await this.api.pressureAttempts(id);
       if (id !== this.caseId || generation !== this.caseGeneration) return;
@@ -650,10 +668,12 @@ export class AppController {
 
   /** After the journey to a venue: the witness scene if that venue has one, otherwise straight to the investigation. */
   async arriveAtWitness(arrival: "drive" | "hitch") {
+    // A weekly visit is a real journey: the scene keeps playing until the server says the player has arrived.
+    if (this.weeklyTransit) { this.watchWeeklyTransit(arrival === "hitch" ? "hitch_ride" : "drive"); return; }
     const witness = this.lastWitness;
     this.lastWitness = null;
     // Whether or not the venue has a scene, the Continue / Bribe / Intimidate choice waits for the investigation screen.
-    if (witness && !this.game?.state.outcome) this.pressurePrompt = { venueId: witness.venueId, venueLabel: witness.venueName || witness.venueId.replaceAll("_", " ") };
+    if (witness && !this.weeklyId && !this.game?.state.outcome) this.pressurePrompt = { venueId: witness.venueId, venueLabel: witness.venueName || witness.venueId.replaceAll("_", " ") };
     // The recipes are loaded on demand, so they never weigh on the first download however many venues have a scene.
     const recipes = witness ? await import("../scenes/witness/venue-recipes.ts").catch(() => null) : null;
     if (witness && recipes?.recipeFor(witness.venueId) && !this.game?.state.outcome) {
@@ -667,6 +687,7 @@ export class AppController {
 
   /** Plays the travelling scene for a journey the server has just accepted, then goes to the desk. */
   startJourney(from: string, to: string, transport: string) {
+    if (this.weeklyTransit) { this.watchWeeklyTransit(transport); return; }
     const mode = journeyModeOf(transport);
     if (!mode || from === to) { this.finishJourney(); return; }
     this.journey = { from, to, mode, seed: Math.floor(Math.random() * 2147483000) };
@@ -675,6 +696,8 @@ export class AppController {
 
   /** The travelling scene is over (or was skipped): on to the desk, which plays the short return. */
   leaveJourney() {
+    // Escape during a weekly journey goes back to the weekly desk, where the journey keeps counting down.
+    if (this.weeklyTransit) { this.journey = null; this.go("investigate"); return; }
     this.journey = null;
     this.finishJourney();
   }
@@ -793,6 +816,7 @@ export class AppController {
   }
 
   async resume() {
+    if (this.weeklyId) { await this.refreshWeekly(); return; }
     if (this.busy || !this.caseId) return;
     const id = this.caseId, generation = this.caseGeneration;
     const loaded = await this.run("Retrieving case file", () => this.api.load(this.caseId));
@@ -812,6 +836,7 @@ export class AppController {
   }
 
   private async reloadCase() {
+    if (this.weeklyId) { await this.refreshWeekly(); return; }
     if (!this.caseId) return;
     const id = this.caseId, generation = this.caseGeneration;
     try {
@@ -831,7 +856,7 @@ export class AppController {
     const isCurrent = () => id === this.caseId && generation === this.caseGeneration && version === this.game?.state_version;
     if (!id || !this.game || this.game.state.outcome) { this.quotes = []; this.quotesLoaded = true; return; }
     try {
-      const quotes = await this.api.quotes(id);
+      const quotes = this.weeklyId ? await this.api.weeklyQuotes(id) : await this.api.quotes(id);
       if (isCurrent()) this.quotes = quotes;
     } catch (e) {
       if (isCurrent()) { this.quotes = []; this.fail(e); }
@@ -839,7 +864,7 @@ export class AppController {
   }
 
   async refreshLedger() {
-    if (!this.caseId) return;
+    if (!this.caseId || this.weeklyId) return;
     const id = this.caseId, generation = this.caseGeneration;
     try {
       const ledger = await this.api.ledger(id);
@@ -850,6 +875,7 @@ export class AppController {
   async command(payload: ClientCommand, message: string, label = "Working", quiet = false): Promise<boolean> {
     const current = this.game;
     if (!current || current.state.outcome !== null || this.busy) return false;
+    if (this.weeklyId) return this.weeklyCommand(payload, message, label, quiet);
     const generation = this.caseGeneration;
     if (payload.type === "visit_venue") this.lastWitness = null;
     const next = await this.run(label, () => this.api.command(current.case_id, current.state_version, payload));
@@ -936,5 +962,159 @@ export class AppController {
     this.activityKnown = true;
     this.go("cases");
     await this.openCase();
+  }
+
+  // ---- Weekly challenge desk -----------------------------------------------
+  // The weekly attempt is played on the same desk, scenes and screens as an ordinary case: `game` holds the attempt's state, and
+  // commands, fares and arrivals go through the weekly endpoints. The server owns the clock; animations only decorate the wait.
+
+  /** Opens the attempt on the case desk. The first time it types the case file; after that it lands on the desk. */
+  async enterWeekly(attemptId: string) {
+    if (this.busy) return;
+    const attempt = await this.run("Opening the challenge desk", () => this.api.attempt(attemptId));
+    if (!attempt || this.weeklyId === attemptId) { if (attempt) this.applyWeekly(attempt); return; }
+    if (attempt.status !== "active" && attempt.status !== "in_transit" && attempt.status !== "solved") {
+      this.toast("This attempt has ended.", "info");
+      return;
+    }
+    this.clearCase();
+    this.weeklyAccounts = [];
+    this.trail = [attempt.state.current_state];
+    this.applyWeekly(attempt);
+    await this.loadWeeklyAccounts();
+    void this.refreshQuotes();
+    const seenKey = `nc-weekly-seen:${attemptId}`;
+    let first = false;
+    try { first = attempt.status === "active" && !localStorage.getItem(seenKey); localStorage.setItem(seenKey, "1"); } catch { /* private mode: skip the typing */ }
+    if (attempt.state.outcome) this.go("results");
+    else if (this.weeklyTransit) this.watchWeeklyTransit(this.weeklyTransit.mode);
+    else if (first) { this.briefing = true; this.go("cases"); }
+    else this.go("investigate");
+  }
+
+  /** Leaves the weekly desk for the weekly lobby or the ordinary desk. */
+  exitWeekly(to: "weekly" | "cases" = "weekly") { this.go(to); }
+
+  private leaveWeekly() {
+    clearTimeout(this.weeklyTimer);
+    this.weeklyId = null; this.weeklyTransit = null; this.weeklyAccounts = [];
+    this.clearCase();
+    this.activityKnown = false;
+    void this.syncCurrentCase();
+    void this.groups.loadChallenge();
+  }
+
+  private applyWeekly(a: WeeklyAttempt) {
+    this.weeklyId = a.attempt_id; this.caseId = a.attempt_id;
+    this.game = { api_version: "v1", case_id: a.attempt_id, state_version: a.state_version, duplicate: false, attempt_kind: "weekly", state: a.state, events: [] };
+    this.weeklyEnds = Date.parse(a.ends_at); this.weeklyFetchedAt = Date.now();
+    this.groups.attempt = a;
+    const t = a.status === "in_transit" ? a.transit : null;
+    this.weeklyTransit = t ? { destination: t.destination, mode: t.mode, arrivesAt: Date.now() + t.remaining_seconds * 1000, seconds: t.duration_seconds ?? Math.max(this.weeklyTransit?.seconds ?? 0, t.remaining_seconds) } : null;
+    this.scheduleWeeklyArrival();
+    if (a.status === "closed" || a.status === "expired" || a.status === "forfeited") {
+      this.toast(a.status === "closed" ? "Someone in your group caught the thief first. The challenge is over." : "This attempt has ended.", "info");
+      queueMicrotask(() => this.go("weekly"));
+    }
+  }
+
+  private scheduleWeeklyArrival(retry = false) {
+    clearTimeout(this.weeklyTimer);
+    const t = this.weeklyTransit;
+    if (!t) return;
+    const wait = retry ? 5000 : Math.min(Math.max(t.arrivesAt - Date.now(), 0) + 500, 30000);
+    this.weeklyTimer = setTimeout(() => void this.checkWeeklyArrival(), wait);
+  }
+
+  async refreshWeekly() {
+    const id = this.weeklyId; if (!id) return;
+    try {
+      const a = await this.api.attempt(id);
+      if (id !== this.weeklyId) return;
+      const travelling = this.weeklyTransit !== null;
+      this.applyWeekly(a);
+      if (travelling && !this.weeklyTransit) await this.onWeeklyArrived();
+      else if (!this.weeklyTransit) void this.refreshQuotes();
+    } catch (e) { this.fail(e); this.scheduleWeeklyArrival(true); }
+  }
+
+  private async checkWeeklyArrival() { await this.refreshWeekly(); }
+
+  private async loadWeeklyAccounts() {
+    const id = this.weeklyId; if (!id) return;
+    try {
+      const events = await this.api.weeklyAccounts(id);
+      if (id !== this.weeklyId) return;
+      this.weeklyAccounts = events;
+      this.notes = events.filter(e => e.event_type === "witness_account" && e.data.message)
+        .map(e => ({ stop: e.data.stop ?? "", venue: e.data.venue_name ?? "Witness", message: e.data.message! }));
+    } catch (e) { if (e instanceof ApiError && e.status === 401) this.fail(e); }
+  }
+
+  /** The server has completed the journey: update the notebook, and carry on from wherever the player is watching. */
+  private async onWeeklyArrived() {
+    const known = this.weeklyAccounts.length;
+    await this.loadWeeklyAccounts();
+    void this.refreshQuotes();
+    const state = this.game?.state;
+    if (state && this.trail.at(-1) !== state.current_state) this.trail = [...this.trail, state.current_state];
+    this.lastWitness = null;
+    const newest = this.weeklyAccounts.length > known ? this.weeklyAccounts.at(-1) : undefined;
+    const watching = this.screen === "journey" && this.journey?.loop === true;
+    const arrival = this.journey?.mode === "hitch" ? "hitch" : "drive";
+    this.journey = null;
+    if (state?.outcome) { this.go("results"); return; }
+    if (newest?.data.message) {
+      this.lastWitness = { venueId: newest.data.venue_id ?? "", venueName: newest.data.local_venue_name || newest.data.venue_name || "", role: newest.data.witness_role ?? "Witness", message: newest.data.message };
+      if (watching) { await this.arriveAtWitness(arrival); return; }
+      this.toast("You have arrived. The witness account is in your notebook.", "success");
+    } else if (watching) {
+      this.returning = true; this.go("investigate");
+    } else this.toast(`You have arrived in ${state?.current_state ?? "the next state"}.`, "success");
+  }
+
+  /** What to call the place the weekly attempt is heading for: a state, or a lead such as "Museum". */
+  weeklyPlace(destination: string): string {
+    return this.weeklyLabels.get(destination) ?? destination.replaceAll("_", " ").replace(/^./, c => c.toUpperCase());
+  }
+
+  /** Plays the endless journey scene for the trip in progress. Esc returns to the desk; the countdown carries on there. */
+  watchWeeklyTransit(transport?: string) {
+    const t = this.weeklyTransit, state = this.game?.state;
+    if (!t || !state) return;
+    const mode = journeyModeOf(transport ?? t.mode);
+    if (!mode) { this.go("investigate"); return; }
+    const to = (STATES as readonly string[]).includes(t.destination) ? t.destination : state.current_state;
+    this.journey = { from: state.current_state, to, mode, seed: Math.floor(Math.random() * 2147483000), loop: true, label: this.weeklyPlace(t.destination) };
+    this.go("journey");
+  }
+
+  private async weeklyCommand(payload: ClientCommand, message: string, label: string, quiet: boolean): Promise<boolean> {
+    const current = this.game, id = this.weeklyId;
+    if (!current || !id) return false;
+    if (this.weeklyTransit) { this.toast("You are travelling. No commands are accepted until you arrive.", "info"); return false; }
+    // Quotes are empty while travelling, so remember the lead's name now for the banner and the journey caption.
+    if (payload.type === "visit_venue" || payload.type === "search_hideout") {
+      const lead = this.quotes.find(q => q.destination_id === payload.venue_id);
+      if (lead) this.weeklyLabels.set(payload.venue_id, lead.label);
+    }
+    const reply = await this.run(label, () => this.api.attemptCommand(id, current.state_version, payload), e => {
+      if (e.code === "stale_version") { this.toast("Your attempt changed elsewhere. Reloading the latest state.", "info"); void this.refreshWeekly(); return true; }
+      return false;
+    });
+    if (id !== this.weeklyId) return false;
+    if (!reply) return false;
+    if (isTransitReply(reply)) {
+      await this.refreshWeekly();
+      if (!quiet) this.toast(`On the move. Arrival in ${reply.duration_seconds < 60 ? `${reply.duration_seconds}s` : `${Math.round(reply.duration_seconds / 60)} min`}.`, "info");
+      return true;
+    }
+    const before = current.state;
+    this.applyWeekly(reply);
+    if (reply.state.current_state !== before.current_state) { this.trail = [...this.trail, reply.state.current_state]; this.quotes = []; this.quotesLoaded = false; }
+    if (payload.type !== "record_trait" && !reply.state.outcome) void this.refreshQuotes();
+    if (!quiet) this.toast(message, "success");
+    if (reply.state.outcome) { this.awards = []; void this.groups.loadChallenge(); this.go("results"); }
+    return true;
   }
 }

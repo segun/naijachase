@@ -10,6 +10,7 @@ export type JourneyOptions = {
   mode: JourneyMode;
   from: string;
   to: string;
+  label?: string;
   /** Fixes which landscapes are picked (tests and previews); otherwise they are random. */
   seed?: number;
   /** The endless "show travel route" view: no departure, no arrival, it runs until it is closed. */
@@ -39,7 +40,7 @@ export type JourneyHandle = {
 };
 
 export function createJourneyDriver(options: JourneyOptions) {
-  const plan = planJourney({ mode: options.mode, from: options.from, to: options.to, hour: options.hour, seed: options.seed, loop: options.loop });
+  const plan = planJourney({ mode: options.mode, from: options.from, to: options.to, label: options.label, hour: options.hour, seed: options.seed, loop: options.loop });
   let lastFade = -1, lastCaption: string | null | undefined, lastT = 0;
   return {
     plan,

@@ -280,13 +280,13 @@ test("flying in the route view is a plane in the sky with clouds of different si
   assert.equal(frameAt(p, 8).player, null);
 });
 
-test("the weekly play screen offers the route view, never changes the wait, and Esc returns to the text", () => {
+test("the weekly desk plays the journey by default, never changes the wait, and Esc returns to the desk", () => {
   const read = p => fs.readFileSync(new URL(`../src/${p}`, import.meta.url), "utf8");
-  const weekly = read("screens/social/WeeklyPlay.svelte");
-  assert.match(weekly, /Show travel route/);
-  assert.match(weekly, /loop startHour=/);
-  assert.match(weekly, /onclose=\{\(\) => \(route = null\)\}/);
-  assert.match(weekly, /You have arrived in/);
+  const controller = read("state/app.svelte.ts");
+  assert.match(controller, /loop: true/);
+  assert.match(controller, /You have arrived in/);
+  assert.match(read("App.svelte"), /loop=\{app\.journey\.loop === true\} onclose=\{\(\) => app\.leaveJourney\(\)\}/);
+  assert.match(read("scenes/office/CaseTerminal.svelte"), /Watch the journey/);
   const scene = read("scenes/journey/JourneyScene.svelte");
   assert.match(scene, /if \(loop\) onclose\?\.\(\); else app\.leaveJourney\(\)/);
   assert.match(scene, /if \(loop \|\| failure \|\| !ready\) finish\(\); else skip\(\)/, "Esc closes instead of skipping");

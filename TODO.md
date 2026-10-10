@@ -773,6 +773,11 @@ real hours. This is separate from the ordinary simulated case: a player may
 keep one of each case type active and continue playing the ordinary case while
 the weekly attempt is travelling.
 
+- [x] Play the weekly attempt on the ordinary case desk and scenes (briefing
+  typing, leads, garage, journey loop, notebook, dossier, travel, warrant,
+  results) with a distinct violet scheme; Esc returns to the weekly desk, which
+  can replay the endless journey animation while the real wait counts down.
+
 **Groups and membership**
 
 - [x] Add private player groups with stable IDs, unique names, owner/admin/member

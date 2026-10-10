@@ -51,6 +51,8 @@
     <div><dt>Fare</dt><dd>{quote.cost === 0 ? "Free" : money(quote.cost)}</dd></div>
     <div><dt>Journey</dt><dd>{duration(quote.travel_minutes)}</dd></div>
     {#if quote.wait_minutes > 0}<div><dt>Waiting for opening hours</dt><dd>{duration(quote.wait_minutes)}</dd></div>{/if}
+    {#if (quote.interview_minutes ?? 0) > 0}<div><dt>Questioning</dt><dd>{duration(quote.interview_minutes ?? 0)}</dd></div>{/if}
+    <div><dt>Total time</dt><dd>{duration(plan.totalMinutes)}</dd></div>
     <div><dt>Estimated arrival</dt><dd>{plan.arrival}</dd></div>
     <div><dt>Balance after</dt><dd>{money(plan.balanceAfter)}</dd></div>
   </dl>{/if}

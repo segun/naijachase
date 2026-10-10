@@ -6,7 +6,7 @@
   import { charsPerTick, dossierLines, TICK_MS, totalChars, typedRows } from "../../domain/briefing.ts";
   import { dayPart, greeting } from "./room-scene.ts";
   import { MAP_H, MAP_W, outlinePath, statePoint } from "../../domain/map.ts";
-  import { coopActions, groupQuotes, ratio, STATES, type QuoteGroup, type Screen } from "../../domain/model.ts";
+  import { coopActions, groupQuotes, opensAt, ratio, STATES, type QuoteGroup, type Screen } from "../../domain/model.ts";
   import AvatarSilhouette from "../../avatar/AvatarSilhouette.svelte";
   import Icon from "../../ui/Icon.svelte";
   import LeadGrid from "./LeadGrid.svelte";
@@ -189,7 +189,7 @@
           {#if step === "typing"}
             <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_noninteractive_element_interactions -->
             <section class="t-file" aria-label="Case dossier" onclick={() => { chars = totalChars(lines); }}>
-              <h1 class="t-greet">Case dossier</h1>
+              <h1 class="t-greet">{app.isWeekly ? "Weekly challenge dossier" : "Case dossier"}</h1>
               <p class="sr-only" role="status">{lines.map(l => `${l.label}: ${l.value}`).join(". ")}</p>
               <dl class="t-dossier" aria-hidden="true">
                 {#each dossier.rows as row, i}
@@ -202,9 +202,9 @@
             </section>
           {:else}
             <section class="t-leads" aria-labelledby="leads-title">
-              <h1 class="t-greet" id="leads-title">Local leads{#if app.game}<HireAssistant {app} />{/if}</h1>
+              <h1 class="t-greet" id="leads-title">Local leads{#if app.game && !app.isWeekly}<HireAssistant {app} />{/if}</h1>
               <p class="t-line">{app.game?.state.current_state}. Pick where to start asking: one witness here knows where the thief went next.</p>
-              <LeadGrid {leads} loaded={app.quotesLoaded} {leaving} onpick={pick} />
+              <LeadGrid {leads} closedUntil={app.isWeekly ? q => opensAt(app.game?.state.elapsed ?? 0, q) : undefined} loaded={app.quotesLoaded} {leaving} onpick={pick} />
               <button class="t-opt t-small t-quiet" type="button" data-nav disabled={Boolean(leaving)} onclick={() => app.finishBriefing()}>Skip to the case <Icon name="arrow" /></button>
             </section>
           {/if}

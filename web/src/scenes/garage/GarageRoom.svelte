@@ -6,7 +6,7 @@
   import "../../styles/terminal.css";
   import type { AppController } from "../../state/app.svelte";
   import { MODE_FOR, type Exit } from "./garage-scene.ts";
-  import { MODE_LABEL, duration, groupQuotes, money, project, type QuoteGroup, type TransportQuote } from "../../domain/model.ts";
+  import { MODE_LABEL, duration, groupQuotes, money, opensAt, project, type QuoteGroup, type TransportQuote } from "../../domain/model.ts";
   import Icon from "../../ui/Icon.svelte";
   import Stage from "../shared/Stage.svelte";
 
@@ -30,11 +30,13 @@
   const gs = $derived(app.game?.state);
   const options = $derived((["drive", "hitch"] as Exit[]).map(how => {
     const quote = snapshot?.options.find(o => o.mode === MODE_FOR[how]) ?? null;
-    return { how, quote, plan: quote && gs ? project(gs.elapsed, gs.balance, quote) : null };
+    // A weekly journey takes real time, so a venue that would be shut on arrival cannot be chosen.
+    const closed = app.isWeekly && quote && gs ? opensAt(gs.elapsed, quote) : null;
+    return { how, quote, closed, plan: quote && gs ? project(gs.elapsed, gs.balance, quote) : null };
   }));
 
   async function go(how: Exit, quote: TransportQuote, leave: (how?: string) => Promise<void>) {
-    if (chosen || app.busy || !quote.affordable || (gs?.balance === 0 && quote.cost > 0)) return;
+    if (chosen || app.busy || !quote.affordable || (app.isWeekly && quote.wait_minutes > 0) || (gs?.balance === 0 && quote.cost > 0)) return;
     chosen = how; failed = false;
     const ok = await app.command({ type: "visit_venue", venue_id: venueId, mode: quote.mode as "drive" | "hitch_ride" }, "Witness interviewed.", "Interviewing witness");
     if (!ok) { chosen = ""; failed = true; return; }
@@ -59,8 +61,8 @@
         <button class="btn btn-ghost" type="button" disabled={Boolean(chosen)} onclick={() => app.leaveGarage()}>Not now <kbd>Esc</kbd></button>
       </header>
       <div class="garage-options" role="group" aria-label="Transport">
-        {#each options as { how, quote, plan } (how)}
-          <button class="ride" class:picked={chosen === how} type="button" disabled={Boolean(chosen) || !quote || !quote.affordable || (gs?.balance === 0 && quote.cost > 0)} onclick={() => quote && go(how, quote, leave)}>
+        {#each options as { how, quote, plan, closed } (how)}
+          <button class="ride" class:picked={chosen === how} type="button" disabled={Boolean(chosen) || !quote || !quote.affordable || Boolean(closed) || (gs?.balance === 0 && quote.cost > 0)} onclick={() => quote && go(how, quote, leave)}>
             <span class="ride-art" aria-hidden="true">
               {#if how === "drive"}
                 <svg viewBox="0 0 160 70" focusable="false">
@@ -90,7 +92,8 @@
                 <span>Arrive {plan.arrival}</span>
                 <span>Balance after {money(plan.balanceAfter)}</span>
               </span>
-              {#if !quote.affordable}<span class="ride-warn"><Icon name="alert" /> You can't afford this one.</span>
+              {#if closed}<span class="ride-warn"><Icon name="alert" /> {snapshot?.label ?? "This place"} would be closed when you arrive. It opens {closed}.</span>
+              {:else if !quote.affordable}<span class="ride-warn"><Icon name="alert" /> You can't afford this one.</span>
               {:else if plan.missesDeadline}<span class="ride-warn"><Icon name="alert" /> Arrives after the deadline.</span>{/if}
             {:else}<span class="ride-figures">{app.quotesLoaded ? "Not available" : "Checking fares…"}</span>{/if}
             {#if chosen === how}<span class="ride-go"><span class="spinner"></span> {app.busy ? "Confirming with the agency…" : "Off you go…"}</span>{/if}

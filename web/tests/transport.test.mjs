@@ -89,11 +89,9 @@ test("movement needs an accessible confirmation step", () => {
 test("zero balance leaves only hitch a ride enabled in ordinary and weekly play", () => {
   const shared = read("screens/case/MoveOptions.svelte");
   const garage = read("scenes/garage/GarageRoom.svelte");
-  const weekly = read("screens/social/WeeklyPlay.svelte");
+  const controller = read("state/app.svelte.ts");
   assert.match(shared, /chosen !== "hitch_ride"/);
   assert.match(shared, /o\.mode === "hitch_ride"/);
   assert.match(garage, /gs\?\.balance === 0 && quote\.cost > 0/);
-  assert.match(weekly, /mode !== "hitch_ride"/);
-  assert.match(weekly, /localMode = "hitch_ride"/);
-  assert.match(weekly, /interMode = "hitch_ride"/);
+  assert.match(controller, /weeklyQuotes\(id\)/, "weekly play uses the same garage and travel screens with the attempt's own quotes");
 });
