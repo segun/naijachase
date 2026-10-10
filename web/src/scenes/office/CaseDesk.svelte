@@ -11,6 +11,7 @@
   import Icon from "../../ui/Icon.svelte";
   import LeadGrid from "./LeadGrid.svelte";
   import HireAssistant from "../../screens/case/HireAssistant.svelte";
+  import { formatWhen, jailRemaining } from "../../domain/pressure.ts";
 
   // Re-check the catalogue and release notices every time the desk opens.
   $effect(() => { void app.loadProgression(); });
@@ -48,12 +49,15 @@
     { screen: "groups", label: "Groups", icon: "users", count: () => app.groups.invitations.length },
     { screen: "weekly", label: "Weekly", icon: "trophy" },
     { screen: "helpers", label: "Helpers", icon: "helper", count: () => waiting },
+    { screen: "tokens", label: "Bribe tokens", icon: "star", count: () => app.tokenBalance ?? 0 },
     { screen: "settings", label: "Settings", icon: "sliders" }
   ];
 
   onMount(() => {
     const tick = setInterval(() => { now = new Date(); }, 20000);
-    return () => clearInterval(tick);
+    // Server time is authoritative: while suspended, ask it again every minute.
+    const jail = setInterval(() => { if (app.jailedUntil) void app.loadTokens(); }, 60000);
+    return () => { clearInterval(tick); clearInterval(jail); };
   });
 
   // The greeting types itself out once the screen is awake; reduced motion shows it at once.
@@ -205,11 +209,20 @@
               <div class="t-rank-text"><span class="t-tag">Rank</span><strong>{app.summary.rank}</strong></div>
               <dl class="t-stats">
                 <div><dt>Points</dt><dd>{app.summary.points.toLocaleString()}</dd></div>
+                <div><dt>Tokens</dt><dd>{app.tokenBalance ?? "…"}</dd></div>
                 <div><dt>Solved</dt><dd>{app.summary.solved_cases}</dd></div>
                 <div><dt>Regions</dt><dd>{app.summary.visited_states.length}<small>/{STATES.length}</small></dd></div>
               </dl>
             {:else}<span class="t-wait" role="status">Reading your file…</span>{/if}
           </section>
+
+          {#if app.jailedUntil}
+            <section class="t-alert" role="status" aria-label="Suspension">
+              <Icon name="lock" />
+              <span class="t-alert-text">You are suspended from new cases until {formatWhen(app.jailedUntil)} ({jailRemaining(app.jailedUntil, now)}). Settings, history and support stay available.</span>
+              <button class="t-opt t-small" type="button" data-nav onclick={() => app.go("tokens")}>History <Icon name="arrow" /></button>
+            </section>
+          {/if}
 
           {#if app.releases.length}
             <section class="t-alert" role="status" aria-label="New cases">

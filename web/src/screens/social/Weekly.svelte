@@ -2,6 +2,7 @@
   import { untrack } from "svelte";
   import type { AppController } from "../../state/app.svelte";
   import { canManageGroup, countdown, eventLabel, myRole, notificationLabel, parseUtc, sortStandings, utcFromUnix, weeklyStatus } from "../../domain/model.ts";
+  import { formatWhen } from "../../domain/pressure.ts";
   import Icon from "../../ui/Icon.svelte";
   import MoveDialog from "../case/MoveDialog.svelte";
   import WeeklyPlay from "./WeeklyPlay.svelte";
@@ -63,7 +64,8 @@
             {/if}
             {#if g.details.status === "cancelled"}<p class="move-warning" role="status"><Icon name="alert" />This challenge was cancelled by a group admin.</p>{/if}
             {#if open && !g.attempt && !notStarted}
-              <button class="btn btn-primary btn-lg" type="button" disabled={app.busy} onclick={() => g.join()}>Join the challenge <Icon name="arrow" /></button>
+              <button class="btn btn-primary btn-lg" type="button" disabled={app.busy || app.jailedUntil !== null} onclick={() => g.join()}>Join the challenge <Icon name="arrow" /></button>
+              {#if app.jailedUntil}<p class="move-warning" role="status"><Icon name="lock" />You are suspended until {formatWhen(app.jailedUntil)}. You cannot join challenges until then.</p>{/if}
             {:else if open && notStarted}
               <p class="muted">The challenge hasn't opened yet. Come back on Monday at 07:00.</p>
             {/if}

@@ -87,6 +87,12 @@
 
     <section class="card settings rise"><AvatarPicker {app} /></section>
 
+    <section class="card settings rise" aria-labelledby="tokens-link-title">
+      <h2 id="tokens-link-title">Bribe tokens and discipline</h2>
+      <p class="muted">Your balance, token history and disciplinary record have their own page.</p>
+      <button class="btn" type="button" onclick={() => app.go("tokens")}>Open bribe tokens <Icon name="arrow" /></button>
+    </section>
+
     <section class="card settings rise" aria-labelledby="devices-title">
       <h2 id="devices-title">Devices</h2>
       <p class="muted">Sessions expire after 24 hours and rotate while you play.</p>

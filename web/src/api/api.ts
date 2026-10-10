@@ -2,6 +2,7 @@ import type {
   AbandonCaseRequest, AbandonCaseResponse, AssignCaseRequest, AuthResponse, AvatarCatalogue, AvatarProfile, AvatarSelectionRequest, CaseArchiveEntry, CaseResponse, CatalogueProgress, ClientCommand, CurrentActivityResponse, CurrentCaseResponse, ExecuteRequest,
   LoginRequest, PlayerSession, ProfileUpdate, ProgressionSummary, RecoveryCompleteRequest,
   RecoveryRequest, RegisterRequest, ReplayCaseRequest, TransportLedgerEntry, TransportQuote,
+  DisciplinaryCase, JailStatus, PressureAttemptRecord, PressureResult, PressureWitnessRequest, TokenBalance, TokenLedgerEntry,
   AssistantRoutesResponse, CatalogueHealth, CompleteCooperationRequest, ContentRoleResponse, CooperationPreferences, CooperationReportRequest, CooperationRequest, CreateCooperationRequest, DossierOptions, MissionAdminDetails, MissionTransitionRequest, MissionValidation, ReleaseNotification
 } from "../../../contracts/typescript/api-v1.ts";
 import type { AchievementDef, GroupInvitation, PlayerGroup, Standing, TransitReply, WeeklyAttempt, WeeklyCurrent, WeeklyDetails, WeeklyEvent, WeeklyHistoryEntry, WeeklyNotification } from "../domain/model.ts";
@@ -132,6 +133,13 @@ export class Api {
   quotes = (caseId: string) => call<TransportQuote[]>(`/v1/cases/${encodeURIComponent(caseId)}/transport-quotes`);
   ledger = (caseId: string) => call<TransportLedgerEntry[]>(`/v1/cases/${encodeURIComponent(caseId)}/ledger`);
   assistantRoutes = (caseId: string) => call<AssistantRoutesResponse>(`/v1/cases/${encodeURIComponent(caseId)}/assistant/routes`);
+  tokenBalance = () => call<TokenBalance>("/v1/economy/bribe-tokens");
+  tokenLedger = () => call<TokenLedgerEntry[]>("/v1/economy/bribe-tokens/ledger");
+  discipline = () => call<DisciplinaryCase[]>("/v1/discipline");
+  acknowledgeDiscipline = (id: string) => call<Message>(`/v1/discipline/${encodeURIComponent(id)}/acknowledge`, "POST", {});
+  pressureAttempts = (caseId: string) => call<PressureAttemptRecord[]>(`/v1/cases/${encodeURIComponent(caseId)}/pressure-attempts`);
+  jail = () => call<JailStatus>("/v1/discipline/jail");
+  pressure = (caseId: string, body: PressureWitnessRequest) => call<PressureResult>(`/v1/cases/${encodeURIComponent(caseId)}/pressure`, "POST", body);
   command = (caseId: string, version: number, command: ClientCommand) =>
     call<CaseResponse>(`/v1/cases/${encodeURIComponent(caseId)}/commands`, "POST", {
       command_id: crypto.randomUUID(), expected_version: version, command

@@ -2,7 +2,7 @@
    status strip, the case navigation and a theme for the ordinary screens (notebook, dossier, travel, warrant) shown inside the glass. */
 
 .t-top { display: grid; gap: .5em; }
-.t-case { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1.25fr) minmax(0, 1fr) auto auto; gap: 1.2em; align-items: end; padding-bottom: .6em; border-bottom: 1px dashed var(--p-dim); }
+.t-case { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1.25fr) minmax(0, 1fr) auto auto auto; gap: 1.2em; align-items: end; padding-bottom: .6em; border-bottom: 1px dashed var(--p-dim); }
 .t-stat { display: grid; gap: .12em; min-width: 0; align-content: end; }
 .t-stat strong { color: var(--amber); font-size: 1.12em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-transform: uppercase; }
 .t-stat strong .icon { margin-right: .3em; }
@@ -48,3 +48,11 @@
   .t-case { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: .6em; }
   .t-deadline { grid-column: 1 / -1; order: 5; }
 }
+
+.t-pressure h2 { display: flex; justify-content: space-between; gap: 1em; }
+.t-tokens { color: var(--p-dim); font-weight: 400; }
+.t-tokens strong { color: var(--amber); }
+.pressure-list { list-style: none; margin: 0; padding: 0; display: grid; gap: .5em; }
+.pressure-list li { display: flex; flex-wrap: wrap; align-items: center; gap: .6em; }
+.pressure-list .t-who { flex: 1 1 10em; }
+.pressure-terms { margin: 0; padding-left: 1.2rem; display: grid; gap: .5rem; }

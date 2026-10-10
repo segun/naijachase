@@ -1,3 +1,4 @@
+mod email_templates;
 use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier, password_hash::SaltString};
 use axum::{
     Json, Router,
@@ -1067,6 +1068,10 @@ pub fn router(state: Arc<AppState>) -> Router {
             get(assistant_routes),
         )
         .route("/v1/cases/{case_id}/pressure", post(pressure_witness))
+        .route(
+            "/v1/cases/{case_id}/pressure-attempts",
+            get(pressure_attempts),
+        )
         .route("/v1/economy/bribe-tokens", get(bribe_token_balance))
         .route("/v1/economy/bribe-tokens/ledger", get(bribe_token_history))
         .route("/v1/discipline", get(disciplinary_history))
@@ -1478,12 +1483,13 @@ async fn request_recovery(
             state.config.public_web_url.trim_end_matches('/'),
             token
         );
+        let content = email_templates::password_reset(&link);
         if let Err(error) = send_email(
             &state.config,
             &email,
-            "Reset your Naija Chase password",
-            &format!("Reset your password: {link}"),
-            &format!("<p><a href=\"{link}\">Reset your password</a></p>"),
+            content.subject,
+            &content.text,
+            &content.html,
         )
         .await
         {
@@ -2341,16 +2347,8 @@ async fn achievement_catalog() -> Json<serde_json::Value> {
 }
 
 async fn send_confirmation(config: &ServiceConfig, to: &str, link: &str) -> Result<(), ApiError> {
-    send_email(
-        config,
-        to,
-        "Confirm your Naija Chase account",
-        &format!("Confirm your account: {link}"),
-        &format!(
-            "<p>Welcome to Naija Chase.</p><p><a href=\"{link}\">Confirm your email address</a></p>"
-        ),
-    )
-    .await
+    let email = email_templates::confirmation(link);
+    send_email(config, to, email.subject, &email.text, &email.html).await
 }
 async fn send_email(
     config: &ServiceConfig,
@@ -3216,6 +3214,21 @@ async fn pressure_witness(
     .await
     .map_err(task_error)??;
     Ok(Json(result))
+}
+
+async fn pressure_attempts(
+    State(state): State<Arc<AppState>>,
+    Path(case_id): Path<String>,
+    headers: HeaderMap,
+) -> Result<Json<Vec<naijachase_storage::PressureAttemptRecord>>, ApiError> {
+    let player = authorize(&headers, &state).await?.player_id;
+    validate_id(&case_id, "case_id").map_err(bad_request)?;
+    let store = state.store.clone();
+    Ok(Json(
+        tokio::task::spawn_blocking(move || store.pressure_attempts(&player, &case_id))
+            .await
+            .map_err(task_error)??,
+    ))
 }
 
 async fn bribe_token_balance(
@@ -4906,6 +4919,7 @@ mod tests {
             "/v1/cases/{case_id}/ledger",
             "/v1/cases/{case_id}/assistant/routes",
             "/v1/cases/{case_id}/pressure",
+            "/v1/cases/{case_id}/pressure-attempts",
             "/v1/economy/bribe-tokens",
             "/v1/economy/bribe-tokens/ledger",
             "/v1/discipline",
@@ -4935,6 +4949,7 @@ mod tests {
             "CooperationRequest",
             "PressureWitnessRequest",
             "PressureResult",
+            "PressureAttemptRecord",
             "DisciplinaryCase",
             "TokenBalance",
             "TokenLedgerEntry",

@@ -15,3 +15,8 @@
 @media (max-width: 640px) { .witness-caption { padding: .65rem 1rem .8rem; border-radius: 12px; } }
 .witness-error { position: absolute; inset: 0; z-index: 4; display: grid; place-content: center; justify-items: center; gap: .75rem; padding: 1.5rem; text-align: center; color: #fff; background: rgb(0 0 0 / .85); }
 .witness-error .mono { max-width: 60ch; margin: 0; font-size: .85rem; opacity: .75; overflow-wrap: anywhere; }
+
+.panel-card { position: absolute; left: 50%; bottom: 2rem; transform: translateX(-50%); z-index: 3; width: min(34rem, calc(100% - 2rem)); display: grid; gap: .6rem; padding: 1.1rem 1.3rem; border-radius: 14px; border: 1px solid var(--gold); background: rgb(6 20 14 / .92); color: var(--ink); animation: rise .5s ease both; }
+.panel-card h2 { margin: 0; font-size: 1.3rem; }
+.panel-card ul { margin: 0; padding-left: 1.2rem; display: grid; gap: .3rem; }
+.panel-card:focus { outline: none; }

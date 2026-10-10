@@ -10,6 +10,7 @@
   import AskForHelp from "../../screens/case/AskForHelp.svelte";
   import Dossier from "../../screens/case/Dossier.svelte";
   import Notebook from "../../screens/case/Notebook.svelte";
+  import Pressure from "../../screens/case/Pressure.svelte";
   import Travel from "../../screens/case/Travel.svelte";
   import Warrant from "../../screens/case/Warrant.svelte";
   import HireAssistant from "../../screens/case/HireAssistant.svelte";
@@ -56,6 +57,7 @@
     { screen: "groups", label: "Groups", icon: "users", count: () => app.groups.invitations.length },
     { screen: "weekly", label: "Weekly", icon: "trophy" },
     { screen: "helpers", label: "Helpers", icon: "helper", count: () => waiting },
+    { screen: "tokens", label: "Bribe tokens", icon: "star", count: () => app.tokenBalance ?? 0 },
     { screen: "settings", label: "Settings", icon: "sliders" }
   ];
   const title = $derived(items.find(i => i.screen === app.screen)?.label ?? "Case");
@@ -134,6 +136,7 @@
         </div>
         <div class="t-stat"><span class="t-tag">Funds</span><strong>{money(gs.balance)}</strong></div>
         <div class="t-stat"><span class="t-tag">Score</span><strong>{gs.score.toLocaleString()}</strong></div>
+        <div class="t-stat"><span class="t-tag">Bribe tokens</span><strong aria-label="{app.tokenBalance ?? 'unknown'} earned bribe tokens">{app.tokenBalance ?? "…"}</strong></div>
       </section>
     </div>
 
@@ -184,6 +187,8 @@
                 {/each}
               </section>
             {/if}
+
+            <Pressure {app} {venues} questioned={done} />
 
             {#if cooperationAvailable(app.coop.prefs) && app.coop.prefs?.enabled && app.game?.attempt_kind === "ordinary"}
               <div class="t-embed t-inline"><AskForHelp {app} /></div>

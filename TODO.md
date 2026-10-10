@@ -1029,6 +1029,9 @@ pre-launch human-review handoffs remain outside the backend implementation.
   status. Update OpenAPI and generated TypeScript contracts in the same change.
 - [x] Keep earned bribe-token awards and spending in an immutable ledger with
   idempotent award/spend references; never trust a client-supplied balance.
+- [x] Expose authenticated `GET /v1/cases/{case_id}/pressure-attempts` so the
+  frontend can restore pressured-witness locks, supplemental clues, detection
+  results, linked disciplinary cases, and resulting token balances after reload.
 - [x] Block case creation at the API and storage layers while jailed, including
   concurrent requests and alternate devices. Authentication, account recovery,
   settings, token history, and support access must remain available.
@@ -1047,9 +1050,16 @@ pre-launch human-review handoffs remain outside the backend implementation.
   per UTC day; first `state_explorer` earns `2`, first
   `national_investigator` earns `5`, and the held balance is capped at `20`.
   Intimidation remains token-free; bribery spends one earned token.
-- [ ] **FRONTEND HANDOFF:** show the token cost, current balance, one-attempt rule, possibility that a
+- [x] **FRONTEND HANDOFF:** show the token cost, current balance, one-attempt rule, possibility that a
   witness has no extra clue, and offence risk before confirmation. Do not reveal
   whether that specific witness holds an extra clue.
+  Implemented in `web/src/screens/case/Pressure.svelte` (actions after questioning,
+  confirmation), `PanelPresentation.svelte` (five-member panel and punishment),
+  the case-desk and case-terminal token balance, the token award breakdown on
+  `Results.svelte`, and token plus disciplinary history in `Settings.svelte`.
+  Pure logic and tests: `web/src/domain/pressure.ts`, `web/tests/pressure.test.mjs`.
+  The panel is a 3D scene (`web/src/scenes/panel/`: five judges raise vote papers, then a cut to the player accepting
+  judgement) with `PanelPresentation.svelte` as its 2D fallback.
 - [x] Do not tune clue availability, detection, panel voting, or punishment per
   token balance or earning history. Publish the gameplay odds and version every
   balance change for reproducible disputes and support investigations.

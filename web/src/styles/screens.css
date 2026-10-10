@@ -459,3 +459,25 @@ textarea.input { resize: vertical; min-height: 5rem; }
 .view-toggle { margin-bottom: .75rem; }
 .btn.btn-icon { min-width: 48px; padding-inline: .75rem; }
 .auth .check.legal{align-items:flex-start;grid-column:1/-1}.auth .check.legal a{text-decoration:underline}
+
+.token-awards { width: 100%; text-align: left; display: grid; gap: .5rem; padding: .8rem 1rem; border-radius: 12px; border: 1px solid var(--gold); background: var(--bg); }
+.token-awards h2 { font-size: 1.05rem; margin: 0; }
+.token-awards ul { list-style: none; margin: 0; padding: 0; display: grid; gap: .5rem; }
+.token-awards li { display: grid; gap: .1rem; }
+.token-note { margin: 0; }
+.token-history { list-style: none; margin: 0; padding: 0; display: grid; gap: .5rem; }
+.token-history li { display: flex; align-items: center; gap: .8rem; padding: .6rem .9rem; border-radius: 12px; background: var(--bg); border: 1px solid var(--line-soft); }
+.token-history li > div { flex: 1; min-width: 0; display: grid; gap: .1rem; }
+.token-history .gain { color: var(--green); }
+.token-history .loss { color: var(--red); }
+.panel-seats { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: .6rem; margin: 0; padding: 0; list-style: none; }
+.panel-seats li { display: grid; justify-items: center; gap: .3rem; padding: .7rem .3rem; border-radius: 12px; border: 1px solid var(--line-soft); background: var(--bg); text-align: center; min-height: 6rem; opacity: .25; transition: opacity .3s, border-color .3s; }
+.panel-seats li.seated { opacity: 1; }
+.panel-seats li.punish { border-color: var(--red); }
+.panel-seats li.warning { border-color: var(--green); }
+.panel-seats .vote { font-weight: 800; font-size: .85rem; text-transform: uppercase; letter-spacing: .08em; }
+.panel-verdict { display: grid; gap: .4rem; padding: .8rem 1rem; border-radius: 12px; border: 1px solid var(--gold); background: var(--bg); }
+.panel-verdict ul { margin: 0; padding-left: 1.2rem; }
+[data-motion="reduced"] .panel-seats li { transition: none; }
+@media (prefers-reduced-motion: reduce) { .panel-seats li { transition: none; } }
+@media (max-width: 560px) { .panel-seats { grid-template-columns: repeat(3, minmax(0, 1fr)); } }

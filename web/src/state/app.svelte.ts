@@ -5,6 +5,7 @@ import { journeyModeOf } from "../scenes/journey/journey-scene.ts";
 import { MenuMusic } from "../music/music.svelte.ts";
 import { GroupsController } from "./groups.svelte.ts";
 import type { CurrentActivityResponse } from "../../../contracts/typescript/api-v1.ts";
+import { alreadyPressured, parseUtc, tokenAwards, type DisciplinaryCase, type JailStatus, type PressureAttemptRecord, type PressureMethod, type PressureResult, type TokenAward, type TokenLedgerEntry } from "../domain/pressure.ts";
 import {
   dossierChanges, RATE_LIMIT_MESSAGE, errorKind, groupNotes, nearestHomeBase, parseNotes,
   catalogueView, resumableCase, unreadReleases, type ReportCategory, type AchievementDef, type CaseArchiveEntry, type CaseResponse, type CatalogueProgress, type ClientCommand, type Note,
@@ -16,6 +17,8 @@ export type Toast = { id: number; kind: "info" | "error" | "success"; text: stri
 export type WitnessVisit = { venueId: string; venueName: string; role: string; message: string; arrival: "drive" | "hitch" };
 /** A journey between states about to be played: where from and to, how, and the seed that fixes which landscapes it passes through. */
 export type JourneyVisit = { from: string; to: string; mode: "drive" | "hitch" | "fly"; seed: number };
+/** A disciplinary panel the player has yet to see: the server's own result, played back and then acknowledged. */
+export type PanelVisit = { result: PressureResult | null; panel: DisciplinaryCase; venue: string | null };
 export type Settings = { textSize: "normal" | "large"; contrast: "normal" | "high"; motion: "system" | "reduced" };
 
 const DEFAULT_SETTINGS: Settings = { textSize: "normal", contrast: "normal", motion: "system" };
@@ -73,6 +76,23 @@ export class AppController {
   /** Server quotes for every journey the case currently offers. Never calculated in the browser. */
   releases = $state<ReleaseNotification[]>([]);
   coop = $state<{ prefs: CooperationPreferences | null; requests: CooperationRequest[]; blocks: [string, string][]; reputation: number; loaded: boolean }>({ prefs: null, requests: [], blocks: [], reputation: 0, loaded: false });
+  /** Earned bribe tokens, the server's balance and history; null until loaded. */
+  tokenBalance = $state<number | null>(null);
+  tokenLedger = $state<TokenLedgerEntry[]>([]);
+  tokenLedgerLoaded = $state(false);
+  /** Token awards the server reported when the current case was solved. */
+  awards = $state<TokenAward[]>([]);
+  jail = $state<JailStatus | null>(null);
+  discipline = $state<DisciplinaryCase[]>([]);
+  disciplineLoaded = $state(false);
+  /** The panel to present now, and the witnesses already pressured (`case|stop|venue`), so each shows one attempt only. */
+  panel = $state<PanelVisit | null>(null);
+  /** The witness just interviewed, for the Continue / Bribe / Intimidate choice that follows. */
+  pressurePrompt = $state<{ venueId: string; venueLabel: string } | null>(null);
+  /** What a pressure attempt without a panel produced: the extra clue, or nothing. */
+  pressureNotice = $state<{ clue: string | null; venue: string } | null>(null);
+  private pendingPressure = new Map<string, { id: string; version: number }>();
+  pressured = $state<string[]>([]);
   quotes = $state<TransportQuote[]>([]);
   quotesLoaded = $state(false);
   ledger = $state<TransportLedgerEntry[]>([]);
@@ -97,7 +117,12 @@ export class AppController {
   groupedNotes = $derived(groupNotes(this.notes));
   catalogue = $derived(this.catalogueStatus ? catalogueView(this.catalogueStatus) : null);
   isReplay = $derived(this.game?.attempt_kind === "replay");
-  get canStartCase() { return this.activityKnown && this.ordinaryCaseId === null; }
+  /** The UTC end of an active suspension, or null. The server still enforces it; this only avoids offering a doomed start. */
+  get jailedUntil(): string | null {
+    const jail = this.jail;
+    return jail?.jailed && jail.jailed_until && parseUtc(jail.jailed_until).getTime() > Date.now() ? jail.jailed_until : null;
+  }
+  get canStartCase() { return this.activityKnown && this.ordinaryCaseId === null && this.jailedUntil === null; }
   promotion = $derived(
     this.rankAtStart && this.summary && this.game?.state.outcome && this.summary.rank !== this.rankAtStart ? this.summary.rank : null
   );
@@ -169,6 +194,7 @@ export class AppController {
     this.dossierOptions = null; this.dossierOptionsLoading = false; this.dossierOptionsError = "";
     this.player = null; this.game = null; this.caseId = ""; this.briefing = false; this.pendingLead = ""; this.lastWitness = null; this.witnessVisit = null; this.journey = null; this.returning = false;
     this.summary = null; this.archive = []; this.sessions = []; this.avatar = null; this.catalogueStatus = null; this.exhausted = false; this.quotes = []; this.ledger = []; this.notes = []; this.trail = []; this.rankAtStart = null;
+    this.tokenBalance = null; this.tokenLedger = []; this.tokenLedgerLoaded = false; this.awards = []; this.jail = null; this.discipline = []; this.disciplineLoaded = false; this.panel = null; this.pressured = []; this.pressurePrompt = null; this.pressureNotice = null; this.pendingPressure.clear();
     sessionStorage.clear();
     this.screen = "cases";
     if (message) this.toast(message, "info");
@@ -434,9 +460,105 @@ export class AppController {
       this.summary = summary; this.archive = archive; this.catalog = catalog; this.catalogueStatus = status;
       this.exhausted = status.exhausted;
       void this.loadReleases();
+      void this.loadTokens();
       void this.loadCoop();
       void this.groups.load();
     } catch (e) { if (reportErrors || (e instanceof ApiError && e.status === 401)) this.fail(e); }
+  }
+
+  /** The server's earned-token balance and jail status. Never calculated in the browser. */
+  async loadTokens() {
+    const generation = this.sessionGeneration;
+    const [balance, jail, record] = await Promise.allSettled([this.api.tokenBalance(), this.api.jail(), this.api.discipline()]);
+    if (generation !== this.sessionGeneration) return;
+    if (balance.status === "fulfilled") this.tokenBalance = balance.value.balance;
+    if (jail.status === "fulfilled") this.jail = jail.value;
+    if (record.status === "fulfilled") {
+      this.discipline = record.value; this.disciplineLoaded = true;
+      // A verdict the player has not yet seen comes before anything else.
+      const unseen = record.value.find(c => !c.acknowledged);
+      if (unseen && !this.panel) this.panel = { result: null, panel: unseen, venue: null };
+    }
+    const failure = [balance, jail, record].find(r => r.status === "rejected" && r.reason instanceof ApiError && r.reason.status === 401);
+    if (failure) this.fail((failure as PromiseRejectedResult).reason);
+  }
+
+  /** Token history and the private panel history, for the career file in Settings. */
+  async loadTokenHistory() {
+    const generation = this.sessionGeneration;
+    const [ledger, discipline] = await Promise.all([this.api.tokenLedger(), this.api.discipline()]).catch(e => { this.fail(e); return [null, null] as const; });
+    if (generation !== this.sessionGeneration) return;
+    if (ledger) { this.tokenLedger = ledger; this.tokenLedgerLoaded = true; }
+    if (discipline) { this.discipline = discipline; this.disciplineLoaded = true; }
+    void this.loadTokens();
+  }
+
+  pressureKey(venueId: string) { return `${this.caseId}|${this.game?.state.stage ?? 0}|${venueId}`; }
+  wasPressured(venueId: string) { return this.pressured.includes(this.pressureKey(venueId)); }
+  private markPressured(key: string) {
+    if (!this.pressured.includes(key)) this.pressured = [...this.pressured, key];
+  }
+
+  /** The server remembers every attempt, so a reload or another device still shows which witnesses are spent. */
+  async loadPressure() {
+    const id = this.caseId, generation = this.caseGeneration;
+    if (!id) return;
+    try {
+      const attempts: PressureAttemptRecord[] = await this.api.pressureAttempts(id);
+      if (id !== this.caseId || generation !== this.caseGeneration) return;
+      this.pressured = attempts.map(a => `${id}|${a.stage}|${a.venue_id}`);
+    } catch (e) { if (e instanceof ApiError && e.status === 401) this.fail(e); }
+  }
+
+  /** Bribe or intimidate a questioned witness. The server decides the clue, detection, votes and punishment. */
+  async pressureWitness(venueId: string, venueLabel: string, method: PressureMethod): Promise<PressureResult | undefined> {
+    const current = this.game;
+    if (!current || current.state.outcome !== null || this.busy) return;
+    const generation = this.caseGeneration;
+    const key = this.pressureKey(venueId), stop = current.state.current_state;
+    // An attempt whose outcome is unknown is retried with the same command id, so it can never spend or roll twice.
+    const attempt = `${key}|${method}`;
+    const pending = this.pendingPressure.get(attempt) ?? { id: crypto.randomUUID(), version: current.state_version };
+    this.pendingPressure.set(attempt, pending);
+    const result = await this.run("Pressing the witness", () => this.api.pressure(current.case_id, {
+      command_id: pending.id, expected_version: pending.version, venue_id: venueId, method
+    }), e => {
+      if (e.status !== 0) this.pendingPressure.delete(attempt);
+      if (!alreadyPressured(e.status, e.code, e.message)) return false;
+      this.markPressured(key);
+      this.toast("This witness has already been pressured. Each witness accepts one attempt.", "info");
+      return true;
+    });
+    if (!result || this.caseId !== current.case_id || generation !== this.caseGeneration) return;
+    this.pendingPressure.delete(attempt);
+    this.markPressured(key);
+    this.pressurePrompt = null;
+    this.tokenBalance = result.token_balance;
+    if (result.extra_clue) {
+      this.notes = [...this.notes, { stop, venue: `${venueLabel} (extra)`, message: result.extra_clue }];
+      this.persist();
+    }
+    await this.reloadCase();
+    if (result.panel) this.panel = { result, panel: result.panel, venue: venueLabel };
+    else this.pressureNotice = { clue: result.extra_clue, venue: venueLabel };
+    void this.loadProgression();
+    return result;
+  }
+
+  /** The player has seen the panel. Acknowledging is best effort: the outcome stands either way. */
+  async dismissPanel() {
+    const visit = this.panel;
+    if (!visit) return;
+    this.panel = null;
+    if (!visit.panel.acknowledged) {
+      try { await this.api.acknowledgeDiscipline(visit.panel.disciplinary_case_id); }
+      catch (e) { if (e instanceof ApiError && e.status === 401) this.fail(e); }
+    }
+    await Promise.all([this.loadProgression(), this.loadTokens(), this.loadTokenHistory()]);
+    if (this.caseId) await this.reloadCase();
+    // A jailed player's case was forfeited: back to the desk, where starting a case stays disabled until release.
+    if (visit.panel.punishment === "jailed" || this.game?.state.outcome === "forfeited") this.newDesk();
+    else if (this.game?.state.outcome) this.go("results");
   }
 
   /** "New case available" notices; they never carry hidden case data. */
@@ -530,13 +652,17 @@ export class AppController {
   async arriveAtWitness(arrival: "drive" | "hitch") {
     const witness = this.lastWitness;
     this.lastWitness = null;
+    // Whether or not the venue has a scene, the Continue / Bribe / Intimidate choice waits for the investigation screen.
+    if (witness && !this.game?.state.outcome) this.pressurePrompt = { venueId: witness.venueId, venueLabel: witness.venueName || witness.venueId.replaceAll("_", " ") };
     // The recipes are loaded on demand, so they never weigh on the first download however many venues have a scene.
     const recipes = witness ? await import("../scenes/witness/venue-recipes.ts").catch(() => null) : null;
     if (witness && recipes?.recipeFor(witness.venueId) && !this.game?.state.outcome) {
       this.pendingLead = "";
       this.witnessVisit = { ...witness, arrival };
       this.go("witness");
-    } else this.leaveGarage();
+    } else {
+      this.leaveGarage();
+    }
   }
 
   /** Plays the travelling scene for a journey the server has just accepted, then goes to the desk. */
@@ -768,6 +894,7 @@ export class AppController {
           : message;
     if (!quiet) this.toast(feedback, payload.type === "travel" && next.state.trail_status === "cold" ? "error" : "success");
     if (next.state.outcome) {
+      this.awards = tokenAwards(next.events);
       await this.loadProgression();
       this.go("results");
     }
@@ -791,7 +918,7 @@ export class AppController {
     this.caseGeneration++;
     this.game = null; this.caseId = ""; this.notes = []; this.trail = []; this.rankAtStart = null;
     this.briefing = false; this.pendingLead = ""; this.lastWitness = null; this.witnessVisit = null; this.journey = null; this.returning = false;
-    this.quotes = []; this.quotesLoaded = false; this.ledger = [];
+    this.quotes = []; this.quotesLoaded = false; this.ledger = []; this.awards = []; this.panel = null; this.pressured = []; this.pressurePrompt = null; this.pressureNotice = null; this.pendingPressure.clear();
     ["nc-case", "nc-notes", "nc-trail", "nc-rank"].forEach(k => sessionStorage.removeItem(k));
   }
 

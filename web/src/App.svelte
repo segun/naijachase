@@ -20,6 +20,8 @@
     witness: () => import("./scenes/witness/WitnessScene.svelte"),
     journey: () => import("./scenes/journey/JourneyScene.svelte"),
     settings: () => import("./screens/account/Settings.svelte"),
+    tokens: () => import("./screens/account/Tokens.svelte"),
+    panel: () => import("./scenes/panel/PanelScene.svelte"),
     weekly: () => import("./screens/social/Weekly.svelte")
   } as const;
 
@@ -56,6 +58,7 @@
       {#if app.signedIn && app.needsAvatar}{#await lazy.avatar() then { default: Screen }}<div class="page"><Screen {app} first /></div>{/await}
       {:else if app.screen === "welcome"}<Landing {app} />
       {:else if app.screen === "settings"}{#await lazy.settings() then { default: Screen }}<Screen {app} />{/await}
+      {:else if app.screen === "tokens" && app.signedIn}{#await lazy.tokens() then { default: Screen }}<Screen {app} />{/await}
       {:else if app.screen === "content" && app.signedIn}<ContentGate {app} />
       {:else if app.screen === "groups" && app.signedIn}{#await lazy.groups() then { default: Screen }}<Screen {app} />{/await}
       {:else if app.screen === "weekly" && app.signedIn}{#await lazy.weekly() then { default: Screen }}<Screen {app} />{/await}
@@ -78,5 +81,6 @@
         </div>
       {/snippet}
     </svelte:boundary>
+    {#if app.signedIn && app.panel}{#await lazy.panel() then { default: Screen }}<Screen {app} />{/await}{/if}
   </Shell>
 {/if}

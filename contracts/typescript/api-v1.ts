@@ -46,6 +46,7 @@ export type PressureWitnessRequest={command_id:string;expected_version:number;ve
 export type PressureEvent={event_type:"witness_pressure_resolved"|"panel_member_arrived"|"panel_vote"|"panel_decision";data:Record<string,unknown>};
 export type DisciplinaryCase={disciplinary_case_id:string;offence:"witness_tampering"|"excessive_use_of_force";repeat_offender:boolean;votes:("warning"|"punish")[];decision:"warning"|"punish";punishment:"none"|"points_deducted"|"demoted"|"jailed";points_before:number;points_after:number;old_rank:string;new_rank:string;jailed_until:string|null;acknowledged:boolean};
 export type PressureResult={command_id:string;state_version:number;method:PressureMethod;extra_clue:string|null;offence:"witness_tampering"|"excessive_use_of_force"|null;detected:boolean;panel:DisciplinaryCase|null;token_balance:number;events:PressureEvent[]};
+export type PressureAttemptRecord={stage:number;venue_id:string;method:PressureMethod;extra_clue:string|null;detected:boolean;disciplinary_case_id:string|null;token_balance:number};
 export type TokenBalance={currency:"earned_bribe_token";balance:number;purchasable:false;transferable:false;cash_value:false};
 export type TokenLedgerEntry={amount:number;balance_after:number;reason:"case_completion"|"first_completion"|"achievement"|"witness_pressure";reference_id:string;created_at:string};
 export type JailStatus={jailed:boolean;jailed_until:string|null};

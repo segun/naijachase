@@ -27,7 +27,7 @@ export type {
 } from "../../../contracts/typescript/api-v1.ts";
 import type { GroupMember, GroupRole, PlayerGroup, WeeklyAttempt, CompleteCooperationRequest, CooperationPreferences, CooperationReportRequest, CooperationRequest, CreateCooperationRequest, CatalogueHealth, ContentRoleResponse, InterstateMode, LocalMode, MissionAdminDetails, MissionLifecycleEvent, MissionTransitionRequest, MissionValidation, ReleaseNotification, PublicGameState as PublicState, TransportLedgerEntry, TransportQuote } from "../../../contracts/typescript/api-v1.ts";
 import type { DossierOptions } from "../../../contracts/typescript/api-v1.ts";
-export type Screen = "welcome"|"cases"|"investigate"|"notebook"|"dossier"|"travel"|"warrant"|"results"|"settings"|"archive"|"garage"|"witness"|"journey"|"content"|"helpers"|"groups"|"weekly";
+export type Screen = "welcome"|"cases"|"investigate"|"notebook"|"dossier"|"travel"|"warrant"|"results"|"settings"|"archive"|"garage"|"witness"|"journey"|"content"|"helpers"|"groups"|"weekly"|"tokens";
 /** The case's own screens. They are all shown on the office computer, so the office stays mounted while the player moves between them. */
 export const CASE_SCREENS: readonly Screen[] = ["investigate", "notebook", "dossier", "travel", "warrant"];
 export const isCaseScreen = (screen: Screen): boolean => CASE_SCREENS.includes(screen);

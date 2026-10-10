@@ -66,6 +66,17 @@ pub struct TokenAward {
     pub components: Vec<String>,
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
+pub struct PressureAttemptRecord {
+    pub stage: u8,
+    pub venue_id: String,
+    pub method: String,
+    pub extra_clue: Option<String>,
+    pub detected: bool,
+    pub disciplinary_case_id: Option<String>,
+    pub token_balance: u32,
+}
+
 fn deterministic(seed: &str, modulo: u8) -> u8 {
     let bytes = Sha256::digest(seed.as_bytes());
     (u64::from_be_bytes(bytes[0..8].try_into().unwrap()) % u64::from(modulo)) as u8
@@ -103,6 +114,39 @@ fn panel_votes(seed: &str, repeat: bool) -> Vec<String> {
 }
 
 impl MysqlStore {
+    pub fn pressure_attempts(
+        &self,
+        player_id: &str,
+        case_id: &str,
+    ) -> Result<Vec<PressureAttemptRecord>, StorageError> {
+        let mut connection = self.pool.get_conn()?;
+        let owner: Option<Option<String>> = connection.exec_first(
+            "SELECT player_id FROM active_cases WHERE case_id=:case",
+            params! {"case"=>case_id},
+        )?;
+        if owner.flatten().as_deref() != Some(player_id) {
+            return Err(StorageError::Forbidden);
+        }
+        let rows: Vec<(u8, String, String, String)> = connection.exec(
+            "SELECT stage,venue_id,method,CAST(result_json AS CHAR) FROM witness_pressure_attempts WHERE case_id=:case AND player_id=:player ORDER BY attempt_id",
+            params! {"case"=>case_id,"player"=>player_id},
+        )?;
+        rows.into_iter()
+            .map(|(stage, venue_id, method, json)| {
+                let result: PressureResult = serde_json::from_str(&json)?;
+                Ok(PressureAttemptRecord {
+                    stage,
+                    venue_id,
+                    method,
+                    extra_clue: result.extra_clue,
+                    detected: result.detected,
+                    disciplinary_case_id: result.panel.map(|panel| panel.disciplinary_case_id),
+                    token_balance: result.token_balance,
+                })
+            })
+            .collect()
+    }
+
     pub fn bribe_token_balance(&self, player_id: &str) -> Result<TokenBalance, StorageError> {
         let balance = self
             .pool

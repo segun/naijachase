@@ -3508,6 +3508,18 @@ mod tests {
         assert_eq!(store.load_owned_case(&case_id, &player).unwrap().0, 2);
         let ledger:u64=store.pool.get_conn().unwrap().exec_first("SELECT COUNT(*) FROM bribe_token_ledger WHERE player_id=:player AND reference_id=:reference",params!{"player"=>&player,"reference"=>&command}).unwrap().unwrap();
         assert_eq!(ledger, 1);
+        let attempts = store.pressure_attempts(&player, &case_id).unwrap();
+        assert_eq!(attempts.len(), 1);
+        assert_eq!(attempts[0].stage, 0);
+        assert_eq!(attempts[0].venue_id, "VEN-MARKET");
+        assert_eq!(attempts[0].method, "bribe");
+        assert_eq!(attempts[0].extra_clue, first.extra_clue);
+        assert_eq!(attempts[0].detected, first.detected);
+        assert_eq!(attempts[0].token_balance, first.token_balance);
+        assert!(matches!(
+            store.pressure_attempts("another-player", &case_id),
+            Err(StorageError::Forbidden)
+        ));
     }
 
     #[test]
