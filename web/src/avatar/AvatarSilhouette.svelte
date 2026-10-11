@@ -16,9 +16,11 @@
 {/snippet}
 
 <svg class="silhouette" viewBox={crop === "bust" ? "16 10 88 88" : "0 0 120 200"} aria-hidden="true" focusable="false">
-  {@render draw(hair.back)}
+  <g transform="translate(60 56) scale(0.78) translate(-60 -56)">{@render draw(hair.back)}</g>
   {@render draw(body.before)}
-  {@render draw([body.head])}
-  {@render draw(body.after)}
-  {@render draw(hair.front)}
+  <g transform="translate(60 56) scale(0.78) translate(-60 -56)">
+    {@render draw([body.head])}
+    {@render draw(body.after)}
+    {@render draw(hair.front)}
+  </g>
 </svg>

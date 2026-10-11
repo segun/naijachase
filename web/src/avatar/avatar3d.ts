@@ -29,8 +29,8 @@ export type SnapshotOptions = {
   isCancelled?: () => boolean;
 };
 
-const HEAD_DIAMETER = 0.56;
-const HEAD_Y = 1.72;
+const HEAD_DIAMETER = 0.42;
+const HEAD_Y = 1.78;
 
 function mesh(scene: Scene, name: string, part: Pick<Part, "shape" | "size">): Mesh {
   const [w, h, d] = part.size;
@@ -75,25 +75,29 @@ export function buildAvatar(scene: Scene, preset: AvatarPreset): TransformNode &
   for (const side of [-1, 1]) {
     const hip = pivot("hip", side * 0.12, 0.84, root);
     const knee = pivot("knee", 0, -0.39, hip);
-    attach(CreateCylinder("thigh", { diameter: 0.2, height: 0.39, tessellation: 16 }, scene), "primary", hip, 0, -0.195, 0);
-    attach(CreateCylinder("shin", { diameter: 0.2, height: 0.39, tessellation: 16 }, scene), "primary", knee, 0, -0.195, 0);
-    attach(CreateBox("boot", { width: 0.2, height: 0.12, depth: 0.32 }, scene), "hair", knee, 0, -0.39, -0.05);
+    attach(CreateCylinder("thigh", { diameterTop: shape.hip * 0.56, diameterBottom: 0.15, height: 0.39, tessellation: 16 }, scene), "primary", hip, 0, -0.195, 0);
+    attach(CreateCylinder("shin", { diameterTop: 0.15, diameterBottom: 0.115, height: 0.39, tessellation: 16 }, scene), "primary", knee, 0, -0.195, 0);
+    attach(CreateBox("boot", { width: 0.15, height: 0.1, depth: 0.3 }, scene), "hair", knee, 0, -0.385, -0.06);
+    attach(CreateSphere("knee-cap", { diameter: 0.15, segments: 8 }, scene), "primary", knee, 0, 0, 0);
     rig.hips.push(hip); rig.knees.push(knee);
   }
   // Jacket: a tapered, slightly flattened torso with a lighter front panel, collar, accent belt and badge.
   const torso = add(CreateCylinder("torso", { height: 0.72, diameterTop: shape.shoulder, diameterBottom: shape.waist, tessellation: 24 }, scene), "primary", 0, 1.2, 0);
   torso.scaling.z = 0.58;
   add(CreateBox("panel", { width: 0.1, height: 0.5, depth: 0.02 }, scene), "secondary", 0, 1.15, -shape.shoulder * 0.29 - 0.005);
+  const pelvis = add(CreateCylinder("pelvis", { height: 0.2, diameterTop: shape.waist * 1.02, diameterBottom: shape.hip, tessellation: 24 }, scene), "primary", 0, 0.78, 0);
+  pelvis.scaling.z = 0.62;
   const belt = add(CreateCylinder("belt", { height: 0.07, diameter: shape.waist * 1.04, tessellation: 24 }, scene), "accent", 0, 0.88, 0);
   belt.scaling.z = 0.6;
   add(CreateSphere("badge", { diameter: 0.07, segments: 8 }, scene), "accent", 0.12, 1.34, -shape.shoulder * 0.29 - 0.01);
-  add(CreateCylinder("collar", { height: 0.08, diameter: 0.26, tessellation: 16 }, scene), "secondary", 0, 1.57, 0);
-  add(CreateCylinder("neck", { height: 0.14, diameter: 0.13, tessellation: 12 }, scene), "skin", 0, 1.6, 0);
+  add(CreateCylinder("collar", { height: 0.08, diameter: 0.24, tessellation: 16 }, scene), "secondary", 0, 1.57, 0);
+  add(CreateCylinder("neck", { height: 0.22, diameterTop: 0.12, diameterBottom: 0.15, tessellation: 12 }, scene), "skin", 0, 1.67, 0);
   // Arms, cuffs and hands, hung from shoulder pivots.
   for (const side of [-1, 1]) {
     const x = side * (shape.shoulder / 2 + shape.arm / 2 + 0.01);
     const shoulder = pivot("shoulder", x, 1.5, root);
     const elbow = pivot("elbow", side * 0.02, -0.32, shoulder);
+    attach(CreateSphere("deltoid", { diameter: shape.arm * 1.25, segments: 10 }, scene), "primary", shoulder, 0, 0, 0);
     const upper = attach(CreateCapsule("arm", { radius: shape.arm / 2, height: 0.36, tessellation: 12, capSubdivisions: 4 }, scene), "primary", shoulder, 0, -0.16, 0);
     upper.rotation.z = side * 0.06;
     attach(CreateCapsule("forearm", { radius: shape.arm / 2, height: 0.4, tessellation: 12, capSubdivisions: 4 }, scene), "primary", elbow, 0, -0.18, 0);
@@ -105,7 +109,7 @@ export function buildAvatar(scene: Scene, preset: AvatarPreset): TransformNode &
   // Head, eyes and hair.
   add(CreateSphere("head", { diameter: HEAD_DIAMETER, segments: 20 }, scene), "skin", 0, HEAD_Y, 0);
   for (const side of [-1, 1]) {
-    const eye = add(CreateSphere("eye", { diameter: 0.055, segments: 6 }, scene), "hair", side * 0.1, HEAD_Y + 0.02, -HEAD_DIAMETER / 2 + 0.01);
+    const eye = add(CreateSphere("eye", { diameter: 0.042, segments: 6 }, scene), "hair", side * 0.075, HEAD_Y + 0.015, -HEAD_DIAMETER / 2 + 0.01);
     eye.scaling.y = 1.25;
   }
   hairParts(preset.hair_style).forEach((part, i) => {

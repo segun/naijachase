@@ -47,7 +47,7 @@ export type Part = { shape: "sphere" | "capsule" | "box" | "cylinder"; at: [numb
 /** Presentation only nudges the silhouette; it never changes anything else about the character. */
 export function build(preset: AvatarPreset) {
   const feminine = preset.presentation === "feminine";
-  return { shoulder: feminine ? 0.5 : 0.58, waist: feminine ? 0.4 : 0.47, arm: feminine ? 0.14 : 0.16 };
+  return { shoulder: feminine ? 0.5 : 0.6, waist: feminine ? 0.38 : 0.46, hip: feminine ? 0.46 : 0.4, arm: feminine ? 0.125 : 0.15 };
 }
 
 // ---- 3D hair, in head units: the head is a unit sphere at the origin, the face looks towards -z. ----
