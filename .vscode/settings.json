@@ -1,8 +1,0 @@
-{
-    "chat.tools.terminal.autoApprove": {
-        "/^grep -n \"event_type\\\\\\|\\\\\"venue_id\\\\\\|NG-T0\" rust/crates/naijachase-api/src/lib\\.rs \\| head -40; grep -n \"pub enum EngineEvent\\\\\\|event_type\" -r rust/crates/naijachase-contracts/src/lib\\.rs \\| head; ls web/node_modules 2>/dev/null \\| head -3; which pnpm node; \\(pgrep -fl mysqld \\| head -2\\); cat web/pnpm-workspace\\.yaml; sed -n 95,115p Makefile$/": {
-            "approve": true,
-            "matchCommandLine": true
-        }
-    }
-}
