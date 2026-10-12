@@ -63,6 +63,8 @@ export type SceneHandle = {
   leave?: (how?: string) => Promise<void>;
 };
 export type SceneOptions = {
+  /** Cancels model-backed scene setup when the view or picture detail changes. */
+  signal?: AbortSignal;
   /** The player's avatar. Without one the room is empty, which is fine for the settled shot. */
   preset?: AvatarPreset | null;
   hour: number;

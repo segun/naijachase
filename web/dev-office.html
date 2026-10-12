@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Office preview (development only)</title>
+    <style>
+      body { margin: 0; background: #10201c; color: #e8efe9; font: 14px system-ui, sans-serif; }
+      #bar { padding: 8px; display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+      button, select, input { font: inherit; background: #1d3a32; color: inherit; border: 1px solid #36594e; border-radius: 6px; padding: 5px 9px; }
+      canvas { width: 100vw; height: calc(100vh - 52px); display: block; }
+      #note { color: #9bb8ad; }
+    </style>
+  </head>
+  <body>
+    <div id="bar">
+      <select id="avatar" aria-label="Avatar"></select>
+      <select id="detail" aria-label="Detail"><option value="full">Full</option><option value="standard">Standard</option></select>
+      <button id="intro">Play intro</button><button id="return">Return to desk</button><button id="leave">Leave office</button>
+      <label>Inspect at second <input id="time" type="number" min="0" max="5" step="0.1" value="3.2"></label><button id="inspect">Inspect pose</button>
+      <span id="note" role="status"></span>
+    </div>
+    <canvas id="c"></canvas>
+    <script type="module" src="/dev/office-preview.ts"></script>
+  </body>
+</html>

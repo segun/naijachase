@@ -10,6 +10,8 @@ import { TransformNode } from "@babylonjs/core/Meshes/transformNode";
 import { LoadAssetContainerAsync } from "@babylonjs/core/Loading/sceneLoader";
 import "@babylonjs/core/Animations/animatable";
 import "@babylonjs/core/Meshes/thinInstanceMesh";
+import "@babylonjs/core/Shaders/pbr.vertex";
+import "@babylonjs/core/Shaders/pbr.fragment";
 import { baseYaw, measureOf, modelSpec, modelUrl, type ModelSpec } from "./model-manifest.ts";
 
 export type ModelHandle = {
@@ -40,7 +42,16 @@ function container(scene: Scene, id: string, spec: ModelSpec, timeoutMs: number)
   if (!cache) { cache = new Map(); caches.set(scene, cache); }
   let hit = cache.get(id);
   if (!hit) {
-    hit = withTimeout((async () => { await ready(); return LoadAssetContainerAsync(modelUrl(spec), scene); })(), timeoutMs).catch(e => {
+    let expired = false;
+    hit = withTimeout((async () => {
+      await ready();
+      if (scene.isDisposed) return null;
+      const loaded = await LoadAssetContainerAsync(modelUrl(spec), scene);
+      if (expired || scene.isDisposed) { loaded.dispose(); return null; }
+      return loaded;
+    })(), timeoutMs).catch(e => {
+      expired = true;
+      if (scene.isDisposed) return null;
       if (!warned.has(id)) { warned.add(id); console.warn(`3D model "${id}" could not be loaded; using the built-in shape instead.`, e); }
       return null;
     });

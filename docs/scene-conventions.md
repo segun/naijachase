@@ -94,7 +94,7 @@ A venue is a recipe plus a scenery set per renderer; the choreography is shared 
 
 ## Looks: cheap upgrades, no artist
 
-Everything is still built in code (no GLB or other model files). What keeps it from looking like building blocks:
+The procedural 3D fallback is built in code. What keeps it from looking like building blocks:
 
 - `shared/chase3d-shapes.ts`: `loft` sweeps rounded cross-sections along a length (car and bus bodies, with a paint colour per face),
   `roundedBox` softens a box, `tyre` is a lathe, `contactShadow` is a soft blob under things that stand on the ground.
@@ -105,9 +105,17 @@ Everything is still built in code (no GLB or other model files). What keeps it f
   A rounded box built with `plain` has the same vertex data as a Babylon box, so it can still be merged with boxes.
 - A prop can set `soft` (a radius in metres): 3D rounds the box and 2D chamfers the corners of the face it shows. The parked minibuses use it.
 - The 2D renderer matches: curved bodies with a light-to-dark gradient, wheel arches, a ground shadow, a sun glow and a vignette.
-- Dev note: previewing 3D in a vite dev server with a fresh cache can leave the canvas black because Babylon's shaders fail to load.
-  A production build is fine; it is not a scene bug.
+- Register the shaders a scene needs before rendering: a fresh Vite cache can otherwise make Babylon fetch shader source as a missing
+  URL and receive HTML. Shared stages register their procedural shaders; the model loader registers PBR shaders.
 
 ## Generated 3D models
 
 Scenes may use GLB models from `web/public/assets/3d/` (see [3d-models.md](./3d-models.md)). The rule above still holds: if a model fails to load the scene keeps the shapes it builds in code, and the 2D renderer is unchanged.
+
+The case office uses the selected avatar and nine separate furniture models at Full detail; Standard keeps the procedural room and
+downloads no GLBs. The generated room shell is not used because furniture is baked into it. Character clips and keyboard reach must
+be sampled from the scene's `Pose` and time, never `performance.now()`, so rebuilding at another detail level preserves the pose.
+
+**Existing exception to the two-renderer rule:** generic room stages (including the office) currently show their flat DOM content at
+Simple detail or on 3D failure, rather than an animated Canvas 2D room. The office's missing 2D intro/return/exit is tracked explicitly
+in `TODO.md`; do not describe that flat terminal as an animated 2D fallback.

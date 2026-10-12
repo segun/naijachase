@@ -36,10 +36,10 @@ const vehicle = (name: string, size: number, extra: Partial<ModelSpec> = {}): [s
 // ---- Props, scenery, buildings, rooms and small items. Sizes are real-world dimensions (metres) or what the scene code needs. A bare number is
 // measured by the kind's default; `[n, "length"]` measures the longest horizontal side, `[n, "height"]` the height. ----
 type Sized = number | readonly [number, Measure];
-const group = (kind: ModelKind, folder: string, sizes: Record<string, Sized>): [string, ModelSpec][] =>
+const group = (kind: ModelKind, folder: string, sizes: Record<string, Sized>, extra: Partial<ModelSpec> = {}): [string, ModelSpec][] =>
   Object.entries(sizes).map(([name, v]) => {
     const [size, measure] = typeof v === "number" ? [v, undefined] : v;
-    return [name, { file: `${folder}/${name}.glb`, kind, size, ...(measure ? { measure } : {}) }];
+    return [name, { file: `${folder}/${name}.glb`, kind, size, ...(measure ? { measure } : {}), ...extra }];
   });
 const L = (n: number): Sized => [n, "length"];
 
@@ -63,9 +63,10 @@ const PLACES = [
   }),
   // The cutaway rooms are the width of the scenes' shared room (scene-core.ts ROOM: 8.8 m).
   ...group("room", "interiors/office", { office_room: 8.8 }),
+  ...group("prop", "interiors/office", { office_chair: 1 }, { yaw: -Math.PI / 2, checked: true }),
   ...group("prop", "interiors/office", {
-    office_chair: 1, office_corkboard: L(1.2), office_desk: L(1.4), office_filing_cabinet: 1.3, office_lamp: 0.45, office_monitor: L(0.6), office_papers: L(0.4), office_plant: 1, office_window: 1.4
-  }),
+    office_corkboard: L(1.2), office_desk: L(1.4), office_filing_cabinet: 1.3, office_lamp: 0.45, office_monitor: L(0.6), office_papers: L(0.4), office_plant: 1, office_window: 1.4
+  }, { checked: true }),
   ...group("room", "interiors/garage", { garage_room: 8.8 }),
   ...group("prop", "interiors/garage", { garage_shelf: 1.8, garage_shutter: L(4.9), garage_tool_rack: L(1.5), garage_workbench: L(1.8) }),
   ...group("room", "interiors/archive", { archive_room: 8.8 }),

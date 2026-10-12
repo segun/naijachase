@@ -1239,8 +1239,11 @@ scores, rank, detection odds, panel votes, punishment, or jail time.
   - [ ] Move the scenes onto the models, one at a time, in this order. For each: use `stage.addModelFigure` with the procedural figure as fallback, drive it
     with `figure.apply(pose)`, check it in the scene (add a `dev/*-preview` page like `dev/garage-preview.ts` if the scene is hard to reach),
     set `checked` in `model-manifest.ts`, run `svelte-check` and the web tests, and update `docs/3d-models.md`.
-    - [ ] 1. Case office (`office/chase3d-room.ts`): the player's avatar walking in, sitting at the desk and typing. Needs a seated typing pose (the `sit` clip plus the
-      `type` amount; arms may need a small extra rotation on the arm bones).
+    - [x] 1. Case office (`office/chase3d-room.ts`): player walking in, blending into a seat, typing and leaving; nine individual furniture models with per-object
+      procedural fallback. All ten avatars checked at the keyboard; Standard downloads no GLBs. Shell/door and interactive terminal stay procedural.
+      `office_room.glb` is not used because its furniture is baked in. Preview: `web/dev-office.html`; fitting notes in `docs/3d-models.md`.
+      - [x] Correct the generated chair's sideways facing: quarter-turn in the manifest, keeping its backrest behind the avatar.
+    - [ ] Office Simple renderer: add a true timeline-matched Canvas 2D intro/return/exit. For now Simple opens the flat DOM terminal; it does not animate the office.
     - [ ] 2. Witness scenes (`witness/chase3d-witness.ts`, buildings and open-air kits): player and witness from models. Pick the witness model per recipe look
       (map each of the 90 looks to one of the 16 witness models and tint), and fake talking with small head and arm movement.
     - [ ] 3. Journey (`journey/chase3d-journey.ts`): the player at the wheel or on the bus, the hostess on the flight (`crew`), the player's car and the danfo/coach models,

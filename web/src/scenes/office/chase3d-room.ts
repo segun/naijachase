@@ -1,12 +1,13 @@
 // Lazily loaded Babylon.js scene for the post-login "room": the player's avatar walks in, sits at a computer and the camera
-// pushes in until the monitor fills the screen, where the DOM terminal takes over. Everything is built from primitives and
-// painted textures; there are no model files. Timing and framing live in room-scene.ts so they can be unit-tested.
+// pushes in until the monitor fills the screen, where the DOM terminal takes over. Full detail replaces individual procedural
+// objects with generated models; a failed model leaves its built-in counterpart. Timing and framing live in room-scene.ts.
 import { PointLight } from "@babylonjs/core/Lights/pointLight";
 import { Vector3 } from "@babylonjs/core/Maths/math.vector";
 import { CreateGround } from "@babylonjs/core/Meshes/Builders/groundBuilder";
 import { hex, seeded } from "../shared/chase3d-kit.ts";
 import { createStage, type SceneHandle, type SceneOptions } from "../shared/chase3d-stage.ts";
 import { TransformNode } from "@babylonjs/core/Meshes/transformNode";
+import { loadModel, type ModelHandle } from "../shared/chase3d-models.ts";
 import { CreateSphere } from "@babylonjs/core/Meshes/Builders/sphereBuilder";
 import { MAP_H, MAP_W, outlinePath, statePoint } from "../../domain/map.ts";
 import { ROOM, armAngles, legAngles, type Pose } from "../shared/scene-core.ts";
@@ -18,8 +19,38 @@ export type RoomHandle = SceneHandle;
 export type RoomOptions = SceneOptions;
 
 export async function createRoomScene(canvas: HTMLCanvasElement, options: RoomOptions): Promise<RoomHandle> {
+  options.signal?.throwIfAborted();
   const stage = createStage(canvas, { hour: options.hour, quality: options.quality, models: options.models });
   const { scene, palette, mat, box, cyl, plane, textured, place, caster: casters, trim, wood, darkWood, centreX, light } = stage;
+  const abort = () => { scene.dispose(); stage.engine.dispose(); };
+  options.signal?.addEventListener("abort", abort, { once: true });
+  scene.onDisposeObservable.addOnce(() => options.signal?.removeEventListener("abort", abort));
+  const wait = <T,>(pending: Promise<T>): Promise<T> => {
+    if (!options.signal) return pending.catch(error => { abort(); throw error; });
+    const signal = options.signal;
+    return new Promise((resolve, reject) => {
+      const stop = () => reject(signal.reason);
+      signal.addEventListener("abort", stop, { once: true });
+      pending.then(value => { signal.removeEventListener("abort", stop); resolve(value); }, error => { signal.removeEventListener("abort", stop); abort(); reject(error); });
+      if (signal.aborted) stop();
+    });
+  };
+  const replacements: { id: string; apply: (model: ModelHandle) => void; hide: () => void }[] = [];
+  const replace = (id: string, from: number, position: readonly [number, number, number], size: readonly [number, number, number], parent?: TransformNode) => {
+    const fallback = scene.meshes.slice(from);
+    replacements.push({
+      id, hide: () => fallback.forEach(m => m.setEnabled(false)),
+      apply(model) {
+        const bounds = model.root.getHierarchyBoundingVectors(true);
+        const span = bounds.max.subtract(bounds.min);
+        if (!span.asArray().every(v => Number.isFinite(v) && v > 0)) throw new Error(`Invalid bounds for ${id}`);
+        model.root.scaling.set(size[0] / span.x, size[1] / span.y, size[2] / span.z);
+        model.root.position.set(...position);
+        model.root.parent = parent ?? null;
+        model.meshes.forEach(m => { casters(m); m.receiveShadows = !light; });
+      }
+    });
+  };
 
   const lamp = new PointLight("lamp", new Vector3(0.1, 1.45, 3.4), scene);
   lamp.diffuse = hex("#ffb870"); lamp.range = 3.5; lamp.intensity = palette.lamp * 0.9;
@@ -75,9 +106,11 @@ export async function createRoomScene(canvas: HTMLCanvasElement, options: RoomOp
   }, 256, 256);
   sky.material.emissiveTexture = sky.material.diffuseTexture; sky.material.disableLighting = true;
   plane("window", sky.width, sky.height, sky.material, win.x, win.y, ROOM.maxZ - 0.012);
+  const windowStart = scene.meshes.length;
   for (const [w, h, x, y] of [[win.w + 0.16, 0.08, 0, win.h / 2 + 0.04], [win.w + 0.16, 0.08, 0, -win.h / 2 - 0.04], [0.08, win.h, -win.w / 2 - 0.04, 0], [0.08, win.h, win.w / 2 + 0.04, 0], [0.04, win.h, 0, 0], [win.w, 0.04, 0, 0]] as const)
     box("windowFrame", w, h, 0.07, trim, win.x + x, win.y + y, ROOM.maxZ - 0.04);
   box("windowSill", win.w + 0.3, 0.05, 0.16, trim, win.x, win.y - win.h / 2 - 0.1, ROOM.maxZ - 0.08);
+  replace("office_window", windowStart, [win.x, win.y - win.h / 2 - 0.1, ROOM.maxZ + 0.04], [1.6, 1.35, 0.18]);
 
   // ---- Case board: cork, a map of Nigeria, photos and red string ----
   const board = textured("board", 1.7, 1.15, g => {
@@ -96,7 +129,9 @@ export async function createRoomScene(canvas: HTMLCanvasElement, options: RoomOp
       g.fillStyle = "#d83a2e"; g.beginPath(); g.arc(0, -36, 4, 0, Math.PI * 2); g.fill(); g.restore();
     }
   }, 512, 346);
+  const boardStart = scene.meshes.length;
   box("boardFrame", 1.82, 1.27, 0.05, wood, -1.3, 1.85, ROOM.maxZ - 0.03);
+  replace("office_corkboard", boardStart, [-1.3, 1.85 - 1.27 / 2, ROOM.maxZ - 0.015], [1.82, 1.27, 0.07]);
   plane("board", board.width, board.height, board.material, -1.3, 1.85, ROOM.maxZ - 0.062);
 
   // ---- Wall clock showing the real time ----
@@ -113,18 +148,22 @@ export async function createRoomScene(canvas: HTMLCanvasElement, options: RoomOp
   // ---- Desk, monitor, keyboard, lamp and clutter ----
   const metal = mat("#2a2f33", { specular: 0.3 });
   const beige = mat("#d2c7aa", { specular: 0.18 });
+  const deskStart = scene.meshes.length;
   const deskGroup = new TransformNode("desk", scene);
   casters(box("deskTop", 2.1, 0.06, 0.95, wood, DESK.x, DESK.top - 0.03, DESK.z, deskGroup));
   for (const sx of [-1, 1]) for (const sz of [-1, 1]) casters(box("deskLeg", 0.07, DESK.top - 0.06, 0.07, darkWood, DESK.x + sx * 0.97, (DESK.top - 0.06) / 2, DESK.z + sz * 0.4, deskGroup));
   box("deskPanel", 2.0, 0.4, 0.03, darkWood, DESK.x, DESK.top - 0.26, DESK.z + 0.42, deskGroup);
+  replace("office_desk", deskStart, [DESK.x, -0.07, DESK.z - 0.05], [2.1, DESK.top + 0.07, 1.25]);
 
   // A chunky CRT monitor: boxy body, tapered back, a stand and a glass that shows a boot prompt.
+  const monitorStart = scene.meshes.length;
   const monitor = new TransformNode("monitor", scene);
   monitor.position.set(DESK.x, DESK.top, DESK.z + 0.05);
   casters(box("crtBody", 0.68, 0.56, 0.2, beige, 0, 0.36, 0, monitor));
   casters(box("crtBack", 0.46, 0.38, 0.32, beige, 0, 0.36, 0.26, monitor));
   casters(cyl("crtStand", 0.2, 0.3, 0.08, beige, 0, 0.04, 0, monitor));
   box("crtBezel", 0.58, 0.45, 0.02, mat("#a89d82", { specular: 0.1 }), 0, 0.36, -0.105, monitor);
+  const monitorFallback = scene.meshes.slice(monitorStart);
   const screen = textured("screen", SCREEN.w, SCREEN.h, g => {
     g.fillStyle = "#031a0e"; g.fillRect(0, 0, 512, 384);
     g.fillStyle = "#7dffb0"; g.font = "bold 30px monospace";
@@ -138,21 +177,31 @@ export async function createRoomScene(canvas: HTMLCanvasElement, options: RoomOp
   box("keys", 0.46, 0.012, 0.13, mat("#55524a", { specular: 0.05 }), DESK.x, DESK.top + 0.035, 3.02);
   box("mouse", 0.06, 0.03, 0.1, beige, DESK.x + 0.45, DESK.top + 0.015, 3.04);
   box("mouseMat", 0.24, 0.006, 0.2, mat("#176b4d", { specular: 0 }), DESK.x + 0.45, DESK.top + 0.003, 3.04);
+  // This GLB also has a keyboard and a display slab. Sink those below the desktop, retaining our reachable keys and 4:3 terminal glass.
+  replace("office_monitor", scene.meshes.length, [DESK.x + 0.025, 0.5, 3.31], [1.35, 0.86, 0.68]);
+  replacements[replacements.length - 1]!.hide = () => monitorFallback.forEach(m => m.setEnabled(false));
 
+  const lampStart = scene.meshes.length;
   const lampBase = cyl("lampBase", 0.12, 0.16, 0.03, metal, 0.1, DESK.top + 0.015, 3.62);
   cyl("lampArm", 0.02, 0.02, 0.5, metal, 0.1, DESK.top + 0.27, 3.62).rotation.z = 0.2;
   casters(lampBase);
   const bulb = cyl("lampShade", 0.07, 0.24, 0.16, mat("#2f6b53", { emissive: palette.lamp > 0.1 ? "#ffb870" : "#000000", specular: 0.1 }), 0.2, DESK.top + 0.5, 3.62);
   bulb.rotation.z = 0.35;
+  replace("office_lamp", lampStart, [0.1, DESK.top - 0.025, 3.62], [0.28, 0.55, 0.28]);
+  const papersStart = scene.meshes.length;
   box("papers", 0.34, 0.03, 0.24, mat("#f4ebd3", { specular: 0 }), DESK.x - 0.65, DESK.top + 0.015, 3.15).rotation.y = 0.2;
   box("folder", 0.28, 0.025, 0.2, mat("#c9a24a", { specular: 0 }), DESK.x - 0.65, DESK.top + 0.04, 3.15).rotation.y = -0.15;
+  replace("office_papers", papersStart, [DESK.x - 0.65, DESK.top, 3.15], [0.34, 0.045, 0.24]);
   cyl("mug", 0.08, 0.075, 0.1, mat("#f6f1e1", { specular: 0.3 }), DESK.x + 0.75, DESK.top + 0.05, 3.1);
 
   // ---- Filing cabinet and plants ----
+  const cabinetStart = scene.meshes.length;
   casters(box("cabinet", 0.55, 0.95, 0.5, mat("#6b7780", { specular: 0.25 }), 2.75, 0.475, 3.68));
   for (const y of [0.2, 0.5, 0.8]) box("drawer", 0.5, 0.26, 0.02, mat("#8b97a0", { specular: 0.3 }), 2.75, y, 3.42);
+  replace("office_filing_cabinet", cabinetStart, [2.75, -0.045, 3.68], [0.55, 1.05, 0.5]);
   const leaf = mat("#2a9a5a", { specular: 0.05 });
   for (const [px, pz] of [[4.0, 3.5], [-4.05, 3.45]] as const) {
+    const plantStart = scene.meshes.length;
     casters(cyl("pot", 0.36, 0.28, 0.35, mat("#a64b2a", { specular: 0.1 }), px, 0.175, pz));
     for (let i = 0; i < 7; i++) {
       const a = (i / 7) * Math.PI * 2;
@@ -160,10 +209,12 @@ export async function createRoomScene(canvas: HTMLCanvasElement, options: RoomOp
       l.scaling.set(0.5, 1.5, 0.5); l.rotation.z = Math.cos(a) * 0.45; l.rotation.x = Math.sin(a) * 0.45;
       casters(l);
     }
+    replace("office_plant", plantStart, [px, -0.035, pz], [0.65, 1.1, 0.65]);
   }
 
   // ---- Chair: pulled out at first, then slid in as the player sits ----
   const chair = new TransformNode("chair", scene);
+  const chairStart = scene.meshes.length;
   const fabric = mat("#2d3b4a", { specular: 0.05 });
   casters(box("seat", 0.5, 0.08, 0.5, fabric, 0, 0.34, 0, chair));
   casters(box("back", 0.48, 0.5, 0.07, fabric, 0, 0.66, -0.25, chair));
@@ -173,11 +224,30 @@ export async function createRoomScene(canvas: HTMLCanvasElement, options: RoomOp
     arm.rotation.y = (i / 5) * Math.PI * 2; arm.position.set(Math.sin(arm.rotation.y) * 0.16, 0.04, Math.cos(arm.rotation.y) * 0.16);
     arm.rotation.y -= Math.PI / 2;
   }
+  replace("office_chair", chairStart, [0, -0.04, 0], [0.62, 0.94, 0.62], chair);
 
   // ---- The player ----
-  const figure = stage.addFigure(options.preset);
+  const [glb] = await wait(Promise.all([
+    stage.addModelFigure(options.preset),
+    ...replacements.map(async replacement => {
+      const model = options.models ? await loadModel(scene, replacement.id) : null;
+      if (model) {
+        try { replacement.apply(model); replacement.hide(); }
+        catch (error) { model.dispose(); console.warn(`Office model "${replacement.id}" could not be fitted; keeping its built-in shape.`, error); }
+      }
+    })
+  ]));
+  const figure = glb ? null : stage.addFigure(options.preset);
+  const hands = [new Vector3(DESK.x - 0.13, DESK.top + 0.06, 2.96), new Vector3(DESK.x + 0.13, DESK.top + 0.06, 2.96)] as const;
 
   const pose = (p: Pose, t: number, alpha: number) => {
+    if (glb) {
+      glb.root.position.set(p.x, p.y, p.z + p.sit * 0.2);
+      glb.root.rotation.y = p.heading;
+      glb.apply(p, t, hands);
+      glb.setAlpha(p.visible ? alpha : 0);
+      return;
+    }
     if (!figure) return;
     figure.root.position.set(p.x, p.y, p.z);
     figure.root.rotation.y = p.heading;
@@ -189,7 +259,7 @@ export async function createRoomScene(canvas: HTMLCanvasElement, options: RoomOp
     figure.setAlpha(p.visible ? alpha : 0);
   };
   const seat = (slide: number) => {
-    chair.position.set(SEAT.x + (1 - slide) * 0.08, 0, SEAT.z - 0.3 * (1 - slide));
+    chair.position.set(SEAT.x + (1 - slide) * 0.08, 0, SEAT.z - 0.3 * (1 - slide) + (glb ? 0.2 * slide : 0));
     chair.rotation.y = (1 - slide) * -0.7;
   };
 
@@ -212,6 +282,7 @@ export async function createRoomScene(canvas: HTMLCanvasElement, options: RoomOp
     options.onGlass(outroGlassAt(t));
   };
 
+  await wait(scene.whenReadyAsync());
   const handle = stage.run({ end: T_END, update, onSlow: options.onSlow, startSeconds: options.startSeconds });
   return { ...handle, leave: () => handle.play({ end: T_OUT_END, update: outro }) };
 }

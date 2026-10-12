@@ -86,12 +86,14 @@
     const intro = untrack(() => phase) === "intro";
     if (intro && !preset) { const timer = setTimeout(finish, AVATAR_WAIT_MS); return () => clearTimeout(timer); }
     let cancelled = false;
+    const controller = new AbortController();
     const began = performance.now();
     lastFrame = 0;
     const watchdog = intro ? setInterval(() => {
       if (performance.now() - (lastFrame || began) > (lastFrame ? STALL_MS : FIRST_FRAME_MS)) finish();
     }, 500) : undefined;
     load(target, {
+      signal: controller.signal,
       preset, hour: new Date().getHours(), quality: level.quality, models: level.models,
       // A settled shot (no intro) starts at the end of the timeline.
       startSeconds: intro ? (resume || (quick ? introFrom : 0)) : 60,
@@ -103,10 +105,11 @@
       onSlow: () => handle?.skip()
     })
       .then(h => { if (cancelled) h.dispose(); else { handle = h; has3d = true; } })
-      .catch(e => { console.error("The 3D scene failed; opening the screen instead.", e); if (!cancelled) { has3d = false; finish(); } });
+      .catch(e => { if (cancelled) return; console.error("The 3D scene failed; opening the screen instead.", e); has3d = false; finish(); });
     return () => {
       cancelled = true; clearInterval(watchdog);
       if (intro && handle) resume = handle.now();
+      controller.abort();
       handle?.dispose(); handle = undefined; has3d = false; ready = false;
     };
   });
