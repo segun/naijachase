@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>3D asset checker (development only)</title>
+    <style>
+      * { box-sizing: border-box; }
+      body { margin: 0; font: 14px/1.4 system-ui, sans-serif; background: #10201c; color: #e8efe9; display: grid; grid-template-columns: 330px 1fr 340px; grid-template-areas: "side stage panel"; height: 100vh; }
+      #side { grid-area: side; } #stage { grid-area: stage; } #panel { grid-area: panel; }
+      aside, section { overflow: auto; padding: 12px; }
+      aside { background: #0b1714; border-right: 1px solid #28403a; }
+      #panel { background: #0b1714; border-left: 1px solid #28403a; }
+      h1 { font-size: 16px; margin: 0 0 8px; } h2 { font-size: 13px; margin: 14px 0 6px; text-transform: uppercase; letter-spacing: .05em; color: #8fb8a8; }
+      button, select { font: inherit; background: #1d3a32; color: inherit; border: 1px solid #36594e; border-radius: 6px; padding: 5px 9px; cursor: pointer; margin: 2px 2px 2px 0; }
+      button:hover { background: #28503f; } button.on { background: #2f7d5a; border-color: #5fd19a; }
+      .file { display: block; width: 100%; text-align: left; margin: 1px 0; padding: 4px 8px; font-size: 13px; }
+      .file small { color: #8fb8a8; } .file.sel { background: #2f7d5a; }
+      .missing { color: #e0a45f; font-size: 13px; margin: 2px 0; }
+      #stage { position: relative; min-height: 0; padding: 0; } canvas { width: 100%; height: 100%; display: block; outline: none; }
+      #drop { position: absolute; inset: 8px; border: 2px dashed #5fd19a; border-radius: 12px; display: none; align-items: center; justify-content: center; font-size: 22px; background: #0b171488; pointer-events: none; }
+      body.dragging #drop { display: flex; }
+      #bar { position: absolute; left: 8px; top: 8px; right: 8px; display: flex; flex-wrap: wrap; align-items: center; gap: 2px; pointer-events: none; } #bar > * { pointer-events: auto; }
+      .row { display: flex; justify-content: space-between; gap: 8px; border-bottom: 1px solid #1b2f29; padding: 3px 0; }
+      .ok::before { content: "✔ "; color: #5fd19a; } .warn::before { content: "▲ "; color: #e0a45f; } .bad::before { content: "✘ "; color: #ff7b7b; }
+      .check { padding: 3px 0; border-bottom: 1px solid #1b2f29; } .check small { display: block; color: #9bb8ad; }
+      #msg { color: #ff9d9d; white-space: pre-wrap; }
+      .hint { color: #9bb8ad; font-size: 13px; }
+      @media (max-width: 1000px) {
+        body { display: flex; flex-direction: column; height: auto; }
+        #stage { height: 75vh; flex: none; } aside, #panel { border: 0; overflow: visible; }
+      }
+    </style>
+  </head>
+  <body>
+    <section id="stage"><canvas id="c" tabindex="0"></canvas><div id="drop">Drop a .glb here</div><div id="bar"></div></section>
+    <aside id="side">
+      <h1>3D asset checker</h1>
+      <p class="hint">Development only (not part of the game). Save GLB files under <code>web/public/assets/3d/</code>, then press Refresh. Or drag a .glb file onto the picture.</p>
+      <button id="refresh">Refresh list</button> <button id="pick">Open a .glb…</button><input id="file" type="file" accept=".glb" hidden>
+      <h2>Files</h2><div id="list"></div>
+      <h2>Still to make (avatars)</h2><div id="missing"></div>
+    </aside>
+    <section id="panel"><div id="msg"></div><div id="report"><p class="hint">Pick a file on the left.</p></div></section>
+    <script type="module" src="/dev/asset-viewer.ts"></script>
+  </body>
+</html>

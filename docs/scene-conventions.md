@@ -107,3 +107,7 @@ Everything is still built in code (no GLB or other model files). What keeps it f
 - The 2D renderer matches: curved bodies with a light-to-dark gradient, wheel arches, a ground shadow, a sun glow and a vignette.
 - Dev note: previewing 3D in a vite dev server with a fresh cache can leave the canvas black because Babylon's shaders fail to load.
   A production build is fine; it is not a scene bug.
+
+## Generated 3D models
+
+Scenes may use GLB models from `web/public/assets/3d/` (see [3d-models.md](./3d-models.md)). The rule above still holds: if a model fails to load the scene keeps the shapes it builds in code, and the 2D renderer is unchanged.

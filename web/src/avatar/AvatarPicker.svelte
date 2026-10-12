@@ -4,8 +4,9 @@
   import { onMount, untrack } from "svelte";
   import type { ApiError } from "../api/api";
   import type { AppController } from "../state/app.svelte";
-  import { avatarRenderer, catalogueProblem, skinToneLabel, hairLabel, type AvatarCatalogue } from "./avatar-model.ts";
-  import { readDevice } from "../scenes/shared/scene-capability.ts";
+  import { catalogueProblem, skinToneLabel, hairLabel, type AvatarCatalogue } from "./avatar-model.ts";
+  import { detail } from "../scenes/shared/detail.svelte.ts";
+  import { resolveDetail } from "../scenes/shared/detail-level.ts";
   import AvatarSilhouette from "./AvatarSilhouette.svelte";
   import Icon from "../ui/Icon.svelte";
 
@@ -49,12 +50,17 @@
   // Stills are rendered once per catalogue load; cards show the silhouette until their own preview arrives.
   $effect(() => {
     const current = catalogue;
-    if (!current || avatarRenderer(readDevice()) !== "webgl") return;
+    // Stills are not motion, so reduced motion does not take the pictures away.
+    const level = resolveDetail(detail.choice, { ...detail.device, reducedMotion: false });
+    if (!current || level.renderer !== "3d") { images = {}; return; }
+    const models = level.models;
+    images = {};
     let cancelled = false;
     const timer = setTimeout(() => { cancelled = true; }, PREVIEW_TIMEOUT_MS);
     import("./avatar3d.ts")
       .then(m => m.renderAvatarSnapshots(current.options, {
         isCancelled: () => cancelled,
+        models,
         onSnapshot: (id, url) => { if (!cancelled) images[id] = url; }
       }))
       .catch(() => { /* the silhouettes already on screen are the fallback */ })

@@ -1,21 +1,26 @@
 <script lang="ts">
   import ChaseScene from "./ChaseScene.svelte";
-  import { decideScene, readDevice, type SceneDecision } from "../shared/scene-capability.ts";
+  import { MIN_WIDTH } from "../shared/scene-capability.ts";
+  import { detail } from "../shared/detail.svelte.ts";
+  import { resolveDetail } from "../shared/detail-level.ts";
 
-  type Mode = "3d" | "2d";
-  let mode = $state<Mode>(localStorage.getItem("nc-scene") === "2d" ? "2d" : "3d");
   let status = $state<"idle" | "loading" | "ready">("idle");
   let failed = $state(false);
   let canvas = $state<HTMLCanvasElement>();
-  let device = $state<SceneDecision>(decideScene(readDevice()));
+  let wide = $state(innerWidth >= MIN_WIDTH);
 
-  // The 3D renderer is an enhancement. It is never downloaded on narrow screens (where this panel is hidden), with
-  // reduced motion, Save-Data, a slow network or very little memory, and it falls back to 2D if WebGL fails or runs slowly.
-  const allowed = $derived(device.run);
+  // The 3D renderer is an enhancement. It follows the player's picture-detail setting (settings, or the switch below) and is never
+  // downloaded on narrow screens (where this panel is hidden), with reduced motion, Save-Data, a slow network or very little memory
+  // on Automatic; it falls back to 2D if WebGL fails or runs slowly. It reacts at once if the setting changes.
+  const level = $derived(detail.resolved);
+  const allowed = $derived(wide && !level.reducedMotion);
+  const mode = $derived(level.renderer);
   const want = $derived(mode === "3d" && allowed && !failed);
+  let lastChoice = detail.choice;
+  $effect(() => { const c = detail.choice; if (c !== lastChoice) { lastChoice = c; failed = false; } });
 
   $effect(() => {
-    const refresh = () => { device = decideScene(readDevice()); };
+    const refresh = () => { wide = innerWidth >= MIN_WIDTH; };
     const query = matchMedia("(min-width: 961px)");
     query.addEventListener("change", refresh);
     addEventListener("resize", refresh);
@@ -24,8 +29,8 @@
 
   $effect(() => {
     const target = canvas;
-    const decision = device;
-    if (!want || !target || !decision.run) return;
+    const quality = level.quality;
+    if (!want || !target) return;
     let cancelled = false;
     let handle: { dispose(): void } | undefined;
     // Wait until the browser is idle so the sign-in form is interactive before the heavy chunk starts downloading.
@@ -36,7 +41,7 @@
       status = "loading";
       import("./chase3d.ts")
         .then(m => m.createChaseScene(target!, {
-          quality: decision.run ? decision.quality : "light",
+          quality,
           onSlow: () => { failed = true; }
         }))
         .then(h => { if (cancelled) h.dispose(); else { handle = h; status = "ready"; } })
@@ -49,9 +54,11 @@
     };
   });
 
-  function choose(next: Mode) {
-    mode = next;
-    localStorage.setItem("nc-scene", next);
+  function choose(next: "3d" | "2d") {
+    if (next === "2d") { detail.set("simple"); return; }
+    if (level.renderer === "3d") return;
+    // Asked for 3D: Automatic if it would give 3D here, otherwise the lighter 3D level.
+    detail.set(resolveDetail("auto", detail.device).renderer === "3d" ? "auto" : "standard");
   }
 </script>
 

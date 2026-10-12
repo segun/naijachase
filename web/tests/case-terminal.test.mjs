@@ -56,8 +56,8 @@ test("the room picks the case terminal while a case is open, and plays the short
   assert.match(view, /!app\.briefing && isCaseScreen\(app\.screen\)/, "the briefing is still the desk's");
   assert.match(view, /const quick = app\.returning/);
   assert.match(view, /introFrom=\{T_RETURN_FROM\}/);
-  assert.match(stage, /startSeconds: intro \? \(quick \? introFrom : 0\) : 60/, "the return starts seated; a normal first visit still walks in");
-  assert.match(stage, /device\.run && \(!seen \|\| quick\)/, "the return plays even though the walk-in has already been seen");
+  assert.match(stage, /startSeconds: intro \? \(resume \|\| \(quick \? introFrom : 0\)\) : 60/, "the return starts seated; a normal first visit still walks in");
+  assert.match(stage, /detail\.resolved\.renderer === "3d" && \(!seen \|\| quick\)/, "the return plays even though the walk-in has already been seen");
   assert.match(app, /leaveWitness\(\) \{[^}]*this\.returning = !this\.game\?\.state\.outcome/s, "only a case that goes on gets the return");
 });
 

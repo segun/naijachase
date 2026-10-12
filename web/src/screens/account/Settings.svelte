@@ -4,6 +4,7 @@
   import { HOME_BASES, STATES } from "../../domain/model.ts";
   import AvatarPicker from "../../avatar/AvatarPicker.svelte";
   import Icon from "../../ui/Icon.svelte";
+  import DetailControl from "../../ui/DetailControl.svelte";
 
   let { app }: { app: AppController } = $props();
   const p = untrack(() => app.player);
@@ -59,6 +60,10 @@
         <button type="button" aria-pressed={app.settings.contrast === "normal"} onclick={() => app.updateSettings({ contrast: "normal" })}>Standard</button>
         <button type="button" aria-pressed={app.settings.contrast === "high"} onclick={() => app.updateSettings({ contrast: "high" })}>High contrast</button>
       </div>
+    </fieldset>
+    <fieldset>
+      <legend>Picture detail</legend>
+      <DetailControl />
     </fieldset>
     <fieldset>
       <legend>Motion</legend>

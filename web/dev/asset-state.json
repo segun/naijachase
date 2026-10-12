@@ -1,0 +1,2417 @@
+{
+  "animals/camel.glb": {
+    "sha": "0af30525f4eec34858bbd269d815790be58d458126191526426b84b1aadf8834",
+    "textureLimit": 1024,
+    "beforeBytes": 910836,
+    "afterBytes": 291632,
+    "optimizedOn": "2026-10-11"
+  },
+  "animals/chicken.glb": {
+    "sha": "849395eec32afb767c41e02765c3df5efd66c2eeb4caab1dfd1794061b69cd2e",
+    "textureLimit": 1024,
+    "beforeBytes": 693368,
+    "afterBytes": 235076,
+    "optimizedOn": "2026-10-11"
+  },
+  "animals/cow_black.glb": {
+    "sha": "a234c708f5910ef807bef8f09814aedd88b095cefac688b8b0e43db0104d39f6",
+    "textureLimit": 1024,
+    "beforeBytes": 539192,
+    "afterBytes": 204636,
+    "optimizedOn": "2026-10-11"
+  },
+  "animals/cow_brown.glb": {
+    "sha": "b3d72d65e34919fbe4ab4c2d30984c95768d48f859158db562629c0500575de7",
+    "textureLimit": 1024,
+    "beforeBytes": 878060,
+    "afterBytes": 291140,
+    "optimizedOn": "2026-10-11"
+  },
+  "animals/cow_white.glb": {
+    "sha": "50efc814698bc44e72c3ce265062fde0cf1725fdb5ca14423a72199e82c60c71",
+    "textureLimit": 1024,
+    "beforeBytes": 732812,
+    "afterBytes": 245904,
+    "optimizedOn": "2026-10-11"
+  },
+  "animals/dog.glb": {
+    "sha": "5c072cbedcb9a1424ed35ba321a2150862e81797fb33ae2534cb7c3202bb4161",
+    "textureLimit": 1024,
+    "beforeBytes": 718644,
+    "afterBytes": 239440,
+    "optimizedOn": "2026-10-11"
+  },
+  "animals/donkey_cart.glb": {
+    "sha": "48ba43e8e38bf3c102a04ced6f19b7468e6bb8dc6d0c21fe679a31e7bcbd634b",
+    "textureLimit": 1024,
+    "beforeBytes": 1032128,
+    "afterBytes": 326520,
+    "optimizedOn": "2026-10-11"
+  },
+  "animals/goat.glb": {
+    "sha": "09b468bb5cd206e610d995f34a01d85b70482efa7cca65ec84390a707311d965",
+    "textureLimit": 1024,
+    "beforeBytes": 847852,
+    "afterBytes": 273368,
+    "optimizedOn": "2026-10-11"
+  },
+  "animals/horse_royal.glb": {
+    "sha": "5b8ac810a21565e7a9cd8980efb60c2d5878b842ff058a983ef585a14555252f",
+    "textureLimit": 1024,
+    "beforeBytes": 1222640,
+    "afterBytes": 356380,
+    "optimizedOn": "2026-10-11"
+  },
+  "animals/sheep.glb": {
+    "sha": "7049ea9053108d32df0daf6373eef04d47eaed3db1cca6ebccaced0592074c66",
+    "textureLimit": 1024,
+    "beforeBytes": 596972,
+    "afterBytes": 209960,
+    "optimizedOn": "2026-10-11"
+  },
+  "characters/avatars/avatar_01_emerald_braids.glb": {
+    "sha": "2dc7d3398529d7690ea631ce7cc967d3a629c3b7ff5ebfb7544e307ca55e56c3",
+    "textureLimit": 2048,
+    "beforeBytes": 1278504,
+    "afterBytes": 779888,
+    "optimizedOn": "2026-10-11"
+  },
+  "characters/avatars/avatar_02_midnight_low_cut.glb": {
+    "sha": "2ac8a6a1fd275771ddb76cf91252a6cc62a6447b19386b8929ef4ebd9a016a64",
+    "textureLimit": 2048,
+    "beforeBytes": 1198800,
+    "afterBytes": 740808,
+    "optimizedOn": "2026-10-11"
+  },
+  "characters/avatars/avatar_03_burgundy_wrap.glb": {
+    "sha": "f88b1dcd5e5edd9ea0fe1dd870df8bcc9e60cd4ee16fa95ef7fac59b47d72377",
+    "textureLimit": 2048,
+    "beforeBytes": 1255592,
+    "afterBytes": 773060,
+    "optimizedOn": "2026-10-11"
+  },
+  "characters/avatars/avatar_04_forest_coils.glb": {
+    "sha": "c97011a311164eba27eac5bcc7d8cfcee669b502bef0771989a0cb6d54af1c8c",
+    "textureLimit": 2048,
+    "beforeBytes": 1172428,
+    "afterBytes": 716268,
+    "optimizedOn": "2026-10-11"
+  },
+  "characters/avatars/avatar_05_cobalt_bob.glb": {
+    "sha": "5e2518299d1b6b284ee602b77c585470159a333e670ba5a64226a7f6d324d7e7",
+    "textureLimit": 2048,
+    "beforeBytes": 1206652,
+    "afterBytes": 745560,
+    "optimizedOn": "2026-10-11"
+  },
+  "characters/avatars/avatar_06_copper_fade.glb": {
+    "sha": "1c0486c56cb518b4590e0e8e1d89cc3c0f1455b42659d87c7050e16f858238e3",
+    "textureLimit": 2048,
+    "beforeBytes": 1227352,
+    "afterBytes": 750568,
+    "optimizedOn": "2026-10-11"
+  },
+  "characters/avatars/avatar_07_teal_twists.glb": {
+    "sha": "777f73281c7ad2e882e63d185b0146991611c3e32fb5cdf6af55649d928f5eb0",
+    "textureLimit": 2048,
+    "beforeBytes": 1300408,
+    "afterBytes": 790272,
+    "optimizedOn": "2026-10-11"
+  },
+  "characters/avatars/avatar_08_gold_crop.glb": {
+    "sha": "7153aeed435b931def4eecaa69c8be60e7a74d720b53d2d0ba87a6f3e3842660",
+    "textureLimit": 2048,
+    "beforeBytes": 1228028,
+    "afterBytes": 752392,
+    "optimizedOn": "2026-10-11"
+  },
+  "characters/avatars/avatar_09_plum_locs.glb": {
+    "sha": "666933bbb9b78b283c6b55a74ee2c18243beec23f2922ae0aeba3ff8015d75e3",
+    "textureLimit": 2048,
+    "beforeBytes": 1295136,
+    "afterBytes": 785556,
+    "optimizedOn": "2026-10-11"
+  },
+  "characters/avatars/avatar_10_slate_waves.glb": {
+    "sha": "ede55403b7a1a45defbbe8d87fc7e6798e323db358af08311c31288c48c0e313",
+    "textureLimit": 2048,
+    "beforeBytes": 1212092,
+    "afterBytes": 745656,
+    "optimizedOn": "2026-10-11"
+  },
+  "characters/crowd/crowd_bouncer.glb": {
+    "sha": "2989016f865ace514aa35b8a73f04392ee9fa7d8193c13265d0fbc5b653a1689",
+    "textureLimit": 1024,
+    "beforeBytes": 860720,
+    "afterBytes": 366596,
+    "optimizedOn": "2026-10-11"
+  },
+  "characters/crowd/crowd_chef.glb": {
+    "sha": "0c162ddfa77a5dff682b2884dacb4d5426a489b3c78e8e86b1f75c1ebab8b6aa",
+    "textureLimit": 1024,
+    "beforeBytes": 1204016,
+    "afterBytes": 450500,
+    "optimizedOn": "2026-10-11"
+  },
+  "characters/crowd/crowd_chief.glb": {
+    "sha": "785e6db68d3513131bc29bdd06c53d53f20e368035062851f86ef1a89a3eb52f",
+    "textureLimit": 1024,
+    "beforeBytes": 1737876,
+    "afterBytes": 538708,
+    "optimizedOn": "2026-10-11"
+  },
+  "characters/crowd/crowd_commuter_man.glb": {
+    "sha": "46c3cda32c83e46393b9d8f36308c93943f79a711e0e83f1bfb3427bc52f9aae",
+    "textureLimit": 1024,
+    "beforeBytes": 1182492,
+    "afterBytes": 414504,
+    "optimizedOn": "2026-10-11"
+  },
+  "characters/crowd/crowd_commuter_woman.glb": {
+    "sha": "d7908eadb9c5053d5b66fdf4bfe61c96dd0c2fffda7f956bfc79e81a0e306fce",
+    "textureLimit": 1024,
+    "beforeBytes": 1573320,
+    "afterBytes": 484096,
+    "optimizedOn": "2026-10-11"
+  },
+  "characters/crowd/crowd_dancer_festival.glb": {
+    "sha": "67923f840e89683b7238bdfe3ff1daa22902811ee431cf7949887048123cf1f6",
+    "textureLimit": 1024,
+    "beforeBytes": 1505808,
+    "afterBytes": 489880,
+    "optimizedOn": "2026-10-11"
+  },
+  "characters/crowd/crowd_doctor.glb": {
+    "sha": "44579fadc926f3f99731bb50893ba3677c0be3bc954c6a50cff4cec6a653a9f0",
+    "textureLimit": 1024,
+    "beforeBytes": 1011628,
+    "afterBytes": 406836,
+    "optimizedOn": "2026-10-11"
+  },
+  "characters/crowd/crowd_drummer.glb": {
+    "sha": "1093effdb3097f3349bf2beb2b2f7c8d56c0b630f5621e301337fe121ce976d3",
+    "textureLimit": 1024,
+    "beforeBytes": 1863780,
+    "afterBytes": 547344,
+    "optimizedOn": "2026-10-11"
+  },
+  "characters/crowd/crowd_farmer.glb": {
+    "sha": "a40202887edc343887b1ddf22070d734967c438f0525988e9c89b341631f6b54",
+    "textureLimit": 1024,
+    "beforeBytes": 990464,
+    "afterBytes": 396184,
+    "optimizedOn": "2026-10-11"
+  },
+  "characters/crowd/crowd_fisherman.glb": {
+    "sha": "8d663d71225fd0fd459c1f191b5741f881a647d91ed65554cb4f22e986e0da55",
+    "textureLimit": 1024,
+    "beforeBytes": 1779940,
+    "afterBytes": 610656,
+    "optimizedOn": "2026-10-11"
+  },
+  "characters/crowd/crowd_imam.glb": {
+    "sha": "c137a05469076ebd33101dc688de099d38a9f33e2bce49d74f5e1f52f4c1d226",
+    "textureLimit": 1024,
+    "beforeBytes": 1007756,
+    "afterBytes": 401332,
+    "optimizedOn": "2026-10-11"
+  },
+  "characters/crowd/crowd_mechanic.glb": {
+    "sha": "c11db033313f119ec61361e1e434ea7caf271b4263022567d99329dd5e0fe82f",
+    "textureLimit": 1024,
+    "beforeBytes": 953468,
+    "afterBytes": 380676,
+    "optimizedOn": "2026-10-11"
+  },
+  "characters/crowd/crowd_miner.glb": {
+    "sha": "3062cee03043a5fc34227cea8b5fb97540c92fdd0138b1a8575f1d4dc2fac6e9",
+    "textureLimit": 1024,
+    "beforeBytes": 1083320,
+    "afterBytes": 418256,
+    "optimizedOn": "2026-10-11"
+  },
+  "characters/crowd/crowd_nurse.glb": {
+    "sha": "25b3421f5baf8a747830ea08c248cd0f68e1c3741dac117969858dcd2671d009",
+    "textureLimit": 1024,
+    "beforeBytes": 890628,
+    "afterBytes": 368548,
+    "optimizedOn": "2026-10-11"
+  },
+  "characters/crowd/crowd_pilot.glb": {
+    "sha": "cafc8cd6aa054919c3ef0bedc418b972d4a9a91af022163c314b563b68293249",
+    "textureLimit": 1024,
+    "beforeBytes": 930644,
+    "afterBytes": 386564,
+    "optimizedOn": "2026-10-11"
+  },
+  "characters/crowd/crowd_police.glb": {
+    "sha": "62ab76ea66537a01f4fa3406e8a3b7df345eb462e64b7ab8a7c723f60b0f0431",
+    "textureLimit": 1024,
+    "beforeBytes": 918260,
+    "afterBytes": 378056,
+    "optimizedOn": "2026-10-11"
+  },
+  "characters/crowd/crowd_priest.glb": {
+    "sha": "ddde77ffa2134fe85811acbae6b2482b79009f338e3fa6c6cb056973369320f1",
+    "textureLimit": 1024,
+    "beforeBytes": 852756,
+    "afterBytes": 368508,
+    "optimizedOn": "2026-10-11"
+  },
+  "characters/crowd/crowd_ranger.glb": {
+    "sha": "3eca08b3f2c1b87b283a28e02b6ee2977fe81826c327ab7ca186841d921512cb",
+    "textureLimit": 1024,
+    "beforeBytes": 988404,
+    "afterBytes": 389728,
+    "optimizedOn": "2026-10-11"
+  },
+  "characters/crowd/crowd_receptionist.glb": {
+    "sha": "d0b90ede46a913e79d856068e26cc4627688fbd47fab9e777ad2cad187abce94",
+    "textureLimit": 1024,
+    "beforeBytes": 960468,
+    "afterBytes": 392740,
+    "optimizedOn": "2026-10-11"
+  },
+  "characters/crowd/crowd_sailor_docker.glb": {
+    "sha": "33690e041447889eee24315dfcf01335d6f79da8a07e263d481c19c0501f86b4",
+    "textureLimit": 1024,
+    "beforeBytes": 1156904,
+    "afterBytes": 431484,
+    "optimizedOn": "2026-10-11"
+  },
+  "characters/crowd/crowd_student.glb": {
+    "sha": "a5df7f2f175351bf3e292eeb8387661a173221f01824d6acc05fc1cb1f39fdee",
+    "textureLimit": 1024,
+    "beforeBytes": 994592,
+    "afterBytes": 400780,
+    "optimizedOn": "2026-10-11"
+  },
+  "characters/crowd/crowd_trader_man.glb": {
+    "sha": "b22ffd4e6c72845f16e74236130f9ec3f7854175c79999175c8465e377bdd9af",
+    "textureLimit": 1024,
+    "beforeBytes": 1092948,
+    "afterBytes": 401232,
+    "optimizedOn": "2026-10-11"
+  },
+  "characters/crowd/crowd_trader_woman.glb": {
+    "sha": "c1083b7fdb35ea21726ba1272e2ae835bec743ce66dbb0d0fb7ef71a67d50601",
+    "textureLimit": 1024,
+    "beforeBytes": 1601900,
+    "afterBytes": 499480,
+    "optimizedOn": "2026-10-11"
+  },
+  "characters/crowd/crowd_waiter.glb": {
+    "sha": "46d321e23189079ab34009b838ef837f2736bbd887a12667c11be78036407f29",
+    "textureLimit": 1024,
+    "beforeBytes": 973216,
+    "afterBytes": 397872,
+    "optimizedOn": "2026-10-11"
+  },
+  "characters/judges/judge_1.glb": {
+    "sha": "cf7d00e760f2e6c6959dbd283d3a7994f9c7441caf55f6351b8abb2d83dcaa29",
+    "textureLimit": 1024,
+    "beforeBytes": 696536,
+    "afterBytes": 242228,
+    "optimizedOn": "2026-10-11"
+  },
+  "characters/judges/judge_2.glb": {
+    "sha": "86607e7694cbf8c154cc7e70d31a692da4900f186bb79d786fdd7675b6a73716",
+    "textureLimit": 1024,
+    "beforeBytes": 718160,
+    "afterBytes": 254564,
+    "optimizedOn": "2026-10-11"
+  },
+  "characters/judges/judge_3.glb": {
+    "sha": "2afcd21e21361e1014f8e2d90667641ca1889050660f5fe86606f621de659bf4",
+    "textureLimit": 1024,
+    "beforeBytes": 731088,
+    "afterBytes": 259540,
+    "optimizedOn": "2026-10-11"
+  },
+  "characters/judges/judge_4.glb": {
+    "sha": "43e456652b2c6620bd76d4c4507440449cd0df46f9ec75b5198ae9702bcc58ea",
+    "textureLimit": 1024,
+    "beforeBytes": 733752,
+    "afterBytes": 258072,
+    "optimizedOn": "2026-10-11"
+  },
+  "characters/judges/judge_5.glb": {
+    "sha": "cdee80de1cbc04dcfd0d15f257c49ede4f015f1be8c3d6ce9f08f4cd55b44e3b",
+    "textureLimit": 1024,
+    "beforeBytes": 711676,
+    "afterBytes": 252800,
+    "optimizedOn": "2026-10-11"
+  },
+  "characters/witnesses/witness_child.glb": {
+    "sha": "a6f3013d3e0c3cf958831737ccfdf66459fac0d0e3c46840ddbc258b379aee78",
+    "textureLimit": 1024,
+    "beforeBytes": 1017492,
+    "afterBytes": 407168,
+    "optimizedOn": "2026-10-11"
+  },
+  "characters/witnesses/witness_man_agbada.glb": {
+    "sha": "416441c795d7302d8bc3e940e50768a4504c5f5bae589f260c000345f1d576ed",
+    "textureLimit": 1024,
+    "beforeBytes": 957368,
+    "afterBytes": 384632,
+    "optimizedOn": "2026-10-11"
+  },
+  "characters/witnesses/witness_man_cleric.glb": {
+    "sha": "fd106d79df2e90322ebab581a4ba29c4330f899afa3861ba2fcc07fda10300f1",
+    "textureLimit": 1024,
+    "beforeBytes": 828480,
+    "afterBytes": 361040,
+    "optimizedOn": "2026-10-11"
+  },
+  "characters/witnesses/witness_man_elder.glb": {
+    "sha": "f764ddbfc2953a137de3dd55c0eb36d997015bf44b0b8c97c0eb5482c91f1bca",
+    "textureLimit": 1024,
+    "beforeBytes": 949712,
+    "afterBytes": 376724,
+    "optimizedOn": "2026-10-11"
+  },
+  "characters/witnesses/witness_man_farmer.glb": {
+    "sha": "eeb46b1f8bf56aef2d2cb7547a71953f4a6b21216b078a68e406c0a61b192640",
+    "textureLimit": 1024,
+    "beforeBytes": 1129012,
+    "afterBytes": 429004,
+    "optimizedOn": "2026-10-11"
+  },
+  "characters/witnesses/witness_man_northern.glb": {
+    "sha": "c5ba2c1371ac14eba146c5ba7b2f2330aad86c80d0b543f710aa91b794c5c76b",
+    "textureLimit": 1024,
+    "beforeBytes": 1120168,
+    "afterBytes": 426680,
+    "optimizedOn": "2026-10-11"
+  },
+  "characters/witnesses/witness_man_professional.glb": {
+    "sha": "3426e2d702daae74e0fc670b1fd53aaa8d81d34ecad5b080c2f5d94114471ced",
+    "textureLimit": 1024,
+    "beforeBytes": 923824,
+    "afterBytes": 385704,
+    "optimizedOn": "2026-10-11"
+  },
+  "characters/witnesses/witness_man_security.glb": {
+    "sha": "b3c8c31b8e147e1806f57d65731e6b9dfc42eed0ad14a13e7e491338ba893b35",
+    "textureLimit": 1024,
+    "beforeBytes": 903740,
+    "afterBytes": 379572,
+    "optimizedOn": "2026-10-11"
+  },
+  "characters/witnesses/witness_man_trader.glb": {
+    "sha": "543e4d7e9c9030339dc2837382201cf9dee850af435724535f0f46b9107e87e9",
+    "textureLimit": 1024,
+    "beforeBytes": 964252,
+    "afterBytes": 385940,
+    "optimizedOn": "2026-10-11"
+  },
+  "characters/witnesses/witness_man_worker.glb": {
+    "sha": "654c6ba108df378552a0c6be5e1ca72caba2f1a00c6fab4cde005a03cd278f24",
+    "textureLimit": 1024,
+    "beforeBytes": 1078880,
+    "afterBytes": 415548,
+    "optimizedOn": "2026-10-11"
+  },
+  "characters/witnesses/witness_man_young.glb": {
+    "sha": "7b3fe8de2eb2c5a1694196832884c4d601604fd123ecbce45dcad8ee97e04728",
+    "textureLimit": 1024,
+    "beforeBytes": 1041472,
+    "afterBytes": 414872,
+    "optimizedOn": "2026-10-11"
+  },
+  "characters/witnesses/witness_woman_elder.glb": {
+    "sha": "a4cbd63995315e07968d5e8aa73072772b3e042f1831d88a70a9486276ce73eb",
+    "textureLimit": 1024,
+    "beforeBytes": 1034224,
+    "afterBytes": 398400,
+    "optimizedOn": "2026-10-11"
+  },
+  "characters/witnesses/witness_woman_professional.glb": {
+    "sha": "4975c8590cfea457e1d03eeec5834f9fdc155d691307b859e8fc5e10cfd0de2b",
+    "textureLimit": 1024,
+    "beforeBytes": 900244,
+    "afterBytes": 373036,
+    "optimizedOn": "2026-10-11"
+  },
+  "characters/witnesses/witness_woman_trader.glb": {
+    "sha": "bf27227346bf46baf38ce3175217da145ca1822e756088d66c121ce8360ce546",
+    "textureLimit": 1024,
+    "beforeBytes": 1730312,
+    "afterBytes": 500528,
+    "optimizedOn": "2026-10-11"
+  },
+  "characters/witnesses/witness_woman_uniform.glb": {
+    "sha": "2f59fd4f33a729d0dd6454ce0d0e0367bba8c3bf8a3f4e3f6a430427d2a83c52",
+    "textureLimit": 1024,
+    "beforeBytes": 975088,
+    "afterBytes": 395628,
+    "optimizedOn": "2026-10-11"
+  },
+  "characters/witnesses/witness_woman_young.glb": {
+    "sha": "7f9cf38ddbbb81de97a30ad1595fee3710b9479e2c2540a6ac67d70ebdb6d010",
+    "textureLimit": 1024,
+    "beforeBytes": 1249664,
+    "afterBytes": 436912,
+    "optimizedOn": "2026-10-11"
+  },
+  "vehicles/airport_baggage_tractor.glb": {
+    "sha": "be9bc367ec2a6e990dc79d34ea890e615c9f2ffc61952447cfc5d0684b49fb55",
+    "textureLimit": 1024,
+    "beforeBytes": 1052304,
+    "afterBytes": 323372,
+    "optimizedOn": "2026-10-11"
+  },
+  "vehicles/airport_fuel_truck.glb": {
+    "sha": "361623c425e413120f985a524f05beb11055781a99bd6a024aebcbb2456ae747",
+    "textureLimit": 1024,
+    "beforeBytes": 1152436,
+    "afterBytes": 347320,
+    "optimizedOn": "2026-10-11"
+  },
+  "vehicles/airport_stairs.glb": {
+    "sha": "60fb39c44d40a1fcd726263b2815e17f9a111087a92d35dad5c712e4c24a3537",
+    "textureLimit": 1024,
+    "beforeBytes": 1033280,
+    "afterBytes": 304532,
+    "optimizedOn": "2026-10-11"
+  },
+  "vehicles/ambulance.glb": {
+    "sha": "8ee2d24a981df334de6c781cac62104861e49de1a93ed696a4a5f01e5b46cbf1",
+    "textureLimit": 1024,
+    "beforeBytes": 1064504,
+    "afterBytes": 321980,
+    "optimizedOn": "2026-10-11"
+  },
+  "vehicles/bicycle.glb": {
+    "sha": "ee0f0b766d0af5d8f25e6341a7b40db63772645a5631f55578708840797e55be",
+    "textureLimit": 1024,
+    "beforeBytes": 1272464,
+    "afterBytes": 379488,
+    "optimizedOn": "2026-10-11"
+  },
+  "vehicles/boat_barge.glb": {
+    "sha": "2292a5a87c95dd3a1bb4f2436c22d6b570d883137945446b09c9d0d15d3c68f6",
+    "textureLimit": 1024,
+    "beforeBytes": 1187220,
+    "afterBytes": 328352,
+    "optimizedOn": "2026-10-11"
+  },
+  "vehicles/boat_canoe.glb": {
+    "sha": "c31742c1468ee75fa23dad7fc6bcf807bcd4c3251fb941e3b741cedd48577c63",
+    "textureLimit": 1024,
+    "beforeBytes": 1302164,
+    "afterBytes": 351092,
+    "optimizedOn": "2026-10-11"
+  },
+  "vehicles/boat_dinghy.glb": {
+    "sha": "0cfc62b60a425d3bd2fb712d39831293b8aece3dadda47f23d70076ccae265dd",
+    "textureLimit": 1024,
+    "beforeBytes": 1203936,
+    "afterBytes": 327160,
+    "optimizedOn": "2026-10-11"
+  },
+  "vehicles/boat_launch.glb": {
+    "sha": "150abeff124fc9c80f5065de0f0ac404ed1a6aeef30ae8e4dffb6f55156c3289",
+    "textureLimit": 1024,
+    "beforeBytes": 1145340,
+    "afterBytes": 323000,
+    "optimizedOn": "2026-10-11"
+  },
+  "vehicles/boat_tug.glb": {
+    "sha": "03791d32220ff6ac4a8c00001f8fbe1a03e562ec73ff88b49655ee0a2dbadd2f",
+    "textureLimit": 1024,
+    "beforeBytes": 1335612,
+    "afterBytes": 392764,
+    "optimizedOn": "2026-10-11"
+  },
+  "vehicles/bus_coach.glb": {
+    "sha": "cc42b959c3de2c33caf6f47ab71de05187064ca84c84934a355df8e40a97aeaf",
+    "textureLimit": 1024,
+    "beforeBytes": 1152408,
+    "afterBytes": 359960,
+    "optimizedOn": "2026-10-11"
+  },
+  "vehicles/bus_danfo.glb": {
+    "sha": "f108322b102a19ae56e9707db72440e7df28d389e86aa9c4af09d89ccdc183d8",
+    "textureLimit": 2048,
+    "beforeBytes": 1340512,
+    "afterBytes": 670144,
+    "optimizedOn": "2026-10-11"
+  },
+  "vehicles/car_hatchback.glb": {
+    "sha": "2a4e0b8a7fbae121e7091e5cca4b02a742aeb340dd020b0aada0c2ec8b8ddae5",
+    "textureLimit": 1024,
+    "beforeBytes": 989668,
+    "afterBytes": 322636,
+    "optimizedOn": "2026-10-11"
+  },
+  "vehicles/car_jeep_ranger.glb": {
+    "sha": "4cbceaac9afd4e320e2115c53d08556b392020a4d9376f690c887debb171ace3",
+    "textureLimit": 1024,
+    "beforeBytes": 1039380,
+    "afterBytes": 334152,
+    "optimizedOn": "2026-10-11"
+  },
+  "vehicles/car_player_runabout.glb": {
+    "sha": "0bd18ade242b57042633ecaaf9c8897b41f954d37479ef047c5560bafed2896f",
+    "textureLimit": 2048,
+    "beforeBytes": 796388,
+    "afterBytes": 371776,
+    "optimizedOn": "2026-10-11"
+  },
+  "vehicles/car_police.glb": {
+    "sha": "53fcc97b450bb86d2576c2923502ababda02bc108a58e0dffda09d8aa01b60d3",
+    "textureLimit": 1024,
+    "beforeBytes": 1010152,
+    "afterBytes": 304612,
+    "optimizedOn": "2026-10-11"
+  },
+  "vehicles/car_saloon_dark.glb": {
+    "sha": "71c79a99d48faf5272665033793613a63a19f5d0b6269add410dcec8a4139911",
+    "textureLimit": 1024,
+    "beforeBytes": 894060,
+    "afterBytes": 289308,
+    "optimizedOn": "2026-10-11"
+  },
+  "vehicles/car_saloon_white.glb": {
+    "sha": "1bbd54bc2c25d5933085784e06599f25c90b59bb8b67f7a4c570417288059940",
+    "textureLimit": 1024,
+    "beforeBytes": 960148,
+    "afterBytes": 294188,
+    "optimizedOn": "2026-10-11"
+  },
+  "vehicles/car_suv.glb": {
+    "sha": "13fc354ab42f7280b0e47083c5d4a7f76659e923054c7a84fa01c0a7203bf881",
+    "textureLimit": 1024,
+    "beforeBytes": 966704,
+    "afterBytes": 307692,
+    "optimizedOn": "2026-10-11"
+  },
+  "vehicles/digger_excavator.glb": {
+    "sha": "6e7500e385bc32c6f51fd92142856141d371b22113447449c60991090882b9cc",
+    "textureLimit": 1024,
+    "beforeBytes": 1288956,
+    "afterBytes": 382692,
+    "optimizedOn": "2026-10-11"
+  },
+  "vehicles/handcart.glb": {
+    "sha": "a4e9a58ce82d175aa00cb1b0a43f8bf1957a7aa53fbdc182c4b165682c83017d",
+    "textureLimit": 1024,
+    "beforeBytes": 1099688,
+    "afterBytes": 325760,
+    "optimizedOn": "2026-10-11"
+  },
+  "vehicles/keke_tricycle.glb": {
+    "sha": "35cd1bf3937ce3582a1a80cb041214e428804d692f2eaf26b43dac74121eee8b",
+    "textureLimit": 1024,
+    "beforeBytes": 1111804,
+    "afterBytes": 332172,
+    "optimizedOn": "2026-10-11"
+  },
+  "vehicles/okada_motorbike.glb": {
+    "sha": "37755886172efd593aef16b6d6fff3b0a026404921efe1fb9065a413df0aa38e",
+    "textureLimit": 1024,
+    "beforeBytes": 1284248,
+    "afterBytes": 399900,
+    "optimizedOn": "2026-10-11"
+  },
+  "vehicles/plane_airliner.glb": {
+    "sha": "8b0841040f149b5e84d5ed1a5fae8acb04617f01478c6ea863f42e8ebc6d6331",
+    "textureLimit": 1024,
+    "beforeBytes": 992180,
+    "afterBytes": 310636,
+    "optimizedOn": "2026-10-11"
+  },
+  "vehicles/ship_cargo.glb": {
+    "sha": "0994670e00c521ff0926615187dfe81b5b8c78e87c0086995196cc557d42c8f1",
+    "textureLimit": 1024,
+    "beforeBytes": 1554932,
+    "afterBytes": 427588,
+    "optimizedOn": "2026-10-11"
+  },
+  "vehicles/train_carriage.glb": {
+    "sha": "b99316ec454823eaaa2bdd1cf79a0346e7567cd4fbef729c2847534a1249ad82",
+    "textureLimit": 1024,
+    "beforeBytes": 1186384,
+    "afterBytes": 349456,
+    "optimizedOn": "2026-10-11"
+  },
+  "vehicles/train_locomotive.glb": {
+    "sha": "8c350d1760f052952984aa3f26b74ad114af67f15f7e04f0db2dbe03c321bb40",
+    "textureLimit": 1024,
+    "beforeBytes": 1254756,
+    "afterBytes": 391232,
+    "optimizedOn": "2026-10-11"
+  },
+  "vehicles/truck_container.glb": {
+    "sha": "746d3b6f8c38dcecfdcdcfa96676096882b91be2111735067416f4e030b4153a",
+    "textureLimit": 1024,
+    "beforeBytes": 1103448,
+    "afterBytes": 334548,
+    "optimizedOn": "2026-10-11"
+  },
+  "vehicles/truck_livestock.glb": {
+    "sha": "7e51c86594fafa0dfa047704d9c4928fa1d304e575d24a13308cffaa46038c7b",
+    "textureLimit": 1024,
+    "beforeBytes": 1163016,
+    "afterBytes": 348044,
+    "optimizedOn": "2026-10-11"
+  },
+  "vehicles/truck_mining_haul.glb": {
+    "sha": "39d5291c988eaade30f67ff0c410a81342a28429e0be622e168b47803fb831e2",
+    "textureLimit": 1024,
+    "beforeBytes": 1262020,
+    "afterBytes": 371560,
+    "optimizedOn": "2026-10-11"
+  },
+  "vehicles/truck_pickup.glb": {
+    "sha": "fa9b6177d9752b801586130fc618d3d1a535ecddad6da9097263d3d87eef72c4",
+    "textureLimit": 1024,
+    "beforeBytes": 1129280,
+    "afterBytes": 336444,
+    "optimizedOn": "2026-10-11"
+  },
+  "vehicles/truck_tanker.glb": {
+    "sha": "36ff7ee1eca1d268a097b694a8bddb57ce70c647f359721207fcabcf7da126d3",
+    "textureLimit": 1024,
+    "beforeBytes": 1042420,
+    "afterBytes": 325908,
+    "optimizedOn": "2026-10-11"
+  },
+  "vehicles/van_delivery.glb": {
+    "sha": "9449adfcd4a45c6a84c46e38595594614ba56422e2d93133326257d8fed8c7d8",
+    "textureLimit": 1024,
+    "beforeBytes": 1020848,
+    "afterBytes": 312760,
+    "optimizedOn": "2026-10-11"
+  },
+  "vehicles/van_police.glb": {
+    "sha": "98c9b9d724d900b71eb328d8f38691ebc4b24ebf013cfbd3fac1845a856400bd",
+    "textureLimit": 1024,
+    "beforeBytes": 1156068,
+    "afterBytes": 351232,
+    "optimizedOn": "2026-10-11"
+  },
+  "vehicles/wheelbarrow.glb": {
+    "sha": "c4dbf440f2fed01218be958d2f804dffa066f1f83bc7da129936e1b1cbd944ab",
+    "textureLimit": 1024,
+    "beforeBytes": 1076416,
+    "afterBytes": 303472,
+    "optimizedOn": "2026-10-11"
+  },
+  "chase/anambra_bridge.glb": {
+    "sha": "f6b1ed4543a9a063350bdf59dbf4b54231b9c9c3727fe5b59c73c928241f9830",
+    "textureLimit": 1024,
+    "beforeBytes": 1018168,
+    "afterBytes": 317288,
+    "optimizedOn": "2026-10-12"
+  },
+  "chase/anambra_market_stall.glb": {
+    "sha": "c795fbc21380e725f0734fbb5d9d422ad7891e6c3eaf3174b4963840901e6b65",
+    "textureLimit": 1024,
+    "beforeBytes": 1017064,
+    "afterBytes": 322380,
+    "optimizedOn": "2026-10-12"
+  },
+  "chase/anambra_shopfront_a.glb": {
+    "sha": "00360e520a8b1799af6ac7d251ffe06c8a9ac1462dc1ac12c3fdf277dca82601",
+    "textureLimit": 1024,
+    "beforeBytes": 963228,
+    "afterBytes": 298840,
+    "optimizedOn": "2026-10-12"
+  },
+  "chase/anambra_shopfront_b.glb": {
+    "sha": "6c162c22e50db28257df1a7d660a37aee96c44f8cf35f33a0d4cad3ebab3585d",
+    "textureLimit": 1024,
+    "beforeBytes": 1055544,
+    "afterBytes": 327860,
+    "optimizedOn": "2026-10-12"
+  },
+  "chase/bus_stop_shelter.glb": {
+    "sha": "837747ef65e51c98531e290f1f55800a5c3ac02528dcfdff9991488cdc899f52",
+    "textureLimit": 1024,
+    "beforeBytes": 950968,
+    "afterBytes": 311508,
+    "optimizedOn": "2026-10-12"
+  },
+  "chase/bush_a.glb": {
+    "sha": "b2b734877346a793cb61bbcc81f0615449d231e93d6b2dcbbd8d55afa035d5e2",
+    "textureLimit": 1024,
+    "beforeBytes": 842832,
+    "afterBytes": 306700,
+    "optimizedOn": "2026-10-12"
+  },
+  "chase/gantry_city_gate.glb": {
+    "sha": "748eaf479293bfc29caecc15fffb24d3b96c06376ae6b1ccf64b7202223698f4",
+    "textureLimit": 1024,
+    "beforeBytes": 827176,
+    "afterBytes": 267836,
+    "optimizedOn": "2026-10-12"
+  },
+  "chase/kano_baobab.glb": {
+    "sha": "3ba48dd98c5ec233fc5b042a2ecb9a32e48a596c8a53b1dba9cc81b4b1cc30fc",
+    "textureLimit": 1024,
+    "beforeBytes": 754032,
+    "afterBytes": 259136,
+    "optimizedOn": "2026-10-12"
+  },
+  "chase/kano_dala_hill.glb": {
+    "sha": "e6dd938c4c82a1424c7d37d11741ac32f98c84e9519e02c6e1274f6b3f089de1",
+    "textureLimit": 1024,
+    "beforeBytes": 857340,
+    "afterBytes": 259020,
+    "optimizedOn": "2026-10-12"
+  },
+  "chase/kano_house_a.glb": {
+    "sha": "50f73998d7a45be75bcecb85d3c6b23c342c6e9599e65c8beed541060eab8921",
+    "textureLimit": 1024,
+    "beforeBytes": 846996,
+    "afterBytes": 266576,
+    "optimizedOn": "2026-10-12"
+  },
+  "chase/kano_house_b.glb": {
+    "sha": "ba5fa30e0c137fe1c6e38f57940c5c94efbeecff5245c494cd6f075567a42001",
+    "textureLimit": 1024,
+    "beforeBytes": 882424,
+    "afterBytes": 283012,
+    "optimizedOn": "2026-10-12"
+  },
+  "chase/kano_minaret.glb": {
+    "sha": "ebc44aee4d516c01f3e9760e141cd0639ef5b669c517debb68909af2e15df02d",
+    "textureLimit": 1024,
+    "beforeBytes": 984400,
+    "afterBytes": 303692,
+    "optimizedOn": "2026-10-12"
+  },
+  "chase/kano_pyramid.glb": {
+    "sha": "16a47d1042e72f7ce4beb30b1f66ab7297d3d11df43279738eb81faf18d9d6e2",
+    "textureLimit": 1024,
+    "beforeBytes": 1528152,
+    "afterBytes": 348844,
+    "optimizedOn": "2026-10-12"
+  },
+  "chase/lagos_billboard.glb": {
+    "sha": "3bbff6b0e6f64c8d97e92d45337a9614830df4c6c4215b21c4c9657a8dc3e9f8",
+    "textureLimit": 1024,
+    "beforeBytes": 801808,
+    "afterBytes": 256508,
+    "optimizedOn": "2026-10-12"
+  },
+  "chase/lagos_bridge.glb": {
+    "sha": "e61bb116cc3daab45815f5e758a0c5d6c91ab1d406237cdcfd1fb4cd0cb87b1a",
+    "textureLimit": 1024,
+    "beforeBytes": 1302492,
+    "afterBytes": 399312,
+    "optimizedOn": "2026-10-12"
+  },
+  "chase/lagos_fishing_boat.glb": {
+    "sha": "a0de2ba395dd798525c6ff8cc20b71019c7753d41ae1ef217145e6d98369b84f",
+    "textureLimit": 1024,
+    "beforeBytes": 1058904,
+    "afterBytes": 339008,
+    "optimizedOn": "2026-10-12"
+  },
+  "chase/lagos_lighthouse.glb": {
+    "sha": "57f57a4e7fb1b2725bc9878ff18332f37a139aa8b667b4ce10c233208f5e570b",
+    "textureLimit": 1024,
+    "beforeBytes": 937632,
+    "afterBytes": 295096,
+    "optimizedOn": "2026-10-12"
+  },
+  "chase/lagos_palm.glb": {
+    "sha": "b3f5a43a3fdd1703e670a87c88c5da15e4b05ebda45779487e055a6178937e93",
+    "textureLimit": 1024,
+    "beforeBytes": 910644,
+    "afterBytes": 298064,
+    "optimizedOn": "2026-10-12"
+  },
+  "chase/lagos_seawall.glb": {
+    "sha": "c31c5b396d4934fd2e4ba01dc78b8b4b70ce9336f9446885719a2650332ae941",
+    "textureLimit": 1024,
+    "beforeBytes": 733192,
+    "afterBytes": 231064,
+    "optimizedOn": "2026-10-12"
+  },
+  "chase/lagos_tower_a.glb": {
+    "sha": "8b3a51464cf9ab158c979e314bd04df2bcdde94ee284474b98ab4565e143307d",
+    "textureLimit": 1024,
+    "beforeBytes": 1172296,
+    "afterBytes": 327428,
+    "optimizedOn": "2026-10-12"
+  },
+  "chase/lagos_tower_b.glb": {
+    "sha": "0c41b57567bd611dbb6c2a4b5ac164a91827ffec0448d85f2a98ab473fd58ebb",
+    "textureLimit": 1024,
+    "beforeBytes": 808200,
+    "afterBytes": 256588,
+    "optimizedOn": "2026-10-12"
+  },
+  "chase/lagos_tower_c.glb": {
+    "sha": "a3023c5853746c0bb40e6f4d34e7575c2a1287a8137fd9d4681f1ef3b89bf4f1",
+    "textureLimit": 1024,
+    "beforeBytes": 1253220,
+    "afterBytes": 370868,
+    "optimizedOn": "2026-10-12"
+  },
+  "chase/road_sign_a.glb": {
+    "sha": "2d53be7300683cc5b7b8b77f32ef2027ec0ada68fa1dfaed64f96730a2dedc28",
+    "textureLimit": 1024,
+    "beforeBytes": 802564,
+    "afterBytes": 253136,
+    "optimizedOn": "2026-10-12"
+  },
+  "chase/rock_a.glb": {
+    "sha": "864952cba3a7ebf2422d06ac2637b2615cd75ebace335d8787b1094620e0cd3a",
+    "textureLimit": 1024,
+    "beforeBytes": 680028,
+    "afterBytes": 226768,
+    "optimizedOn": "2026-10-12"
+  },
+  "chase/tree_flame.glb": {
+    "sha": "1c16b58f2478e309dfc595cae37fe77963ff6385870308f2d0ec93a37902f1f8",
+    "textureLimit": 1024,
+    "beforeBytes": 1206648,
+    "afterBytes": 332916,
+    "optimizedOn": "2026-10-12"
+  },
+  "chase/tree_mango.glb": {
+    "sha": "c8e6b584ca94b469c27e2835818d12c74687c447f8b893a69da8880ac19377b2",
+    "textureLimit": 1024,
+    "beforeBytes": 998604,
+    "afterBytes": 321848,
+    "optimizedOn": "2026-10-12"
+  },
+  "chase/tree_neem.glb": {
+    "sha": "05114b335dc1c00a8878a26dfaae2789e9a8c131a232eea16cfea56810f3db64",
+    "textureLimit": 1024,
+    "beforeBytes": 1046964,
+    "afterBytes": 355268,
+    "optimizedOn": "2026-10-12"
+  },
+  "interiors/archive/archive_box.glb": {
+    "sha": "1fac21e64f987f8f2cc0524628905c9f46e6fb85afe9a06f39c80dfa4514fb79",
+    "textureLimit": 1024,
+    "beforeBytes": 834804,
+    "afterBytes": 269328,
+    "optimizedOn": "2026-10-12"
+  },
+  "interiors/archive/archive_cabinet.glb": {
+    "sha": "c0be1c58f089d2128db8dc0a5d8b514686ce46a933b014dfa6cb9be82a8b598a",
+    "textureLimit": 1024,
+    "beforeBytes": 973976,
+    "afterBytes": 293408,
+    "optimizedOn": "2026-10-12"
+  },
+  "interiors/archive/archive_ladder.glb": {
+    "sha": "ba34e6a655a26aba7f74bfa3e6d9f73d6619e77f87a01703fbc3226491c905ce",
+    "textureLimit": 1024,
+    "beforeBytes": 830976,
+    "afterBytes": 264820,
+    "optimizedOn": "2026-10-12"
+  },
+  "interiors/archive/archive_pendant_lamp.glb": {
+    "sha": "f23b79b7bebb02c0bc6506599f4e77a5ec520c481a5c0b788f4f648681a689cc",
+    "textureLimit": 1024,
+    "beforeBytes": 885868,
+    "afterBytes": 276228,
+    "optimizedOn": "2026-10-12"
+  },
+  "interiors/archive/archive_room.glb": {
+    "sha": "c7e1bf1a00b0f57f178e48318b7780cb036f251c838f2eff2a7a9cc97997ee48",
+    "textureLimit": 1024,
+    "beforeBytes": 941840,
+    "afterBytes": 301212,
+    "optimizedOn": "2026-10-12"
+  },
+  "interiors/archive/archive_shelf.glb": {
+    "sha": "aaeafcebd5a3083c9f050d8ec9f9cc43f237673df763c8fb0c03033630db3b42",
+    "textureLimit": 1024,
+    "beforeBytes": 886564,
+    "afterBytes": 282076,
+    "optimizedOn": "2026-10-12"
+  },
+  "interiors/archive/archive_table.glb": {
+    "sha": "f837ceb3c8945be948b402e1085feae5fcc994d8730c185685bfae7e9c1519ed",
+    "textureLimit": 1024,
+    "beforeBytes": 948344,
+    "afterBytes": 292500,
+    "optimizedOn": "2026-10-12"
+  },
+  "interiors/garage/garage_room.glb": {
+    "sha": "a9cb8cf664f06016bb1b2746e17b9f323723ae190c8112d0b1322b7ae81518e7",
+    "textureLimit": 1024,
+    "beforeBytes": 934592,
+    "afterBytes": 290628,
+    "optimizedOn": "2026-10-12"
+  },
+  "interiors/garage/garage_shelf.glb": {
+    "sha": "3ddc469e7009164617e5c3ec321730f5653d8294f169a30dee79f09462e4e58b",
+    "textureLimit": 1024,
+    "beforeBytes": 895300,
+    "afterBytes": 284644,
+    "optimizedOn": "2026-10-12"
+  },
+  "interiors/garage/garage_shutter.glb": {
+    "sha": "4c13d326384f078e9ea60a2dd9112584c2f220e3742403227686a0cce94fe6a6",
+    "textureLimit": 1024,
+    "beforeBytes": 850204,
+    "afterBytes": 259444,
+    "optimizedOn": "2026-10-12"
+  },
+  "interiors/garage/garage_tool_rack.glb": {
+    "sha": "0710e772f16eff33839ffc983ea291f08613af46888df28c5cd56447a9156918",
+    "textureLimit": 1024,
+    "beforeBytes": 857260,
+    "afterBytes": 269100,
+    "optimizedOn": "2026-10-12"
+  },
+  "interiors/garage/garage_workbench.glb": {
+    "sha": "548d94d2b9ddf1a445b1cd20dadda1ea48f06ae87bd2eddcf022d9ef1159375f",
+    "textureLimit": 1024,
+    "beforeBytes": 942380,
+    "afterBytes": 309484,
+    "optimizedOn": "2026-10-12"
+  },
+  "interiors/items/item_coins.glb": {
+    "sha": "0acea758ce969d5839db6a41d26fa27804182769ee2b463b52d8436551eb2366",
+    "textureLimit": 1024,
+    "beforeBytes": 876344,
+    "afterBytes": 279852,
+    "optimizedOn": "2026-10-12"
+  },
+  "interiors/items/item_evidence_bag.glb": {
+    "sha": "b4a589257d05b7b8c4c599799d77804ba57ce899af2078fa29a302068eed48f6",
+    "textureLimit": 1024,
+    "beforeBytes": 799280,
+    "afterBytes": 263832,
+    "optimizedOn": "2026-10-12"
+  },
+  "interiors/items/item_folder.glb": {
+    "sha": "59837843f5105c03b6f7d9be37038ea3da3dcdca377d9f67c9ee0d222698f606",
+    "textureLimit": 1024,
+    "beforeBytes": 871148,
+    "afterBytes": 279800,
+    "optimizedOn": "2026-10-12"
+  },
+  "interiors/items/item_keys.glb": {
+    "sha": "bcdd94c81f3e39795ecaf433072349b8086d3a2a974b0e0af136eaec5783e097",
+    "textureLimit": 1024,
+    "beforeBytes": 861396,
+    "afterBytes": 274816,
+    "optimizedOn": "2026-10-12"
+  },
+  "interiors/items/item_magnifier.glb": {
+    "sha": "2c7e52d7309f115523401b9170e72aa264ec7b719acbb26a78c6d77c247b02e9",
+    "textureLimit": 1024,
+    "beforeBytes": 794008,
+    "afterBytes": 258236,
+    "optimizedOn": "2026-10-12"
+  },
+  "interiors/items/item_map.glb": {
+    "sha": "6af39f6bd35e3f13bdb9110d498f22fdc9be64758577b6b2de03155859d28486",
+    "textureLimit": 1024,
+    "beforeBytes": 797052,
+    "afterBytes": 256828,
+    "optimizedOn": "2026-10-12"
+  },
+  "interiors/items/item_notebook.glb": {
+    "sha": "43be5f34c70d511a7987788e58f77c91dbce9fff828dc965125b40246ac2a240",
+    "textureLimit": 1024,
+    "beforeBytes": 868632,
+    "afterBytes": 275600,
+    "optimizedOn": "2026-10-12"
+  },
+  "interiors/items/item_passport.glb": {
+    "sha": "dc2ab597824681d5138e773dce74cedb5c7a8c45249cb03983c8b979a9600286",
+    "textureLimit": 1024,
+    "beforeBytes": 809588,
+    "afterBytes": 265548,
+    "optimizedOn": "2026-10-12"
+  },
+  "interiors/items/item_photographs.glb": {
+    "sha": "487acb219754be7b1603c93d2e231677f57daba224bd16e9cf855d7413da54c2",
+    "textureLimit": 1024,
+    "beforeBytes": 1136764,
+    "afterBytes": 339572,
+    "optimizedOn": "2026-10-12"
+  },
+  "interiors/items/item_tickets.glb": {
+    "sha": "7ab46b0f481d9aa8f6a41efdd5341c5b2bbba5a77877452e4f83169775636a51",
+    "textureLimit": 1024,
+    "beforeBytes": 986720,
+    "afterBytes": 311504,
+    "optimizedOn": "2026-10-12"
+  },
+  "interiors/office/office_chair.glb": {
+    "sha": "ba02f632dde4c07bc0ece15261acb862fe6100b06ab12f471111d2e6fbba87ba",
+    "textureLimit": 1024,
+    "beforeBytes": 814044,
+    "afterBytes": 260244,
+    "optimizedOn": "2026-10-12"
+  },
+  "interiors/office/office_corkboard.glb": {
+    "sha": "5c4e5a0d95bfac0e9d940ed2ec80b3d3d3b060edf93f90f82597e4edec4ab3d0",
+    "textureLimit": 1024,
+    "beforeBytes": 973924,
+    "afterBytes": 267524,
+    "optimizedOn": "2026-10-12"
+  },
+  "interiors/office/office_desk.glb": {
+    "sha": "d0728ada8f68d7a3359b4b1a02b7e46a755e0d4a1078adc3a16783ec2d257ec7",
+    "textureLimit": 1024,
+    "beforeBytes": 792648,
+    "afterBytes": 252688,
+    "optimizedOn": "2026-10-12"
+  },
+  "interiors/office/office_filing_cabinet.glb": {
+    "sha": "62143d71fc2777620a36c8e2500a5cff03ecde3c70a006e1356bfc21972d509f",
+    "textureLimit": 1024,
+    "beforeBytes": 765052,
+    "afterBytes": 247236,
+    "optimizedOn": "2026-10-12"
+  },
+  "interiors/office/office_lamp.glb": {
+    "sha": "2994f311f670cafb217598d92321e3efd9d7e85542ce1b73af99c8d83f71b26f",
+    "textureLimit": 1024,
+    "beforeBytes": 821840,
+    "afterBytes": 267884,
+    "optimizedOn": "2026-10-12"
+  },
+  "interiors/office/office_monitor.glb": {
+    "sha": "4440442890416d2f0c0882650b6c97e248ca088febc475a1cffa1431bbd3e858",
+    "textureLimit": 1024,
+    "beforeBytes": 882212,
+    "afterBytes": 282756,
+    "optimizedOn": "2026-10-12"
+  },
+  "interiors/office/office_papers.glb": {
+    "sha": "0d2fd2804dfdc1d37c1aefad63881f62667e72c9ad168e5d85a141fbd4ba33e1",
+    "textureLimit": 1024,
+    "beforeBytes": 1120696,
+    "afterBytes": 360564,
+    "optimizedOn": "2026-10-12"
+  },
+  "interiors/office/office_plant.glb": {
+    "sha": "c8de5566848a13788d08ff70f8a270157f773eba67a6a34d39de7b6e9e99fbe3",
+    "textureLimit": 1024,
+    "beforeBytes": 854236,
+    "afterBytes": 272980,
+    "optimizedOn": "2026-10-12"
+  },
+  "interiors/office/office_room.glb": {
+    "sha": "4ba7e1ea926c9889b6369ba59cdd593787ad1083cd4b825b63890bdb65eb7337",
+    "textureLimit": 1024,
+    "beforeBytes": 961584,
+    "afterBytes": 291988,
+    "optimizedOn": "2026-10-12"
+  },
+  "interiors/office/office_window.glb": {
+    "sha": "a27a2952e85d05e5430e71059da82ba585371a9e60f3d09daf78f3a8aa07f5d8",
+    "textureLimit": 1024,
+    "beforeBytes": 987344,
+    "afterBytes": 315748,
+    "optimizedOn": "2026-10-12"
+  },
+  "interiors/panel/panel_bench.glb": {
+    "sha": "4a2280720eb3a8eb30eb75ac7ea9821b41a42f70cb527f22d07d509421088db9",
+    "textureLimit": 1024,
+    "beforeBytes": 834696,
+    "afterBytes": 260760,
+    "optimizedOn": "2026-10-12"
+  },
+  "interiors/panel/panel_chair.glb": {
+    "sha": "812e0955a4140578317ffc0883e7338c222a4d7c113ea47ec2ccea2e9c515006",
+    "textureLimit": 1024,
+    "beforeBytes": 792828,
+    "afterBytes": 255536,
+    "optimizedOn": "2026-10-12"
+  },
+  "interiors/panel/panel_flag.glb": {
+    "sha": "1cdafb05c182e57dbfdc031f49638d3628dc447699b5c19eeb5b6fc9981d719d",
+    "textureLimit": 1024,
+    "beforeBytes": 796344,
+    "afterBytes": 261856,
+    "optimizedOn": "2026-10-12"
+  },
+  "interiors/panel/panel_gavel.glb": {
+    "sha": "4a0b7db6405af12a842ce6ed3801ac556d4c48fe6dc34cca501b4c557c7a7e5c",
+    "textureLimit": 1024,
+    "beforeBytes": 799120,
+    "afterBytes": 264120,
+    "optimizedOn": "2026-10-12"
+  },
+  "interiors/panel/panel_hall.glb": {
+    "sha": "facf429081192f29f4b84c3c9d555e37a71d18e51bf6009a9140f1b9c2500921",
+    "textureLimit": 1024,
+    "beforeBytes": 895536,
+    "afterBytes": 275644,
+    "optimizedOn": "2026-10-12"
+  },
+  "interiors/panel/panel_water_jug.glb": {
+    "sha": "ea8f37381f376b1966a2b1afa23f704ef0d38c44826c56cf40c302b10fa72a87",
+    "textureLimit": 1024,
+    "beforeBytes": 831924,
+    "afterBytes": 271492,
+    "optimizedOn": "2026-10-12"
+  },
+  "journey/journey_baobab.glb": {
+    "sha": "f7edf3db73428d15f1ed9446e42ac195aa3baf2cde11130b73ff7a99be884194",
+    "textureLimit": 1024,
+    "beforeBytes": 861224,
+    "afterBytes": 286756,
+    "optimizedOn": "2026-10-12"
+  },
+  "journey/journey_billboard.glb": {
+    "sha": "649a915f1fcddc3cff7028adcba82689bdefbf6c75c1eb4038ee141c74d180f1",
+    "textureLimit": 1024,
+    "beforeBytes": 769624,
+    "afterBytes": 245424,
+    "optimizedOn": "2026-10-12"
+  },
+  "journey/journey_boat.glb": {
+    "sha": "77ec9ecf437d499463f5c2acc34faf4ba06347cec3d1aea22035308c37d774c2",
+    "textureLimit": 1024,
+    "beforeBytes": 911208,
+    "afterBytes": 287608,
+    "optimizedOn": "2026-10-12"
+  },
+  "journey/journey_building.glb": {
+    "sha": "e6d5f930998013556f8272e332881cda69f59d83b0e1f5d533107f1bed50af95",
+    "textureLimit": 1024,
+    "beforeBytes": 1020452,
+    "afterBytes": 305680,
+    "optimizedOn": "2026-10-12"
+  },
+  "journey/journey_bus_parked.glb": {
+    "sha": "dcb10a8258b2b231bf69823831e6a40ed82ec9f8bc297d90c46a00db46b279f0",
+    "textureLimit": 1024,
+    "beforeBytes": 1141104,
+    "afterBytes": 345656,
+    "optimizedOn": "2026-10-12"
+  },
+  "journey/journey_bush.glb": {
+    "sha": "673a9aea6ec1c9ebd2b7419ac1fdc681ae966eda4e211c010a2d2899e6cc708f",
+    "textureLimit": 1024,
+    "beforeBytes": 802072,
+    "afterBytes": 272632,
+    "optimizedOn": "2026-10-12"
+  },
+  "journey/journey_busstop.glb": {
+    "sha": "413675a491de9ae566f05b306dbef6e7909da1454c819f22ee6348203fa8df6b",
+    "textureLimit": 1024,
+    "beforeBytes": 1012604,
+    "afterBytes": 312896,
+    "optimizedOn": "2026-10-12"
+  },
+  "journey/journey_cactus.glb": {
+    "sha": "6a3071e444b229869f3e0474d1bcbfdb75cd4133cc1076e2f7df75c7eff23e73",
+    "textureLimit": 1024,
+    "beforeBytes": 828868,
+    "afterBytes": 266068,
+    "optimizedOn": "2026-10-12"
+  },
+  "journey/journey_cloud_a.glb": {
+    "sha": "421c594d5152108383badd935f0d2a238c4e8e701fe03edb7e6f5573b6e00bf3",
+    "textureLimit": 1024,
+    "beforeBytes": 748676,
+    "afterBytes": 249452,
+    "optimizedOn": "2026-10-12"
+  },
+  "journey/journey_cloud_b.glb": {
+    "sha": "0b7120fffe29fae921b8cdce2379eb3717ebe70af92d143878998095f0810495",
+    "textureLimit": 1024,
+    "beforeBytes": 748972,
+    "afterBytes": 247088,
+    "optimizedOn": "2026-10-12"
+  },
+  "journey/journey_crop_field.glb": {
+    "sha": "e28d4833b58549580a0d7d46639043c731af2f3c8ca21c82b96d9479101bba2b",
+    "textureLimit": 1024,
+    "beforeBytes": 1051712,
+    "afterBytes": 382120,
+    "optimizedOn": "2026-10-12"
+  },
+  "journey/journey_garage.glb": {
+    "sha": "aa8259425095845a56963f700ec8a2a44aa3ac90413ee5ff60cb79377e3f6b9f",
+    "textureLimit": 1024,
+    "beforeBytes": 998632,
+    "afterBytes": 301480,
+    "optimizedOn": "2026-10-12"
+  },
+  "journey/journey_hangar.glb": {
+    "sha": "9b374ca0673b64b74a539b016f59be5ce26b586feb0502395c480d12c4120d8b",
+    "textureLimit": 1024,
+    "beforeBytes": 978404,
+    "afterBytes": 279816,
+    "optimizedOn": "2026-10-12"
+  },
+  "journey/journey_hill.glb": {
+    "sha": "5033ba26b3c1f1e89a11fe2235f83e6d67ad20213c1d46f866df2a39414fa6f9",
+    "textureLimit": 1024,
+    "beforeBytes": 652664,
+    "afterBytes": 214416,
+    "optimizedOn": "2026-10-12"
+  },
+  "journey/journey_hut.glb": {
+    "sha": "6af73a476266b65d399b83e440bdee0f48f0ba8e96e43499525175ff1d5d0886",
+    "textureLimit": 1024,
+    "beforeBytes": 1009276,
+    "afterBytes": 290908,
+    "optimizedOn": "2026-10-12"
+  },
+  "journey/journey_palm.glb": {
+    "sha": "30e049aaeff74fb70f7222436070fe52792790ddd867c394ccee442893fda6b7",
+    "textureLimit": 1024,
+    "beforeBytes": 870400,
+    "afterBytes": 292524,
+    "optimizedOn": "2026-10-12"
+  },
+  "journey/journey_pine.glb": {
+    "sha": "0347a8220397db58c10894d8eb375538bb743ecec7e97f17c289164db24d179c",
+    "textureLimit": 1024,
+    "beforeBytes": 867656,
+    "afterBytes": 287524,
+    "optimizedOn": "2026-10-12"
+  },
+  "journey/journey_pole.glb": {
+    "sha": "b90109fcd3ce0f8571158eff5481c1305261a4429366d0af45922ba28e436ff2",
+    "textureLimit": 1024,
+    "beforeBytes": 996760,
+    "afterBytes": 312328,
+    "optimizedOn": "2026-10-12"
+  },
+  "journey/journey_reed.glb": {
+    "sha": "1bc7b8a1120812a810e4d1ce3f8f44bac36db0f71f96bcc2b0ad66c591f1cdfa",
+    "textureLimit": 1024,
+    "beforeBytes": 975400,
+    "afterBytes": 332056,
+    "optimizedOn": "2026-10-12"
+  },
+  "journey/journey_rock.glb": {
+    "sha": "b96509d9cae017feacac5cada4596f0d83706f8a0528f8095fd34676cd0e5d6c",
+    "textureLimit": 1024,
+    "beforeBytes": 798220,
+    "afterBytes": 248816,
+    "optimizedOn": "2026-10-12"
+  },
+  "journey/journey_stall.glb": {
+    "sha": "ef169b5156172ab2f26928300bcc9fa76bd1e617dd0c960eb4dabeb1db2bb6f8",
+    "textureLimit": 1024,
+    "beforeBytes": 892180,
+    "afterBytes": 285112,
+    "optimizedOn": "2026-10-12"
+  },
+  "journey/journey_terminal.glb": {
+    "sha": "8de9886144828f45115cd9036b531810c09348d37b84816e9ea42a427d65ebc4",
+    "textureLimit": 1024,
+    "beforeBytes": 1102156,
+    "afterBytes": 338172,
+    "optimizedOn": "2026-10-12"
+  },
+  "journey/journey_tower.glb": {
+    "sha": "26d5efa7390a0a03805f9f59ff0a83dc6ea776c548db1f44d7c3485f8c84dd95",
+    "textureLimit": 1024,
+    "beforeBytes": 947812,
+    "afterBytes": 298716,
+    "optimizedOn": "2026-10-12"
+  },
+  "journey/journey_tree.glb": {
+    "sha": "610294c1c6b3384cbc755fc61fa5454a435cef9054d236658d3c5839c86f12e0",
+    "textureLimit": 1024,
+    "beforeBytes": 1016932,
+    "afterBytes": 322272,
+    "optimizedOn": "2026-10-12"
+  },
+  "props/street/barrier_road.glb": {
+    "sha": "84bef83776dbde14494f80d91ded404ee1ce6410359b7ea63f8947441d72a769",
+    "textureLimit": 1024,
+    "beforeBytes": 1237400,
+    "afterBytes": 323132,
+    "optimizedOn": "2026-10-12"
+  },
+  "props/street/bench_wood.glb": {
+    "sha": "9d97610205ac161cd1e2159a18553fb3df4f09952091b8ba9f7129afac167d3d",
+    "textureLimit": 1024,
+    "beforeBytes": 1427504,
+    "afterBytes": 361528,
+    "optimizedOn": "2026-10-12"
+  },
+  "props/street/bin.glb": {
+    "sha": "c811139469f95d16f225e0d92d0389fce2ae9b4edf06023a5a833a3df775f3b8",
+    "textureLimit": 1024,
+    "beforeBytes": 829048,
+    "afterBytes": 263784,
+    "optimizedOn": "2026-10-12"
+  },
+  "props/street/bollard.glb": {
+    "sha": "01bc73d8a8600aeaf68b14fddef9b46df4226163fd1b92bc0cbb14f1eb9577bf",
+    "textureLimit": 1024,
+    "beforeBytes": 1307272,
+    "afterBytes": 304520,
+    "optimizedOn": "2026-10-12"
+  },
+  "props/street/bunting.glb": {
+    "sha": "0358bcd9735436024576b16138b3fdabad014d43c15b11d1c3ac8b44427858e4",
+    "textureLimit": 1024,
+    "beforeBytes": 1062908,
+    "afterBytes": 318788,
+    "optimizedOn": "2026-10-12"
+  },
+  "props/street/chair_plastic.glb": {
+    "sha": "3dab73cbc71ca551e4f57131c6043e28dcc3ced26506bfe709fb0811e398e5df",
+    "textureLimit": 1024,
+    "beforeBytes": 769100,
+    "afterBytes": 260060,
+    "optimizedOn": "2026-10-12"
+  },
+  "props/street/cone_traffic.glb": {
+    "sha": "62e41336b405586ae736cfcd4d0b5a6679ab82dc09517a5fc0b54508a635f6bd",
+    "textureLimit": 1024,
+    "beforeBytes": 1010092,
+    "afterBytes": 273852,
+    "optimizedOn": "2026-10-12"
+  },
+  "props/street/crates_plastic.glb": {
+    "sha": "03d8543ef258c93fd1e14c1ed4cfb567a7561ee6ecb8768ca45d7a2367560e24",
+    "textureLimit": 1024,
+    "beforeBytes": 936312,
+    "afterBytes": 325516,
+    "optimizedOn": "2026-10-12"
+  },
+  "props/street/crates_wood.glb": {
+    "sha": "7de9cd647048485ba73093c8d426c7ae2a242fdc1003b5432222b6d8fdf7c2bf",
+    "textureLimit": 1024,
+    "beforeBytes": 1334288,
+    "afterBytes": 353024,
+    "optimizedOn": "2026-10-12"
+  },
+  "props/street/drum_oil.glb": {
+    "sha": "0ecdd317328e63e083bd80f7d8f6f80e26c9e067c3d8685e21732e364b1a59fa",
+    "textureLimit": 1024,
+    "beforeBytes": 928096,
+    "afterBytes": 238184,
+    "optimizedOn": "2026-10-12"
+  },
+  "props/street/fence_chainlink.glb": {
+    "sha": "4cacfe2ca737d0545fbec437b100bfa52f597a0802e8562a9bef2a200d95da1e",
+    "textureLimit": 1024,
+    "beforeBytes": 1194356,
+    "afterBytes": 397744,
+    "optimizedOn": "2026-10-12"
+  },
+  "props/street/fence_wood.glb": {
+    "sha": "d150808fd2c54e0054568969cc96b972449bb429b2c12bbe12ee650e4b3d8a0b",
+    "textureLimit": 1024,
+    "beforeBytes": 1254708,
+    "afterBytes": 337768,
+    "optimizedOn": "2026-10-12"
+  },
+  "props/street/generator.glb": {
+    "sha": "25a5c8f4d4e39c35b42976b6d2125bdeaf6aa7ad017de2865d309e402b11e5ea",
+    "textureLimit": 1024,
+    "beforeBytes": 1201388,
+    "afterBytes": 356856,
+    "optimizedOn": "2026-10-12"
+  },
+  "props/street/kiosk_small.glb": {
+    "sha": "fbedb0aeb86ef4382b47c39843bc0b562a12e78710432ed2c3cc6d885b78216e",
+    "textureLimit": 1024,
+    "beforeBytes": 1078980,
+    "afterBytes": 301928,
+    "optimizedOn": "2026-10-12"
+  },
+  "props/street/lamp_post.glb": {
+    "sha": "e3de92ba11cc0ce4ab6b5f5738a4cdef8bbe03ffda77b5e97f99a9fde8c12568",
+    "textureLimit": 1024,
+    "beforeBytes": 1174008,
+    "afterBytes": 348044,
+    "optimizedOn": "2026-10-12"
+  },
+  "props/street/market_cloth_stall.glb": {
+    "sha": "0c91aacb452401760694715f868fe422823000f568d620db852756405e74b69b",
+    "textureLimit": 1024,
+    "beforeBytes": 1471000,
+    "afterBytes": 380648,
+    "optimizedOn": "2026-10-12"
+  },
+  "props/street/market_pots_stall.glb": {
+    "sha": "b7afd3f719baa24c8176d41117bd241612046490d156520949f6774eb97482ba",
+    "textureLimit": 1024,
+    "beforeBytes": 1276684,
+    "afterBytes": 353724,
+    "optimizedOn": "2026-10-12"
+  },
+  "props/street/market_produce_table.glb": {
+    "sha": "4d0c3c13ec6889aca3a6fe39fc60b91499be237658647e62678f165d193fa924",
+    "textureLimit": 1024,
+    "beforeBytes": 1335640,
+    "afterBytes": 373880,
+    "optimizedOn": "2026-10-12"
+  },
+  "props/street/market_scale.glb": {
+    "sha": "17bf5dbdc79171afe570863174fade4b3c57b712a6ed93256b9a348ab07e447c",
+    "textureLimit": 1024,
+    "beforeBytes": 1135852,
+    "afterBytes": 314236,
+    "optimizedOn": "2026-10-12"
+  },
+  "props/street/market_stall_a.glb": {
+    "sha": "cbd9af200eb532454ceb2d31bda800b6b2100e76d343a96b5eeebfafbae6aa9b",
+    "textureLimit": 1024,
+    "beforeBytes": 1144628,
+    "afterBytes": 309204,
+    "optimizedOn": "2026-10-12"
+  },
+  "props/street/market_stall_b.glb": {
+    "sha": "ee87d2036cc9e97964a7137e48e1d2a88710cf8ed07c97024b5a7402db853dff",
+    "textureLimit": 1024,
+    "beforeBytes": 1194564,
+    "afterBytes": 328824,
+    "optimizedOn": "2026-10-12"
+  },
+  "props/street/market_umbrella.glb": {
+    "sha": "98ea6eaa144fa0a52fbc815f493c9d8c305c098febe6798651ac9c4e26a602f5",
+    "textureLimit": 1024,
+    "beforeBytes": 1020776,
+    "afterBytes": 303852,
+    "optimizedOn": "2026-10-12"
+  },
+  "props/street/pallet.glb": {
+    "sha": "3386ddfc3914e01f505646ce8632613189c25ee15cbb0b2f02547a327390dc9d",
+    "textureLimit": 1024,
+    "beforeBytes": 1206944,
+    "afterBytes": 313284,
+    "optimizedOn": "2026-10-12"
+  },
+  "props/street/pole_electric.glb": {
+    "sha": "09b3557ddb2e87667fa6cee053a35abd782c21d836e8f09d9e1ab17e2f7247d2",
+    "textureLimit": 1024,
+    "beforeBytes": 1250540,
+    "afterBytes": 360100,
+    "optimizedOn": "2026-10-12"
+  },
+  "props/street/sacks_stack.glb": {
+    "sha": "762d2cf6d9b8ba16fdd88f7bfb6f80fa5303d0463b3eafdf03750929aa7e96ce",
+    "textureLimit": 1024,
+    "beforeBytes": 2078452,
+    "afterBytes": 374596,
+    "optimizedOn": "2026-10-12"
+  },
+  "props/street/signboard_blank.glb": {
+    "sha": "7ddb115bc380d60c20ca5417738cf5c39fb948d6b84fd9d9f1b20890a1a17944",
+    "textureLimit": 1024,
+    "beforeBytes": 1426340,
+    "afterBytes": 349988,
+    "optimizedOn": "2026-10-12"
+  },
+  "props/street/standpipe.glb": {
+    "sha": "e4c569d798858222876c5ea3c7ebf7add5e230573477d9c5d3d55d356e5d2a29",
+    "textureLimit": 1024,
+    "beforeBytes": 1231096,
+    "afterBytes": 328120,
+    "optimizedOn": "2026-10-12"
+  },
+  "props/street/stool_wood.glb": {
+    "sha": "8f989dad0754192aec2f791d74939fe84527525214cc0bc1d0e8932bddc00f63",
+    "textureLimit": 1024,
+    "beforeBytes": 1370316,
+    "afterBytes": 305544,
+    "optimizedOn": "2026-10-12"
+  },
+  "props/street/table_plastic.glb": {
+    "sha": "97550f628a96be891477ee5a412312b103bafa5d633e770a1ca50f7cdbb8433f",
+    "textureLimit": 1024,
+    "beforeBytes": 775332,
+    "afterBytes": 237196,
+    "optimizedOn": "2026-10-12"
+  },
+  "props/street/tent_shade.glb": {
+    "sha": "63dbada65e5b5a34446cf41b7a0f4251969b6f9e7afa8f7e8e744e73f496f002",
+    "textureLimit": 1024,
+    "beforeBytes": 883716,
+    "afterBytes": 288696,
+    "optimizedOn": "2026-10-12"
+  },
+  "props/street/tyres_stack.glb": {
+    "sha": "66a7bf44f2d98e898d75007cfd2ad873bfaedd5759059cdb82aee1ba7a680d21",
+    "textureLimit": 1024,
+    "beforeBytes": 1087832,
+    "afterBytes": 281376,
+    "optimizedOn": "2026-10-12"
+  },
+  "props/street/water_tank_stand.glb": {
+    "sha": "b1d70eb869db4039c1d44216f3e99957f5c30e0481ad28c799618b5d62462b3b",
+    "textureLimit": 1024,
+    "beforeBytes": 1214552,
+    "afterBytes": 347704,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/airport/airport_checkin.glb": {
+    "sha": "024a216c573285306b3be9539d27a8d94bb28ba28bc053106123c6c9525566a6",
+    "textureLimit": 1024,
+    "beforeBytes": 850784,
+    "afterBytes": 270032,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/airport/airport_hangar.glb": {
+    "sha": "8d7f203ae82d1badef723b808937eac45f68d5575e96f9e91908a77a267964c3",
+    "textureLimit": 1024,
+    "beforeBytes": 894072,
+    "afterBytes": 286512,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/airport/airport_main.glb": {
+    "sha": "0cbca7bcb15018e50ae49cfc28dbcaba5b9f17a1b86a42f289f3e4cfab044408",
+    "textureLimit": 1024,
+    "beforeBytes": 742768,
+    "afterBytes": 228704,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/airport/airport_security_gate.glb": {
+    "sha": "4b6abb0f20d3632e1bcf36d036713c9f2c78c072432c454c37537de1b98ffb24",
+    "textureLimit": 1024,
+    "beforeBytes": 750412,
+    "afterBytes": 242600,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/airport/airport_tower.glb": {
+    "sha": "4bdec6982ad4c6e8fef090837f6033b11226770d935190533b5c91c5d83869a5",
+    "textureLimit": 1024,
+    "beforeBytes": 793696,
+    "afterBytes": 256996,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/airport/airport_trolley.glb": {
+    "sha": "07781d2c7565327a58f3d72b778d13f78615f9eb59ffba8f9bb3c6fbb0a1d5ef",
+    "textureLimit": 1024,
+    "beforeBytes": 828228,
+    "afterBytes": 275960,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/carnival_workshop/carnival_workshop_interior.glb": {
+    "sha": "ef14f70196f91fbc5d6c81a35805cc58b79c2a0c0da7285d161cae19d388c3b4",
+    "textureLimit": 1024,
+    "beforeBytes": 965616,
+    "afterBytes": 313908,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/carnival_workshop/carnival_workshop_main.glb": {
+    "sha": "b6ac78999a057bcfbf87224fef53f4b8543a30982ca4b2b8b475e92b39ad25af",
+    "textureLimit": 1024,
+    "beforeBytes": 982096,
+    "afterBytes": 289476,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/carnival_workshop/carnival_workshop_mannequin.glb": {
+    "sha": "871ce10995fe9d3f02c896e2c4f33281917e0984caedc79645610c297f02638e",
+    "textureLimit": 1024,
+    "beforeBytes": 1029580,
+    "afterBytes": 312052,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/cattle_market/cattle_market_hay.glb": {
+    "sha": "e86473ecb082d71f352119f9f6150114e1acdefd0e3a66239ce21aed27a06f37",
+    "textureLimit": 1024,
+    "beforeBytes": 960780,
+    "afterBytes": 283756,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/cattle_market/cattle_market_main.glb": {
+    "sha": "d4bd7344344f180ca764d9c9fca9ee649aaf871956e8b2692d37893bab8c581b",
+    "textureLimit": 1024,
+    "beforeBytes": 1039912,
+    "afterBytes": 316952,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/cattle_market/cattle_market_trough.glb": {
+    "sha": "35d9aa926040208a8bbab55864b3e08b27e2df9d5d2487a335471ba48664fac9",
+    "textureLimit": 1024,
+    "beforeBytes": 1173688,
+    "afterBytes": 355328,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/church/church_interior.glb": {
+    "sha": "d3f2681edbccdd6e12ead2e735bb6c6fb58ed08e760e634de6995267087cd1c8",
+    "textureLimit": 1024,
+    "beforeBytes": 897324,
+    "afterBytes": 282148,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/church/church_main.glb": {
+    "sha": "7adaeac8a09d0f96f942be4dadc1483e2e19a07f9fb4aff90a46b3bb0230b9f0",
+    "textureLimit": 1024,
+    "beforeBytes": 979456,
+    "afterBytes": 308032,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/church/church_noticeboard.glb": {
+    "sha": "5f1cd058224790ec08b8e203eabaf2444eeb00b0ec423923d63aab36ad11071a",
+    "textureLimit": 1024,
+    "beforeBytes": 833432,
+    "afterBytes": 272632,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/community_hall/community_hall_interior.glb": {
+    "sha": "6bfaffd03a96175159fedd48d7b182b88a239de8a11552ff896d9550e9e67c76",
+    "textureLimit": 1024,
+    "beforeBytes": 865992,
+    "afterBytes": 275236,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/community_hall/community_hall_main.glb": {
+    "sha": "251c23e3818ff29d611b90f56bb9bb913638aebedd66388002c3a0dfeb4faa6b",
+    "textureLimit": 1024,
+    "beforeBytes": 877312,
+    "afterBytes": 283680,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/conservation_office/conservation_office_main.glb": {
+    "sha": "7d9e2a5b3e114632d86724ec68540da615275d88cab1fd36069a411e72529b75",
+    "textureLimit": 1024,
+    "beforeBytes": 1023176,
+    "afterBytes": 334100,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/conservation_office/conservation_office_mast.glb": {
+    "sha": "e645960fa7659fae1e9690a412c1b2cf7a4c764ad87a4185aa2276ceff518879",
+    "textureLimit": 1024,
+    "beforeBytes": 979820,
+    "afterBytes": 327224,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/conservation_office/conservation_office_noticeboard.glb": {
+    "sha": "633ec149214bd3d99adb80f48bde84e56b7dde8a60e7d0d4b1ec3f4508b47ff1",
+    "textureLimit": 1024,
+    "beforeBytes": 817208,
+    "afterBytes": 269140,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/craft_market/craft_market_dye_vat.glb": {
+    "sha": "70f0b9bc6a3f6dd6b1ca1221bae62727c932245813e5df08ddc6c5e41d9597ba",
+    "textureLimit": 1024,
+    "beforeBytes": 1017512,
+    "afterBytes": 319504,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/craft_market/craft_market_forge.glb": {
+    "sha": "cd247782e4bf1dc72a39a01747a0a3358c17c3c0aba9fab6d0e9dc3c03b912e1",
+    "textureLimit": 1024,
+    "beforeBytes": 783596,
+    "afterBytes": 259812,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/craft_market/craft_market_loom.glb": {
+    "sha": "6bf42f4b5537af1bf7ff942d42e60bc6ad8b54c3c346fb37ee758d5a10d12be9",
+    "textureLimit": 1024,
+    "beforeBytes": 1086972,
+    "afterBytes": 334396,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/craft_market/craft_market_main.glb": {
+    "sha": "f7760a2fc31590972e1908f92343e958093994da908364539aaa6efa88d5facd",
+    "textureLimit": 1024,
+    "beforeBytes": 1015728,
+    "afterBytes": 322872,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/craft_market/craft_market_masks.glb": {
+    "sha": "52971595e9683552a6c7724c3ff0771e64dc7e45b0742acd4798e3d22ba070e5",
+    "textureLimit": 1024,
+    "beforeBytes": 867564,
+    "afterBytes": 277524,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/emir_palace/emir_palace_courtyard.glb": {
+    "sha": "83197441a1f6dbe751895b0b08bb31aa9b4328aceda5f4cb083afddd97e0b504",
+    "textureLimit": 1024,
+    "beforeBytes": 914988,
+    "afterBytes": 283360,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/emir_palace/emir_palace_main.glb": {
+    "sha": "4b5d56cef2f864237ea3ffbcfed130a781ac559a351f27cf1ec71325c5b210bc",
+    "textureLimit": 1024,
+    "beforeBytes": 1084648,
+    "afterBytes": 331076,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/emir_palace/emir_palace_umbrella.glb": {
+    "sha": "59bb8aa6dce67826930fe16061a2e34b3d602a16510f64c3a74bb82af4bdede6",
+    "textureLimit": 1024,
+    "beforeBytes": 1171768,
+    "afterBytes": 344764,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/factory_gate/factory_gate_chimney.glb": {
+    "sha": "957cd538735d3f7f93c859a906ef5054e1c0a45fe858eee8b513b4a8fda6ea97",
+    "textureLimit": 1024,
+    "beforeBytes": 853656,
+    "afterBytes": 286676,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/factory_gate/factory_gate_guardhouse.glb": {
+    "sha": "4cfbd637a0579bbf0ed319e0d2311a0e644764f4aae6666b635029df3be6a1be",
+    "textureLimit": 1024,
+    "beforeBytes": 747928,
+    "afterBytes": 238164,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/factory_gate/factory_gate_main.glb": {
+    "sha": "9644ad8f043ed78eb32fab09e69ff45eb35df80c814923e73ea62bf6a966e338",
+    "textureLimit": 1024,
+    "beforeBytes": 1095192,
+    "afterBytes": 328836,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/festival_ground/festival_ground_drum_set.glb": {
+    "sha": "1be285771d92e9140754bb3a7ec28a2f7f889b5eab66b606171dbaa8f9f59c82",
+    "textureLimit": 1024,
+    "beforeBytes": 1091148,
+    "afterBytes": 341308,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/festival_ground/festival_ground_grill.glb": {
+    "sha": "338b55dcc7677d295ede2535387beb07e0fc7e4cd960d34ae8ba96d198a6d8db",
+    "textureLimit": 1024,
+    "beforeBytes": 1021008,
+    "afterBytes": 323620,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/festival_ground/festival_ground_main.glb": {
+    "sha": "9d7f838a0ee2dbdf58eda422af6790b57074ad6c643fcc6467d0abebac45ea7d",
+    "textureLimit": 1024,
+    "beforeBytes": 857572,
+    "afterBytes": 282524,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/festival_ground/festival_ground_pavilion.glb": {
+    "sha": "34a89671eb52caa06273f5ca8854a34ecd7095f54a2442acdd6daa78defc839b",
+    "textureLimit": 1024,
+    "beforeBytes": 859912,
+    "afterBytes": 283020,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/festival_ground/festival_ground_speakers.glb": {
+    "sha": "99e4b36c67d471108acfa4817cbe64858d394ea44cda95bf3201786d55fb8913",
+    "textureLimit": 1024,
+    "beforeBytes": 857028,
+    "afterBytes": 263160,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/hospital/hospital_interior.glb": {
+    "sha": "92c344c1b6c7c9959f5f60c917bcd068e956c6ebdf0373c5b5575281a406ad34",
+    "textureLimit": 1024,
+    "beforeBytes": 844084,
+    "afterBytes": 270044,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/hospital/hospital_main.glb": {
+    "sha": "8d1168bc92996adf36f4794f47d8936c4da644d1ee05ced56b3766025cb0540f",
+    "textureLimit": 1024,
+    "beforeBytes": 753748,
+    "afterBytes": 241112,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/hospital/hospital_stretcher.glb": {
+    "sha": "25c5a6761c7d961d77ac0cb5ca6e09268ff2bc6345820f51ced071c70764f678",
+    "textureLimit": 1024,
+    "beforeBytes": 793924,
+    "afterBytes": 268448,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/hospital/hospital_wheelchair.glb": {
+    "sha": "74dbf9754a614f51e9b69f17e5b38178af6d58a9e245f317f0bd5d24715a1fc6",
+    "textureLimit": 1024,
+    "beforeBytes": 754772,
+    "afterBytes": 259736,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/hotel/hotel_interior.glb": {
+    "sha": "0e43a9157824c7cc541f94b93f6197d170a5203de5220cf08e7530871bda2c15",
+    "textureLimit": 1024,
+    "beforeBytes": 943352,
+    "afterBytes": 287064,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/hotel/hotel_main.glb": {
+    "sha": "88969f6943a24a1d45b535aac0cda07fbb9e59a4f2425a9f92223279e68be6b9",
+    "textureLimit": 1024,
+    "beforeBytes": 1105760,
+    "afterBytes": 316168,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/hotel/hotel_trolley.glb": {
+    "sha": "1014b842df059e86ed2afd477ba33e17a5b09d226d1decd5104d0eed0608312d",
+    "textureLimit": 1024,
+    "beforeBytes": 967660,
+    "afterBytes": 311116,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/library/library_bookshelf.glb": {
+    "sha": "bc22ae4c9e24c5d5943e9cb96569c084ec1e557d7b9bdc0a1f281320782303cf",
+    "textureLimit": 1024,
+    "beforeBytes": 830972,
+    "afterBytes": 266392,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/library/library_interior.glb": {
+    "sha": "55d11ef6d845ae345ea400c3cd90cd6926505bb6757630852d8ec1b899a7f649",
+    "textureLimit": 1024,
+    "beforeBytes": 849292,
+    "afterBytes": 282308,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/library/library_main.glb": {
+    "sha": "c221e1fe69348f80c8e6a829ba95dffd1e86b6b934d25066c1fc69de2d8862b4",
+    "textureLimit": 1024,
+    "beforeBytes": 904584,
+    "afterBytes": 283776,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/market/market_main.glb": {
+    "sha": "b5e3bc08a588e4df19c211b4f423def6dc1b2aaef9459450002e1870dbc5a9b2",
+    "textureLimit": 1024,
+    "beforeBytes": 1096100,
+    "afterBytes": 322376,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/market/market_shopfront.glb": {
+    "sha": "4550613a7dc79bfa3dbd06b6a60b62e3fd6087bc8cafa4df068e3d48a4b74064",
+    "textureLimit": 1024,
+    "beforeBytes": 898240,
+    "afterBytes": 282884,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/monument/monument_main.glb": {
+    "sha": "282d2752c6823565061a83ed518c7206dc07a38fabff47e8554efdf6be849fe3",
+    "textureLimit": 1024,
+    "beforeBytes": 1017784,
+    "afterBytes": 301696,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/monument/monument_plaque.glb": {
+    "sha": "6396c5ebf87b732c69df44b22e8f4ed8adc20b173cdae600fef8c78d64e2c76b",
+    "textureLimit": 1024,
+    "beforeBytes": 771776,
+    "afterBytes": 244520,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/mosque/mosque_ablution.glb": {
+    "sha": "4a52e17578eea4106b33d12a8d0a918232428fa2895ccf0514180ac2994c46ad",
+    "textureLimit": 1024,
+    "beforeBytes": 891804,
+    "afterBytes": 286692,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/mosque/mosque_interior.glb": {
+    "sha": "74d0854253446bab3f63262c77cc9de67a4d3f23c46f613e43a396cf46de8021",
+    "textureLimit": 1024,
+    "beforeBytes": 1094636,
+    "afterBytes": 300812,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/mosque/mosque_main.glb": {
+    "sha": "2b5e18a1ef9756cda88d6d7b6d2149c8a939420bc210c92aaf34615864222d93",
+    "textureLimit": 1024,
+    "beforeBytes": 1058120,
+    "afterBytes": 318712,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/motor_park/motor_park_board.glb": {
+    "sha": "fa935ae153ecb45d9b19c2e8f362c6e0e6aebfb8d0cc4783661fcca0db64c46c",
+    "textureLimit": 1024,
+    "beforeBytes": 773736,
+    "afterBytes": 248408,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/motor_park/motor_park_kiosk.glb": {
+    "sha": "f54937592e675694615c66fdb086862cd6d604ab35b446ac09e2f9a28d2b19c6",
+    "textureLimit": 1024,
+    "beforeBytes": 863408,
+    "afterBytes": 279780,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/motor_park/motor_park_main.glb": {
+    "sha": "444773c049b58924f3c5af3049ba3fc41500a5672991dde3a3eb44e0d63adfe6",
+    "textureLimit": 1024,
+    "beforeBytes": 910292,
+    "afterBytes": 295264,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/motor_park/motor_park_mechanic.glb": {
+    "sha": "0ce8391500632c9379ba22fd136e7dd1f04d874a9b3ffdb48c558bcfee49cfab",
+    "textureLimit": 1024,
+    "beforeBytes": 865952,
+    "afterBytes": 291916,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/museum/museum_bronze_head.glb": {
+    "sha": "bba51927f57c778de62f27daff5f2d31a82abd4bdc1881b78435e345d7253af2",
+    "textureLimit": 1024,
+    "beforeBytes": 833940,
+    "afterBytes": 261952,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/museum/museum_display_case.glb": {
+    "sha": "f45c4cd7942512c77a9da1115a3f3e46feab727bb5675fc0bdeb8abe24844fae",
+    "textureLimit": 1024,
+    "beforeBytes": 912408,
+    "afterBytes": 287264,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/museum/museum_interior.glb": {
+    "sha": "e434d72bb0ef4373bc6016ac225060ae9dfa623cb6ec3fcff804c2c812e1fd55",
+    "textureLimit": 1024,
+    "beforeBytes": 931128,
+    "afterBytes": 283988,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/museum/museum_main.glb": {
+    "sha": "3594b9ac86b30f1cfd0d0210f42d6e69e9f26899a79255faecc4f7c75481bc07",
+    "textureLimit": 1024,
+    "beforeBytes": 1198192,
+    "afterBytes": 361480,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/nightclub/nightclub_dj_booth.glb": {
+    "sha": "445e4b35cbfd60f189f6c7a9ba418d61c811b14b3900a85a26607af62c078e8c",
+    "textureLimit": 1024,
+    "beforeBytes": 842320,
+    "afterBytes": 261900,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/nightclub/nightclub_interior.glb": {
+    "sha": "29db572fafc6138c4f3c551746107a9122ace6da7dac313d7967bb180c5c5320",
+    "textureLimit": 1024,
+    "beforeBytes": 920160,
+    "afterBytes": 312236,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/nightclub/nightclub_main.glb": {
+    "sha": "0e674ca42268fb523859c3d259939b4804975c577ee0ce2a9a5f1753130d90ff",
+    "textureLimit": 1024,
+    "beforeBytes": 963544,
+    "afterBytes": 291332,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/palace/palace_guard_box.glb": {
+    "sha": "29919119709be2c4c2e648004dab511bf8e631bde04488255274c7ca237c8c61",
+    "textureLimit": 1024,
+    "beforeBytes": 881252,
+    "afterBytes": 288336,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/palace/palace_interior.glb": {
+    "sha": "b056249c3076e255ba4b1b45e50c46a302c48e031beaf753b45136d7841ac189",
+    "textureLimit": 1024,
+    "beforeBytes": 1027424,
+    "afterBytes": 317320,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/palace/palace_main.glb": {
+    "sha": "fe1ab5c7de5fa264a092dc1c345047a9c02b89bf22b931f3959950f373f95179",
+    "textureLimit": 1024,
+    "beforeBytes": 1206424,
+    "afterBytes": 358880,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/police_station/police_station_barrier.glb": {
+    "sha": "33312cc4c55fa352a89d0483ab146686ad23fde8b2a8e428d8d2241171f7ae1c",
+    "textureLimit": 1024,
+    "beforeBytes": 802600,
+    "afterBytes": 260068,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/police_station/police_station_interior.glb": {
+    "sha": "4b5d163475edf93a64904ae83b2a680153975d87aa13c8c06e9004a561c21703",
+    "textureLimit": 1024,
+    "beforeBytes": 798624,
+    "afterBytes": 254032,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/police_station/police_station_main.glb": {
+    "sha": "547bb77a6ea460577de4fc749b394d48b6ecf91b15e7979ab91f3f428842efdd",
+    "textureLimit": 1024,
+    "beforeBytes": 833524,
+    "afterBytes": 276532,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/radio_station/radio_station_interior.glb": {
+    "sha": "c98fd9d7409c67514bbdca93f735e4ee2a65d6ff8655392b7efda2028d6da193",
+    "textureLimit": 1024,
+    "beforeBytes": 851024,
+    "afterBytes": 272664,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/radio_station/radio_station_main.glb": {
+    "sha": "ca5a44ec573a07273a2fc295feb378091fd3f19005c4488dd60b946befe0f476",
+    "textureLimit": 1024,
+    "beforeBytes": 816576,
+    "afterBytes": 274020,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/radio_station/radio_station_mast.glb": {
+    "sha": "c04e4bf51a80c5d21fc2ff42844daa9cc7a0915e14eb537c61c2dc79e3ea7ad6",
+    "textureLimit": 1024,
+    "beforeBytes": 833160,
+    "afterBytes": 290320,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/railway_station/railway_station_main.glb": {
+    "sha": "77023f3dd2f04ee05215de6df0b63b6f38035026e392ca9f05564cad0f19a116",
+    "textureLimit": 1024,
+    "beforeBytes": 830276,
+    "afterBytes": 276992,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/railway_station/railway_station_platform_bench.glb": {
+    "sha": "7652911499aa666922da427a6d1e480c9cef30dd6e5367a4d441bf198a95171b",
+    "textureLimit": 1024,
+    "beforeBytes": 756228,
+    "afterBytes": 253164,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/railway_station/railway_station_signal.glb": {
+    "sha": "be26854f427a2f20d7a68e9df81de48fe820e08eded71c9c436044d961bdfb6d",
+    "textureLimit": 1024,
+    "beforeBytes": 777368,
+    "afterBytes": 251028,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/railway_station/railway_station_track.glb": {
+    "sha": "506d178aaaaf4d6c03b8d60461c6dbc46b64624132facc9b908e643febcc35c8",
+    "textureLimit": 1024,
+    "beforeBytes": 824400,
+    "afterBytes": 265144,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/railway_station/railway_station_trolley.glb": {
+    "sha": "faad9e00cae32e01c795b96a3c1e2e0463dbc41e7ead5ae7005350b7c54ae9e4",
+    "textureLimit": 1024,
+    "beforeBytes": 841864,
+    "afterBytes": 280072,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/refinery/refinery_cabin.glb": {
+    "sha": "118a790b9eb314db045c522219ee7b4f44ef803e7385b5e42b00066926e72e42",
+    "textureLimit": 1024,
+    "beforeBytes": 904760,
+    "afterBytes": 288504,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/refinery/refinery_flare_stack.glb": {
+    "sha": "9ad81d2a5416fdf7c7c8b41540e3d161903b61ef66a8aa3ac25fe25f6d68dd5e",
+    "textureLimit": 1024,
+    "beforeBytes": 869704,
+    "afterBytes": 275100,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/refinery/refinery_main.glb": {
+    "sha": "fa9ee0e5183de9a1171076c570fa02398c46c24dfb896a80bf8d1fc7cb657f62",
+    "textureLimit": 1024,
+    "beforeBytes": 924000,
+    "afterBytes": 308996,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/refinery/refinery_pipes.glb": {
+    "sha": "242c4049fad90b9daeff415186e63d43354e3d4b2acc7f6ca7b6287f449bd96c",
+    "textureLimit": 1024,
+    "beforeBytes": 849800,
+    "afterBytes": 282868,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/refinery/refinery_tank.glb": {
+    "sha": "9c0906216da52683668c6ace0e939fd775595f17a107c5b76ae5feadfaf9bc06",
+    "textureLimit": 1024,
+    "beforeBytes": 871268,
+    "afterBytes": 287752,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/restaurant/restaurant_interior.glb": {
+    "sha": "0c0a069090fb62288c5323c792696880d84dcd04d191199a40e3d918922d161a",
+    "textureLimit": 1024,
+    "beforeBytes": 965656,
+    "afterBytes": 308240,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/restaurant/restaurant_kitchen.glb": {
+    "sha": "95caebe7208da8c19796ec1b0e3c37c9c44c119b55b5b9845523bc168e4b9a79",
+    "textureLimit": 1024,
+    "beforeBytes": 841288,
+    "afterBytes": 265400,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/restaurant/restaurant_main.glb": {
+    "sha": "22964e6426e9b69f9642d0e2600a05063557ccd4307906dae9debff204c06546",
+    "textureLimit": 1024,
+    "beforeBytes": 1026652,
+    "afterBytes": 321636,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/sacred_grove/sacred_grove_main.glb": {
+    "sha": "a6e7c0871aa60ce2c92229a6c6e888328e6adefbdbb2c53db45e839783722fd4",
+    "textureLimit": 1024,
+    "beforeBytes": 1117880,
+    "afterBytes": 352048,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/sacred_grove/sacred_grove_shelter.glb": {
+    "sha": "dfc564e204d594c8d7d0979d8f4aeb94f6b8925e76add5e1baaf5ad2b4b64c9f",
+    "textureLimit": 1024,
+    "beforeBytes": 828168,
+    "afterBytes": 266100,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/sacred_grove/sacred_grove_shrine.glb": {
+    "sha": "1d352392fbd67d9b67c77806ce0ea9006ffaf9929fdb600acb5d67fbcd3ce2c8",
+    "textureLimit": 1024,
+    "beforeBytes": 1074560,
+    "afterBytes": 333428,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/traditional_council/traditional_council_interior.glb": {
+    "sha": "b26406ba36b008a6b04aea97a08909868450a72f2e253909fbaf6376a879b538",
+    "textureLimit": 1024,
+    "beforeBytes": 870596,
+    "afterBytes": 279568,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/traditional_council/traditional_council_main.glb": {
+    "sha": "0b39a0a128692dfff07eeb1a15563d336838480ccf314193b36fe6f11ec2d474",
+    "textureLimit": 1024,
+    "beforeBytes": 950712,
+    "afterBytes": 287484,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/traditional_council/traditional_council_throne.glb": {
+    "sha": "c1c35e8ffb2cbcdb5a5ad473210a4f963e4f91d1ce75d568e43e7460e23c2ca4",
+    "textureLimit": 1024,
+    "beforeBytes": 823960,
+    "afterBytes": 262888,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/university/university_interior.glb": {
+    "sha": "5bee6d06864a76fa1fb2f65412e38656d0234b58148491cab8643bed8f249fdc",
+    "textureLimit": 1024,
+    "beforeBytes": 775572,
+    "afterBytes": 255456,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/university/university_lectern.glb": {
+    "sha": "4c443b044083dfe712b31960be2d41c6ffa2fe1b1063825aa6e05d04722d9677",
+    "textureLimit": 1024,
+    "beforeBytes": 740028,
+    "afterBytes": 239536,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/university/university_main.glb": {
+    "sha": "f493ab589101b3fd414b822dff05ee371147e387c857017c3e48a647811809e6",
+    "textureLimit": 1024,
+    "beforeBytes": 931244,
+    "afterBytes": 297412,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/beach/beach_lifeguard_tower.glb": {
+    "sha": "7703324048d4aaaa50de8b975787eb7d949e8e4b79267269c4bad41023b86c5e",
+    "textureLimit": 1024,
+    "beforeBytes": 905956,
+    "afterBytes": 283780,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/beach/beach_main.glb": {
+    "sha": "d6c7b9f2851fc244499b4920c5c7702860f737b694d303cca5c733aa40498ce4",
+    "textureLimit": 1024,
+    "beforeBytes": 945352,
+    "afterBytes": 314216,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/beach/beach_net_rack.glb": {
+    "sha": "2beac3a8e6c8b636013dc9a7d8af53bd74830917d5aaaee2e4325efbfcb3c4e0",
+    "textureLimit": 1024,
+    "beforeBytes": 959580,
+    "afterBytes": 329824,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/beach/beach_palm.glb": {
+    "sha": "511180da821955dca63566c19d00ad17851fcbe8233fcf97756e30e04f5c5472",
+    "textureLimit": 1024,
+    "beforeBytes": 775168,
+    "afterBytes": 255976,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/beach/beach_umbrella.glb": {
+    "sha": "1c9749baf6e66dcf1d46f522564a194bc8c952c53a7eb293885c127caf632c3a",
+    "textureLimit": 1024,
+    "beforeBytes": 846396,
+    "afterBytes": 280472,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/farm/farm_crop_rows.glb": {
+    "sha": "211e8149feba47103120343b9048e631dd006b03ffee9e17b777ae5052e1b2c4",
+    "textureLimit": 1024,
+    "beforeBytes": 1027788,
+    "afterBytes": 342956,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/farm/farm_goat_pen.glb": {
+    "sha": "6384aff2382df2b7dd1c3a4bffbab77f536c63b4f077cec9273dff2132add23a",
+    "textureLimit": 1024,
+    "beforeBytes": 820536,
+    "afterBytes": 265872,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/farm/farm_main.glb": {
+    "sha": "13fdfd37001f391e2c26ee18981e294e093c0ef3fe43a035cbc99042fc4eed50",
+    "textureLimit": 1024,
+    "beforeBytes": 988636,
+    "afterBytes": 308684,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/farm/farm_scarecrow.glb": {
+    "sha": "122bd3af020089ca2dd5c0534574d7903ad7fb701459b29c16babcca36f48608",
+    "textureLimit": 1024,
+    "beforeBytes": 940616,
+    "afterBytes": 296404,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/farm/farm_yam_mounds.glb": {
+    "sha": "e25d26552dd1b21ac10a27cb3540de6fad8d88ac94b84d0474bc92b66829add9",
+    "textureLimit": 1024,
+    "beforeBytes": 790628,
+    "afterBytes": 263808,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/fishing_jetty/fishing_jetty_fish_crates.glb": {
+    "sha": "a7f0e749a858b5eefada4f0c334d1820ea5aadcb102acf91731cdd94658f99c4",
+    "textureLimit": 1024,
+    "beforeBytes": 1133312,
+    "afterBytes": 393304,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/fishing_jetty/fishing_jetty_hut.glb": {
+    "sha": "9af74676d3595d92e29e49c3be3600a7f45c26486e671f1d23cb13986bf5fd3d",
+    "textureLimit": 1024,
+    "beforeBytes": 945808,
+    "afterBytes": 298504,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/fishing_jetty/fishing_jetty_main.glb": {
+    "sha": "9e86d27dcfe6eae60fc93e50df966a60e593794d5a4461aeb860ba66d243e324",
+    "textureLimit": 1024,
+    "beforeBytes": 1051612,
+    "afterBytes": 320256,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/jetty/jetty_luggage.glb": {
+    "sha": "cfc0a94dde169a3da173fd34a7b0fe5d2d0ee10eb09939e3108bc4dd8377313a",
+    "textureLimit": 1024,
+    "beforeBytes": 926116,
+    "afterBytes": 298272,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/jetty/jetty_main.glb": {
+    "sha": "9843f937c0d7a9afda22970188271b5ddac042f78afcf61eacb45d87ae2424c7",
+    "textureLimit": 1024,
+    "beforeBytes": 903344,
+    "afterBytes": 281920,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/jetty/jetty_route_board.glb": {
+    "sha": "8f7e1338df63cd27f703a9b082a474a758ef3e14aea270e36e59e9d6de9cb910",
+    "textureLimit": 1024,
+    "beforeBytes": 746492,
+    "afterBytes": 242384,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/mining_site/mining_site_cabin.glb": {
+    "sha": "67b0df0b2f1355fa3bbe6529d43f186035f6173020eb9247de5b7214a9cd94fc",
+    "textureLimit": 1024,
+    "beforeBytes": 956304,
+    "afterBytes": 301528,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/mining_site/mining_site_conveyor.glb": {
+    "sha": "f1ebc3c026605c6858c41a77c055b19a172258cdc2946938b3906ff12017cd91",
+    "textureLimit": 1024,
+    "beforeBytes": 883492,
+    "afterBytes": 289856,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/mining_site/mining_site_crusher.glb": {
+    "sha": "aa181422c35b17f0f2584126ccbcf95f15215fe8dac4acf3b3119450fa695bd9",
+    "textureLimit": 1024,
+    "beforeBytes": 985248,
+    "afterBytes": 300968,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/mining_site/mining_site_main.glb": {
+    "sha": "b1f9530ca34a737e36ef808f07cbec0bda300106b8aa8736ca1d2f05463567ed",
+    "textureLimit": 1024,
+    "beforeBytes": 998384,
+    "afterBytes": 290620,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/mining_site/mining_site_rock_heap.glb": {
+    "sha": "8bfa87a627f896578c9d3b76bb7d31d3bb4d2a6205f4208ae7414b3427dc3410",
+    "textureLimit": 1024,
+    "beforeBytes": 856332,
+    "afterBytes": 272028,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/seaport/seaport_containers.glb": {
+    "sha": "8fe0ea2f3210b89238fe6929807164a8ed8f86ba89bbbeeeb9c0685f18873550",
+    "textureLimit": 1024,
+    "beforeBytes": 1036832,
+    "afterBytes": 311208,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/seaport/seaport_crane.glb": {
+    "sha": "80d053610e779b391208798f5e32b4e68c845479f743fbda8f59f31d652141dc",
+    "textureLimit": 1024,
+    "beforeBytes": 891220,
+    "afterBytes": 269772,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/seaport/seaport_customs_shed.glb": {
+    "sha": "bd1eeeb630719b4af1e99313a4aa02df31e52383ba084d9ba65cd75fdaff2655",
+    "textureLimit": 1024,
+    "beforeBytes": 871400,
+    "afterBytes": 277464,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/seaport/seaport_forklift.glb": {
+    "sha": "ab15222bc49b9d733bbc26851fc10f7a98e9186a942f98310b156e009b3c5c6b",
+    "textureLimit": 1024,
+    "beforeBytes": 957820,
+    "afterBytes": 300564,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/seaport/seaport_main.glb": {
+    "sha": "5ff88e6588f4476628481af813e5cb67641b8cabd7dfeb9a3050d58e63ce11e4",
+    "textureLimit": 1024,
+    "beforeBytes": 966744,
+    "afterBytes": 289056,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/waterfront/waterfront_baskets.glb": {
+    "sha": "c7ef2311eb97e5ff7a6493be77a6f9fc7f488c54acacbae8e95e001d23bfac14",
+    "textureLimit": 1024,
+    "beforeBytes": 996400,
+    "afterBytes": 313776,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/waterfront/waterfront_bollards.glb": {
+    "sha": "b4d92b9701cfb956a03fe38df17c63eefdabc5100dacee5b8986f8cddd75544e",
+    "textureLimit": 1024,
+    "beforeBytes": 820020,
+    "afterBytes": 261512,
+    "optimizedOn": "2026-10-12"
+  },
+  "venues/waterfront/waterfront_main.glb": {
+    "sha": "1b86ff51c51f40df51702519b4565fd7f2447df7f868175b964c132ebca9d339",
+    "textureLimit": 1024,
+    "beforeBytes": 902308,
+    "afterBytes": 276544,
+    "optimizedOn": "2026-10-12"
+  }
+}

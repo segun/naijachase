@@ -37,7 +37,7 @@ test("the 3D scene is lazy and the 2D panel is the fallback", () => {
   const view = read("scenes/panel/PanelScene.svelte");
   assert.match(view, /import\("\.\/chase3d-panel\.ts"\)/);
   assert.match(view, /<PanelPresentation/);
-  assert.match(view, /decideScene/);
+  assert.match(view, /detail\.resolved/);
   assert.match(read("App.svelte"), /scenes\/panel\/PanelScene\.svelte/);
   for (const file of ["scenes/panel/panel-scene.ts", "scenes/panel/PanelScene.svelte"]) assert.doesNotMatch(read(file), /@babylonjs/);
   assert.match(view, /if \(verdict\) return;/, "the stall watchdog must not hand over once the verdict is showing");

@@ -13,5 +13,5 @@
     "allowImportingTsExtensions": true,
     "noEmit": true
   },
-  "include": ["src/**/*.ts", "src/**/*.svelte", "vite.config.ts"]
+  "include": ["src/**/*.ts", "src/**/*.svelte", "vite.config.ts", "dev/asset-viewer.ts", "dev/garage-preview.ts"]
 }

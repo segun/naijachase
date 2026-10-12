@@ -8,6 +8,13 @@ import { HemisphericLight } from "@babylonjs/core/Lights/hemisphericLight";
 import { DirectionalLight } from "@babylonjs/core/Lights/directionalLight";
 import { ShadowGenerator } from "@babylonjs/core/Lights/Shadows/shadowGenerator";
 import "@babylonjs/core/Lights/Shadows/shadowGeneratorSceneComponent";
+// Registered up front so the first frame never has to fetch them (see the note in chase3d-garage.ts about lazily loaded shaders).
+import "@babylonjs/core/Shaders/default.vertex";
+import "@babylonjs/core/Shaders/default.fragment";
+import "@babylonjs/core/Shaders/postprocess.vertex";
+import "@babylonjs/core/Shaders/rgbdDecode.fragment";
+import "@babylonjs/core/Shaders/shadowMap.vertex";
+import "@babylonjs/core/Shaders/shadowMap.fragment";
 import { Color3, Color4 } from "@babylonjs/core/Maths/math.color";
 import { Vector3 } from "@babylonjs/core/Maths/math.vector";
 import { StandardMaterial } from "@babylonjs/core/Materials/standardMaterial";
@@ -22,6 +29,9 @@ import { CreatePlane } from "@babylonjs/core/Meshes/Builders/planeBuilder";
 import type { ICanvasRenderingContext } from "@babylonjs/core/Engines/ICanvas";
 import { hex, material, paint } from "./chase3d-kit.ts";
 import { buildAvatar } from "../../avatar/avatar3d.ts";
+import { avatarModelId } from "./model-manifest.ts";
+import { loadModel } from "./chase3d-models.ts";
+import { modelFigure } from "./chase3d-model-figure.ts";
 import type { AvatarPreset } from "../../avatar/avatar-model.ts";
 import { tooSlow } from "./scene-capability.ts";
 import { type CameraShot, FOV, PALETTES, ROOM, lightAt } from "./scene-core.ts";
@@ -33,6 +43,8 @@ export type StageOptions = {
   /** Local hour of day, 0-23, which sets the lighting. */
   hour: number;
   quality?: "high" | "light";
+  /** Whether the generated GLB models may be downloaded (the Full detail level). Without it the scene uses only the shapes built in code. */
+  models?: boolean;
   /** Keeps the lamps at least this bright (a windowless room is lit all day). */
   minLamp?: number;
 };
@@ -42,6 +54,8 @@ export type SceneHandle = {
   dispose(): void;
   /** Jump straight to the end of whichever timeline is playing. */
   skip(): void;
+  /** Seconds into the timeline that is playing, so the scene can be rebuilt at another detail level and carry on from here. */
+  now(): number;
   scene: Scene;
   /** Plays a timeline from its start; resolves when it ends (or is skipped). */
   play(next: Timeline, startAt?: number): Promise<void>;
@@ -53,6 +67,8 @@ export type SceneOptions = {
   preset?: AvatarPreset | null;
   hour: number;
   quality?: "high" | "light";
+  /** See StageOptions.models. */
+  models?: boolean;
   /** Opacity (0-1) the DOM overlay should have; called every frame of the zoom. */
   onGlass: (opacity: number) => void;
   onSlow?: () => void;
@@ -167,6 +183,15 @@ export function createStage(canvas: HTMLCanvasElement, options: StageOptions) {
     };
   };
 
+  /** The player's avatar from its GLB model, or null when there is no model or it cannot be loaded (use `addFigure` then). */
+  const addModelFigure = async (preset: AvatarPreset | null | undefined) => {
+    const id = options.models && preset ? avatarModelId(preset.avatar_id) : null;
+    const model = id ? await loadModel(scene, id) : null;
+    if (!model) return null;
+    model.meshes.forEach(m => caster(m));
+    return modelFigure(model);
+  };
+
   /**
    * Drives `update(t)` from a clock, renders, and stops spending GPU once the timeline ends (the picture is then static
    * behind the DOM overlay). Hands over to the caller's fallback if the frame rate stays too low. `play` starts another
@@ -197,6 +222,7 @@ export function createStage(canvas: HTMLCanvasElement, options: StageOptions) {
     scene.executeWhenReady(() => engine.resize());
     return {
       scene,
+      now: () => (started < 0 ? offset : skipped ? current.end : Math.min(current.end, (performance.now() - started) / 1000)),
       skip() { skipped = true; },
       play(next, startAt = 0) {
         return new Promise<void>(resolve => {
@@ -212,7 +238,7 @@ export function createStage(canvas: HTMLCanvasElement, options: StageOptions) {
 
   const aim = (shot: CameraShot) => { camera.position.set(...shot.position); camera.setTarget(new Vector3(...shot.target)); };
 
-  return { engine, scene, camera, palette, ambient, sun, shadows, light, mat, caster, place, box, cyl, sphere, plane, textured, buildShell, buildDoor, addFigure, run, aim, trim, wood, darkWood, centreX, centreZ };
+  return { engine, scene, camera, palette, ambient, sun, shadows, light, mat, caster, place, box, cyl, sphere, plane, textured, buildShell, buildDoor, addFigure, addModelFigure, run, aim, trim, wood, darkWood, centreX, centreZ };
 }
 
 export type Stage = ReturnType<typeof createStage>;

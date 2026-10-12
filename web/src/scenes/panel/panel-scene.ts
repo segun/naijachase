@@ -82,6 +82,8 @@ export type PanelOptions = {
   preset?: import("../../avatar/avatar-model.ts").AvatarPreset | null;
   hour: number;
   quality?: "high" | "light";
+  /** Whether the generated GLB models may be used (the Full detail level); the shapes built in code are used otherwise. */
+  models?: boolean;
   votes: readonly Vote[];
   /** Called when the fade, a vote or the cut changes. */
   onFrame: (frame: { fade: number; revealed: (Vote | null)[]; verdict: boolean }) => void;

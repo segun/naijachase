@@ -6,7 +6,8 @@
   import { untrack, type Snippet } from "svelte";
   import type { SceneHandle, SceneOptions } from "./chase3d-stage.ts";
   import type { AppController } from "../../state/app.svelte";
-  import { MIN_WIDTH, decideScene, readDevice } from "./scene-capability.ts";
+  import { detail } from "./detail.svelte.ts";
+  import { detailKey } from "./detail-level.ts";
   import "../../styles/terminal.css";
 
   let { app, seenKey, load, loading = "Opening the office…", sheet = "crt", quick = false, introFrom = 0, children }: {
@@ -31,13 +32,16 @@
   const STALL_MS = 3000;
   /** Leaving must never hang the screen: if the exit animation has not ended by now, carry on. */
   const LEAVE_MAX_MS = 6000;
-  // The room is full-screen, so the "narrow viewport" rule that hides the side panel elsewhere does not apply.
-  const device = decideScene({ ...readDevice(), viewportWidth: MIN_WIDTH });
+  // The picture detail the player chose (or the device allows). It can change at any moment; the scene is then rebuilt where it had got to.
+  // A change during the exit animation waits: the room is about to be left anyway.
+  // svelte-ignore state_referenced_locally
+  let applied = $state(detail.resolved);
+  const wants3d = $derived(applied.renderer === "3d");
   // svelte-ignore state_referenced_locally
   const seen = seenKey !== undefined && sessionStorage.getItem(seenKey) === "1";
 
   // svelte-ignore state_referenced_locally
-  const playIntro = device.run && (!seen || quick);
+  const playIntro = detail.resolved.renderer === "3d" && (!seen || quick);
   let phase = $state<"intro" | "desk" | "outro">(playIntro ? "intro" : "desk");
   let glass = $state(playIntro ? 0 : 1);
   let ready = $state(false);
@@ -45,6 +49,12 @@
   let canvas = $state<HTMLCanvasElement>();
   let handle: SceneHandle | undefined;
   let lastFrame = 0;
+  /** Where the intro had got to when the scene was last rebuilt (a detail change mid-intro), so it carries on from there. */
+  let resume = 0;
+
+  $effect(() => { const next = detail.resolved; if (untrack(() => phase) !== "outro") applied = next; });
+  // Dropping to the simple level mid-intro opens the screen straight away instead of waiting for a scene that is no longer drawn.
+  $effect(() => { if (!wants3d && phase === "intro") finish(); });
 
   const awake = $derived(phase !== "intro" || glass > 0.92);
 
@@ -71,7 +81,8 @@
   $effect(() => {
     const target = canvas;
     const preset = app.avatar;
-    if (!target || !device.run) return;
+    const level = applied;
+    if (!target || level.renderer !== "3d" || target.dataset.key !== detailKey(level)) return;
     const intro = untrack(() => phase) === "intro";
     if (intro && !preset) { const timer = setTimeout(finish, AVATAR_WAIT_MS); return () => clearTimeout(timer); }
     let cancelled = false;
@@ -81,9 +92,9 @@
       if (performance.now() - (lastFrame || began) > (lastFrame ? STALL_MS : FIRST_FRAME_MS)) finish();
     }, 500) : undefined;
     load(target, {
-      preset, hour: new Date().getHours(), quality: device.quality,
+      preset, hour: new Date().getHours(), quality: level.quality, models: level.models,
       // A settled shot (no intro) starts at the end of the timeline.
-      startSeconds: intro ? (quick ? introFrom : 0) : 60,
+      startSeconds: intro ? (resume || (quick ? introFrom : 0)) : 60,
       onGlass: v => {
         if (cancelled) return;
         lastFrame = performance.now(); ready = true;
@@ -93,7 +104,11 @@
     })
       .then(h => { if (cancelled) h.dispose(); else { handle = h; has3d = true; } })
       .catch(e => { console.error("The 3D scene failed; opening the screen instead.", e); if (!cancelled) { has3d = false; finish(); } });
-    return () => { cancelled = true; clearInterval(watchdog); handle?.dispose(); handle = undefined; has3d = false; ready = false; };
+    return () => {
+      cancelled = true; clearInterval(watchdog);
+      if (intro && handle) resume = handle.now();
+      handle?.dispose(); handle = undefined; has3d = false; ready = false;
+    };
   });
 
   function key(e: KeyboardEvent) {
@@ -106,7 +121,7 @@
 <svelte:window onkeydown={key} />
 
 <div class="room" class:flat={!has3d}>
-  {#if device.run}<canvas class="room-canvas" class:ready bind:this={canvas} aria-hidden="true"></canvas>{/if}
+  {#if wants3d}{#key detailKey(applied)}<canvas class="room-canvas" class:ready data-key={detailKey(applied)} bind:this={canvas} aria-hidden="true"></canvas>{/key}{/if}
   {#if phase === "intro" && !ready}<p class="room-loading" role="status">{loading}</p>{/if}
   <div class="glass" class:paper={sheet === "paper"} class:dock={sheet === "dock"} style:opacity={glass} style:visibility={glass > 0.01 ? "visible" : "hidden"} inert={phase !== "desk"}>
     {@render children(awake, leave)}

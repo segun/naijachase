@@ -16,6 +16,8 @@ import { CreateSphere } from "@babylonjs/core/Meshes/Builders/sphereBuilder";
 import { CreateCapsule } from "@babylonjs/core/Meshes/Builders/capsuleBuilder";
 import { CreateCylinder } from "@babylonjs/core/Meshes/Builders/cylinderBuilder";
 import { material } from "../scenes/shared/chase3d-kit.ts";
+import { loadModel } from "../scenes/shared/chase3d-models.ts";
+import { avatarModelId } from "../scenes/shared/model-manifest.ts";
 import { build, hairParts, tintColor, type AvatarPreset, type Part, type Tint } from "./avatar-model.ts";
 
 /** Joints a caller can pose: hips and knees swing about x (positive swings forward, i.e. towards -z), as do the shoulders and elbows (an elbow bends the forearm forward). */
@@ -27,6 +29,8 @@ export type SnapshotOptions = {
   /** Called as each preview finishes so cards can fill in progressively. */
   onSnapshot: (avatarId: string, dataUrl: string) => void;
   isCancelled?: () => boolean;
+  /** Use the generated GLB models (the Full detail level). Without it nothing is downloaded and the shapes built in code are drawn. */
+  models?: boolean;
 };
 
 const HEAD_DIAMETER = 0.42;
@@ -145,7 +149,10 @@ export async function renderAvatarSnapshots(presets: readonly AvatarPreset[], op
 
     for (const preset of presets) {
       if (options.isCancelled?.()) return;
-      const figure = buildAvatar(scene, preset);
+      // The generated model when it exists and loads; otherwise the shapes built in code.
+      const modelId = options.models ? avatarModelId(preset.avatar_id) : null;
+      const model = modelId ? await loadModel(scene, modelId) : null;
+      const figure = model ? model.root : buildAvatar(scene, preset);
       await scene.whenReadyAsync();
       scene.render();
       options.onSnapshot(preset.avatar_id, canvas.toDataURL("image/png"));

@@ -7,7 +7,8 @@
   import "../../styles/journey.css";
   import type { AppController } from "../../state/app.svelte";
   import { clockParts, secondsLabel } from "../../domain/model.ts";
-  import { MIN_WIDTH, decideScene, readDevice } from "../shared/scene-capability.ts";
+  import { detail } from "../shared/detail.svelte.ts";
+  import { detailKey } from "../shared/detail-level.ts";
   import type { JourneyHandle } from "./journey-driver.ts";
 
   type Mode = "3d" | "2d";
@@ -23,13 +24,21 @@
 
   // svelte-ignore state_referenced_locally
   const visit = given ?? app.journey;
-  const decision = decideScene({ ...readDevice(), viewportWidth: MIN_WIDTH });
-  const quality = decision.run ? decision.quality : "light";
-  const reducedMotion = !decision.run && decision.reason === "reduced-motion";
   const stored = (storage: Storage, key: string) => { try { return storage.getItem(key); } catch { return null; } };
-  const prefer2d = !decision.run || stored(localStorage, "nc-scene") === "2d" || stored(sessionStorage, FALLBACK_KEY) === "1";
+  // The picture detail the player chose (or the device allows). It can change at any moment: the scene is rebuilt in the new renderer or
+  // detail and carries on from the second it had reached. 3D that failed earlier in this session stays in 2D until the player changes the setting.
+  const level = $derived(detail.resolved);
+  let broken = $state(stored(sessionStorage, FALLBACK_KEY) === "1");
+  const mode = $derived<Mode>(level.renderer === "3d" && !broken ? "3d" : "2d");
+  const canvasKey = $derived(mode === "3d" ? detailKey(level) : `2d-${level.quality}`);
+  let lastChoice = detail.choice;
+  $effect(() => {
+    const choice = detail.choice;
+    if (choice === lastChoice) return;
+    lastChoice = choice; broken = false;
+    try { sessionStorage.removeItem(FALLBACK_KEY); } catch { /* private mode */ }
+  });
 
-  let mode = $state<Mode>(prefer2d ? "2d" : "3d");
   let canvas = $state<HTMLCanvasElement>();
   let ready = $state(false);
   let fade = $state(0);
@@ -58,13 +67,13 @@
     if (mode !== "3d" || finished) return;
     console.warn(`The 3D journey scene is switching to 2D: ${why}`);
     try { sessionStorage.setItem(FALLBACK_KEY, "1"); } catch { /* private mode: the next scene just tries 3D again */ }
-    resumeAt = at; ready = false; mode = "2d";
+    resumeAt = at; ready = false; broken = true;
   }
 
   $effect(() => {
     if (!visit) { finish(); return; }
-    const target = canvas, current = mode;
-    if (!target || target.dataset.mode !== current) return;
+    const target = canvas, current = mode, key = canvasKey, { quality, models, reducedMotion } = level;
+    if (!target || target.dataset.key !== key) return;
     let cancelled = false;
     let handle: JourneyHandle | undefined;
     let began = 0, lastTick = 0;
@@ -74,7 +83,7 @@
     }, 500) : undefined;
 
     const options = {
-      preset: app.avatar, hour, quality, mode: visit.mode, from: visit.from, to: visit.to, label: visit.label, reducedMotion, loop,
+      preset: app.avatar, hour, quality, models, mode: visit.mode, from: visit.from, to: visit.to, label: visit.label, reducedMotion, loop,
       // The 3D scene may hand over to 2D mid-way, so 2D must show the same landscapes: the seed is the same for both.
       seed: visit.seed,
       onTick: () => { lastTick = performance.now(); ready = true; },
@@ -91,7 +100,7 @@
         if (cancelled) { h.dispose(); return; }
         handle = h;
         skip = () => h.skip();
-        return h.start(current === "2d" ? resumeAt || undefined : 0).then(() => { if (!cancelled) finish(); });
+        return h.start(resumeAt || undefined).then(() => { if (!cancelled) finish(); });
       })
       .catch(e => {
         if (cancelled) return;
@@ -100,7 +109,11 @@
         else failure = e instanceof Error ? e.message : String(e);
       });
 
-    return () => { cancelled = true; clearInterval(watchdog); handle?.dispose(); };
+    return () => {
+      cancelled = true; clearInterval(watchdog);
+      if (handle && !finished) resumeAt = handle.now();
+      handle?.dispose();
+    };
   });
 
   function key(e: KeyboardEvent) {
@@ -113,7 +126,7 @@
 <svelte:window onkeydown={key} />
 
 <div class="room witness journey" role="region" aria-label="Travelling to {visit?.label ?? visit?.to ?? 'the next state'}">
-  {#key mode}<canvas class="room-canvas" class:ready data-mode={mode} bind:this={canvas} aria-hidden="true"></canvas>{/key}
+  {#key canvasKey}<canvas class="room-canvas" class:ready data-mode={mode} data-key={canvasKey} bind:this={canvas} aria-hidden="true"></canvas>{/key}
   <div class="witness-fade" style:opacity={1 - fade}></div>
   {#if failure}
     <div class="witness-error" role="alert">

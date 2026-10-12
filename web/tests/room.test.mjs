@@ -105,7 +105,7 @@ test("the rooms are lazy, primitive-built enhancements and the screens keep work
   assert.doesNotMatch(scenes, /\.(glb|gltf)|SceneLoader|ImportMesh|AppendAsync|LoadAssetContainer/i);
   assert.doesNotMatch(scenes, /from "@babylonjs\/core"/, "use deep imports so unused features are tree-shaken");
   assert.match(stage, /Skip intro/);
-  assert.match(stage, /decideScene/, "reduced motion, Save-Data, slow networks and low memory skip the intro");
+  assert.match(stage, /detail\.resolved/, "reduced motion, Save-Data, slow networks and low memory skip the intro (detail-level.ts decides)");
   assert.match(roomView, /nc-desk/, "the desk intro plays once per sign-in");
   assert.match(archiveView, /nc-archive/, "the archive intro plays once per sign-in");
   assert.match(app, /import\("\.\/scenes\/office\/Room\.svelte"\)/, "the room is a lazy chunk: nobody needs it on the sign-in path");

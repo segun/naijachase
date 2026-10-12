@@ -22,7 +22,7 @@ const TILE = 6;
 type Build = { root: TransformNode; stage: Stage; c: ReturnType<typeof propColours>; p: Prop; plan: JourneyPlan };
 
 export async function createJourneyScene3D(canvas: HTMLCanvasElement, options: JourneyOptions): Promise<JourneyHandle> {
-  const stage = createStage(canvas, { hour: options.hour, quality: options.quality });
+  const stage = createStage(canvas, { hour: options.hour, quality: options.quality, models: options.models });
   const { scene, palette, mat, box, cyl, sphere, plane, textured, light } = stage;
   const driver = createJourneyDriver(options);
   const { plan } = driver;

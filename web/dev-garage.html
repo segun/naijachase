@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Garage preview (development only)</title>
+    <style>
+      body { margin: 0; background: #10201c; color: #e8efe9; font: 14px system-ui, sans-serif; }
+      #bar { padding: 8px; display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+      button, select { font: inherit; background: #1d3a32; color: inherit; border: 1px solid #36594e; border-radius: 6px; padding: 5px 9px; cursor: pointer; }
+      canvas { width: 100vw; height: calc(100vh - 52px); display: block; }
+      #note { color: #9bb8ad; }
+    </style>
+  </head>
+  <body>
+    <div id="bar">
+      <select id="avatar"></select>
+      <button id="intro">Play intro</button><button id="settled">Settled shot</button><button id="drive">Drive off</button><button id="hitch">Hitch a ride</button>
+      <span id="note"></span>
+    </div>
+    <canvas id="c"></canvas>
+    <script type="module" src="/dev/garage-preview.ts"></script>
+  </body>
+</html>

@@ -8,6 +8,7 @@
   import Landing from "./screens/entry/Landing.svelte";
   import Results from "./screens/case/Results.svelte";
   import Shell from "./ui/Shell.svelte";
+  import DetailQuick from "./ui/DetailQuick.svelte";
 
   // Secondary screens are separate chunks: nobody needs them on the sign-in path, so they load on first visit.
   const lazy = {
@@ -88,4 +89,6 @@
     </svelte:boundary>
     {#if app.signedIn && app.panel}{#await lazy.panel() then { default: Screen }}<Screen {app} />{/await}{/if}
   </Shell>
+  <!-- Animated scenes can be made lighter or richer at any moment, without leaving the game. -->
+  {#if app.signedIn && !app.needsAvatar && (app.panel || ["garage", "witness", "journey", "cases", "archive"].includes(app.screen))}<DetailQuick />{/if}
 {/if}

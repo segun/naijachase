@@ -1231,6 +1231,33 @@ scores, rank, detection odds, panel votes, punishment, or jail time.
 
 #### P3.10 — Adaptive visual client and scene production
 
+- [ ] Generated GLB models (`docs/3d-models.md`, progress in `docs/3d-asset-progress.md`).
+  - [x] Prompts, naming and folders (`docs/3d-generator-prompts.md`), asset checker page (`web/dev-assets.html`), optimiser (`pnpm assets:optimize`).
+  - [x] Manifest, lazy loader with fallback to the procedural shapes, model-driven figure poses.
+  - [x] Avatar picker and garage scene (player avatar and runabout car) use the models.
+  - [x] Manifest covers all 345 generated models with real-world sizes; the checker page shows each at its manifest size.
+  - [ ] Move the scenes onto the models, one at a time, in this order. For each: use `stage.addModelFigure` with the procedural figure as fallback, drive it
+    with `figure.apply(pose)`, check it in the scene (add a `dev/*-preview` page like `dev/garage-preview.ts` if the scene is hard to reach),
+    set `checked` in `model-manifest.ts`, run `svelte-check` and the web tests, and update `docs/3d-models.md`.
+    - [ ] 1. Case office (`office/chase3d-room.ts`): the player's avatar walking in, sitting at the desk and typing. Needs a seated typing pose (the `sit` clip plus the
+      `type` amount; arms may need a small extra rotation on the arm bones).
+    - [ ] 2. Witness scenes (`witness/chase3d-witness.ts`, buildings and open-air kits): player and witness from models. Pick the witness model per recipe look
+      (map each of the 90 looks to one of the 16 witness models and tint), and fake talking with small head and arm movement.
+    - [ ] 3. Journey (`journey/chase3d-journey.ts`): the player at the wheel or on the bus, the hostess on the flight (`crew`), the player's car and the danfo/coach models,
+      the aeroplane model. Check each vehicle's facing and set `yaw`.
+    - [ ] 4. Archive (`archive/chase3d-archive.ts`): the player walking and reading.
+    - [ ] 5. Disciplinary panel (`panel/chase3d-panel.ts`): the five judges (`judge_1` to `judge_5`, seated) and the player; the raise-paper pose needs a small arm
+      rotation on the model's arm bones, and the vote papers stay procedural until `held_vote_paper.glb` exists.
+    - [ ] 6. Chase (`chase/chase3d-actors.ts`, `chase3d-world.ts`): runners and passers-by from the `crowd_*` models, danfo and saloons from the vehicle models.
+    - [ ] 7. Journey and venue vehicles and animals (cattle market, farm, palace, motor park, railway, airport, seaport): replace the lofted cars and boats with the vehicle
+      and animal models and set `checked` for each.
+  - [x] Generate the 7 missing water-edge and work venues (beach, fishing jetty, jetty, waterfront, seaport, farm, mining site: 29 files) from `docs/3d-missing-prompts.md`, then run `pnpm assets:optimize`.
+  - [ ] Generate the 20 held items (`props/held/`, same file), later: they are only needed for carried props and the panel vote paper.
+  - [ ] Generate the remaining assets in this order (names and prompts in `docs/3d-generator-prompts.md`, progress in `docs/3d-asset-progress.md`): held items, interior
+    rooms (office, garage, hearing room, archive), shared street and market pieces, the 16 open-air venues, the 18 building venues and their interiors, chase and
+    journey scenery, then textures and effects. After each batch: check on `dev-assets.html`, run `pnpm assets:optimize`, add the models to the manifest.
+  - [ ] Dev tools to add as needed: a tiny "preview this scene" page per scene, and a manifest check that lists files with no manifest entry and the reverse.
+
 - [x] Migrate the current TypeScript DOM renderer to Svelte 5 components while
   retaining Vite, the Rust HTTP API, native HTML semantics, keyboard support,
   screen-reader support, and responsive layouts.

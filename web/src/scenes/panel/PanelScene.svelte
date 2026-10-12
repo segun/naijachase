@@ -7,9 +7,10 @@
   import type { AppController } from "../../state/app.svelte";
   import { clockParts } from "../../domain/model.ts";
   import { consequenceLines, offenceLabel, punishmentLabel, tally } from "../../domain/pressure.ts";
-  import { MIN_WIDTH, decideScene, readDevice } from "../shared/scene-capability.ts";
+  import { detail } from "../shared/detail.svelte.ts";
+  import { detailKey } from "../shared/detail-level.ts";
   import PanelPresentation from "../../screens/case/PanelPresentation.svelte";
-  import { announce, type PanelHandle, type Vote } from "./panel-scene.ts";
+  import { announce, planPanel, resumeTime, type PanelHandle, type Vote } from "./panel-scene.ts";
 
   type Mode = "3d" | "2d";
   // The panel keeps its own switch: a failure here must not push the witness or journey scenes to 2D, nor the other way round.
@@ -21,12 +22,21 @@
   // svelte-ignore state_referenced_locally
   const visit = app.panel!;
   const votes = visit.panel.votes as Vote[];
-  const decision = decideScene({ ...readDevice(), viewportWidth: MIN_WIDTH });
-  const quality = decision.run ? decision.quality : "light";
   const stored = (storage: Storage, key: string) => { try { return storage.getItem(key); } catch { return null; } };
-  const prefer2d = !decision.run || stored(localStorage, "nc-scene") === "2d" || stored(sessionStorage, FALLBACK_KEY) === "1";
+  // The picture detail the player chose (or the device allows). It can change at any moment: the panel is redrawn in the new renderer or
+  // detail from the vote it had reached. 3D that failed earlier in this session stays in 2D until the player changes the setting.
+  const level = $derived(detail.resolved);
+  let broken = $state(stored(sessionStorage, FALLBACK_KEY) === "1");
+  const mode = $derived<Mode>(level.renderer === "3d" && !broken ? "3d" : "2d");
+  const canvasKey = $derived(mode === "3d" ? detailKey(level) : "2d");
+  let lastChoice = detail.choice;
+  $effect(() => {
+    const choice = detail.choice;
+    if (choice === lastChoice) return;
+    lastChoice = choice; broken = false;
+    try { sessionStorage.removeItem(FALLBACK_KEY); } catch { /* private mode */ }
+  });
 
-  let mode = $state<Mode>(prefer2d ? "2d" : "3d");
   let canvas = $state<HTMLCanvasElement>();
   let ready = $state(false);
   let fade = $state(0);
@@ -34,25 +44,27 @@
   let verdict = $state(false);
   let failure = $state("");
   let skip: () => void = () => {};
-  let shownAtFallback = $state(0);
+  /** Steps the 2D panel has shown (five seats, then the votes), reported by the 2D panel. */
+  let shown2d = 0;
   let card = $state<HTMLElement>();
   // svelte-ignore state_referenced_locally
   const hour = clockParts(app.game?.state.elapsed ?? 0).hour;
   const counted = $derived(tally(votes));
+  // Where the 2D panel picks up when 3D hands over: seats arrive first (five steps), then votes.
+  const revealedCount = $derived(revealed.filter(v => v !== null).length);
+  const shownAtFallback = $derived(verdict ? Infinity : revealedCount ? votes.length + revealedCount : 0);
   const lastVote = $derived.by(() => { const n = revealed.filter(v => v !== null).length; return n ? announce(n - 1, revealed[n - 1]!) : ""; });
 
-  function fallBack(at: number, why: string, remember = false) {
+  function fallBack(why: string, remember = false) {
     if (mode !== "3d") return;
     console.warn(`The 3D panel scene is switching to 2D: ${why}`);
     if (remember) try { sessionStorage.setItem(FALLBACK_KEY, "1"); } catch { /* private mode: the next scene just tries 3D again */ }
-    // Seats arrive first (five steps), then votes: hand over at the same point.
-    shownAtFallback = verdict ? Infinity : revealed.filter(v => v !== null).length ? votes.length + revealed.filter(v => v !== null).length : 0;
-    void at; ready = false; mode = "2d";
+    ready = false; broken = true;
   }
 
   $effect(() => {
-    const target = canvas, current = mode;
-    if (current !== "3d" || !target || target.dataset.mode !== current) return;
+    const target = canvas, key = canvasKey, { quality, models } = level;
+    if (mode !== "3d" || !target || target.dataset.key !== key) return;
     let cancelled = false;
     let handle: PanelHandle | undefined;
     let began = 0, lastTick = 0;
@@ -60,15 +72,15 @@
       // Once the verdict is showing the scene has ended and stops drawing on purpose: it must stay until the player accepts.
       if (verdict) return;
       if (document.hidden) { lastTick = performance.now(); return; }
-      if (began && performance.now() - (lastTick || began) > (lastTick ? STALL_MS : FIRST_FRAME_MS)) fallBack(handle?.now() ?? 0, "no frames");
+      if (began && performance.now() - (lastTick || began) > (lastTick ? STALL_MS : FIRST_FRAME_MS)) fallBack("no frames");
     }, 500);
 
     const options = {
-      preset: app.avatar, hour, quality, votes,
+      preset: app.avatar, hour, quality, models, votes,
       onTick: () => { lastTick = performance.now(); ready = true; },
       onFrame: (f: { fade: number; revealed: (Vote | null)[]; verdict: boolean }) => { fade = f.fade; revealed = f.revealed; verdict = f.verdict; },
       // The scene lasts about ten seconds, so a slow frame rate alone is not worth leaving 3D for; only breakage is.
-      onFault: (why: string) => fallBack(handle?.now() ?? 0, why, true)
+      onFault: (why: string) => fallBack(why, true)
     };
     import("./chase3d-panel.ts")
       .then(m => { began = performance.now(); return m.createPanelScene3D(target, options); })
@@ -76,12 +88,13 @@
         if (cancelled) { h.dispose(); return; }
         handle = h;
         skip = () => h.skip();
-        return h.start(0);
+        // Raised from 2D part-way through: carry on from the vote the 2D panel had reached.
+        return h.start(shown2d > 0 ? resumeTime(planPanel(votes), Math.max(0, shown2d - votes.length)) : 0);
       })
       .catch(e => {
         if (cancelled) return;
         console.error("The 3D panel scene failed.", e);
-        fallBack(handle?.now() ?? 0, e instanceof Error ? e.message : String(e), true);
+        fallBack(e instanceof Error ? e.message : String(e), true);
       });
     return () => { cancelled = true; clearInterval(watchdog); handle?.dispose(); };
   });
@@ -98,10 +111,10 @@
 <svelte:window onkeydown={key} />
 
 {#if mode === "2d"}
-  <PanelPresentation {app} from={shownAtFallback} />
+  <PanelPresentation {app} from={shownAtFallback} onProgress={n => { shown2d = n; }} />
 {:else}
   <div class="room witness panel-scene" role="dialog" aria-modal="true" aria-label="Disciplinary panel">
-    {#key mode}<canvas class="room-canvas" class:ready data-mode={mode} bind:this={canvas} aria-hidden="true"></canvas>{/key}
+    {#key canvasKey}<canvas class="room-canvas" class:ready data-mode={mode} data-key={canvasKey} bind:this={canvas} aria-hidden="true"></canvas>{/key}
     <div class="witness-fade" style:opacity={1 - fade}></div>
     {#if !ready}<p class="room-loading" role="status">The panel is convening…</p>{/if}
     <p class="sr-only" role="status">{lastVote}</p>

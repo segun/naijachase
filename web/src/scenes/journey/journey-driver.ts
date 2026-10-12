@@ -7,6 +7,8 @@ export type JourneyOptions = {
   preset?: AvatarPreset | null;
   hour: number;
   quality?: "high" | "light";
+  /** Whether the generated GLB models may be used (the Full detail level); the shapes built in code are used otherwise. */
+  models?: boolean;
   mode: JourneyMode;
   from: string;
   to: string;

@@ -11,7 +11,8 @@
   import "../../styles/witness.css";
   import type { AppController } from "../../state/app.svelte";
   import { clockParts } from "../../domain/model.ts";
-  import { MIN_WIDTH, decideScene, readDevice } from "../shared/scene-capability.ts";
+  import { detail } from "../shared/detail.svelte.ts";
+  import { detailKey } from "../shared/detail-level.ts";
   import { recipeFor } from "./venue-recipes.ts";
   import type { WitnessFrame, WitnessHandle } from "./witness-driver.ts";
   import type { Page } from "./witness-scene.ts";
@@ -29,15 +30,21 @@
   // svelte-ignore state_referenced_locally
   const visit = app.witnessVisit;
   const recipe = visit ? recipeFor(visit.venueId) : undefined;
-  // The scene is full-screen, so the "narrow viewport" rule that hides the side panel elsewhere does not apply.
-  const decision = decideScene({ ...readDevice(), viewportWidth: MIN_WIDTH });
-  const quality = decision.run ? decision.quality : "light";
-  const reducedMotion = !decision.run && decision.reason === "reduced-motion";
   const stored = (storage: Storage, key: string) => { try { return storage.getItem(key); } catch { return null; } };
-  // "nc-scene" = "2d" is the player's own choice (the same switch the sign-in scene uses) and can be set to test 2D.
-  const prefer2d = !decision.run || stored(localStorage, "nc-scene") === "2d" || stored(sessionStorage, FALLBACK_KEY) === "1";
+  // The picture detail the player chose (or the device allows). It can change at any moment: the scene is rebuilt in the new renderer or
+  // detail and carries on from the second it had reached. 3D that failed earlier in this session stays in 2D until the player changes the setting.
+  const level = $derived(detail.resolved);
+  let broken = $state(stored(sessionStorage, FALLBACK_KEY) === "1");
+  const mode = $derived<Mode>(level.renderer === "3d" && !broken ? "3d" : "2d");
+  const canvasKey = $derived(mode === "3d" ? detailKey(level) : `2d-${level.quality}`);
+  let lastChoice = detail.choice;
+  $effect(() => {
+    const choice = detail.choice;
+    if (choice === lastChoice) return;
+    lastChoice = choice; broken = false;
+    try { sessionStorage.removeItem(FALLBACK_KEY); } catch { /* private mode */ }
+  });
 
-  let mode = $state<Mode>(prefer2d ? "2d" : "3d");
   let canvas = $state<HTMLCanvasElement>();
   let ready = $state(false);
   let frame = $state<WitnessFrame>({ fade: 0, subtitle: null });
@@ -47,7 +54,7 @@
   let failure = $state("");
   let skip: () => void = () => {};
   let finished = false;
-  /** Where 2D picks up if 3D hands over part-way through. */
+  /** Where the new renderer picks up when the detail changes or 3D hands over to 2D part-way through. */
   let resumeAt = 0;
 
   const page = $derived(frame.subtitle ? pages[frame.subtitle.page] : undefined);
@@ -66,14 +73,14 @@
     if (mode !== "3d" || finished) return;
     console.warn(`The 3D witness scene is switching to 2D: ${why}`);
     try { sessionStorage.setItem(FALLBACK_KEY, "1"); } catch { /* private mode: the next scene just tries 3D again */ }
-    resumeAt = at; ready = false; mode = "2d";
+    resumeAt = at; ready = false; broken = true;
   }
 
   $effect(() => {
     if (!visit || !recipe) { finish(); return; }
-    const target = canvas, current = mode;
-    // The canvas is replaced when the mode changes (a canvas cannot switch from WebGL to 2D), so wait for the matching one.
-    if (!target || target.dataset.mode !== current) return;
+    const target = canvas, current = mode, key = canvasKey, { quality, models, reducedMotion } = level;
+    // The canvas is replaced when the renderer or detail changes (a canvas cannot switch from WebGL to 2D), so wait for the matching one.
+    if (!target || target.dataset.key !== key) return;
     let cancelled = false;
     let handle: WitnessHandle | undefined;
     let began = 0, lastTick = 0;
@@ -87,7 +94,7 @@
     if (sound) app.music.duck(true);
 
     const options = {
-      preset, hour, quality, recipe, arrival: visit.arrival, text: visit.message, venueName: visit.venueName || "Market", sound, reducedMotion,
+      preset, hour, quality, models, recipe, arrival: visit.arrival, text: visit.message, venueName: visit.venueName || "Market", sound, reducedMotion,
       onTick: () => { lastTick = performance.now(); ready = true; },
       onFrame: (f: WitnessFrame) => { frame = f; if (f.subtitle) heard = true; },
       onSlow: () => fallBack(handle?.now() ?? 0, "low frame rate"),
@@ -103,7 +110,7 @@
         handle = h;
         words = h.words; pages = h.pages;
         skip = () => h.skip();
-        return h.start(current === "2d" ? resumeAt : 0).then(() => { if (!cancelled) finish(); });
+        return h.start(resumeAt || undefined).then(() => { if (!cancelled) finish(); });
       })
       .catch(e => {
         if (cancelled) return;
@@ -113,7 +120,9 @@
       });
 
     return () => {
-      cancelled = true; clearInterval(watchdog); handle?.dispose();
+      cancelled = true; clearInterval(watchdog);
+      if (handle && !finished) resumeAt = handle.now();
+      handle?.dispose();
       if (sound) app.music.duck(false);
     };
   });
@@ -128,7 +137,7 @@
 <svelte:window onkeydown={key} />
 
 <div class="room witness" role="region" aria-label="Meeting the witness">
-  {#key mode}<canvas class="room-canvas" class:ready data-mode={mode} bind:this={canvas} aria-hidden="true"></canvas>{/key}
+  {#key canvasKey}<canvas class="room-canvas" class:ready data-mode={mode} data-key={canvasKey} bind:this={canvas} aria-hidden="true"></canvas>{/key}
   <div class="witness-fade" style:opacity={1 - frame.fade}></div>
   {#if failure}
     <div class="witness-error" role="alert">

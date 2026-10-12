@@ -32,7 +32,7 @@ function softBox(stage: Stage): Stage["box"] {
 }
 
 export async function createWitnessScene(canvas: HTMLCanvasElement, options: WitnessOptions): Promise<WitnessHandle> {
-  const stage = createStage(canvas, { hour: options.hour, quality: options.quality });
+  const stage = createStage(canvas, { hour: options.hour, quality: options.quality, models: options.models });
   const { scene, camera, palette, mat, box, cyl, sphere, plane, textured, caster, engine } = stage;
   const light = stage.light;
   const night = palette.stars || palette.lamp > 0.5;
@@ -186,7 +186,7 @@ export async function createWitnessScene(canvas: HTMLCanvasElement, options: Wit
   return {
     words, pages, duration: plan.end,
     now: driver.now,
-    start: () => handle.play({ end: plan.end, update }),
+    start: (begin = 0) => handle.play({ end: plan.end, update }, begin),
     skip: handle.skip,
     seek(seconds) { stage.engine.stopRenderLoop(); update(seconds); scene.render(); },
     dispose() { driver.dispose(); handle.dispose(); }

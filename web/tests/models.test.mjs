@@ -1,0 +1,109 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import fs from "node:fs";
+import { MODELS, ASSET_ROOT, avatarModelId, baseYaw, measureOf, modelSpec, modelUrl } from "../src/scenes/shared/model-manifest.ts";
+
+const assetDir = new URL("../public/assets/3d/", import.meta.url);
+
+test("every model has a sensible size, a unique file and a .glb path", () => {
+  const files = new Set();
+  for (const [id, spec] of Object.entries(MODELS)) {
+    assert.match(spec.file, /^[a-z0-9_/]+\.glb$/, `${id}: file name is lower case with underscores`);
+    assert.ok(spec.size > 0 && spec.size < 200, `${id}: size in metres`);
+    assert.ok(!files.has(spec.file), `${id}: file used twice`);
+    files.add(spec.file);
+    assert.equal(spec.file.split("/").pop(), `${id}.glb`, `${id}: the id is the file name`);
+  }
+  assert.equal(modelUrl(MODELS.car_player_runabout), `${ASSET_ROOT}vehicles/car_player_runabout.glb`);
+});
+
+test("the ten avatar picker ids map onto their model files", () => {
+  for (let n = 1; n <= 10; n++) {
+    const id = avatarModelId(`avatar-${String(n).padStart(2, "0")}`);
+    assert.ok(id, `avatar ${n} has a model`);
+    assert.equal(modelSpec(id).kind, "person");
+  }
+  assert.equal(avatarModelId("avatar-99"), null);
+  assert.equal(avatarModelId("something-else"), null);
+});
+
+test("avatars are the heights the prompts asked for", () => {
+  assert.equal(modelSpec(avatarModelId("avatar-01")).size, 1.65);
+  assert.equal(modelSpec(avatarModelId("avatar-02")).size, 1.78);
+});
+
+const onDisk = () => {
+  const out = [];
+  const walk = (dir, prefix) => fs.readdirSync(dir, { withFileTypes: true }).forEach(e => {
+    if (e.isDirectory()) walk(new URL(e.name + "/", dir), prefix + e.name + "/");
+    else if (e.name.endsWith(".glb")) out.push(prefix + e.name);
+  });
+  walk(assetDir, "");
+  return out.sort();
+};
+
+test("every GLB on disk has a manifest entry and every entry has its file (held items are not made yet)", t => {
+  if (!fs.existsSync(assetDir)) return t.skip("no assets folder in this checkout");
+  const listed = new Set(Object.values(MODELS).map(s => s.file));
+  const files = onDisk();
+  assert.deepEqual(files.filter(f => !listed.has(f)), [], "files with no manifest entry: add them to model-manifest.ts");
+  const missing = [...listed].filter(f => !files.includes(f));
+  assert.deepEqual(missing, [], "manifest entries with no file");
+});
+
+test("the folder tells the kind, and sizes are sensible for it", () => {
+  const limits = { person: [1, 2.1], animal: [0.2, 3], item: [0.05, 0.5], room: [4, 20] };
+  for (const [id, spec] of Object.entries(MODELS)) {
+    if (spec.file.startsWith("characters/")) assert.equal(spec.kind, "person", id);
+    if (spec.file.startsWith("animals/")) assert.equal(spec.kind, "animal", id);
+    if (spec.file.startsWith("vehicles/")) assert.equal(spec.kind, "vehicle", id);
+    if (spec.file.startsWith("interiors/items/")) assert.equal(spec.kind, "item", id);
+    const [lo, hi] = limits[spec.kind] ?? [0.05, 200];
+    assert.ok(spec.size >= lo && spec.size <= hi, `${id}: ${spec.size} m is outside ${lo}-${hi} for a ${spec.kind}`);
+  }
+});
+
+test("how a model is measured and turned follows its kind", () => {
+  assert.equal(measureOf(MODELS.car_player_runabout), "length");
+  assert.equal(measureOf(MODELS.avatar_01_emerald_braids), "height");
+  assert.equal(measureOf(MODELS.office_room), "length");
+  assert.equal(measureOf(MODELS.lagos_bridge), "length", "a bridge is measured along its span");
+  assert.equal(measureOf(MODELS.lagos_palm), "height");
+  assert.equal(baseYaw(MODELS.car_player_runabout), 0);
+  assert.equal(baseYaw(MODELS.church_main), Math.PI);
+  assert.equal(MODELS.office_room.size, 8.8, "the cutaway rooms are the width of the scenes' shared room");
+});
+
+test("model code reaches Babylon.js only from the scene modules", () => {
+  const root = new URL("../src/", import.meta.url);
+  const loader = fs.readFileSync(new URL("scenes/shared/chase3d-models.ts", root), "utf8");
+  assert.match(loader, /import\("@babylonjs\/loaders\/glTF\/2\.0"\)/, "the glTF loader is imported lazily");
+  assert.doesNotMatch(fs.readFileSync(new URL("scenes/shared/model-manifest.ts", root), "utf8"), /babylonjs/, "the manifest is pure data");
+});
+
+test("generated models are only requested at the Full detail level", () => {
+  const src = new URL("../src/", import.meta.url);
+  const read = p => fs.readFileSync(new URL(p, src), "utf8");
+  assert.match(read("scenes/shared/chase3d-stage.ts"), /options\.models && preset \? avatarModelId/, "stage avatars");
+  assert.match(read("scenes/garage/chase3d-garage.ts"), /options\.models \? await loadModel/, "the garage car");
+  assert.match(read("avatar/avatar3d.ts"), /options\.models \? avatarModelId/, "picker previews");
+  // loadModel may only be called from these guarded places
+  const callers = [];
+  const walk = d => fs.readdirSync(d, { withFileTypes: true }).forEach(e => { const f = new URL(e.name + (e.isDirectory() ? "/" : ""), d); if (e.isDirectory()) walk(f); else if (/\.(ts|svelte)$/.test(e.name) && /\bloadModel\(/.test(fs.readFileSync(f, "utf8"))) callers.push(e.name); });
+  walk(src);
+  assert.deepEqual(callers.sort(), ["avatar3d.ts", "chase3d-garage.ts", "chase3d-models.ts", "chase3d-stage.ts"], "add the models guard when a new scene loads a model");
+});
+
+test("scenes follow the picture-detail setting and can switch while playing", () => {
+  const src = new URL("../src/", import.meta.url);
+  const read = p => fs.readFileSync(new URL(p, src), "utf8");
+  for (const f of ["scenes/witness/WitnessScene.svelte", "scenes/journey/JourneyScene.svelte", "scenes/panel/PanelScene.svelte"]) {
+    const view = read(f);
+    assert.match(view, /detail\.resolved/, f);
+    assert.match(view, /const mode = \$derived/, `${f}: the renderer follows the setting`);
+    assert.match(view, /data-key=\{canvasKey\}/, `${f}: a new canvas for a new renderer or detail`);
+  }
+  assert.match(read("scenes/shared/Stage.svelte"), /detailKey\(applied\)/);
+  assert.match(read("App.svelte"), /<DetailQuick/, "the quick switch is available in the game");
+  assert.match(read("screens/account/Settings.svelte"), /<DetailControl/, "and in Settings");
+});

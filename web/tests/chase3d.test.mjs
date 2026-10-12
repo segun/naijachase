@@ -68,7 +68,7 @@ test("3D is an enhancement: skipped for reduced motion, falls back to 2D, and ca
   assert.match(read("scenes/shared/scene-capability.ts"), /prefers-reduced-motion: reduce/);
   assert.match(read("scenes/shared/scene-capability.ts"), /dataset\.motion === "reduced"/);
   assert.match(stage, /\.catch\(\(\) => \{ if \(!cancelled\) failed = true; \}\)/);
-  assert.match(stage, /nc-scene/);
+  assert.match(stage, /detail\.set\("simple"\)/, "the 2D button chooses the simple picture detail");
   assert.match(stage, /aria-pressed/);
   assert.match(stage, /aria-hidden="true"/);
   assert.match(stage, /handle\?\.dispose\(\)/, "WebGL resources are released when leaving the screen");

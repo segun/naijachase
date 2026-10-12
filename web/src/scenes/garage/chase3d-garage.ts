@@ -2,11 +2,13 @@
 // player's avatar comes through the office door and waits beside the open-top car while the transport options are shown, then either
 // climbs in and drives off or heads for the roadside with a thumb out. Built from primitives and painted textures. Timing and framing live in garage-scene.ts.
 import { PointLight } from "@babylonjs/core/Lights/pointLight";
+import type { TransformNode } from "@babylonjs/core/Meshes/transformNode";
 import { Vector3 } from "@babylonjs/core/Maths/math.vector";
 import type { StandardMaterial } from "@babylonjs/core/Materials/standardMaterial";
 import { hex, seeded } from "../shared/chase3d-kit.ts";
 import { createStage, type SceneHandle, type SceneOptions } from "../shared/chase3d-stage.ts";
 import { runabout, saloon } from "../shared/chase3d-cars.ts";
+import { loadModel } from "../shared/chase3d-models.ts";
 import { ROOM, armAngles, legAngles } from "../shared/scene-core.ts";
 import {
   CAR, DOOR, T_DRIVE_END, T_END, T_HITCH_END, carPitchAt, carZAt, doorAt, drivePoseAt, glassAt, introAlphaAt, introPoseAt, introShotAt, outroGlassAt, outroShotAt,
@@ -17,7 +19,7 @@ export type GarageHandle = SceneHandle;
 export type GarageOptions = SceneOptions;
 
 export async function createGarageScene(canvas: HTMLCanvasElement, options: GarageOptions): Promise<GarageHandle> {
-  const stage = createStage(canvas, { hour: options.hour, quality: options.quality, minLamp: 0.6 });
+  const stage = createStage(canvas, { hour: options.hour, quality: options.quality, models: options.models, minLamp: 0.6 });
   const { scene, mat, box, cyl, plane, textured, place, caster, trim, centreX } = stage;
   const shell = mat("#5d6770", { specular: 0 });
   void shell;
@@ -69,7 +71,9 @@ export async function createGarageScene(canvas: HTMLCanvasElement, options: Gara
   for (const x of [-2.95, -1.0, 0.925, 2.85]) box("bayLine", 0.07, 0.01, 3.8, line, x, 0.012, 2.1);
 
   // ---- The parked cars and the player's runabout ----
-  const hero = runabout(stage);
+  const heroModel = options.models ? await loadModel(scene, "car_player_runabout") : null;
+  heroModel?.meshes.forEach(m => stage.caster(m));
+  const hero = heroModel ? { root: heroModel.root, wheels: [] as TransformNode[] } : runabout(stage);
   hero.root.position.set(CAR.x, 0, CAR.z);
   const parked = [saloon(stage, "maroon", "#7a2a3a", -0.05, 2.1), saloon(stage, "teal", "#1d6b7a", 1.9, 2.1)];
 
@@ -86,8 +90,16 @@ export async function createGarageScene(canvas: HTMLCanvasElement, options: Gara
   void place; void trim;
 
   // ---- The player ----
-  const figure = stage.addFigure(options.preset);
+  const glb = await stage.addModelFigure(options.preset);
+  const figure = glb ? null : stage.addFigure(options.preset);
   const pose = (p: GaragePose, t: number) => {
+    if (glb) {
+      glb.root.position.set(p.x, p.y, p.z);
+      glb.root.rotation.y = p.heading;
+      glb.apply(p);
+      glb.setAlpha(p.visible ? p.alpha : 0);
+      return;
+    }
     if (!figure) return;
     figure.root.position.set(p.x, p.y, p.z);
     figure.root.rotation.y = p.heading;
@@ -131,6 +143,8 @@ export async function createGarageScene(canvas: HTMLCanvasElement, options: Gara
     options.onGlass(outroGlassAt(t));
   };
 
+  // Shaders and textures load lazily; waiting here means the first frame is already complete instead of failing while they arrive.
+  await scene.whenReadyAsync();
   const handle = stage.run({ end: T_END, update: intro, onSlow: options.onSlow, startSeconds: options.startSeconds });
   void parked;
   return {

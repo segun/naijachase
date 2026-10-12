@@ -18,7 +18,7 @@ export type RoomHandle = SceneHandle;
 export type RoomOptions = SceneOptions;
 
 export async function createRoomScene(canvas: HTMLCanvasElement, options: RoomOptions): Promise<RoomHandle> {
-  const stage = createStage(canvas, { hour: options.hour, quality: options.quality });
+  const stage = createStage(canvas, { hour: options.hour, quality: options.quality, models: options.models });
   const { scene, palette, mat, box, cyl, plane, textured, place, caster: casters, trim, wood, darkWood, centreX, light } = stage;
 
   const lamp = new PointLight("lamp", new Vector3(0.1, 1.45, 3.4), scene);

@@ -20,7 +20,7 @@ const PLANKS = [0.1, 0.7, 1.4, 2.1, 2.75];
 const GAP = { unit: 0, row: 2, u: 1.35 / UNIT.w, half: 0.26 / UNIT.w };
 
 export async function createArchiveScene(canvas: HTMLCanvasElement, options: ArchiveOptions): Promise<ArchiveHandle> {
-  const stage = createStage(canvas, { hour: options.hour, quality: options.quality, minLamp: 0.85 });
+  const stage = createStage(canvas, { hour: options.hour, quality: options.quality, models: options.models, minLamp: 0.85 });
   const { scene, palette, mat, box, cyl, sphere, plane, textured, place, caster: casters, trim, wood, darkWood } = stage;
 
   for (const x of [0.5, 2.8]) {

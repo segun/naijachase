@@ -12,7 +12,7 @@ const SKIN = ["#8a5a3c", "#6b4226", "#a56c47", "#5a3720", "#7c4f33"];
 const TONEMAPPING_ACES = 1;
 
 export async function createPanelScene3D(canvas: HTMLCanvasElement, options: PanelOptions): Promise<PanelHandle> {
-  const stage = createStage(canvas, { hour: options.hour, quality: options.quality, minLamp: 0.8 });
+  const stage = createStage(canvas, { hour: options.hour, quality: options.quality, models: options.models, minLamp: 0.8 });
   const { scene, camera, mat, box, cyl, sphere, plane, textured, caster, sun } = stage;
   const sunFront = sun.direction.clone();
   const plan = planPanel(options.votes);

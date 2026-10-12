@@ -8,12 +8,13 @@
   import Icon from "../../ui/Icon.svelte";
 
   /** `from` lets the 3D scene hand over part-way: the steps up to it are already shown. */
-  let { app, from = 0 }: { app: AppController; from?: number } = $props();
+  let { app, from = 0, onProgress }: { app: AppController; from?: number; /** Told how many steps are shown, so the 3D scene can pick up from here if the picture detail is raised. */ onProgress?: (shown: number) => void } = $props();
   const visit = $derived(app.panel!);
   const steps = $derived(panelSteps(visit.panel, visit.result?.events));
   const quiet = untrack(() => matchMedia("(prefers-reduced-motion: reduce)").matches || app.settings.motion === "reduced");
   let shown = $state(quiet ? Infinity : untrack(() => from));
 
+  $effect(() => { onProgress?.(shown); });
   const done = $derived(shown >= steps.length);
   const seated = (position: number) => steps.slice(0, shown).some(s => s.kind === "arrive" && s.position === position);
   const voteAt = (position: number) => steps.slice(0, shown).find(s => s.kind === "vote" && s.position === position)?.vote;
