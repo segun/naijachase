@@ -112,9 +112,17 @@ The procedural 3D fallback is built in code. What keeps it from looking like bui
 
 Scenes may use GLB models from `web/public/assets/3d/` (see [3d-models.md](./3d-models.md)). The rule above still holds: if a model fails to load the scene keeps the shapes it builds in code, and the 2D renderer is unchanged.
 
+The login chase uses `chase-frame.ts` for both its model/procedural 3D and Canvas 2D renderers. Detail changes and 3D faults use the
+same clock, keeping the city progression, camera and runners in step. Do not independently play a model's Run clip or allow exported
+hip translation to move a runner away from its timeline position. Its desktop-only login side panel is intentionally hidden below
+961 px; do not download scene assets for that hidden panel.
+
 The case office uses the selected avatar and nine separate furniture models at Full detail; Standard keeps the procedural room and
 downloads no GLBs. The generated room shell is not used because furniture is baked into it. Character clips and keyboard reach must
 be sampled from the scene's `Pose` and time, never `performance.now()`, so rebuilding at another detail level preserves the pose.
+The office pauses seated before its zoom on every entry, including witness returns: drag/swipe or arrow keys orbit the camera, and
+**Continue to case desk** resumes from that view. Keep the exploration hint/button in DOM, leave the terminal inert while paused, and
+do not mistake the intentional pause for a stalled renderer. Simple retains the Continue button without a movable camera.
 
 **Existing exception to the two-renderer rule:** generic room stages (including the office) currently show their flat DOM content at
 Simple detail or on 3D failure, rather than an animated Canvas 2D room. The office's missing 2D intro/return/exit is tracked explicitly

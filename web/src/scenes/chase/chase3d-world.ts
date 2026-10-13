@@ -8,25 +8,30 @@ import type { StandardMaterial } from "@babylonjs/core/Materials/standardMateria
 import type { DynamicTexture } from "@babylonjs/core/Materials/Textures/dynamicTexture";
 import type { Mesh } from "@babylonjs/core/Meshes/mesh";
 import type { TransformNode } from "@babylonjs/core/Meshes/transformNode";
+import { TransformNode as Holder } from "@babylonjs/core/Meshes/transformNode";
+import { InstancedMesh } from "@babylonjs/core/Meshes/instancedMesh";
 import type { ShadowGenerator } from "@babylonjs/core/Lights/Shadows/shadowGenerator";
 import { CreateBox } from "@babylonjs/core/Meshes/Builders/boxBuilder";
 import { CreateSphere } from "@babylonjs/core/Meshes/Builders/sphereBuilder";
 import { CreateCylinder } from "@babylonjs/core/Meshes/Builders/cylinderBuilder";
 import { CreatePlane } from "@babylonjs/core/Meshes/Builders/planeBuilder";
 import { CreateGround } from "@babylonjs/core/Meshes/Builders/groundBuilder";
-import { treadmillX, idlePose, walkPose } from "./chase-motion.ts";
+import { treadmillX, idlePose, walkPose, cycleAt } from "./chase-motion.ts";
 import { BIOMES, RING, SEGMENT, SPEED, smoothstep, type Palette } from "./chase-biomes.ts";
 import { hex, material, merge, paint, seeded } from "../shared/chase3d-kit.ts";
 import { ankara, makeFigure, type FigureSpec } from "./chase3d-actors.ts";
 import { buildSign, type SignKind } from "./chase3d-signs.ts";
+import { loadModel } from "../shared/chase3d-models.ts";
+import { replaceActor } from "./chase3d-model-actor.ts";
 
 type Node = TransformNode | Mesh | ReturnType<Mesh["createInstance"]>;
 
 // Far layers (f < 0.6) belong to one city; they sink into the ground as that city fades out so nothing from the previous one lingers.
 type Item = { node: Node; base: number; f: number; y: number; z: number; rotY: number; biome: number; sink: number; off?: boolean };
-type Walker = { item: Item; figure: ReturnType<typeof makeFigure>; mode: "walk" | "idle"; phase: number; cycle: number };
+type Walker = { item: Item; figure: ReturnType<typeof makeFigure>; modelId: string; mode: "walk" | "idle"; phase: number; cycle: number };
 
 export type World = {
+  ready: Promise<void>;
   /** `t` is the eased world time (drives the scenery); `gait` is the clock for walking animation. */
   update(t: number, palette: Palette, weights: readonly number[], gait: number): void;
   sea: DynamicTexture;
@@ -35,9 +40,10 @@ export type World = {
 const LAGOS = 0, ANAMBRA = 1, KANO = 2;
 const WINDOW_RANGE = 95;
 
-export function buildWorld(scene: Scene, shadows: ShadowGenerator | null): World {
+export function buildWorld(scene: Scene, shadows: ShadowGenerator | null, models = false): World {
   const items: Item[] = [];
   const walkers: Walker[] = [];
+  const shops: { parts: Item[]; id: string; height: number }[] = [];
   const rand = seeded(2024);
   const between = (a: number, b: number) => a + (b - a) * rand();
   const pick = <T,>(list: readonly T[]) => list[Math.floor(rand() * list.length)]!;
@@ -236,9 +242,12 @@ export function buildWorld(scene: Scene, shadows: ShadowGenerator | null): World
   const shopFrontProtos = shopFacade.map((m, i) => baseBox(`shopFront${i}`, m));
   for (let off = -68; off <= 68; off += 9) {
     const h = between(4.2, 7), w = between(7.5, 9);
-    place(instance(pick(shopProtos)), ANAMBRA, off, 10.5, { scale: [w, h, 5] });
-    place(instance(tin), ANAMBRA, off, 10.1, { y: h, scale: [w + 0.4, 0.25, 6] });
-    place(instance(pick(shopFrontProtos)), ANAMBRA, off, 7.85, { scale: [w - 1.2, Math.min(h - 1.4, 3.2), 0.1], y: 0.9 });
+    const parts = [
+      place(instance(pick(shopProtos)), ANAMBRA, off, 10.5, { scale: [w, h, 5] }),
+      place(instance(tin), ANAMBRA, off, 10.1, { y: h, scale: [w + 0.4, 0.25, 6] }),
+      place(instance(pick(shopFrontProtos)), ANAMBRA, off, 7.85, { scale: [w - 1.2, Math.min(h - 1.4, 3.2), 0.1], y: 0.9 })
+    ];
+    shops.push({ parts, id: shops.length % 2 ? "anambra_shopfront_b" : "anambra_shopfront_a", height: h });
   }
   for (let off = -66; off <= 66; off += 13) {
     place(instance(pick(shopFrontProtos)), ANAMBRA, off + between(-2, 2), between(17, 22), { scale: [between(9, 12), between(11, 18), 7] });
@@ -371,7 +380,10 @@ export function buildWorld(scene: Scene, shadows: ShadowGenerator | null): World
     const dir = o.dir ?? 1, speed = o.speed ?? 1.3;
     const f = o.mode === "walk" ? 1 - (dir * speed) / SPEED : 1;
     const item = place(figure.root, biome, offset, z, { f, rotY: o.faceZ ? Math.PI / 2 : dir === 1 ? 0 : Math.PI });
-    walkers.push({ item, figure, mode: o.mode, phase: between(0, 6.28), cycle: between(0.95, 1.25) });
+    const woman = o.spec.skirt !== undefined;
+    const modelId = biome === LAGOS ? woman ? "crowd_commuter_woman" : "crowd_commuter_man"
+      : biome === ANAMBRA ? woman ? "crowd_trader_woman" : "crowd_trader_man" : "crowd_farmer";
+    walkers.push({ item, figure, modelId, mode: o.mode, phase: between(0, 6.28), cycle: between(0.95, 1.25) });
   };
   let id = 0;
   const base = (skin = pick(skins)) => ({ name: `p${id++}`, skin });
@@ -422,7 +434,58 @@ export function buildWorld(scene: Scene, shadows: ShadowGenerator | null): World
   }
 
   // ---- Per-frame update ----------------------------------------------------------------------
+  const replacements: Record<string, string> = {
+    palm: "lagos_palm", towerProto0: "lagos_tower_a", towerProto1: "lagos_tower_b", towerProto2: "lagos_tower_c",
+    boat: "lagos_fishing_boat", lighthouse: "lagos_lighthouse", danfo: "bus_danfo",
+    stall0: "anambra_market_stall", stall1: "anambra_market_stall", stall2: "anambra_market_stall",
+    groundnutPyramid: "kano_pyramid", mudA: "kano_house_a", mudB: "kano_house_b", mudC: "kano_house_a",
+    baobab: "kano_baobab", acacia: "tree_neem", lamp: "lamp_post"
+  };
+  const setup = async () => {
+    await Promise.all([
+      ...shops.filter(shop => !shop.parts[0]!.off).map(async shop => {
+        const model = await loadModel(scene, shop.id);
+        if (!model) return;
+        const { min, max } = model.root.getHierarchyBoundingVectors(true);
+        const k = shop.height / (max.y - min.y);
+        if (!Number.isFinite(k) || k <= 0) {
+          console.warn(`Chase shop "${shop.id}" has invalid bounds; keeping the built-in shape.`);
+          model.dispose(); return;
+        }
+        model.root.scaling.setAll(k);
+        shop.parts.forEach(part => { part.node.setEnabled(false); });
+        shop.parts.slice(1).forEach(part => { part.off = true; });
+        shop.parts[0]!.node = model.root;
+        model.meshes.forEach(m => { m.receiveShadows = true; shadows?.addShadowCaster(m); });
+      }),
+      ...items.filter(item => !item.off && item.node instanceof InstancedMesh && replacements[item.node.sourceMesh.name]).map(async item => {
+        const old = item.node;
+        if (!(old instanceof InstancedMesh)) return;
+        const model = await loadModel(scene, replacements[old.sourceMesh.name]!);
+        if (!model) return;
+        const bounds = old.getBoundingInfo().boundingBox;
+        const size = bounds.maximum.subtract(bounds.minimum).multiply(old.scaling);
+        const { min, max } = model.root.getHierarchyBoundingVectors(true);
+        const extent = max.subtract(min);
+        const horizontal = old.sourceMesh.name === "danfo" || old.sourceMesh.name === "boat";
+        const k = horizontal ? Math.max(size.x, size.z) / Math.max(extent.x, extent.z) : size.y / extent.y;
+        if (!Number.isFinite(k) || k <= 0) {
+          console.warn(`Chase scenery "${model.id}" has invalid bounds; keeping the built-in shape.`);
+          model.dispose(); return;
+        }
+        model.root.scaling.setAll(k);
+        if (horizontal) model.root.rotation.y = extent.x >= extent.z ? 0 : Math.PI / 2;
+        const holder = new Holder(`chase-${model.id}`, scene);
+        model.root.parent = holder;
+        holder.position.copyFrom(old.position); holder.rotation.copyFrom(old.rotation);
+        old.setEnabled(false); item.node = holder;
+        model.meshes.forEach(m => { m.receiveShadows = true; shadows?.addShadowCaster(m); });
+      }),
+      ...walkers.map(w => replaceActor(scene, w.figure, w.modelId, w.mode, shadows))
+    ]);
+  };
   return {
+    ready: models ? setup() : Promise.resolve(),
     sea,
     update(t, palette, weights, gait) {
       const presence = weights.map(w => smoothstep(0.02, 0.4, w));
@@ -436,7 +499,7 @@ export function buildWorld(scene: Scene, shadows: ShadowGenerator | null): World
       }
       for (const w of walkers) {
         if (!w.item.node.isEnabled()) continue;
-        w.figure.apply(w.mode === "walk" ? walkPose(gait, w.phase, w.cycle) : idlePose(gait, w.phase));
+        w.figure.apply(w.mode === "walk" ? walkPose(gait, w.phase, w.cycle) : idlePose(gait, w.phase), cycleAt(gait, w.phase, w.cycle));
       }
       const [rr, rg, rb] = palette.road, [kr, kg, kb] = palette.kerb, [gr, gg, gb] = palette.ground;
       roadMat.diffuseColor.set(rr * 1.9, rg * 1.9, rb * 1.9);

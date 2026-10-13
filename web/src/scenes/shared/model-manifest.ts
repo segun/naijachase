@@ -42,6 +42,11 @@ const group = (kind: ModelKind, folder: string, sizes: Record<string, Sized>, ex
     return [name, { file: `${folder}/${name}.glb`, kind, size, ...(measure ? { measure } : {}), ...extra }];
   });
 const L = (n: number): Sized => [n, "length"];
+const CHASE_CHECKED = new Set([
+  "masked_thief", "crowd_police", "crowd_commuter_man", "crowd_commuter_woman", "crowd_trader_man", "crowd_trader_woman", "crowd_farmer",
+  "lagos_palm", "lagos_tower_a", "lagos_tower_b", "lagos_tower_c", "lagos_fishing_boat", "lagos_lighthouse", "bus_danfo",
+  "anambra_market_stall", "anambra_shopfront_a", "anambra_shopfront_b", "kano_pyramid", "kano_house_a", "kano_house_b", "kano_baobab", "tree_neem", "lamp_post"
+]);
 
 const PLACES = [
   ...group("prop", "props/street", {
@@ -163,6 +168,7 @@ const PLACES = [
 ];
 
 export const MODELS: Readonly<Record<string, ModelSpec>> = Object.fromEntries([
+  person("chase", "masked_thief", 1.78),
   // Player avatars: the five feminine presets are 1.65 m, the five masculine ones 1.78 m (see the prompts in docs/3d-generator-prompts.md).
   person("avatars", "avatar_01_emerald_braids", 1.65), person("avatars", "avatar_02_midnight_low_cut", 1.78), person("avatars", "avatar_03_burgundy_wrap", 1.65),
   person("avatars", "avatar_04_forest_coils", 1.78), person("avatars", "avatar_05_cobalt_bob", 1.65), person("avatars", "avatar_06_copper_fade", 1.78),
@@ -193,7 +199,7 @@ export const MODELS: Readonly<Record<string, ModelSpec>> = Object.fromEntries([
   vehicle("plane_airliner", 27), vehicle("airport_baggage_tractor", 8), vehicle("airport_stairs", 4.5), vehicle("airport_fuel_truck", 9),
   vehicle("boat_canoe", 6), vehicle("boat_launch", 8), vehicle("boat_dinghy", 3), vehicle("boat_barge", 20), vehicle("boat_tug", 12), vehicle("ship_cargo", 120),
   ...PLACES
-]);
+].map(([id, spec]): [string, ModelSpec] => [id, CHASE_CHECKED.has(id) ? { ...spec, checked: true } : spec]));
 
 /** The avatar picker's ids ("avatar-01" ...) map onto the files by their number. */
 export function avatarModelId(avatarId: string): string | null {

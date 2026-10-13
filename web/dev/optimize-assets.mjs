@@ -1,7 +1,8 @@
 // Shrinks the GLB files in public/assets/3d (texture resize, duplicate/unused data removed) and keeps a record of what is done.
 //   pnpm assets:optimize            optimise every file that is new or changed since the last run
 //   pnpm assets:optimize --dry-run  show what would happen without touching anything
-// Originals are copied once to web/asset-originals/ (not served, not committed). dev/asset-state.json remembers what was processed
+// Originals are copied to web/asset-originals/ (not served, not committed); replaced exports get a hash-suffixed backup.
+// dev/asset-state.json remembers what was processed
 // (by file hash), so running again only handles new files. docs/3d-asset-progress.md is rewritten each run.
 // Vertex data is quantised (KHR_mesh_quantization, supported by Babylon.js).
 // No Draco/Meshopt is used on purpose: Babylon.js would need to download a decoder for them.
@@ -46,7 +47,8 @@ for (const file of files) {
   const limit = sizeFor(rel);
   if (dryRun) { console.log(`would optimise ${rel} (${mb(before)} MB, textures up to ${limit}px)`); continue; }
   try {
-    const copy = path.join(backup, rel);
+    const original = path.join(backup, rel);
+    const copy = fs.existsSync(original) ? original.replace(/\.glb$/, `.${sha(file)}.glb`) : original;
     if (!fs.existsSync(copy)) { fs.mkdirSync(path.dirname(copy), { recursive: true }); fs.copyFileSync(file, copy); }
     const doc = await io.read(copy);
     await doc.transform(dedup(), prune(), textureCompress({ encoder: sharp, resize: [limit, limit], quality: 82 }), quantize());

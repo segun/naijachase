@@ -51,6 +51,8 @@ export type StageOptions = {
 
 export type Timeline = { end: number; update: (t: number) => void };
 export type SceneHandle = {
+  look?: (dx: number, dy: number) => void;
+  continue?: () => void;
   dispose(): void;
   /** Jump straight to the end of whichever timeline is playing. */
   skip(): void;
@@ -63,6 +65,9 @@ export type SceneHandle = {
   leave?: (how?: string) => Promise<void>;
 };
 export type SceneOptions = {
+  /** Optional stop before the terminal zoom, with camera exploration until Continue. */
+  exploreAt?: number;
+  onExplore?: () => void;
   /** Cancels model-backed scene setup when the view or picture detail changes. */
   signal?: AbortSignal;
   /** The player's avatar. Without one the room is empty, which is fine for the settled shot. */

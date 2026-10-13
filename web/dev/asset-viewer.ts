@@ -95,7 +95,7 @@ function bounds(container: AssetContainer): [V3, V3] {
   return [min, max];
 }
 
-const kind = (name: string) => /^(avatar|witness|judge|crowd)_/.test(name) ? name.split("_")[0]! : "prop";
+const kind = (name: string) => /^masked_thief(?:\.glb)?$/.test(name) ? "runner" : /^(avatar|witness|judge|crowd)_/.test(name) ? name.split("_")[0]! : "prop";
 const baseName = (path: string) => path.split("/").pop()!.replace(/\.glb$/i, "");
 
 function check(l: Loaded, bytes: number | null): Check[] {
@@ -121,7 +121,7 @@ function check(l: Loaded, bytes: number | null): Check[] {
       const same = refJoints.length === l.joints.length && refJoints.every((j, i) => j === l.joints[i]);
       out.push(same ? { v: "ok", title: "Same skeleton as the others" } : { v: "bad", title: "Different skeleton from the first character", detail: "All characters must use the same rig so one set of movements fits them." });
     }
-    const want = k === "avatar" ? ["walk", "run", "sit"] : k === "witness" || k === "crowd" ? ["walk"] : [];
+    const want = k === "avatar" ? ["walk", "run", "sit"] : k === "runner" || name === "crowd_police" ? ["walk", "run"] : k === "witness" || k === "crowd" ? ["walk"] : [];
     const have = l.groups.map(g => g.name.toLowerCase());
     for (const c of want) out.push(have.some(n => n.includes(c)) ? { v: "ok", title: `Has “${c}” movement` } : { v: "bad", title: `Missing “${c}” movement`, detail: "Tick it in the export window with all movements exported in one file." });
     for (const g of l.groups) {

@@ -8,27 +8,39 @@ import { DirectionalLight } from "@babylonjs/core/Lights/directionalLight";
 import { PointLight } from "@babylonjs/core/Lights/pointLight";
 import { ShadowGenerator } from "@babylonjs/core/Lights/Shadows/shadowGenerator";
 import "@babylonjs/core/Lights/Shadows/shadowGeneratorSceneComponent";
+import "@babylonjs/core/Shaders/default.vertex";
+import "@babylonjs/core/Shaders/default.fragment";
+import "@babylonjs/core/Shaders/postprocess.vertex";
+import "@babylonjs/core/Shaders/rgbdDecode.fragment";
+import "@babylonjs/core/Shaders/shadowMap.vertex";
+import "@babylonjs/core/Shaders/shadowMap.fragment";
 import { GlowLayer } from "@babylonjs/core/Layers/glowLayer";
 import { Color3, Color4 } from "@babylonjs/core/Maths/math.color";
 import { Vector3 } from "@babylonjs/core/Maths/math.vector";
 import { StandardMaterial } from "@babylonjs/core/Materials/standardMaterial";
 import { DynamicTexture } from "@babylonjs/core/Materials/Textures/dynamicTexture";
 import { CreateSphere } from "@babylonjs/core/Meshes/Builders/sphereBuilder";
-import { gapOffset, runPose, sirenLevels } from "./chase-motion.ts";
+import { sirenLevels } from "./chase-motion.ts";
 import { tooSlow } from "../shared/scene-capability.ts";
-import { SPEED, biomeWeights, blendPalette, distanceAt, progressAt, speedFactorAt, type Rgb } from "./chase-biomes.ts";
+import { type Rgb } from "./chase-biomes.ts";
+import { chaseFrame, OFFICERS } from "./chase-frame.ts";
 import { hex, material, paint, seeded } from "../shared/chase3d-kit.ts";
 import { makeFigure } from "./chase3d-actors.ts";
 import { buildWorld } from "./chase3d-world.ts";
+import { replaceActor } from "./chase3d-model-actor.ts";
 
-export type ChaseHandle = { dispose(): void; /** The Babylon scene, exposed for tests and tooling. */ scene: Scene };
+export type ChaseHandle = { dispose(): void; now(): number; /** The Babylon scene, exposed for tests and tooling. */ scene: Scene };
 export type ChaseOptions = {
+  models?: boolean;
+  signal?: AbortSignal;
+  onFault?: (error: unknown) => void;
   /** "light" renders at lower resolution without shadows or glow, for weaker devices. */
   quality?: "high" | "light";
   /** Called once if the frame rate stays below the floor; the caller should switch to 2D. */
   onSlow?: () => void;
   /** Jump ahead in the looping journey (used by tests and previews). */
   startSeconds?: number;
+  seconds?: () => number;
 };
 
 const rgb = (c: Rgb) => new Color3(c[0], c[1], c[2]);
@@ -39,6 +51,9 @@ export async function createChaseScene(canvas: HTMLCanvasElement, options: Chase
   const light = options.quality === "light";
   engine.setHardwareScalingLevel(1 / Math.min(window.devicePixelRatio || 1, light ? 1 : 2));
   const scene = new Scene(engine);
+  const abort = () => { scene.dispose(); engine.dispose(); };
+  options.signal?.addEventListener("abort", abort, { once: true });
+  if (options.signal?.aborted) { abort(); throw new DOMException("Chase setup cancelled", "AbortError"); }
   scene.fogMode = Scene.FOGMODE_EXP2;
 
   const camera = new FreeCamera("camera", new Vector3(3, 1.9, -8.2), scene);
@@ -84,15 +99,11 @@ export async function createChaseScene(canvas: HTMLCanvasElement, options: Chase
   const shadows = light ? null : new ShadowGenerator(1024, sun);
   if (shadows) { shadows.useExponentialShadowMap = true; shadows.darkness = 0.35; }
 
-  const world = buildWorld(scene, shadows);
+  const world = buildWorld(scene, shadows, options.models);
   for (const name of ["lamp", "dash", "bridgeLamp"]) { const m = scene.getMeshByName(name); if (m && glow) glow.addIncludedOnlyMesh(m as never); }
 
   const police = { top: "#232a31", bottom: "#161b20", head: "cap" as const, headColor: "#101317", skin: "#5a3820", uniform: true };
-  const officers = [
-    { name: "cop-a", x: -0.2, z: -0.9, phase: 0.4, period: 4.2, drift: 0.9, baton: true },
-    { name: "cop-b", x: -1.9, z: 0.8, phase: 2.2, period: 4.8, drift: 0.7, baton: true },
-    { name: "cop-c", x: -3.4, z: -0.4, phase: 4.0, period: 6.0, drift: 1.0, baton: false }
-  ].map(o => {
+  const officers = OFFICERS.map(o => {
     const figure = makeFigure(scene, { ...police, name: o.name, carry: o.baton ? "baton" : "none" });
     figure.meshes.forEach(m => shadows?.addShadowCaster(m));
     return { ...o, figure };
@@ -105,24 +116,35 @@ export async function createChaseScene(canvas: HTMLCanvasElement, options: Chase
   const thief = makeFigure(scene, { name: "thief", skin: "#6b4226", top: stripes, bottom: "#141414", head: "mask", carry: "sack" });
   thief.meshes.forEach(m => shadows?.addShadowCaster(m));
 
+  try {
+    if (options.models) await Promise.all([
+      world.ready,
+      replaceActor(scene, thief, "masked_thief", "run", shadows),
+      ...officers.map(o => replaceActor(scene, o.figure, "crowd_police", "run", shadows))
+    ]);
+  } catch (error) {
+    options.signal?.removeEventListener("abort", abort); abort(); throw error;
+  }
+  options.signal?.removeEventListener("abort", abort);
+  if (scene.isDisposed) throw new DOMException("Chase setup cancelled", "AbortError");
+
   let visible = true;
   const observer = typeof IntersectionObserver !== "undefined" ? new IntersectionObserver(e => { visible = e[0]?.isIntersecting ?? true; }) : null;
   observer?.observe(canvas);
   const resize = new ResizeObserver(() => engine.resize());
   resize.observe(canvas);
 
-  let start = -1; // set on the first rendered frame so slow loading does not skip ahead in the journey
-  let frame = 0, gait = 0, last = 0;
+  let start = -1; // Previews without a shared clock start on their first rendered frame.
+  let frame = 0;
+  const now = () => options.seconds?.() ?? (start < 0 ? options.startSeconds ?? 0 : (performance.now() - start) / 1000);
   const lookTarget = new Vector3(0.2, 1.05, 0);
   scene.onBeforeRenderObservable.add(() => {
     if (start < 0) start = performance.now() - (options.startSeconds ?? 0) * 1000;
-    const t = (performance.now() - start) / 1000;
+    const t = now();
     // The world eases down while a city's sign passes. Running cadence follows half of that change, so the chase
     // reads as a slightly slower pace rather than slow motion.
-    const dt = Math.min(0.1, t - last); last = t;
-    gait += dt * (0.5 + 0.5 * speedFactorAt(t));
-    const weights = biomeWeights(progressAt(t));
-    const palette = blendPalette(weights);
+    const frameState = chaseFrame(t);
+    const { gait, weights, palette } = frameState;
 
     scene.clearColor = new Color4(...palette.fog, 1);
     scene.fogColor = rgb(palette.fog); scene.fogDensity = palette.fogDensity;
@@ -142,16 +164,15 @@ export async function createChaseScene(canvas: HTMLCanvasElement, options: Chase
       gradient.update();
     }
 
-    thief.root.position.set(3.2, 0, 0.1);
-    thief.apply(runPose(gait, 0.3, 0.64));
-    for (const o of officers) {
-      o.figure.root.position.set(o.x + gapOffset(t, o.period, o.drift, o.phase), 0, o.z);
-      o.figure.apply(runPose(gait, o.phase, 0.72));
+    for (const runner of frameState.runners) {
+      const figure = runner.name === "thief" ? thief : officers.find(o => o.name === runner.name)!.figure;
+      figure.root.position.set(runner.x, 0, runner.z);
+      figure.apply(runner.pose, runner.cycle);
     }
-    world.update(distanceAt(t) / SPEED, palette, weights, gait);
+    world.update(frameState.worldTime, palette, weights, gait);
     const s = sirenLevels(t);
     sirenRed.intensity = s.red * 2.2; sirenBlue.intensity = s.blue * 2.2;
-    camera.position.set(2.2 + Math.sin(t * 0.28) * 1.6, 2.5 + Math.sin(t * 0.5) * 0.12, -8.2 + Math.cos(t * 0.2) * 0.6);
+    camera.position.set(...frameState.camera);
     camera.setTarget(lookTarget);
   });
 
@@ -163,12 +184,23 @@ export async function createChaseScene(canvas: HTMLCanvasElement, options: Chase
     if (tooSlow(samples)) { clearInterval(guard); options.onSlow?.(); }
   }, 1500);
 
-  engine.runRenderLoop(() => { if (visible && !document.hidden) scene.render(); });
+  let faulted = false;
+  const fault = (error: unknown) => {
+    if (faulted) return;
+    faulted = true;
+    console.error("The login chase failed; switching to 2D.", error);
+    engine.stopRenderLoop(); options.onFault?.(error);
+  };
+  const lost = (event: Event) => { event.preventDefault(); fault(new Error("WebGL context lost")); };
+  canvas.addEventListener("webglcontextlost", lost);
+  engine.runRenderLoop(() => { if (visible && !document.hidden && !faulted) { try { scene.render(); } catch (error) { fault(error); } } });
   scene.executeWhenReady(() => engine.resize());
 
   return {
     scene,
+    now,
     dispose() {
+      canvas.removeEventListener("webglcontextlost", lost);
       clearInterval(guard);
       observer?.disconnect();
       resize.disconnect();

@@ -128,6 +128,25 @@ export function shotAt(t: number, vw: number, vh: number): CameraShot {
   return t < T_ZOOM_START ? wide : zoomShot(wide, zoomPhase(t), vw, vh);
 }
 
+/** Orbit the seated office view without letting the camera go below the floor or behind the back wall. */
+export function officeLookShot(yaw: number, pitch: number): CameraShot {
+  const base = wideShot(T_ZOOM_START, poseAt(T_ZOOM_START));
+  const [tx, ty, tz] = base.target;
+  const dx = base.position[0] - tx, dy = base.position[1] - ty, dz = base.position[2] - tz;
+  const radius = Math.hypot(dx, dy, dz);
+  const angle = Math.atan2(dx, -dz) + Math.max(-0.7, Math.min(0.7, yaw));
+  const elevation = Math.max(0.04, Math.min(0.55, Math.asin(dy / radius) + pitch));
+  return {
+    target: base.target,
+    position: [tx + Math.sin(angle) * radius * Math.cos(elevation), ty + Math.sin(elevation) * radius, tz - Math.cos(angle) * radius * Math.cos(elevation)]
+  };
+}
+
+/** Continue the zoom from wherever the player was looking, without snapping the camera back. */
+export function officeZoomShot(from: CameraShot, t: number, vw: number, vh: number): CameraShot {
+  return zoomShot(from, zoomPhase(t), vw, vh);
+}
+
 /** How opaque the terminal glass should be: it fades in over the last stretch of the zoom. */
 export const glassAt = (t: number) => smooth((zoomPhase(t) - 0.86) / 0.14);
 

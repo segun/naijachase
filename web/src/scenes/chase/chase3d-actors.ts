@@ -32,7 +32,7 @@ export type FigureSpec = {
   scale?: number;
 };
 
-export type Figure = { root: TransformNode; meshes: Mesh[]; apply(pose: Pose): void };
+export type Figure = { root: TransformNode; meshes: Mesh[]; apply(pose: Pose, cycle?: number): void };
 
 function limb(scene: Scene, parent: TransformNode, name: string, at: Vector3, upper: [number, number, number], lower: [number, number, number], mats: { upper: StandardMaterial; lower: StandardMaterial }) {
   const joint = new TransformNode(`${name}-joint`, scene);

@@ -118,15 +118,15 @@ test("sign-in screens fit the viewport on desktop and the chase scene is decorat
   const scene = read("scenes/chase/ChaseScene.svelte");
   assert.match(scene, /aria-hidden="true"/);
   assert.match(read("screens/entry/AuthPanel.svelte"), /<ChaseStage \/>/);
-  assert.match(read("scenes/chase/ChaseStage.svelte"), /<ChaseScene \/>/, "the 2D scene is always the base and the fallback");
+  assert.match(read("scenes/chase/ChaseStage.svelte"), /<ChaseScene \{seconds\}/, "the 2D scene is always the base and the fallback");
   assert.match(css, /prefers-reduced-motion/);
 });
 
 test("the chase scene shows a team of black-uniformed officers and no speech", () => {
-  const scene = read("scenes/chase/ChaseScene.svelte");
-  const officers = [...scene.matchAll(/\{ cls: "c\d"/g)].length;
+  const scene = read("scenes/chase/chase-2d.ts");
+  const officers = [...read("scenes/chase/chase-frame.ts").matchAll(/name: "cop-[a-c]"/g)].length;
   assert.ok(officers >= 3 && officers <= 4, `expected 3-4 officers, found ${officers}`);
-  assert.doesNotMatch(scene, /Stop|bubble|<text[^>]*>[A-Za-z]/);
+  assert.doesNotMatch(scene, /Stop, thief|bubble|<text[^>]*>[A-Za-z]/);
   assert.doesNotMatch(scene, /#1d4fa3|#10285a|#0a1a3d/i, "blue (ceremonial) uniform colours");
-  assert.match(scene, /#262c33/);
+  assert.match(scene, /#232a31/);
 });

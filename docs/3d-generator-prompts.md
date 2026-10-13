@@ -154,7 +154,7 @@ Only the main file is needed, but they should be **sitting at a desk**. Prompt f
 
 ### 4.4 Background people (walking about in the chase and markets)  → folder `characters/crowd/`
 
-One file with Walk only. These can be a bit lower detail (medium).
+One file with Walk only, except `crowd_police.glb`, which also needs Run for the login chase. These can be a bit lower detail (medium).
 
 | # | Save as | Prompt |
 | --- | --- | --- |
@@ -182,6 +182,15 @@ One file with Walk only. These can be a bit lower detail (medium).
 | 4.4.22 | `crowd_mechanic.glb` | Mechanic in oily blue overalls, a rag in the pocket. Stylised game character, A-pose, plain background. |
 | 4.4.23 | `crowd_bouncer.glb` | Burly nightclub bouncer in a black jacket and trousers, arms folded. Stylised game character, plain background. |
 | 4.4.24 | `crowd_chief.glb` | Traditional chief in rich embroidered robes with a beaded crown and a staff. Stylised game character, A-pose, plain background. |
+
+### 4.5 Login chase runner → folder `characters/chase/`
+
+One humanoid-rigged file with **Walk and Run**, both in place, skeleton included. Target standing height: **1.78 m**.
+Keep the loot sack separate: the scene uses a procedural sack until held props are generated.
+
+| # | Save as | Prompt |
+| --- | --- | --- |
+| 4.5.1 | `masked_thief.glb` | Stylised adult human game character with natural human proportions, wearing a black balaclava, a black-and-white horizontally striped long-sleeved shirt, dark trousers and dark shoes. Medium-brown skin visible on the hands. A-pose, arms slightly away from the body, hands empty, plain background. No weapons, no lettering, no scenery, no ground platform. Suitable for humanoid rigging and running animation. |
 
 ---
 
@@ -778,7 +787,7 @@ Ask the image tool for a "PNG with a transparent background".
 
 ```
 web/public/assets/3d/
-  characters/   avatars/  witnesses/  judges/  crowd/
+  characters/   avatars/  witnesses/  judges/  crowd/  chase/
   props/        held/  street/
   vehicles/
   animals/
@@ -795,7 +804,7 @@ web/public/assets/3d/
 
 ## 13. Totals and suggested order
 
-About **350 files**: 10 avatars, 16 witnesses, 5 judges, 24 crowd, 20 held items, 35 vehicles, 10 animals,
+About **350 files**: 10 avatars, 16 witnesses, 5 judges, 24 crowd, 1 masked thief, 20 held items, 35 vehicles, 10 animals,
 32 street pieces, about 160 venue pieces, 51 chase and journey pieces, about 40 interior pieces, and 32 pictures.
 
 Work in this order, because each group is useful on its own and the game keeps working with the shapes it already has until a file arrives:

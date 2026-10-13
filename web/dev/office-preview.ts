@@ -1,5 +1,5 @@
 import { createRoomScene, type RoomHandle } from "../src/scenes/office/chase3d-room.ts";
-import { T_RETURN_FROM, wideShot, poseAt } from "../src/scenes/office/room-scene.ts";
+import { T_RETURN_FROM, T_ZOOM_START, wideShot, poseAt } from "../src/scenes/office/room-scene.ts";
 import { MODELS } from "../src/scenes/shared/model-manifest.ts";
 import type { AvatarPreset } from "../src/avatar/avatar-model.ts";
 import { Vector3 } from "@babylonjs/core/Maths/math.vector";
@@ -39,7 +39,9 @@ async function start(startSeconds = 0, inspect = false) {
     const h = await createRoomScene(canvas, {
       signal: pending.signal,
       preset: presets.find(p => p.avatar_id === select.value), hour: 12, quality: "high",
-      models: detail.value === "full", startSeconds, onGlass: () => undefined
+      models: detail.value === "full", startSeconds, onGlass: () => undefined,
+      exploreAt: inspect ? undefined : T_ZOOM_START,
+      onExplore: () => { if (token === generation) $("note").textContent = "Look around the office"; }
     });
     if (token !== generation) { h.dispose(); return; }
     handle = h;
@@ -63,6 +65,15 @@ $("intro").onclick = () => { void start(); };
 $("return").onclick = () => { void start(T_RETURN_FROM); };
 $("leave").onclick = async () => { await start(60); await handle?.leave?.(); };
 $("inspect").onclick = () => { void start(Number($<HTMLInputElement>("time").value), true); };
+$("continue").onclick = () => { handle?.continue?.(); $("note").textContent = ""; };
+let pointer: { id: number; x: number; y: number } | undefined;
+canvas.onpointerdown = e => { pointer = { id: e.pointerId, x: e.clientX, y: e.clientY }; canvas.setPointerCapture(e.pointerId); };
+canvas.onpointermove = e => {
+  if (!pointer || e.pointerId !== pointer.id) return;
+  handle?.look?.((pointer.x - e.clientX) * 0.004, (e.clientY - pointer.y) * 0.003);
+  pointer.x = e.clientX; pointer.y = e.clientY;
+};
+canvas.onpointerup = canvas.onpointercancel = () => { pointer = undefined; };
 select.onchange = () => { void start(Number($<HTMLInputElement>("time").value), true); };
 detail.onchange = () => { void start(handle?.now() ?? 0); };
 void start(params.has("time") ? Number(params.get("time")) : 0, params.has("time"));

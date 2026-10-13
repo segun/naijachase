@@ -1,6 +1,8 @@
 // Pure animation maths for the 3D chase scene, kept free of Babylon.js so it can be unit-tested.
 export const CYCLE_SECONDS = 0.72;
 
+export const cycleAt = (time: number, phase: number, cycle: number) => time / cycle + phase / (Math.PI * 2);
+
 export type Pose = {
   bodyY: number; lean: number; headBob: number;
   thighL: number; thighR: number; shinL: number; shinR: number;

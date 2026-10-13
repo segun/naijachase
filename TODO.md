@@ -1243,6 +1243,10 @@ scores, rank, detection odds, panel votes, punishment, or jail time.
       procedural fallback. All ten avatars checked at the keyboard; Standard downloads no GLBs. Shell/door and interactive terminal stay procedural.
       `office_room.glb` is not used because its furniture is baked in. Preview: `web/dev-office.html`; fitting notes in `docs/3d-models.md`.
       - [x] Correct the generated chair's sideways facing: quarter-turn in the manifest, keeping its backrest behind the avatar.
+      - [x] Pause seated on every office entry, including witness returns, with "Look around the office", drag/swipe and arrow-key camera controls,
+        and "Continue to case desk" to resume the zoom. Full/Standard switching retains exploration; Simple keeps Continue without camera movement.
+      - [x] Check phone-sized portrait/landscape layouts and emulated touch swipe/taps; keep the exploration card clear of the Detail button at narrow widths.
+      - [x] Show an accessible alert during Simple-mode office exploration, with Standard upgrade and Continue actions that wrap on mobile.
     - [ ] Office Simple renderer: add a true timeline-matched Canvas 2D intro/return/exit. For now Simple opens the flat DOM terminal; it does not animate the office.
     - [ ] 2. Witness scenes (`witness/chase3d-witness.ts`, buildings and open-air kits): player and witness from models. Pick the witness model per recipe look
       (map each of the 90 looks to one of the 16 witness models and tint), and fake talking with small head and arm movement.
@@ -1251,7 +1255,12 @@ scores, rank, detection odds, panel votes, punishment, or jail time.
     - [ ] 4. Archive (`archive/chase3d-archive.ts`): the player walking and reading.
     - [ ] 5. Disciplinary panel (`panel/chase3d-panel.ts`): the five judges (`judge_1` to `judge_5`, seated) and the player; the raise-paper pose needs a small arm
       rotation on the model's arm bones, and the vote papers stay procedural until `held_vote_paper.glb` exists.
-    - [ ] 6. Chase (`chase/chase3d-actors.ts`, `chase3d-world.ts`): runners and passers-by from the `crowd_*` models, danfo and saloons from the vehicle models.
+    - [x] 6. Login chase (`chase/chase3d-actors.ts`, `chase3d-world.ts`): masked thief, police and passers-by from models, danfo and matching scenery.
+      - [x] Add the omitted masked thief prompt, register its generated Walk/Run model at 1.78 m, and optimise it.
+      - [x] Verify and optimise the corrected police Walk/Run export; fit at 1.72 m and retain procedural held props.
+      - [x] Full/Standard/Simple share the timeline, with a real Canvas 2D fallback and live switching; failed models retain procedural shapes.
+      - [x] Inspect the three cities, no-model requests at lower detail, cancelled setup and WebGL-loss fallback; check mobile login layout and touch navigation.
+      - [x] Add `web/dev-chase.html` with seekable inspection and all three detail levels.
     - [ ] 7. Journey and venue vehicles and animals (cattle market, farm, palace, motor park, railway, airport, seaport): replace the lofted cars and boats with the vehicle
       and animal models and set `checked` for each.
   - [x] Generate the 7 missing water-edge and work venues (beach, fishing jetty, jetty, waterfront, seaport, farm, mining site: 29 files) from `docs/3d-missing-prompts.md`, then run `pnpm assets:optimize`.

@@ -32,6 +32,31 @@ test("avatars are the heights the prompts asked for", () => {
   assert.equal(modelSpec(avatarModelId("avatar-02")).size, 1.78);
 });
 
+test("the masked thief is registered at human scale with in-place walk and run exports", () => {
+  const spec = modelSpec("masked_thief");
+  assert.equal(spec.file, "characters/chase/masked_thief.glb");
+  assert.equal(spec.kind, "person");
+  assert.equal(spec.size, 1.78);
+  const bytes = fs.readFileSync(new URL(spec.file, assetDir));
+  assert.equal(bytes.readUInt32LE(0), 0x46546c67, "GLB header");
+  const jsonLength = bytes.readUInt32LE(12);
+  const gltf = JSON.parse(bytes.subarray(20, 20 + jsonLength).toString("utf8"));
+  const names = gltf.animations.map(a => a.name.toLowerCase());
+  assert.ok(names.includes("walk"));
+  assert.ok(names.includes("run"));
+  assert.ok(gltf.skins.length > 0, "humanoid skeleton included");
+});
+
+test("the chase police export includes both required movements and checked human sizing", () => {
+  const spec = modelSpec("crowd_police");
+  assert.equal(spec.size, 1.72);
+  assert.equal(spec.checked, true);
+  assert.equal(modelSpec("masked_thief").checked, true);
+  const bytes = fs.readFileSync(new URL(spec.file, assetDir));
+  const gltf = JSON.parse(bytes.subarray(20, 20 + bytes.readUInt32LE(12)).toString("utf8"));
+  assert.deepEqual(gltf.animations.map(a => a.name.toLowerCase()).sort(), ["run", "walk"]);
+});
+
 const onDisk = () => {
   const out = [];
   const walk = (dir, prefix) => fs.readdirSync(dir, { withFileTypes: true }).forEach(e => {
@@ -94,7 +119,9 @@ test("generated models are only requested at the Full detail level", () => {
   const callers = [];
   const walk = d => fs.readdirSync(d, { withFileTypes: true }).forEach(e => { const f = new URL(e.name + (e.isDirectory() ? "/" : ""), d); if (e.isDirectory()) walk(f); else if (/\.(ts|svelte)$/.test(e.name) && /\bloadModel\(/.test(fs.readFileSync(f, "utf8"))) callers.push(e.name); });
   walk(src);
-  assert.deepEqual(callers.sort(), ["avatar3d.ts", "chase3d-garage.ts", "chase3d-models.ts", "chase3d-room.ts", "chase3d-stage.ts"], "add the models guard when a new scene loads a model");
+  assert.match(read("scenes/chase/chase3d.ts"), /if \(options\.models\) await Promise\.all/);
+  assert.match(read("scenes/chase/chase3d-world.ts"), /ready: models \? setup\(\) : Promise\.resolve\(\)/);
+  assert.deepEqual(callers.sort(), ["avatar3d.ts", "chase3d-garage.ts", "chase3d-model-actor.ts", "chase3d-models.ts", "chase3d-room.ts", "chase3d-stage.ts", "chase3d-world.ts"], "add the models guard when a new scene loads a model");
 });
 
 test("scenes follow the picture-detail setting and can switch while playing", () => {

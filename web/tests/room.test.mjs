@@ -95,6 +95,65 @@ test("the camera dollies in smoothly and the glass fades in only at the end", ()
   assert.ok(room.glassAt(room.T_ZOOM_START + (room.T_END - room.T_ZOOM_START) * 0.5) === 0);
 });
 
+test("the office exploration pause is seated, keeps the terminal closed and bounds camera movement", () => {
+  assert.equal(room.poseAt(room.T_ZOOM_START).sit, 1);
+  assert.equal(room.chairAt(room.T_ZOOM_START), 1);
+  assert.equal(room.avatarAlpha(room.T_ZOOM_START), 1);
+  assert.equal(room.glassAt(room.T_ZOOM_START), 0);
+  for (const yaw of [-100, -0.7, 0, 0.7, 100]) for (const pitch of [-100, 0, 100]) {
+    const shot = room.officeLookShot(yaw, pitch);
+    assert.ok(shot.position.every(Number.isFinite));
+    assert.ok(shot.position[1] > 0 && shot.position[2] < core.ROOM.maxZ);
+    assert.deepEqual(shot.target, room.officeLookShot(0, 0).target);
+  }
+  assert.deepEqual(room.officeLookShot(-100, 0), room.officeLookShot(-0.7, 0));
+  assert.deepEqual(room.officeLookShot(100, 0), room.officeLookShot(0.7, 0));
+});
+
+test("continuing from an explored view zooms without snapping and still lands on the terminal", () => {
+  for (const [w, h] of [[1440, 900], [390, 844]]) {
+    const from = room.officeLookShot(0.5, 0.2);
+    const start = room.officeZoomShot(from, room.T_ZOOM_START, w, h);
+    start.position.forEach((v, i) => assert.ok(Math.abs(v - from.position[i]) < 1e-9));
+    const end = room.officeZoomShot(from, room.T_END, w, h);
+    room.finalShot(w, h).position.forEach((v, i) => assert.ok(Math.abs(v - end.position[i]) < 1e-9));
+    assert.deepEqual(end.target, room.finalShot(w, h).target);
+  }
+});
+
+test("every office entry offers exploration and Continue, without changing archive behaviour", () => {
+  const view = read("scenes/office/Room.svelte"), stage = read("scenes/shared/Stage.svelte");
+  assert.match(view, /exploreAt=\{T_ZOOM_START\}/);
+  assert.match(stage, /!seen \|\| quick \|\| exploreAt !== undefined/);
+  assert.match(stage, /Look around the office/);
+  assert.match(stage, /Continue to case desk/);
+  assert.match(stage, /onpointermove=\{pointerMove\}/);
+  assert.match(stage, /ArrowLeft/);
+  assert.match(stage, /untrack\(\(\) => phase\) === "look" && lastFrame/, "an intentional pause is not treated as a stalled intro");
+  assert.doesNotMatch(read("scenes/archive/ArchiveRoom.svelte"), /exploreAt=/);
+  assert.match(read("App.svelte"), /app\.panel \|\| isCaseScreen\(app\.screen\)/, "detail controls remain available in the office after a witness return");
+});
+
+test("mobile office exploration reserves space above the detail button and handles touch cancellation", () => {
+  const css = read("styles/terminal.css"), stage = read("scenes/shared/Stage.svelte");
+  assert.match(css, /@media \(max-width: 639px\) \{\s*\.room-look \{ bottom: calc\(4\.5rem \+ env\(safe-area-inset-bottom\)\); \}/);
+  assert.match(css, /\.room-canvas \{[^}]*touch-action: none/);
+  assert.match(stage, /canvas\?\.setPointerCapture\(e\.pointerId\)/);
+  assert.match(stage, /onpointercancel=\{pointerUp\}/);
+  assert.match(stage, /canvas\.releasePointerCapture\(e\.pointerId\)/);
+});
+
+test("Simple office exploration shows an accessible alert with upgrade and Continue actions", () => {
+  const stage = read("scenes/shared/Stage.svelte"), css = read("styles/terminal.css");
+  assert.match(stage, /\{#if !wants3d\}\s*<div role="alert">/);
+  assert.match(stage, /Look around is unavailable in Simple mode/);
+  assert.match(stage, /Switch to Standard or Full to look around the office/);
+  assert.match(stage, /onclick=\{\(\) => detail\.set\("standard"\)\}>Use Standard detail/);
+  assert.match(stage, /onclick=\{continueToDesk\}>Continue to case desk/);
+  assert.match(css, /\.room-look-actions \{[^}]*flex-wrap: wrap/);
+  assert.match(css, /\.room-look-unavailable \{ border-color: var\(--gold\)/);
+});
+
 test("the rooms are lazy, primitive-built enhancements and the screens keep working without them", () => {
   const stage = read("scenes/shared/Stage.svelte"), roomView = read("scenes/office/Room.svelte"), archiveView = read("scenes/archive/ArchiveRoom.svelte");
   const desk = read("scenes/office/CaseDesk.svelte"), app = read("App.svelte"), shell = read("ui/Shell.svelte");

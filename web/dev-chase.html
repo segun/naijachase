@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Login chase preview (development only)</title>
+    <style>
+      * { box-sizing: border-box; }
+      body { margin: 0; background: #081d17; color: #f4e8c1; font: 14px system-ui, sans-serif; }
+      canvas { width: 100vw; height: 100vh; display: block; }
+      nav { position: fixed; top: 8px; left: 8px; right: 8px; display: flex; flex-wrap: wrap; gap: 8px; padding: 8px; background: #081d17e6; }
+      button, select, input { font: inherit; padding: 8px; }
+      input { width: 6rem; }
+    </style>
+  </head>
+  <body>
+    <canvas id="c"></canvas>
+    <nav>
+      <select id="detail" aria-label="Detail"><option value="full">Full</option><option value="standard">Standard</option><option value="simple">Simple</option></select>
+      <label>Seconds <input id="time" type="number" value="0" min="0" step=".1"></label>
+      <button id="inspect">Inspect</button><button id="play">Play</button><span id="note" role="status"></span>
+    </nav>
+    <script type="module" src="/dev/chase-preview.ts"></script>
+  </body>
+</html>

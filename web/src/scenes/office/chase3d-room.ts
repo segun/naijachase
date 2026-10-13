@@ -12,7 +12,7 @@ import { CreateSphere } from "@babylonjs/core/Meshes/Builders/sphereBuilder";
 import { MAP_H, MAP_W, outlinePath, statePoint } from "../../domain/map.ts";
 import { ROOM, armAngles, legAngles, type Pose } from "../shared/scene-core.ts";
 import {
-  DESK, DOOR, SCREEN, SEAT, T_END, T_OUT_END, avatarAlpha, chairAt, doorAt, glassAt, outroAlphaAt, outroChairAt, outroGlassAt, outroPoseAt, outroShotAt, poseAt, shotAt
+  DESK, DOOR, SCREEN, SEAT, T_END, T_OUT_END, T_ZOOM_START, avatarAlpha, chairAt, doorAt, glassAt, officeLookShot, officeZoomShot, outroAlphaAt, outroChairAt, outroGlassAt, outroPoseAt, outroShotAt, poseAt, shotAt
 } from "./room-scene.ts";
 
 export type RoomHandle = SceneHandle;
@@ -264,12 +264,18 @@ export async function createRoomScene(canvas: HTMLCanvasElement, options: RoomOp
   };
 
   // ---- Intro: walk in, sit, zoom into the monitor ----
+  let exploring = options.exploreAt !== undefined && (options.startSeconds ?? 0) <= T_ZOOM_START;
+  let announced = false;
+  let yaw = 0, pitch = 0;
+  let zoomFrom: ReturnType<typeof officeLookShot> | undefined;
   const update = (t: number) => {
     pose(poseAt(t), t, avatarAlpha(t));
     hinge.rotation.y = doorAt(t) * 1.75;
     seat(chairAt(t));
-    stage.aim(shotAt(t, stage.engine.getRenderWidth(), stage.engine.getRenderHeight()));
+    const width = stage.engine.getRenderWidth(), height = stage.engine.getRenderHeight();
+    stage.aim(exploring && t >= T_ZOOM_START ? officeLookShot(yaw, pitch) : zoomFrom ? officeZoomShot(zoomFrom, t, width, height) : shotAt(t, width, height));
     options.onGlass(glassAt(t));
+    if (exploring && t >= T_ZOOM_START && !announced) { announced = true; options.onExplore?.(); }
   };
 
   // ---- Outro: pull back from the monitor, stand up and walk out of the door ----
@@ -283,6 +289,21 @@ export async function createRoomScene(canvas: HTMLCanvasElement, options: RoomOp
   };
 
   await wait(scene.whenReadyAsync());
-  const handle = stage.run({ end: T_END, update, onSlow: options.onSlow, startSeconds: options.startSeconds });
-  return { ...handle, leave: () => handle.play({ end: T_OUT_END, update: outro }) };
+  const handle = stage.run({ end: exploring ? T_ZOOM_START : T_END, update, onSlow: options.onSlow, startSeconds: options.startSeconds });
+  return {
+    ...handle,
+    look(dx, dy) {
+      if (!exploring) return;
+      yaw = Math.max(-0.7, Math.min(0.7, yaw + dx));
+      pitch = Math.max(-0.3, Math.min(0.4, pitch + dy));
+      stage.aim(officeLookShot(yaw, pitch)); scene.render();
+    },
+    continue() {
+      if (!exploring) return;
+      zoomFrom = officeLookShot(yaw, pitch);
+      exploring = false;
+      void handle.play({ end: T_END, update }, T_ZOOM_START);
+    },
+    leave: () => handle.play({ end: T_OUT_END, update: outro })
+  };
 }

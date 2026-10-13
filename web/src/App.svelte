@@ -90,5 +90,5 @@
     {#if app.signedIn && app.panel}{#await lazy.panel() then { default: Screen }}<Screen {app} />{/await}{/if}
   </Shell>
   <!-- Animated scenes can be made lighter or richer at any moment, without leaving the game. -->
-  {#if app.signedIn && !app.needsAvatar && (app.panel || ["garage", "witness", "journey", "cases", "archive"].includes(app.screen))}<DetailQuick />{/if}
+  {#if app.signedIn && !app.needsAvatar && (app.panel || isCaseScreen(app.screen) || ["garage", "witness", "journey", "cases", "archive"].includes(app.screen))}<DetailQuick />{/if}
 {/if}

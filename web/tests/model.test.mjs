@@ -39,7 +39,7 @@ test("Babylon.js is only reachable through a dynamic import", () => {
     .filter(f => /(?:^|\n)\s*import[^\n]*@babylonjs/.test(fs.readFileSync(f, "utf8")));
   assert.deepEqual(offenders, [], "only the TypeScript modules under scenes/ and avatar/avatar3d.ts may import @babylonjs");
   assert.match(read("scenes/chase/ChaseStage.svelte"), /import\("\.\/chase3d\.ts"\)/);
-  assert.doesNotMatch(read("scenes/chase/ChaseStage.svelte"), /^\s*import\s+[^\n]*chase3d/m);
+  assert.doesNotMatch(read("scenes/chase/ChaseStage.svelte"), /^\s*import\s+(?!type\b)[^\n]*chase3d/m);
   assert.doesNotMatch(read("scenes/chase/chase3d.ts"), /from "@babylonjs\/core"/, "use deep imports so unused features are tree-shaken");
 });
 

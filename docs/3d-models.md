@@ -7,7 +7,7 @@ for what exists see [3d-asset-progress.md](./3d-asset-progress.md).
 
 | File | What it does |
 | --- | --- |
-| `web/src/scenes/shared/model-manifest.ts` | Pure data: every model on disk (345 so far): file, kind, real size in metres and how it is measured (`measure`: height, or `length` for vehicles, rooms, bridges, fields), facing (`yaw`), `mirror`, `offset`. A test fails if a file has no entry or an entry has no file. |
+| `web/src/scenes/shared/model-manifest.ts` | Pure data: every model on disk (346 so far): file, kind, real size in metres and how it is measured (`measure`: height, or `length` for vehicles, rooms, bridges, fields), facing (`yaw`), `mirror`, `offset`. A test fails if a file has no entry or an entry has no file. |
 | `web/src/scenes/shared/chase3d-models.ts` | `loadModel(scene, id)`: downloads the GLB once per scene, scales it to its real size, stands it on its origin and faces it correctly. Returns `null` if the id or file is bad, so callers fall back to the shapes built in code. |
 | `web/src/scenes/shared/chase3d-model-figure.ts` | Poses a person from the scene's normal `Pose`: walk follows gait, sitting blends continuously onto the seat, optional hand targets reach the keyboard. Sampling is deterministic, including the small typing movement. |
 | `Stage.addModelFigure(preset)` | The player's avatar from its GLB, or `null` (then use `addFigure`, the procedural avatar). |
@@ -23,16 +23,44 @@ Nothing from the models is in the main bundle, and the Babylon.js loader is impo
 - **Case office** (`scenes/office/chase3d-room.ts`): the player's avatar walking, sitting, typing and leaving, plus nine individual furniture
   models: desk, monitor, lamp, chair, filing cabinet, corkboard, plant, papers and window. Each failed model retains its own procedural
   counterpart. The shell, swinging door, time-of-day sky, case map, terminal glass, keyboard and mouse stay procedural.
-- Everything else (witness, journey, archive, panel, chase) still draws the procedural figures. Moving a scene over means using
+- **Login chase** (`scenes/chase/chase3d.ts`): the masked thief, three police officers, commuters, traders and farmers; palms, towers,
+  fishing boats, lighthouse, danfo, stalls, shopfronts, pyramids, mud houses, baobabs, roadside trees and lamps.
+- Everything else (witness, journey, archive, panel) still draws the procedural figures. Moving a scene over means using
   `addModelFigure` and calling `figure.apply(pose)` instead of setting `rig` angles, as the garage does.
 
 ## How sizes are set
+
+The login chase's `masked_thief` is registered under `characters/chase/` at **1.78 m standing height**, using height measurement and
+the usual person facing correction. The browser loader measured its fitted height at 1.780 m and its base at ground level, and confirmed
+both Walk and Run after optimisation. The police export also includes both clips and is fitted at **1.72 m**.
+The optimiser preserves replaced originals in hash-suffixed backups and processes the newly supplied export, never the previous backup.
 
 Every generated model comes out about one unit on its longest side, whatever it is, so the manifest gives each one its real size: real-world dimensions (a bin 0.9 m,
 a church 18 m across, the Lagos bridge 120 m long) or what the scenes need (the cutaway rooms are the shared room's 8.8 m width). People, animals, props, buildings and
 scenery are measured by height; vehicles, rooms and anything long and low (bridges, hills, fields, fences, tracks) by their longest horizontal side. Everything except
 vehicles is turned to face -z, towards the camera. Models also come with a small slab of ground under them, so footprints include a little extra.
 The sizes are real-world starting points: tune one when its scene is moved over (set `checked` once it looks right).
+
+### Login chase calibration and fallbacks
+
+Full uses the registered runner/crowd models and 16 matching scenery/vehicle models (23 unique files, each downloaded once per scene).
+Scenery is uniformly fitted to the existing procedural anchors: building/tree heights and boat/bus lengths. The danfo's long axis is
+already X, so it needs no quarter-turn; people turn from the loader's -Z facing to the chase's +X. The checked manifest flags cover only
+models inspected in this scene. Roads, kerbs, water, sky, bridges, distant hills, far shop facades and readable city signs stay procedural.
+Generated scenery may retain its baked base; no source geometry is destructively edited.
+
+Run/Walk clips are paused and sampled by shared cadence, not advanced independently. Exported hip translations are anchored horizontally
+so runners do not drift away from their timeline positions. The thief's sack and two officers' batons remain procedural while held assets
+are deferred; the sack follows the hips and batons follow the hand. A failed model or missing required clip leaves its procedural actor intact.
+Standard requests no GLBs. Simple is now Canvas 2D, sharing the city progression, camera, runner positions and poses with 3D through
+`chase-frame.ts`; its scenery is intentionally simplified. Full/Standard/Simple changes and WebGL failure continue on the same clock.
+Reduced motion draws one calm 2D frame. Abandoned model setup is disposed, including containers arriving after cancellation.
+
+The login chase keeps the existing desktop-only side panel: below **961 px**, it is hidden and neither renderer nor GLBs are loaded.
+Mobile login checks cover 320x568, 360x640, 390x844, 568x320 and 844x390: inputs fit, no horizontal overflow, submit is reachable by
+scrolling, and touch password visibility/recovery navigation work. Full selected on these screens still issues zero GLB requests.
+These are Chromium viewport/touch-emulation checks, not physical-phone or Safari performance checks.
+Development preview: `web/dev-chase.html`, with Full/Standard/Simple and a seekable inspection time.
 
 ### Office calibration
 
@@ -42,6 +70,22 @@ move 0.2 m closer to the desktop when seated, accounting for the generated figur
 pose; typing is a two-bone reach with a small timeline-driven hand movement, not a separate downloaded clip.
 The chair model's front is authored sideways relative to the other props. Its manifest `yaw: -Math.PI / 2` corrects that quarter-turn,
 putting the backrest behind the seated avatar and facing the seat towards the desk; the procedural chair's orientation is unchanged.
+
+Every office entry pauses at `T_ZOOM_START`, once the avatar is seated and before the terminal glass appears. The first entry still
+walks in; later entries and witness returns start seated. The DOM hint says **Look around the office**, with bounded drag/swipe camera
+orbit and arrow-key controls. **Continue to case desk** resumes the zoom from the explored view, without snapping back. The paused scene
+renders only on camera input or resize; the shared timeline does not keep running during exploration. Skip intro stops at the exploration
+pause rather than bypassing it. Full/Standard changes retain the pause and camera offset. Simple or a failed 3D scene keeps the Continue
+step, then opens the flat terminal. Simple shows a highlighted, screen-reader-announced alert explaining that looking around needs
+Standard or Full, with **Use Standard detail** and **Continue to case desk** actions. It appears both on entering in Simple and when
+switching to Simple during exploration, and disappears when 3D detail resumes. A failed 3D scene retains its camera-unavailable message.
+Archive and garage do not opt into this office-only pause.
+Mobile browser checks cover 320x568, 360x640 and 390x844 portrait, plus 568x320 and 844x390 landscape. The exploration card reserves
+space above the floating Detail button on narrow screens, including the bottom safe-area inset. Chromium touch emulation verified
+swiping without page scrolling, tapping Detail/Standard with zero GLB requests, and tapping Continue to open the terminal. The Simple
+alert and both actions fit all five sizes without overlapping Detail; touch taps restore Standard exploration or open the desk, and
+entering directly in Simple shows the alert with zero GLB requests. These are
+emulated mobile checks, not evidence of performance or Safari behaviour on a physical phone.
 
 `office_room.glb` is deliberately **not downloaded**: it contains baked-in furniture in one mesh, so it cannot replace the shell without
 duplicating objects, obstructing the moving door or changing the camera path. The separate monitor also contains a keyboard and a display slab.

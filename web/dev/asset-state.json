@@ -245,11 +245,11 @@
     "optimizedOn": "2026-10-11"
   },
   "characters/crowd/crowd_police.glb": {
-    "sha": "62ab76ea66537a01f4fa3406e8a3b7df345eb462e64b7ab8a7c723f60b0f0431",
+    "sha": "d7bf7cd01b2daebc8708b6154fff743774f8200dfac370ed44adb96feee98f7c",
     "textureLimit": 1024,
-    "beforeBytes": 918260,
-    "afterBytes": 378056,
-    "optimizedOn": "2026-10-11"
+    "beforeBytes": 975964,
+    "afterBytes": 429612,
+    "optimizedOn": "2026-10-13"
   },
   "characters/crowd/crowd_priest.glb": {
     "sha": "ddde77ffa2134fe85811acbae6b2482b79009f338e3fa6c6cb056973369320f1",
@@ -2413,5 +2413,12 @@
     "beforeBytes": 902308,
     "afterBytes": 276544,
     "optimizedOn": "2026-10-12"
+  },
+  "characters/chase/masked_thief.glb": {
+    "sha": "bb6a570a043c012989c6e2bba27ebb3796caed18675b823f2f4f5d56f24edb85",
+    "textureLimit": 1024,
+    "beforeBytes": 1094640,
+    "afterBytes": 461048,
+    "optimizedOn": "2026-10-13"
   }
 }
