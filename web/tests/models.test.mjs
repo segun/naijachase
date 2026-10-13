@@ -124,7 +124,8 @@ test("generated models are only requested at the Full detail level", () => {
   assert.match(read("scenes/witness/chase3d-witness.ts"), /if \(options\.models\) \{\s*await Promise\.all/);
   assert.match(read("scenes/witness/chase3d-open-air-kit.ts"), /if \(options\.models && group\)/);
   assert.match(read("scenes/witness/chase3d-buildings-kit.ts"), /if \(options\.models && current/);
-  assert.deepEqual(callers.sort(), ["avatar3d.ts", "chase3d-garage.ts", "chase3d-model-actor.ts", "chase3d-models.ts", "chase3d-room.ts", "chase3d-stage.ts", "chase3d-witness-models.ts", "chase3d-witness.ts", "chase3d-world.ts"], "add the models guard when a new scene loads a model");
+  assert.match(read("scenes/journey/chase3d-journey.ts"), /if \(options\.models\) \{\s*await Promise\.all/);
+  assert.deepEqual(callers.sort(), ["avatar3d.ts", "chase3d-garage.ts", "chase3d-journey.ts", "chase3d-model-actor.ts", "chase3d-models.ts", "chase3d-room.ts", "chase3d-stage.ts", "chase3d-witness-models.ts", "chase3d-witness.ts", "chase3d-world.ts"], "add the models guard when a new scene loads a model");
 });
 
 test("scenes follow the picture-detail setting and can switch while playing", () => {

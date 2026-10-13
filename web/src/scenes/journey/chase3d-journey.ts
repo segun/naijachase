@@ -1,16 +1,20 @@
 // Lazily loaded Babylon.js renderer for the travelling scene. It draws exactly what `frameAt` (journey-scene.ts) describes, from the same
-// side-on pinhole camera as journey-2d.ts. Built from primitives and painted textures, no model files.
+// side-on pinhole camera as the pure timeline. Full uses supplied models; Standard retains primitives and painted textures.
 import { Scene } from "@babylonjs/core/scene";
 import type { Mesh } from "@babylonjs/core/Meshes/mesh";
 import { TransformNode } from "@babylonjs/core/Meshes/transformNode";
 import type { StandardMaterial } from "@babylonjs/core/Materials/standardMaterial";
+import { Matrix, Vector3 } from "@babylonjs/core/Maths/math.vector";
 import { hex, material } from "../shared/chase3d-kit.ts";
 import { createStage, type Stage } from "../shared/chase3d-stage.ts";
 import { danfo, runabout } from "../shared/chase3d-cars.ts";
 import { contactShadow } from "../shared/chase3d-shapes.ts";
 import { armAngles, legAngles, mix, type Pose } from "../shared/scene-core.ts";
-import { AIR, FOV, HOSTESS, SEAT_Z, coloursAt, frameAt, mixColour, propColours, propX, tone, weightAt, type JourneyPlan, type Prop } from "./journey-scene.ts";
+import { AIR, FOV, HOSTESS, MODEL_AIR, SEAT_Z, coloursAt, frameAt, groundCameraX, mixColour, modelBoardingPosition, propColours, propX, tone, weightAt, type JourneyPlan, type Prop } from "./journey-scene.ts";
 import { createJourneyDriver, type JourneyHandle, type JourneyOptions } from "./journey-driver.ts";
+import { loadModel, type ModelHandle } from "../shared/chase3d-models.ts";
+import { aimJoint, modelFigure, type ModelFigure } from "../shared/chase3d-model-figure.ts";
+import { avatarModelId } from "../shared/model-manifest.ts";
 
 // ImageProcessingConfiguration.TONEMAPPING_ACES, as a plain number: importing that module on its own breaks Babylon's shader loading under the vite dev server.
 const TONEMAPPING_ACES = 1;
@@ -21,8 +25,12 @@ const TILE = 6;
 
 type Build = { root: TransformNode; stage: Stage; c: ReturnType<typeof propColours>; p: Prop; plan: JourneyPlan };
 
-export async function createJourneyScene3D(canvas: HTMLCanvasElement, options: JourneyOptions): Promise<JourneyHandle> {
+export async function createJourneyScene3D(canvas: HTMLCanvasElement, options: JourneyOptions): Promise<JourneyHandle & { scene: Scene }> {
   const stage = createStage(canvas, { hour: options.hour, quality: options.quality, models: options.models });
+  const abort = () => stage.engine.dispose();
+  options.signal?.addEventListener("abort", abort, { once: true });
+  try {
+  if (options.signal?.aborted) throw new DOMException("Journey setup cancelled", "AbortError");
   const { scene, palette, mat, box, cyl, sphere, plane, textured, light } = stage;
   const driver = createJourneyDriver(options);
   const { plan } = driver;
@@ -193,18 +201,93 @@ export async function createJourneyScene3D(canvas: HTMLCanvasElement, options: J
   })() : null;
 
   // ---- The player and the cabin crew ----
-  const player = stage.addFigure(options.preset);
-  const crew = air ? stage.addFigure(HOSTESS) : null;
+  const player = skyOnly ? null : stage.addFigure(options.preset);
+  const crew = air && !skyOnly ? stage.addFigure(HOSTESS) : null;
   // The boarding pass the player holds up: a card in the right hand, facing the camera.
   const card = air && player ? box("pass", 0.26, 0.17, 0.02, mat("#ffffff"), 0, -0.44, -0.12, player.rig.elbows[1]) : null;
   if (card) { card.setEnabled(false); box("passStripe", 0.26, 0.04, 0.025, mat("#1f4f9f"), 0, 0.05, 0).parent = card; }
   if (player && !light) contactShadow(scene, player.root, 0.9, 0.7);
   const wheelR = car ? 0.31 : bus ? 0.38 : 0.45;
+  let playerModel: ModelFigure | null = null, crewModel: ModelFigure | null = null;
+  const replacePerson = async (fallback: NonNullable<typeof player>, id: string, seated: boolean) => {
+    const model = await loadModel(scene, id);
+    if (!model) return null;
+    if (!model.clips.has("walk") || (seated && !model.clips.has("sit"))) {
+      console.warn(`Journey character "${id}" lacks required Walk${seated ? "/Sit" : ""} clips; retaining the built-in figure.`);
+      model.dispose(); return null;
+    }
+    const figure = modelFigure(model, { pinHorizontalTravel: true, neutralStanding: true });
+    const body = fallback.root.getChildMeshes();
+    model.root.parent = fallback.root;
+    body.filter(m => m !== card && m.parent !== card).forEach(m => m.setEnabled(false));
+    model.meshes.forEach(m => stage.caster(m));
+    contactShadow(scene, model.root, 0.9, 0.7);
+    return figure;
+  };
+  const replaceVehicle = async (root: TransformNode, id: string, yaw: number, keep: TransformNode[] = []) => {
+    const model = await loadModel(scene, id);
+    if (!model) return null;
+    const meshes = root.getChildMeshes();
+    model.root.parent = root; model.root.rotation.y = yaw;
+    meshes.filter(m => !keep.some(n => m === n || m.isDescendantOf(n))).forEach(m => m.setEnabled(false));
+    model.meshes.forEach(m => stage.caster(m));
+    return model;
+  };
+  let planeModel: ModelHandle | null = null;
+  if (options.models) {
+    await Promise.all([
+      player && options.preset && avatarModelId(options.preset.avatar_id)
+        ? replacePerson(player, avatarModelId(options.preset.avatar_id)!, !!car).then(m => { playerModel = m; }) : undefined,
+      crew ? replacePerson(crew, "witness_woman_uniform", false).then(m => { crewModel = m; }) : undefined,
+      ground ? replaceVehicle(ground.root, car ? "car_player_runabout" : "bus_danfo", car ? 0 : Math.PI / 2) : undefined,
+      planeRig ? replaceVehicle(planeRig.body, "plane_airliner", 0, [planeRig.stairs, planeRig.doorOpen]).then(m => { planeModel = m; }) : undefined,
+      ...plan.props.filter(p => p.kind === "parkedbus").map(async p => {
+        const root = ensure(p);
+        await replaceVehicle(root, "bus_coach", Math.PI);
+      })
+    ]);
+  }
+  if (options.signal?.aborted) throw new DOMException("Journey setup cancelled", "AbortError");
+  if (planeModel && planeRig) {
+    planeRig.stairs.getChildMeshes().forEach(m => m.dispose());
+    const { stairBottom, stairTop, sill, bottomZ, topZ } = MODEL_AIR;
+    const stairLength = Math.hypot(stairTop - stairBottom, topZ - bottomZ);
+    for (let i = 0; i < 12; i++) {
+      const k = (i + 0.5) / 12, height = sill * (i + 1) / 12;
+      const step = box("step", stairLength / 12, height, 1.3, mat(i % 2 ? "#9aa4ab" : "#b4bdc3"), mix(stairBottom, stairTop, k), height / 2, mix(bottomZ, topZ, k), planeRig.stairs);
+      step.rotation.y = -Math.atan2(topZ - bottomZ, stairTop - stairBottom);
+    }
+    box("landing", 1.1, 0.12, 1.3, mat("#8a8f93"), MODEL_AIR.doorX, sill - 0.06, topZ, planeRig.stairs);
+    planeRig.doorOpen.position.set(MODEL_AIR.doorX, sill + 0.87, topZ + 0.2);
+  }
+  const joint = (figure: ModelFigure, name: string) => figure.model.root.getDescendants().find(n => n.name.endsWith(`:${name}`));
+  const showPass = (figure: ModelFigure, amount: number) => {
+    if (!card) return;
+    const upper = joint(figure, "RightArm"), lower = joint(figure, "RightForeArm"), hand = joint(figure, "RightHand");
+    if (!(upper instanceof TransformNode) || !(lower instanceof TransformNode) || !(hand instanceof TransformNode)) return;
+    [upper, lower, hand].forEach(n => n.computeWorldMatrix(true));
+    const world = figure.root.computeWorldMatrix(true);
+    const shoulder = Vector3.TransformCoordinates(upper.getAbsolutePosition(), Matrix.Invert(world));
+    const elbow = Vector3.TransformCoordinates(shoulder.add(new Vector3(0, -0.15, -0.22)), world);
+    const wrist = Vector3.TransformCoordinates(shoulder.add(new Vector3(0, -0.05, -0.43)), world);
+    aimJoint(upper, lower, elbow, amount); aimJoint(lower, hand, wrist, amount);
+    if (card) {
+      card.parent = hand; card.position.set(0, 0, 0);
+      card.scaling.setAll(1 / Math.abs(figure.model.fit.scaling.y));
+      card.rotationQuaternion = hand.absoluteRotationQuaternion.conjugate();
+    }
+  };
 
   const frameStep = (t: number) => {
     const f = frameAt(plan, t);
     const { cam, vehicle: v } = f;
-    stage.aim({ position: [cam.x, cam.y, -cam.d], target: [cam.x, cam.y, 100] });
+    const boarding = planeModel && (f.stage === "boarding" || f.stage === "deplane" || f.stage === "welcome");
+    const modelInView = planeModel && f.stage !== "airport";
+    const aspect = stage.engine.getRenderWidth() / stage.engine.getRenderHeight();
+    const cameraX = ground ? groundCameraX(f, aspect) : cam.x + (boarding ? 4 : 0);
+    const cameraY = cam.y + (modelInView ? 1.5 : 0);
+    const cameraDistance = cam.d + (modelInView ? boarding ? 5 : 12 : 0);
+    stage.aim({ position: [cameraX, cameraY, -cameraDistance], target: [cameraX, cameraY, 100] });
     const col = coloursAt(plan, cam.x);
     scene.clearColor.set(...(hex(col.skyTop).asArray() as [number, number, number]), 1);
     scene.fogColor = hex(col.skyBottom);
@@ -235,8 +318,8 @@ export async function createJourneyScene3D(canvas: HTMLCanvasElement, options: J
     if (planeRig) {
       planeRig.pivot.position.set(v.x - 0.5, v.y, 0);
       planeRig.pivot.rotation.z = v.pitch;
-      planeRig.gear.setEnabled(v.gearDown > 0.5);
-      planeRig.doorOpen.setEnabled(v.door > 0.05); planeRig.doorShut.setEnabled(v.door <= 0.05);
+      planeRig.gear.setEnabled(!planeModel && v.gearDown > 0.5);
+      planeRig.doorOpen.setEnabled(v.door > 0.05); planeRig.doorShut.setEnabled(!planeModel && v.door <= 0.05);
       planeRig.stairs.setEnabled(v.stairs > 0.02);
       planeRig.stairs.scaling.y = Math.max(0.01, v.stairs);
     }
@@ -247,7 +330,8 @@ export async function createJourneyScene3D(canvas: HTMLCanvasElement, options: J
         const pose: Pose = { x: pl.x, y: pl.y, z: 0, heading: pl.heading, sit: pl.sit, gait: pl.gait, stride: pl.stride, type: pl.type, visible: true };
         const legs = legAngles(pose), arms = armAngles(pose, t);
         const z = pl.sit > 0 ? mix(-1.4, SEAT_Z, pl.sit) : air ? -2.3 : -1.4;
-        player.root.position.set(pl.x, pl.y, z);
+        const position = boarding ? modelBoardingPosition(pl.x, pl.y, v.x) : { x: pl.x, y: pl.y, z };
+        player.root.position.set(position.x, position.y, position.z);
         player.root.rotation.y = pl.heading;
         player.rig.hips.forEach((hp, i) => { hp.rotation.x = legs.hips[i]!; });
         player.rig.knees.forEach((k, i) => { k.rotation.x = legs.knees[i]!; });
@@ -256,16 +340,27 @@ export async function createJourneyScene3D(canvas: HTMLCanvasElement, options: J
         player.rig.elbows[1]!.rotation.x = 0.45 * pl.pass;
         card?.setEnabled(pl.pass > 0.05);
         player.setAlpha(pl.alpha);
-      } else player.setAlpha(0);
+        if (playerModel) {
+          const hands = car ? [new Vector3(v.x + 0.28, v.y + 1.02, SEAT_Z - 0.14), new Vector3(v.x + 0.28, v.y + 1.02, SEAT_Z + 0.14)] as const : undefined;
+          playerModel.apply(pose, t, hands);
+          showPass(playerModel, pl.pass);
+          playerModel.setAlpha(pl.alpha);
+        }
+      } else { player.setAlpha(0); playerModel?.setAlpha(0); }
     }
     if (crew) {
       const hs = f.hostess;
-      if (hs) { crew.root.position.set(hs.x, hs.y, -2.3); crew.root.rotation.y = hs.heading; crew.setAlpha(hs.alpha); } else crew.setAlpha(0);
+      if (hs) {
+        const position = planeModel ? modelBoardingPosition(hs.x, hs.y, v.x) : { x: hs.x, y: hs.y, z: -2.3 };
+        crew.root.position.set(position.x, position.y, position.z); crew.root.rotation.y = hs.heading; crew.setAlpha(hs.alpha);
+        crewModel?.apply({ x: 0, y: 0, z: 0, heading: 0, sit: 0, gait: 0, stride: 0, type: 0, visible: true }, t);
+        crewModel?.setAlpha(hs.alpha);
+      } else { crew.setAlpha(0); crewModel?.setAlpha(0); }
     }
     driver.step(f);
   };
 
-  // A black screen is the worst outcome, so any failure while drawing is reported once and the caller switches to 2D.
+  // Report failures once so the caller can offer the functional journey handoff.
   let faulted = false;
   const fault = (why: unknown) => {
     if (faulted) return;
@@ -276,15 +371,25 @@ export async function createJourneyScene3D(canvas: HTMLCanvasElement, options: J
   const update = (t: number) => { if (faulted) return; try { frameStep(t); } catch (e) { fault(e); } };
   const render = scene.render.bind(scene);
   scene.render = (...args: Parameters<typeof render>) => { if (faulted) return; try { render(...args); } catch (e) { fault(e); } };
-  canvas.addEventListener("webglcontextlost", e => { e.preventDefault(); fault("the WebGL context was lost"); });
+  const contextLost = (e: Event) => { e.preventDefault(); fault("the WebGL context was lost"); };
+  canvas.addEventListener("webglcontextlost", contextLost);
 
   const handle = stage.run({ end: plan.end, update, onSlow: options.onSlow });
   return {
-    plan, duration: plan.end,
+    scene, plan, duration: plan.end,
     now: driver.now,
     start: (begin = options.reducedMotion ? plan.settle : 0) => handle.play({ end: plan.end, update }, begin),
     skip: handle.skip,
     seek(seconds) { stage.engine.stopRenderLoop(); update(seconds); scene.render(); },
-    dispose() { handle.dispose(); }
+    dispose() {
+      options.signal?.removeEventListener("abort", abort);
+      canvas.removeEventListener("webglcontextlost", contextLost);
+      handle.dispose();
+    }
   };
+  } catch (error) {
+    options.signal?.removeEventListener("abort", abort);
+    stage.engine.dispose();
+    throw error;
+  }
 }

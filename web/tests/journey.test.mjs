@@ -62,8 +62,7 @@ test("a ground journey starts at the vehicle's home, drives through every landsc
     assert.equal(p.props.filter(x => x.kind === "billboard").length, 1);
     assert.equal(p.props.find(x => x.kind === "billboard").text, "Welcome to Kano");
     assert.equal(p.props.some(x => x.kind === (mode === "drive" ? "garage" : "busstop")), true);
-    const last = frameAt(p, p.end);
-    assert.equal(last.caption, "Welcome to Kano.");
+    assert.equal("caption" in frameAt(p, p.end), false, "travel narration is not part of the scene frame");
   }
 });
 
@@ -86,8 +85,7 @@ test("flying: the airport is named after the source state, then boarding, taxi, 
   assert.deepEqual(order, ["airport", "boarding", "taxi", "takeoff", "landing", "deplane", "welcome"]);
   const sign = p.props.filter(x => x.kind === "terminal").map(x => x.text);
   assert.deepEqual(sign, ["Lagos Airport", "Welcome to Kano Airport"]);
-  assert.match(frameAt(p, 1).caption, /^Lagos Airport/);
-  assert.equal(frameAt(p, p.end).caption, "Welcome to Kano Airport.");
+  assert.equal("caption" in frameAt(p, 1), false, "airport narration is not part of the scene frame");
 });
 
 test("flying: the boarding pass is shown to the cabin crew before the player climbs in", () => {
@@ -100,7 +98,7 @@ test("flying: the boarding pass is shown to the cabin crew before the player cli
   const top = frames.find(f => f.player.y >= AIR.sill - 0.01);
   assert.ok(top, "the player reaches the door");
   assert.ok(frames.at(-1).player.alpha < 0.1, "and goes inside");
-  assert.ok(frames.some(f => f.caption === "Showing the boarding pass to the cabin crew."));
+  assert.ok(frames.some(f => f.player.pass > 0.9), "the boarding pass is shown without narration");
 });
 
 test("flying: the plane taxis, speeds up, lifts off and later lands and stops at the gate", () => {
@@ -220,6 +218,14 @@ test("the travel screen starts the journey with where the player was, not where 
   assert.match(read("App.svelte"), /app\.screen === "journey" && app\.journey/);
 });
 
+test("journey narration is not shown or announced; meaningful journey notes remain available", () => {
+  const scene = fs.readFileSync(new URL("../src/scenes/journey/JourneyScene.svelte", import.meta.url), "utf8");
+  assert.doesNotMatch(scene, /caption-line">\{note \?\? caption\}/);
+  assert.doesNotMatch(scene, /note \?\? \(loop \? "" : caption\)/);
+  assert.match(scene, /aria-hidden="true"><p class="caption-line">\{note\}/);
+  assert.match(scene, /role="status">\{note\}/);
+});
+
 // ---- The weekly "show travel route" loop ----
 import { circ, propX } from "../src/scenes/journey/journey-scene.ts";
 const loopPlan = (mode, seed = 2) => planJourney({ mode, from: "Lagos", to: "Kano", seed, loop: true });
@@ -230,7 +236,7 @@ test("the route view has no departure and no arrival and never ends", () => {
     assert.equal(p.loop, true); assert.equal(p.end, Infinity);
     for (const t of [0.7, 5, 60, 1000, 123456]) {
       const f = frameAt(p, t);
-      assert.equal(f.stage, "travel"); assert.equal(f.fade, 1); assert.equal(f.caption, "On the way to Kano.");
+      assert.equal(f.stage, "travel"); assert.equal(f.fade, 1); assert.equal("caption" in f, false);
     }
     assert.equal(p.props.some(x => ["garage", "busstop", "parkedbus", "billboard", "terminal"].includes(x.kind)), false, "no set pieces");
   }

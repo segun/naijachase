@@ -9,6 +9,7 @@ export type JourneyOptions = {
   quality?: "high" | "light";
   /** Whether the generated GLB models may be used (the Full detail level); the shapes built in code are used otherwise. */
   models?: boolean;
+  signal?: AbortSignal;
   mode: JourneyMode;
   from: string;
   to: string;
@@ -19,8 +20,8 @@ export type JourneyOptions = {
   loop?: boolean;
   /** Start at the arrival shot instead of the whole journey. */
   reducedMotion?: boolean;
-  /** Called when the fade or the words change. */
-  onFrame: (frame: { fade: number; caption: string | null }) => void;
+  /** Called when the fade changes. */
+  onFrame: (frame: { fade: number }) => void;
   /** Called after every frame is drawn, so the caller can tell the scene is still running. */
   onTick?: () => void;
   /** Called when the frame rate stays too low for this renderer. */
@@ -43,16 +44,16 @@ export type JourneyHandle = {
 
 export function createJourneyDriver(options: JourneyOptions) {
   const plan = planJourney({ mode: options.mode, from: options.from, to: options.to, label: options.label, hour: options.hour, seed: options.seed, loop: options.loop });
-  let lastFade = -1, lastCaption: string | null | undefined, lastT = 0;
+  let lastFade = -1, lastT = 0;
   return {
     plan,
     now: () => lastT,
-    /** Call once per drawn frame; reports the fade and the caption only when they change. */
+    /** Call once per drawn frame when the fade changes. */
     step(frame: JourneyFrame) {
       lastT = frame.t;
-      if (Math.abs(frame.fade - lastFade) > 0.004 || frame.caption !== lastCaption) {
-        lastFade = frame.fade; lastCaption = frame.caption;
-        options.onFrame({ fade: frame.fade, caption: frame.caption });
+      if (Math.abs(frame.fade - lastFade) > 0.004) {
+        lastFade = frame.fade;
+        options.onFrame({ fade: frame.fade });
       }
       options.onTick?.();
     },

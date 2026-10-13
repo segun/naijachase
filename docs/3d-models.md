@@ -27,7 +27,9 @@ Nothing from the models is in the main bundle, and the Babylon.js loader is impo
   fishing boats, lighthouse, danfo, stalls, shopfronts, pyramids, mud houses, baobabs, roadside trees and lamps.
 - **Witness encounters** (`scenes/witness/chase3d-witness.ts`): all 35 venue types use the selected player, role-matched witness,
   venue-specific crowds, arrival vehicle and model-backed scenery at Full detail. See calibration and exceptions below.
-- Everything else (journey, archive, panel) still draws the procedural figures. Moving a scene over means using
+- **Journeys** (`scenes/journey/chase3d-journey.ts`): the selected player walking, sitting and steering, flight cabin crew, runabout,
+  moving danfo, parked coaches and airliner at Full detail. See calibration and limitations below.
+- Everything else (archive, panel) still draws the procedural figures. Moving a scene over means using
   `addModelFigure` and calling `figure.apply(pose)` instead of setting `rig` angles, as the garage does.
 
 ### Witness calibration and fallbacks
@@ -54,12 +56,36 @@ Standard loads no GLBs. Simple creates no canvas or animated renderer: it presen
 **Continue to the investigation**. A stalled, slow or failed 3D scene opens the same account with an alert and expandable error details.
 The visit has already been charged by the server; Continue calls the existing guarded handoff, not another visit command. Full/Standard
 rebuilds resume the same timeline. Pending setup is aborted on detail changes and late callbacks cannot overwrite the readable account.
-Witness failures use `nc-witness-flat`, independent of the journey's legacy `nc-witness-2d`. Changing the detail choice clears the failure.
-Witness 2D source utilities remain because journey still imports their figures/vehicles; witness runtime no longer loads them.
+Witness failures use `nc-witness-flat`, independent of journey's `nc-journey-flat`. Changing the detail choice clears the failure.
+Witness 2D source utilities remain for the legacy journey 2D source; neither active scene loads them.
 
 Development preview: [web/dev-witness.html](../web/dev-witness.html), all 35 venues, Full/Standard, Drive/Hitch, hour and seek controls.
 All 35 Full previews were loaded and sought through arrival, conversation and return; market and conservation-office images and both
 arrival vehicle facings were inspected. Only individually inspected assets gain new `checked` flags, not the entire inventory.
+
+### Journey calibration and fallbacks
+
+Full keeps manifest dimensions: runabout **3.6 m**, danfo **4.4 m**, parked coach **11 m**, airliner **27 m**.
+The runabout and danfo have different authored axes; only the danfo receives the extra quarter-turn before the timeline's rightward heading.
+Portrait ground cameras follow the approaching player and then centre the vehicle, rather than leaving both outside the desktop camera's lead.
+Coaches stay parked in the bus park. All ten players use Walk/Sit clips and steering-hand targets; the hitch passenger fades inside the
+opaque minibus rather than being drawn through its body. The flight boarding pass follows the player's right hand.
+No dedicated `crew` asset exists: cabin crew reuses `witness_woman_uniform` at **1.65 m**, retaining its supplied uniform texture.
+
+The airliner has a higher door and wider wings than the procedural plane. `MODEL_AIR` and `modelBoardingPosition` fit the existing
+boarding/deplaning choreography to its **3.55 m sill**, with diagonal procedural stairs ahead of the engine and a wider camera.
+Sequence, pass presentation, fades and travel outcomes remain unchanged. The supplied vehicles are single static meshes:
+they cannot spin wheels, swing their textured doors or retract baked landing gear. The plane keeps procedural stairs and a doorway overlay;
+true moving parts require revised, separately rigged exports. Journey landscapes, buildings and readable signs remain procedural.
+A failed model or missing required Walk/Sit keeps its procedural counterpart and logs the reason.
+
+Standard requests no GLBs. Simple skips ordinary journey animation and performs the existing guarded desk handoff once.
+Weekly Simple instead shows route, server-derived progress and **Back to the desk**: it never shortens the real server wait.
+3D faults, stalls and low frame rates show readable journey status, an explicit alert, expandable details and Continue/Back.
+Full/Standard changes preserve elapsed timeline time; pending setup is aborted and late callbacks are ignored.
+The legacy `journey-2d.ts` file is no longer imported by the runtime. Login alone retains an active animated Simple renderer.
+
+Development preview: [web/dev-journey.html](../web/dev-journey.html), Drive/Hitch/Fly, Full/Standard, all ten avatars, weekly loop, hour and seek controls.
 Browser checks cover the actual Simple visit/Continue flow and 320x568, 360x640, 390x844, 568x320 and 844x390 layouts: full account,
 scrollable text, reachable Continue, no horizontal overflow or floating-control overlap. The production component was also checked
 with a long account, detail rebuilds and WebGL-loss recovery. These are Chromium emulation checks, not real-phone/Safari performance evidence.

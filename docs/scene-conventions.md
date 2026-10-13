@@ -12,8 +12,10 @@ Switching to Simple during its intro or exploration opens the desk; increasing d
 Witness has also adopted this policy: Simple shows the full server account and an explicit Continue action, without a canvas or animation.
 3D failure opens that same account with an alert and error details; `nc-witness-flat` remembers the failure independently of journey.
 Full/Standard use the shared pure timeline and preserve elapsed time on rebuilds; cancelled setup must not publish late callbacks.
-Journey, panel, archive and garage behaviour is unchanged. The following two-renderer instructions document legacy implementations
-until each is updated; they do not require adding witness or office 2D animation back.
+Journey has adopted this policy: ordinary Simple journeys hand off to the desk once; weekly Simple journeys retain server progress and Back.
+3D failure shows journey status with an alert and Continue/Back (`nc-journey-flat`). Neither skipping nor returning changes server travel timing.
+Panel, archive and garage behaviour is unchanged. The following two-renderer instructions document legacy implementations
+until each is updated; they do not require adding witness, office or journey 2D animation back.
 
 A scene is never skipped because the device is weak, and it never leaves a black screen. Every scene
 has **two renderers that show the same thing**:
@@ -35,7 +37,7 @@ same time and produce the same outcome. `docs/web-vertical-slice.md` and `TODO.m
 ## How to build a scene so both renderers stay in step
 
 The witness scene in `web/src/scenes/witness/` remains the reference for pure choreography and renderer separation.
-Its Canvas 2D files are now legacy utilities retained for journey's imports, not its active Simple renderer:
+Its Canvas 2D files are now legacy utilities retained for the old journey 2D source, not an active Simple renderer:
 
 | File | Holds | Imports a graphics library? |
 | --- | --- | --- |
@@ -89,8 +91,9 @@ A venue is a recipe plus a 3D scenery set; the choreography is shared and does n
 | --- | --- |
 | `journey-scene.ts` | The rules, pure and unit-tested (`tests/journey.test.mjs`): the landscapes, the random route, the timeline of a drive, a hitch ride and a flight, and `frameAt(plan, t)`, which says where the camera, vehicle, player and cabin crew are at second `t`. |
 | `journey-driver.ts` | The options and handle both renderers share. |
-| `chase3d-journey.ts` / `journey-2d.ts` | Draw a frame. Same side-on pinhole camera (`cam.d` metres in front of the road, horizon mid-screen), so a prop is the same size and place in both. |
-| `JourneyScene.svelte` | Picks 3D or 2D, falls back, owns the caption, Skip and the hand-over to the desk. |
+| `chase3d-journey.ts` | Draws the pure timeline; Full uses supplied people/vehicles and model-specific boarding fitting, Standard stays procedural. |
+| `journey-2d.ts` | Legacy, no longer imported by the runtime. |
+| `JourneyScene.svelte` | Picks 3D or functional status/handoff, handles failure, keeps journey narration out of the UI, and owns status notes, Skip/Back and the guarded hand-over to the desk. |
 
 - **Landscapes** are data (`LANDSCAPES`): colours, a strip of water, and weighted props. Add one by adding an entry; use only prop kinds that
   both renderers draw (`PropKind`). Props are generated once, with a seed, so a 3D to 2D hand-over shows the same route. Where one landscape ends the

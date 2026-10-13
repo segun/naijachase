@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Journey preview (development only)</title>
+    <style>
+      body { margin: 0; background: #10201c; color: #e8efe9; font: 14px system-ui, sans-serif; }
+      nav { position: fixed; top: 8px; left: 8px; right: 8px; z-index: 1; display: flex; gap: 6px; flex-wrap: wrap; align-items: center; padding: 8px; background: #10201cee; }
+      button, select, input { font: inherit; padding: 5px; max-width: 100%; }
+      canvas { width: 100vw; height: 100vh; display: block; }
+      input[type=number] { width: 5rem; }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <select id="mode" aria-label="Travel mode"><option value="drive">Drive</option><option value="hitch">Hitch</option><option value="fly">Fly</option></select>
+      <select id="detail" aria-label="Detail"><option value="full">Full</option><option value="standard">Standard</option></select>
+      <select id="avatar" aria-label="Avatar"></select>
+      <label><input id="loop" type="checkbox">Weekly route</label>
+      <label>Hour <input id="hour" type="number" min="0" max="23" value="14"></label>
+      <label>Seconds <input id="time" type="number" min="0" step="0.1" value="8"></label>
+      <button id="inspect">Inspect</button><button id="play">Play</button>
+      <span id="note" role="status"></span>
+    </nav>
+    <canvas id="c"></canvas>
+    <script type="module" src="/dev/journey-preview.ts"></script>
+  </body>
+</html>

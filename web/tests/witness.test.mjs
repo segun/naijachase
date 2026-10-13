@@ -264,7 +264,8 @@ test("the 3D and 2D renderers share one driver and the conventions are written d
   assert.match(conv, /login keeps its 2D chase/);
   assert.match(conv, /Non-login scenes should skip\s+animation at Simple detail/);
   assert.match(conv, /Witness has also adopted this policy: Simple shows the full server account/);
-  assert.match(conv, /Journey, panel, archive and garage behaviour is unchanged/);
+  assert.match(conv, /Journey has adopted this policy: ordinary Simple journeys hand off to the desk once/);
+  assert.match(conv, /Panel, archive and garage behaviour is unchanged/);
   assert.match(agents, /scene-conventions\.md/);
 });
 

@@ -1264,8 +1264,13 @@ scores, rank, detection odds, panel votes, punishment, or jail time.
       - [x] Preserve the server visit/time/funds and pressure handoff; guard Continue and cancel pending setup/late callbacks on detail changes.
       - [x] Check all 35 Full previews and five portrait/landscape mobile layouts, including long account/error scrolling and reachable Continue.
       - [x] Size cattle-market cows to 1.9 m overall height in Full and Standard, without footprint fitting shrinking them below human height.
-    - [ ] 3. Journey (`journey/chase3d-journey.ts`): the player at the wheel or on the bus, the hostess on the flight (`crew`), the player's car and the danfo/coach models,
-      the aeroplane model. Check each vehicle's facing and set `yaw`.
+    - [x] 3. Journey (`journey/chase3d-journey.ts`): Full uses all ten selected avatars walking/sitting/steering, supplied uniformed cabin crew,
+      the runabout, moving danfo, parked coaches and airliner. Correct vehicle axes/facing and manifest sizing; fit flight stairs/people to the model's higher door.
+      Boarding pass stays procedural and follows the hand. Static exports cannot spin wheels, open textured doors or retract gear.
+      Standard retains procedural figures/vehicles; journey scenery remains procedural. Preview: `web/dev-journey.html`.
+      - [x] Simple skips ordinary animation with one guarded handoff; weekly Simple preserves server progress and Back without shortening the wait.
+      - [x] 3D failure shows functional status with alert/details/Continue; abort abandoned setup and suppress late callbacks.
+      - [x] Check all ten seated avatars, vehicle facing, boarding, and five mobile portrait/landscape functional layouts.
     - [ ] 4. Archive (`archive/chase3d-archive.ts`): the player walking and reading.
     - [ ] 5. Disciplinary panel (`panel/chase3d-panel.ts`): the five judges (`judge_1` to `judge_5`, seated) and the player; the raise-paper pose needs a small arm
       rotation on the model's arm bones, and the vote papers stay procedural until `held_vote_paper.glb` exists.

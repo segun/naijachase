@@ -95,15 +95,13 @@ export type JourneyFrame = {
   vehicle: { kind: VehicleKind; x: number; y: number; pitch: number; spin: number; door: number; stairs: number; gearDown: number };
   player: JourneyPlayer | null;
   hostess: { x: number; y: number; heading: number; alpha: number } | null;
-  /** The words for the DOM overlay and screen readers. */
-  caption: string | null;
 };
 
 export type JourneyPlan = {
   mode: JourneyMode;
   from: string;
   to: string;
-  /** What the loop caption calls the destination: a lead such as "Museum" rather than the state it is in. */
+  /** Destination label for a route loop, such as "Museum" rather than the state it is in. */
   label: string;
   spans: Span[];
   props: Prop[];
@@ -163,6 +161,16 @@ const BILLBOARD_AT = 6.5;
 const A1 = 3.6, A2 = 7.0, A3 = 3.4, A4 = 5.0, A5 = 5.5, A6 = 3.6, A7 = 2.8;
 const T_BOARD = A1, T_TAXI = T_BOARD + A2, T_TAKEOFF = T_TAXI + A3, T_LANDING = T_TAKEOFF + A4, T_DEPLANE = T_LANDING + A5, T_WELCOME = T_DEPLANE + A6, T_END = T_WELCOME + A7;
 export const AIR = { terminalX: 0, apronX: 100, landingStop: 560, stairBottom: 0.8, stairTop: 4.4, sill: 1.5, doorX: 4.9 };
+// The supplied airliner has a higher sill and wider wings than the procedural plane.
+export const MODEL_AIR = { stairBottom: 4.8, stairTop: 7.8, sill: 3.55, doorX: 8.22, bottomZ: -6.7, topZ: -2.9 };
+export function modelBoardingPosition(x: number, y: number, origin: number) {
+  const height = clamp01(y / AIR.sill);
+  return {
+    x: origin + MODEL_AIR.stairBottom + (x - origin - AIR.stairBottom) * (MODEL_AIR.stairTop - MODEL_AIR.stairBottom) / (AIR.stairTop - AIR.stairBottom),
+    y: y * MODEL_AIR.sill / AIR.sill,
+    z: mix(MODEL_AIR.bottomZ, MODEL_AIR.topZ, height)
+  };
+}
 const CUT_FADE = 0.5;
 
 export function planJourney(o: PlanOptions): JourneyPlan {
@@ -331,10 +339,14 @@ export function frameAt(plan: JourneyPlan, tIn: number): JourneyFrame {
   return plan.mode === "fly" ? airFrame(plan, t, fade) : groundFrame(plan, t, fade);
 }
 
+export function groundCameraX(frame: JourneyFrame, aspect: number) {
+  const focus = frame.stage === "depart" && frame.player?.visible ? frame.player.x + 0.5 : frame.vehicle.x + 0.15;
+  return mix(frame.cam.x, focus, clamp01((1 - aspect) / 0.4));
+}
+
 /** The weekly "show travel route" view: already under way, nothing to board and nowhere to arrive. */
 function loopFrame(plan: JourneyPlan, t: number): JourneyFrame {
   const fade = clamp01(t / FADE_IN);
-  const caption = `On the way to ${plan.label}.`;
   const run = plan.speed * t;
   const x = run % plan.period;
   if (plan.mode === "fly") {
@@ -342,7 +354,7 @@ function loopFrame(plan: JourneyPlan, t: number): JourneyFrame {
     return {
       t, stage: "travel", fade, cam: { x: x + 5, y: 2.8 + bob * 0.6, d: 24 },
       vehicle: { kind: "plane", x, y: bob, pitch: Math.sin(t * 0.55) * 0.025, spin: 0, door: 0, stairs: 0, gearDown: 0 },
-      player: null, hostess: null, caption
+      player: null, hostess: null
     };
   }
   const car = plan.mode === "drive";
@@ -352,7 +364,7 @@ function loopFrame(plan: JourneyPlan, t: number): JourneyFrame {
   return {
     t, stage: "travel", fade, cam: { x: x + CAM_LEAD, y: 2.3, d: 11 },
     vehicle: { kind, x, y: bob, pitch: 0, spin: run / WHEEL[kind], door: 0, stairs: 0, gearDown: 1 },
-    player: p, hostess: null, caption
+    player: p, hostess: null
   };
 }
 
@@ -373,13 +385,11 @@ function groundFrame(plan: JourneyPlan, t: number, fade: number): JourneyFrame {
     }
   } else if (t < WALK) p = player(-7.4 + ((STEP_X - 0.4 + 7.4) * t) / WALK, 0, walking(t));
   else p = player(mix(STEP_X - 0.4, STEP_X + 0.1, smooth(board)), 0.45 * smooth(board), { ...walking(t), stride: 1 - board * 0.4, alpha: 1 - smooth((board - 0.35) / 0.6), visible: board < 1 });
-  const caption = stage === "depart" ? (car ? "Out of the garage." : "Boarding at the bus park.")
-    : stage === "travel" ? `Passing through the ${placeAt(plan, x).toLowerCase()}.` : `Welcome to ${plan.to}.`;
   return {
     t, stage, fade,
     cam: { x: x + CAM_LEAD, y: 2.3, d: 11 },
     vehicle: { kind, x, y: bob, pitch: 0, spin: x / WHEEL[kind], door: car ? 0 : open, stairs: 0, gearDown: 1 },
-    player: p, hostess: null, caption
+    player: p, hostess: null
   };
 }
 
@@ -392,7 +402,7 @@ function airFrame(plan: JourneyPlan, t: number, fade: number): JourneyFrame {
   if (stage === "airport") {
     const walkEnd = T_BOARD - 0.5;
     const alpha = 1 - smooth((t - (walkEnd - 0.6)) / 0.6);
-    return { t, stage, fade, cam: { x: mix(-1.5, 1.5, t / T_BOARD), y: 2.5, d: 18 }, vehicle: plane(PX), player: player(mix(-9, 0.2, clamp01(t / walkEnd)), 0, { ...walking(t), alpha, visible: alpha > 0.01 }), hostess: null, caption: `${plan.airportFrom}. Heading for the gate.` };
+    return { t, stage, fade, cam: { x: mix(-1.5, 1.5, t / T_BOARD), y: 2.5, d: 18 }, vehicle: plane(PX), player: player(mix(-9, 0.2, clamp01(t / walkEnd)), 0, { ...walking(t), alpha, visible: alpha > 0.01 }), hostess: null };
   }
   if (stage === "boarding") {
     const s = t - T_BOARD;
@@ -403,8 +413,7 @@ function airFrame(plan: JourneyPlan, t: number, fade: number): JourneyFrame {
     else if (s < passEnd) p = player(foot, 0, { pass: smooth((s - walkEnd) / 0.4) * (1 - smooth((s - passEnd + 0.4) / 0.4)) });
     else if (s < climbEnd) { const x = mix(foot, top, (s - passEnd) / (climbEnd - passEnd)); p = player(x, climb(x, foot), walking(t)); }
     else { const k = clamp01((s - climbEnd) / (A2 - climbEnd)); p = player(mix(top, PX + AIR.doorX, k), AIR.sill, { ...walking(t), alpha: 1 - smooth(k), visible: k < 1 }); }
-    const caption = s < walkEnd ? "Walking out to the plane." : s < passEnd ? "Showing the boarding pass to the cabin crew." : "Boarding the plane.";
-    return { t, stage, fade, cam: { x: PX + 1.5, y: 2.8, d: 17 }, vehicle: plane(PX, 0, 0, smooth((s - passEnd) / 0.8), 1), player: p, hostess: { x: top + 0.3, y: AIR.sill, heading: FACING_LEFT, alpha: 1 }, caption };
+    return { t, stage, fade, cam: { x: PX + 1.5, y: 2.8, d: 17 }, vehicle: plane(PX, 0, 0, smooth((s - passEnd) / 0.8), 1), player: p, hostess: { x: top + 0.3, y: AIR.sill, heading: FACING_LEFT, alpha: 1 } };
   }
   if (stage === "taxi" || stage === "takeoff") {
     const s = t - T_TAXI;
@@ -418,7 +427,7 @@ function airFrame(plan: JourneyPlan, t: number, fade: number): JourneyFrame {
     return {
       t, stage, fade, cam: { x: x + 4 + u * 1.2, y: 2.8 + y * 0.55, d: 19 + 8 * clamp01(u / A4) },
       vehicle: plane(x, y, 0.24 * smooth((u - 3.0) / 1.2), 1 - smooth(s / 0.8), 1 - smooth(s / 1.0), 1 - smooth(lift / 0.8)),
-      player: null, hostess: null, caption: stage === "taxi" ? "The plane taxis to the runway." : "Taking off."
+      player: null, hostess: null
     };
   }
   if (stage === "landing") {
@@ -428,7 +437,7 @@ function airFrame(plan: JourneyPlan, t: number, fade: number): JourneyFrame {
     let x: number, y: number, pitch: number;
     if (s < touch) { const k = 1 - s / touch; x = xt - v0 * (touch - s); y = 26 * Math.pow(k, 1.5); pitch = -0.1 * k + 0.07 * (1 - k); }
     else { const q = s - touch; x = xt + v0 * q - (v0 * q * q) / (2 * roll); y = 0; pitch = 0.07 * (1 - smooth(q / 0.8)); }
-    return { t, stage, fade, cam: { x: x + 4, y: 2.8 + y * 0.5, d: 27 - 6 * clamp01(s / A5) }, vehicle: plane(x, y, pitch, 0, 0, y > 3 ? 0 : 1), player: null, hostess: null, caption: "Landing." };
+    return { t, stage, fade, cam: { x: x + 4, y: 2.8 + y * 0.5, d: 27 - 6 * clamp01(s / A5) }, vehicle: plane(x, y, pitch, 0, 0, y > 3 ? 0 : 1), player: null, hostess: null };
   }
   // At the gate: the stairs come out, the door opens and the player steps down and walks to the terminal.
   const s = t - T_DEPLANE;
@@ -443,8 +452,7 @@ function airFrame(plan: JourneyPlan, t: number, fade: number): JourneyFrame {
   return {
     t, stage, fade, cam: { x: LP + 4 - 13 * smooth(s / 5.5), y: 2.8, d: 21 - 2 * smooth(s / 1.5) },
     vehicle: plane(LP, 0, 0, smooth((s - 0.4) / 0.6), smooth(s / 0.8)), player: p,
-    hostess: { x: LP + AIR.stairTop + 0.3, y: AIR.sill, heading: FACING_LEFT, alpha: smooth((s - 0.6) / 0.4) },
-    caption: stage === "deplane" ? "Stepping off the plane." : `Welcome to ${plan.airportTo}.`
+    hostess: { x: LP + AIR.stairTop + 0.3, y: AIR.sill, heading: FACING_LEFT, alpha: smooth((s - 0.6) / 0.4) }
   };
 }
 

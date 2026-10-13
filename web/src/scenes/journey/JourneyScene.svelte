@@ -1,7 +1,6 @@
 <script lang="ts">
   // The journey between two states: out of the garage in a car, into a minibus at the bus park, or through an airport and onto a plane, then
-  // on to the desk. Same pattern as the witness scene: 3D (Babylon.js) when the device looks capable, otherwise 2D (Canvas 2D), and if 3D
-  // fails, stalls or runs too slowly it carries on in 2D from where it had got to. Both read the same timeline (journey-scene.ts).
+  // on to the desk. Full/Standard share the timeline; Simple bypasses ordinary journeys and keeps weekly server progress readable.
   import "../../styles/terminal.css";
   import "../../styles/witness.css";
   import "../../styles/journey.css";
@@ -11,38 +10,36 @@
   import { detailKey } from "../shared/detail-level.ts";
   import type { JourneyHandle } from "./journey-driver.ts";
 
-  type Mode = "3d" | "2d";
-  /** The witness scene's switch: once 3D has failed on this device in this session, every scene goes straight to 2D. */
-  const FALLBACK_KEY = "nc-witness-2d";
+  type Mode = "3d" | "flat";
+  const FALLBACK_KEY = "nc-journey-flat";
   const FIRST_FRAME_MS = 9000;
   const STALL_MS = 3000;
 
   type Visit = { from: string; to: string; mode: "drive" | "hitch" | "fly"; seed: number; label?: string };
   // `loop` is the weekly "show travel route" view: the same scenery with no departure or arrival, running until Esc calls `onclose`.
-  // `note` replaces the caption there (for example once the journey has really ended), and `startHour` is the case hour for the lighting.
+  // `note` is reserved for meaningful journey status, and `startHour` is the case hour for the lighting.
   let { app, visit: given, loop = false, onclose, note, startHour }: { app: AppController; visit?: Visit; loop?: boolean; onclose?: () => void; note?: string; startHour?: number } = $props();
 
   // svelte-ignore state_referenced_locally
   const visit = given ?? app.journey;
   const stored = (storage: Storage, key: string) => { try { return storage.getItem(key); } catch { return null; } };
   // The picture detail the player chose (or the device allows). It can change at any moment: the scene is rebuilt in the new renderer or
-  // detail and carries on from the second it had reached. 3D that failed earlier in this session stays in 2D until the player changes the setting.
+  // detail and carries on from the second it had reached. Failed 3D uses functional content until the player changes the setting.
   const level = $derived(detail.resolved);
   let broken = $state(stored(sessionStorage, FALLBACK_KEY) === "1");
-  const mode = $derived<Mode>(level.renderer === "3d" && !broken ? "3d" : "2d");
-  const canvasKey = $derived(mode === "3d" ? detailKey(level) : `2d-${level.quality}`);
+  const mode = $derived<Mode>(level.renderer === "3d" && !broken ? "3d" : "flat");
+  const canvasKey = $derived(mode === "3d" ? detailKey(level) : "flat");
   let lastChoice = detail.choice;
   $effect(() => {
     const choice = detail.choice;
     if (choice === lastChoice) return;
-    lastChoice = choice; broken = false;
+    lastChoice = choice; broken = false; failure = "";
     try { sessionStorage.removeItem(FALLBACK_KEY); } catch { /* private mode */ }
   });
 
   let canvas = $state<HTMLCanvasElement>();
   let ready = $state(false);
   let fade = $state(0);
-  let caption = $state<string | null>(null);
   let failure = $state("");
   let skip: () => void = () => {};
   let finished = false;
@@ -65,16 +62,21 @@
 
   function fallBack(at: number, why: string) {
     if (mode !== "3d" || finished) return;
-    console.warn(`The 3D journey scene is switching to 2D: ${why}`);
+    console.warn(`The 3D journey scene is opening functional content: ${why}`);
     try { sessionStorage.setItem(FALLBACK_KEY, "1"); } catch { /* private mode: the next scene just tries 3D again */ }
-    resumeAt = at; ready = false; broken = true;
+    resumeAt = at; ready = false; failure = why; broken = true;
   }
 
   $effect(() => {
     if (!visit) { finish(); return; }
     const target = canvas, current = mode, key = canvasKey, { quality, models, reducedMotion } = level;
+    if (current === "flat") {
+      if (!loop && !failure) finish();
+      return;
+    }
     if (!target || target.dataset.key !== key) return;
     let cancelled = false;
+    const controller = new AbortController();
     let handle: JourneyHandle | undefined;
     let began = 0, lastTick = 0;
     const watchdog = current === "3d" ? setInterval(() => {
@@ -83,17 +85,17 @@
     }, 500) : undefined;
 
     const options = {
-      preset: app.avatar, hour, quality, models, mode: visit.mode, from: visit.from, to: visit.to, label: visit.label, reducedMotion, loop,
-      // The 3D scene may hand over to 2D mid-way, so 2D must show the same landscapes: the seed is the same for both.
+      preset: app.avatar, hour, quality, models, signal: controller.signal, mode: visit.mode, from: visit.from, to: visit.to, label: visit.label, reducedMotion, loop,
       seed: visit.seed,
-      onTick: () => { lastTick = performance.now(); ready = true; },
-      onFrame: (f: { fade: number; caption: string | null }) => { fade = f.fade; caption = f.caption; },
-      onSlow: () => fallBack(handle?.now() ?? 0, "low frame rate"),
-      onFault: (why: string) => { if (current === "3d") fallBack(handle?.now() ?? 0, why); else failure = why; }
+      onTick: () => { if (!cancelled) { lastTick = performance.now(); ready = true; } },
+      onFrame: (f: { fade: number }) => { if (!cancelled) fade = f.fade; },
+      onSlow: () => { if (!cancelled) fallBack(handle?.now() ?? 0, "low frame rate"); },
+      onFault: (why: string) => { if (!cancelled) fallBack(handle?.now() ?? 0, why); }
     };
-    const load = current === "3d"
-      ? import("./chase3d-journey.ts").then(m => { began = performance.now(); return m.createJourneyScene3D(target, options); })
-      : import("./journey-2d.ts").then(m => m.createJourneyScene2D(target, options));
+    const load = import("./chase3d-journey.ts").then(m => {
+      if (cancelled) throw new DOMException("Journey setup cancelled", "AbortError");
+      began = performance.now(); return m.createJourneyScene3D(target, options);
+    });
 
     load
       .then(h => {
@@ -105,19 +107,20 @@
       .catch(e => {
         if (cancelled) return;
         console.error(`The ${current} journey scene failed.`, e);
-        if (current === "3d") fallBack(handle?.now() ?? 0, e instanceof Error ? e.message : String(e));
-        else failure = e instanceof Error ? e.message : String(e);
+        fallBack(handle?.now() ?? 0, e instanceof Error ? e.message : String(e));
       });
 
     return () => {
       cancelled = true; clearInterval(watchdog);
       if (handle && !finished) resumeAt = handle.now();
+      controller.abort();
       handle?.dispose();
     };
   });
 
   function key(e: KeyboardEvent) {
     if (!["Escape", "Enter", " "].includes(e.key) || e.metaKey || e.ctrlKey || e.altKey) return;
+    if (e.key !== "Escape" && e.target instanceof Element && e.target.closest("button, input, select, textarea, a, summary")) return;
     e.preventDefault();
     if (loop || failure || !ready) finish(); else skip();
   }
@@ -126,17 +129,25 @@
 <svelte:window onkeydown={key} />
 
 <div class="room witness journey" role="region" aria-label="Travelling to {visit?.label ?? visit?.to ?? 'the next state'}">
+  {#if mode === "flat"}
+    <section class="journey-flat" aria-label="Journey status">
+      <h1>{trip ? "On the way to" : "Journey to"} {visit?.label ?? visit?.to}</h1>
+      <p>{visit?.from} → {visit?.label ?? visit?.to}</p>
+      {#if failure}
+        <p role="alert">The 3D journey is unavailable. Your travel time and destination are unchanged.</p>
+        <details><summary>Scene details</summary><p>{failure}</p></details>
+      {/if}
+      {#if note}<p>{note}</p>{/if}
+      {#if loop}<p>The travel progress follows the server's arrival time. Returning to the desk does not shorten the wait.</p>{/if}
+      <button class="btn btn-primary" type="button" onclick={finish}>{loop ? "Back to the desk" : "Continue to the desk"}</button>
+    </section>
+  {:else}
   {#key canvasKey}<canvas class="room-canvas" class:ready data-mode={mode} data-key={canvasKey} bind:this={canvas} aria-hidden="true"></canvas>{/key}
   <div class="witness-fade" style:opacity={1 - fade}></div>
-  {#if failure}
-    <div class="witness-error" role="alert">
-      <p><strong>The journey scene could not start.</strong></p>
-      <p class="mono">{failure}</p>
-      <button class="btn btn-primary" type="button" onclick={finish}>{loop ? "Back" : "Continue to the desk"}</button>
-    </div>
-  {:else if !ready}<p class="room-loading" role="status">Travelling to {visit?.label ?? visit?.to}…</p>{/if}
-  {#if note ?? caption}
-    <div class="witness-caption journey-caption" aria-hidden="true"><p class="caption-line">{note ?? caption}</p></div>
+  {#if !ready}<p class="room-loading" role="status">Travelling to {visit?.label ?? visit?.to}…</p>{/if}
+  {#if note}
+    <div class="witness-caption journey-caption" aria-hidden="true"><p class="caption-line">{note}</p></div>
+  {/if}
   {/if}
   {#if trip}
     <div class="journey-progress" role="progressbar" aria-label="Journey progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow={done}>
@@ -145,6 +156,6 @@
       <div class="jp-figures"><span>{done}% of the way</span><span>{secondsLabel(left)} to go · {secondsLabel(Math.max(0, trip.seconds - left))} travelled</span></div>
     </div>
   {/if}
-  <p class="sr-only" role="status">{note ?? (loop ? "" : caption) ?? ""}</p>
-  <button class="room-skip" type="button" onclick={() => { if (loop || failure || !ready) finish(); else skip(); }}>{loop ? "Back" : "Skip"} <kbd>Esc</kbd></button>
+  {#if note}<p class="sr-only" role="status">{note}</p>{/if}
+  {#if mode === "3d"}<button class="room-skip" type="button" onclick={() => { if (loop || failure || !ready) finish(); else skip(); }}>{loop ? "Back" : "Skip"} <kbd>Esc</kbd></button>{/if}
 </div>

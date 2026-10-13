@@ -1094,7 +1094,7 @@ export class AppController {
     const current = this.game, id = this.weeklyId;
     if (!current || !id) return false;
     if (this.weeklyTransit) { this.toast("You are travelling. No commands are accepted until you arrive.", "info"); return false; }
-    // Quotes are empty while travelling, so remember the lead's name now for the banner and the journey caption.
+    // Quotes are empty while travelling, so remember the lead's name now for the destination banner.
     if (payload.type === "visit_venue" || payload.type === "search_hideout") {
       const lead = this.quotes.find(q => q.destination_id === payload.venue_id);
       if (lead) this.weeklyLabels.set(payload.venue_id, lead.label);
