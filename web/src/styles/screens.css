@@ -101,6 +101,7 @@
 .notebook-stop h3 { display: flex; align-items: center; gap: .4rem; font-size: 1.05rem; color: #8d2f26; margin-bottom: .3rem; }
 .notebook ol { margin: 0; padding: 0; list-style: none; display: grid; gap: .7rem; }
 .notebook li { line-height: 1.6; font-size: 1.02rem; }
+.notebook li.focused { scroll-margin: 1.5rem; padding: .4rem .6rem; border-left: 3px solid #8d2f26; background: rgb(255 248 220 / .72); }
 .notebook .who { display: inline-block; margin-right: .5rem; padding: 0 .5rem; border-radius: 6px; background: rgb(141 47 38 / .12); color: #8d2f26; font-size: .72rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; }
 .paper-empty { margin-bottom: 1rem; color: #6a5d40; }
 .notebook .btn { color: var(--paper-ink); background: #fff8; border-color: var(--paper-line); }

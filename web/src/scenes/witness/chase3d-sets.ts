@@ -15,6 +15,7 @@ export type SetContext3D = {
   options: WitnessOptions;
 };
 export type SetResult3D = {
+  ready?: Promise<unknown>;
   /** Moves things (a crowd, a flag, water) to their place for `t` seconds into the scene. Must be a pure function of `t`. */
   update?: (t: number) => void;
 };

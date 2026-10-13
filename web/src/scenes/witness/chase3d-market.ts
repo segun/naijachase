@@ -14,11 +14,14 @@ import { WITNESS } from "./witness-scene.ts";
 import { type Walker, person, printed } from "./chase3d-people.ts";
 import type { Set3D } from "./chase3d-sets.ts";
 import type { Texture } from "@babylonjs/core/Materials/Textures/texture";
+import { crowdModelId } from "./witness-models.ts";
+import { replaceScenery } from "./chase3d-witness-models.ts";
 
 export const buildMarket3d: Set3D = ({ stage, options }) => {
   const { scene, palette, mat, box, cyl, sphere, plane, textured, caster } = stage;
   const light = stage.light;
   const r = seeded(hashOf(options.venueName) || 1);
+  const replacements: Promise<unknown>[] = [];
   // ---- Distant town and palms, hazed by the fog ----
   const skyline: Mesh[] = [];
   for (let i = 0; i < 26; i++) {
@@ -28,6 +31,7 @@ export const buildMarket3d: Set3D = ({ stage, options }) => {
   merge("skyline", skyline);
   const trunk = mat("#6b4a2b"), frond = mat("#3f8a47", { emissive: "#17381c" });
   for (const [x, z, h] of PALMS) {
+    const before = new Set(scene.meshes);
     cyl("palmTrunk", 0.25, 0.4, h, trunk, x, h / 2, z).rotation.z = (x % 3) * 0.03;
     for (let i = 0; i < 8; i++) {
       const a = i * 0.785 + (x % 2) * 0.3;
@@ -36,6 +40,7 @@ export const buildMarket3d: Set3D = ({ stage, options }) => {
       leaf.rotation.y = -a; leaf.rotation.z = -0.42;
     }
     sphere("nuts", 0.38, trunk, x, h - 0.1, z);
+    if (options.models) replacements.push(replaceScenery(stage, { id: "lagos_palm" }, scene.meshes.filter(m => !before.has(m))));
   }
 
   // ---- Market stalls ----
@@ -87,7 +92,13 @@ export const buildMarket3d: Set3D = ({ stage, options }) => {
   };
 
   // The witness's own stall is the middle of the picture; the others are scenery.
-  for (const spec of STALLS) stall(spec.x, spec.z, spec.w, spec.stripes, spec.ware, spec.tarp, spec.frontPoles);
+  for (const spec of STALLS) {
+    const before = new Set(scene.meshes);
+    stall(spec.x, spec.z, spec.w, spec.stripes, spec.ware, spec.tarp, spec.frontPoles);
+    // Keep the witness's open stall: the supplied complete stall has front poles across the conversation shot.
+    if (options.models && spec.frontPoles) replacements.push(replaceScenery(stage,
+      { id: spec.ware === "cloth" ? "market_cloth_stall" : "market_stall_a" }, scene.meshes.filter(m => !before.has(m))));
+  }
 
   // Sacks, crates and a handcart by the lane.
   const sack = mat("#c9b48a", { specular: 0.02 });
@@ -121,23 +132,25 @@ export const buildMarket3d: Set3D = ({ stage, options }) => {
   const crowd: Walker[] = [];
   const count = crowdSize(light);
   for (let i = 0; i < count; i++) {
-    const p = person(stage, 100 + i, prints);
+    const p = person(stage, 100 + i, prints, options.models ? crowdModelId(options.recipe.id, i) : undefined);
     const dir = i % 2 === 0 ? 1 : -1;
     p.root.rotation.y = Math.atan2(-dir, 0);
     crowd.push({ ...p, dir });
   }
-  const shoppers = SHOPPERS.map((_, i) => person(stage, 300 + i, prints));
+  const shoppers = SHOPPERS.map((_, i) => person(stage, 300 + i, prints, options.models ? crowdModelId(options.recipe.id, i) : undefined));
   SHOPPERS.forEach(([x, z, turn], i) => { shoppers[i]!.root.position.set(x, 0, z); shoppers[i]!.root.rotation.y = Math.PI + turn; });
 
   return {
+    ready: Promise.all([...replacements, ...crowd.map(p => p.ready), ...shoppers.map(p => p.ready)]),
     update(t) {
       crowd.forEach((c, i) => {
         const w = walkerAt(i, count, t);
         c.root.position.set(w.x, w.bounce, w.z);
         c.legs.forEach((l, j) => { l.rotation.x = j ? w.swing : -w.swing; });
         c.arms.forEach((a, j) => { a.rotation.x = j ? -w.swing : w.swing; });
+        c.applyModel(t, true, t * (0.7 + i % 4 * 0.2) * 5 + i * 1.3);
       });
-      shoppers.forEach((s, i) => { s.root.rotation.z = Math.sin(t * 0.9 + i) * 0.015; });
+      shoppers.forEach((s, i) => { s.root.rotation.z = Math.sin(t * 0.9 + i) * 0.015; s.applyModel(t, false); });
     }
   };
 };

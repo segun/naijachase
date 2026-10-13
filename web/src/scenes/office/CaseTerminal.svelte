@@ -28,13 +28,13 @@
   const left = $derived(timeLeft(elapsed));
   const night = $derived(dayPart(parts.hour) === "night");
   const done = $derived(questionedHere(gs));
-  const here = $derived(app.notes.filter(n => n.stop === gs.current_state).slice(-3));
   const waiting = $derived(app.coop.requests.filter(r => coopActions(r, app.player?.username ?? "").length).length);
 
   let menuOpen = $state(false);
   let abandonOpen = $state(false);
   let abandonDialog = $state<HTMLDialogElement>();
   let leaving = $state("");
+  let notebookFocus = $state<{ stop: string; venueId: string; venueLabel: string } | null>(null);
   let now = $state(new Date());
   const weekly = $derived(app.isWeekly);
   const transit = $derived(app.weeklyTransit);
@@ -105,6 +105,11 @@
 
   async function pick(lead: QuoteGroup) {
     if (leaving || transit) return;
+    if (done.includes(lead.id)) {
+      notebookFocus = { stop: gs.current_state, venueId: lead.id, venueLabel: lead.label };
+      app.go("notebook");
+      return;
+    }
     leaving = lead.id;
     await leave();
     app.finishBriefing(lead.id);
@@ -190,22 +195,12 @@
         {#if app.screen === "investigate"}
           <section class="t-leads" aria-labelledby="leads-title">
             <h1 class="t-greet" id="leads-title">Local leads {#if !weekly}<HireAssistant {app} />{/if}</h1>
-            <p class="t-line">{gs.current_state}: {done.length} of {venues.length || "…"} witnesses questioned. {gs.trail_status === "hot" ? "The trail is hot. Listen for a destination clue and a detail about the suspect; one witness here knows where the thief went next." : "The trail is cold. Local witnesses may confirm that the suspect did not come this way."}</p>
             {#if transit}{@render travelling()}{:else}
             <LeadGrid leads={venues} closedUntil={app.isWeekly ? q => opensAt(app.game?.state.elapsed ?? 0, q) : undefined} loaded={app.quotesLoaded} {leaving} questioned={done} onpick={pick} />
             {/if}
 
             {#if gs.assistant_hired}
               <p class="t-line t-hint">Your assistant is working on this case.</p>
-            {/if}
-
-            {#if here.length}
-              <section class="t-log" aria-label="Latest witness accounts">
-                <h2>What you heard</h2>
-                {#each here as note}
-                  <p><span class="t-who">{note.venue}</span> {note.message}</p>
-                {/each}
-              </section>
             {/if}
 
             {#if !weekly}<Pressure {app} {venues} questioned={done} />{/if}
@@ -217,7 +212,7 @@
           </section>
         {:else}
           <div class="t-embed">
-            {#if app.screen === "notebook"}<Notebook {app} />
+            {#if app.screen === "notebook"}<Notebook {app} focus={notebookFocus} />
             {:else if transit}{@render travelling()}
             {:else if app.screen === "dossier"}<Dossier {app} />
             {:else if app.screen === "travel"}<Travel {app} />

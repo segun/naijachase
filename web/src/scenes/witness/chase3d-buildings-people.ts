@@ -2,10 +2,13 @@
 import { TransformNode } from "@babylonjs/core/Meshes/transformNode";
 import type { Stage } from "../shared/chase3d-stage.ts";
 import { type Person, SKINS, poseAt } from "./layout-buildings-people.ts";
+import { replacePerson } from "./chase3d-witness-models.ts";
+import { standingPose } from "./witness-models.ts";
+import type { ModelFigure } from "../shared/chase3d-model-figure.ts";
 
-export type Figure3D = { apply: (t: number) => void };
+export type Figure3D = { apply: (t: number) => void; ready: Promise<void> };
 
-export function makePerson3d(stage: Stage, p: Person, index: number): Figure3D {
+export function makePerson3d(stage: Stage, p: Person, index: number, modelId?: string): Figure3D {
   const { scene, mat, cyl, sphere, box } = stage;
   const root = new TransformNode(`person${index}`, scene);
   const legs: TransformNode[] = [], arms: TransformNode[] = [];
@@ -36,13 +39,16 @@ export function makePerson3d(stage: Stage, p: Person, index: number): Figure3D {
   if (prop?.kind === "drum") { const d = cyl("drum", 0.34, 0.26, 0.4, mat(prop.c), -0.3, 0.95, -0.12, root); d.rotation.z = 0.5; }
   if (prop?.kind === "tray") { box("tray", 0.46, 0.03, 0.32, mat(prop.c), 0.3, 1.12, -0.2, root); cyl("cup", 0.07, 0.06, 0.12, mat("#f4f1e6"), 0.3, 1.2, -0.2, root); }
 
+  let model: ModelFigure | null = null;
   return {
+    ready: modelId ? replacePerson(stage, root, modelId).then(m => { model = m; }) : Promise.resolve(),
     apply(t) {
       const w = poseAt(p, t);
       root.position.set(w.x, w.bounce, w.z);
       root.rotation.y = w.heading;
       legs.forEach((l, j) => { l.rotation.x = j ? w.swing : -w.swing; });
       arms.forEach((a, j) => { a.rotation.x = (j ? -w.swing : w.swing) + (j ? w.gesture : 0); });
+      model?.apply(standingPose(t * 6 + (p.phase ?? 0), p.to ? Math.min(1, Math.abs(w.swing) * 2) : 0), t);
     }
   };
 }

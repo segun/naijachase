@@ -48,6 +48,11 @@ test("the case terminal shows where the player is, the case clock and funds, the
   assert.match(view, /dialog\[open\]/, "a fare dialog owns the keyboard");
   assert.match(view, /INPUT\|TEXTAREA\|SELECT/, "typing in a form never triggers a shortcut");
   assert.match(view, /done\.includes|questioned=\{done\}/, "witnesses already questioned here are marked");
+  assert.match(view, /if \(done\.includes\(lead\.id\)\)[\s\S]*?notebookFocus = \{ stop: gs\.current_state, venueId: lead\.id, venueLabel: lead\.label \};[\s\S]*?app\.go\("notebook"\)/, "a questioned witness opens its saved notebook account");
+  assert.doesNotMatch(view, /What you heard|Latest witness accounts/, "accounts are read from their notebook entry, not duplicated beneath the leads");
+  assert.match(read("scenes/office/LeadGrid.svelte"), /disabled=\{Boolean\(leaving\) \|\| \(!seen && \(lead\.options\.length === 0 \|\| Boolean\(shut\)\)\)\}/, "questioned witnesses remain interactive");
+  assert.doesNotMatch(read("scenes/office/LeadGrid.svelte"), /info\.who|info\.blurb/, "lead cards only show the venue name and image");
+  assert.match(read("screens/case/Notebook.svelte"), /data-focused-note/);
 });
 
 test("the room picks the case terminal while a case is open, and plays the short return after a venue", () => {

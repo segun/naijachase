@@ -15,6 +15,8 @@ import { type Part, beaconPhase, neonOn, puffAt, swingAt } from "./layout-buildi
 import { layoutFor } from "./layout-buildings-venues.ts";
 import { hashOf } from "./venue-recipes.ts";
 import { makePerson3d } from "./chase3d-buildings-people.ts";
+import { crowdModelId, type ModelGroup } from "./witness-models.ts";
+import { replaceScenery } from "./chase3d-witness-models.ts";
 
 /** A hex colour scaled towards black. */
 const dim = (c: string, k: number) => `#${[1, 3, 5].map(i => Math.round(parseInt(c.slice(i, i + 2), 16) * k).toString(16).padStart(2, "0")).join("")}`;
@@ -59,7 +61,15 @@ export function buildLayout3d(stage: Stage, options: WitnessOptions): SetResult3
   if (layout.ground !== "#a35f38") box("groundTint", 120, 0.02, 60, mat(layout.ground, { specular: 0 }), 0, 0.005, 30);
 
   const groups = new Map<StandardMaterial, Mesh[]>();
-  const keep = (m: Mesh, mtl: StandardMaterial) => { const g = groups.get(mtl) ?? []; g.push(m); groups.set(mtl, g); };
+  const main: ModelGroup = { id: `${options.recipe.id}_main` };
+  const replacements = new Map<ModelGroup, Mesh[]>();
+  let current: Part | undefined;
+  const keep = (m: Mesh, mtl: StandardMaterial) => {
+    if (options.models && current && current.k !== "pave") {
+      const group = current.modelGroup ?? main;
+      const meshes = replacements.get(group) ?? []; meshes.push(m); replacements.set(group, meshes);
+    } else { const g = groups.get(mtl) ?? []; g.push(m); groups.set(mtl, g); }
+  };
   const moving: ((t: number) => void)[] = [];
   const lights: PointLight[] = [];
   let paving = 0;
@@ -67,6 +77,7 @@ export function buildLayout3d(stage: Stage, options: WitnessOptions): SetResult3
   const surface = (c: string, lit?: string) => (night && lit ? mat(lit, { emissive: dim(lit, 0.6), specular: 0 }) : mat(c));
 
   for (const p of layout.parts) {
+    current = p;
     switch (p.k) {
       case "box": {
         if (p.neon) {
@@ -91,7 +102,7 @@ export function buildLayout3d(stage: Stage, options: WitnessOptions): SetResult3
         m.rotation.x = Math.PI / 2; keep(m, mtl);
         break;
       }
-      case "prism": prismMesh(stage, "prism", p, solid(p.c)); break;
+      case "prism": { const mtl = solid(p.c); keep(prismMesh(stage, "prism", p, mtl), mtl); break; }
       case "pave": {
         const h = 0.03 + paving++ * 0.004;
         const mtl = mat(p.c, { specular: 0 });
@@ -157,9 +168,10 @@ export function buildLayout3d(stage: Stage, options: WitnessOptions): SetResult3
     merged.material = mtl; merged.receiveShadows = false;
   }
 
-  const people = layout.people.map((p, i) => makePerson3d(stage, p, i));
+  const people = layout.people.map((p, i) => makePerson3d(stage, p, i, options.models ? crowdModelId(options.recipe.id, i) : undefined));
   moving.forEach(m => m(0));
   return {
+    ready: Promise.all([...people.map(p => p.ready), ...[...replacements].map(([group, meshes]) => replaceScenery(stage, group, meshes, group === main ? 3.1 : -Infinity))]),
     update(t) {
       moving.forEach(m => m(t));
       people.forEach(p => p.apply(t));

@@ -1,8 +1,19 @@
-# Scene conventions: every animated scene is 3D with a 2D fallback
+# Scene conventions: adaptive animation and functional fallbacks
 
 Read this before you add or change any animated scene in the web client (`web/src/scenes/`).
 
 ## The rule
+
+**Current policy (supersedes the legacy two-renderer guidance below):** login keeps its 2D chase. Non-login scenes should skip
+animation at Simple detail and show their functional content instead. Apply this one scene at a time during its next integration pass;
+do not remove all existing 2D renderers in one sweep. Preserve essential dialogue, clues, choices, server timing and outcomes.
+The office has adopted this policy: Simple opens its desk immediately, without entry/return/exploration/exit animation or an alert.
+Switching to Simple during its intro or exploration opens the desk; increasing detail afterwards must not replay or re-gate that entry.
+Witness has also adopted this policy: Simple shows the full server account and an explicit Continue action, without a canvas or animation.
+3D failure opens that same account with an alert and error details; `nc-witness-flat` remembers the failure independently of journey.
+Full/Standard use the shared pure timeline and preserve elapsed time on rebuilds; cancelled setup must not publish late callbacks.
+Journey, panel, archive and garage behaviour is unchanged. The following two-renderer instructions document legacy implementations
+until each is updated; they do not require adding witness or office 2D animation back.
 
 A scene is never skipped because the device is weak, and it never leaves a black screen. Every scene
 has **two renderers that show the same thing**:
@@ -23,7 +34,8 @@ same time and produce the same outcome. `docs/web-vertical-slice.md` and `TODO.m
 
 ## How to build a scene so both renderers stay in step
 
-Follow the witness scene in `web/src/scenes/witness/`, which is the reference implementation:
+The witness scene in `web/src/scenes/witness/` remains the reference for pure choreography and renderer separation.
+Its Canvas 2D files are now legacy utilities retained for journey's imports, not its active Simple renderer:
 
 | File | Holds | Imports a graphics library? |
 | --- | --- | --- |
@@ -32,7 +44,7 @@ Follow the witness scene in `web/src/scenes/witness/`, which is the reference im
 | `witness-driver.ts` | The options and handle both renderers share, sound, subtitles, per-frame bookkeeping. | No |
 | `chase3d-witness.ts` | The 3D picture for time `t`. | Babylon.js |
 | `witness-2d.ts` | The 2D picture for the same `t`, using the same camera path (billboards under a real perspective projection). | No (Canvas 2D) |
-| `WitnessScene.svelte` | Chooses 3D or 2D, switches on failure, owns the subtitles and Skip. | No |
+| `WitnessScene.svelte` | Chooses 3D or readable account, owns subtitles, Skip and guarded Continue. | No |
 
 Rules:
 
@@ -53,14 +65,14 @@ Rules:
 
 ## Adding a venue to the witness scenes
 
-A venue is a recipe plus a scenery set per renderer; the choreography is shared and does not change.
+A venue is a recipe plus a 3D scenery set; the choreography is shared and does not change. Simple needs no scenery set.
 
 - Recipe: `recipes-open-air.ts` or `recipes-buildings.ts` (the market's is in `venue-recipes.ts`), built with `recipe-kit.ts`.
-- 3D set: register in `chase3d-open-air.ts` / `chase3d-buildings.ts` (via `chase3d-sets.ts`); 2D set: `witness-2d-open-air.ts` /
-  `witness-2d-buildings.ts` (via `witness-2d-sets.ts`). Both under the recipe's `set` id.
-- `web/tests/witness-sets.test.mjs` checks every recipe automatically (real venue, both sets registered, witnesses, quiet sound).
-- The remaining 34 venues are split between two agents in `docs/agents/Agent1.md` and `docs/agents/Agent2.md`, which also list what to
-  avoid, based on what went wrong with the market.
+- 3D set: register in `chase3d-open-air.ts` / `chase3d-buildings.ts` (via `chase3d-sets.ts`) under the recipe's `set` id.
+  Add role/crowd mappings in `witness-models.ts`; use the shared loader and retain procedural objects when their models fail.
+- `web/tests/witness-sets.test.mjs` checks every recipe automatically (real venue, legacy sets registered, witnesses, quiet sound).
+  `web/tests/witness-models.test.mjs` checks supplied assets, dimensions, skins/Walk clips, model groups and exact corridor clearance.
+- All 35 venues are implemented. The old parallel-agent ownership documents are not present in this checkout.
 - Flags: do not draw anything that reads as a real national flag (green and white are never the two colours of a flag; a test enforces it).
 - Signs carrying the venue's name are sized for the arrival shot. In the conversation shot the camera looks at the witness, so a sign can
   be cut off by the frame; that is expected and not worth bending the layout for (checked: moving the camera does not help either).
@@ -122,8 +134,8 @@ downloads no GLBs. The generated room shell is not used because furniture is bak
 be sampled from the scene's `Pose` and time, never `performance.now()`, so rebuilding at another detail level preserves the pose.
 The office pauses seated before its zoom on every entry, including witness returns: drag/swipe or arrow keys orbit the camera, and
 **Continue to case desk** resumes from that view. Keep the exploration hint/button in DOM, leave the terminal inert while paused, and
-do not mistake the intentional pause for a stalled renderer. Simple retains the Continue button without a movable camera.
+do not mistake the intentional pause for a stalled renderer. At Simple the office bypasses the pause and opens the desk directly.
 
 **Existing exception to the two-renderer rule:** generic room stages (including the office) currently show their flat DOM content at
-Simple detail or on 3D failure, rather than an animated Canvas 2D room. The office's missing 2D intro/return/exit is tracked explicitly
-in `TODO.md`; do not describe that flat terminal as an animated 2D fallback.
+Simple detail or on 3D failure, rather than an animated Canvas 2D room. The office intentionally has no 2D animation under the new
+policy; its former 2D implementation task has been removed.

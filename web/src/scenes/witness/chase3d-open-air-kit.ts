@@ -14,6 +14,8 @@ import { PRINTS } from "./market-layout.ts";
 import { type Walker, person } from "./chase3d-people.ts";
 import type { Set3D, SetContext3D } from "./chase3d-sets.ts";
 import { type Layout, type LayoutBuilder, type Prop, armAngle, sceneSeed, crowdLimit, moveAt, placeAt } from "./layout-open-air-kit.ts";
+import { crowdModelId, type ModelGroup } from "./witness-models.ts";
+import { replaceScenery } from "./chase3d-witness-models.ts";
 
 type Mover = { mesh: Mesh | TransformNode; x: number; y: number; z: number; prop: Prop };
 const ALPHA_ADD = 1;
@@ -38,13 +40,16 @@ export function drawLayout3d(layout: Layout, { stage, options }: SetContext3D) {
   const wanted = (p: Prop) => (!p.hi || !light) && (!p.night || night);
 
   // The ground and any water cover the common red earth, just under the lane.
-  stage.box("groundCover", 400, 0.04, 200, mat(layout.ground, { specular: 0 }), 0, 0.0, 70).receiveShadows = false;
+  stage.box("groundCover", 400, 0.04, 200, mat(layout.ground, { specular: 0 }), 0, 0.0, 70).receiveShadows = !!options.models && !light;
   if (layout.water) {
     const w = stage.box("water", 400, 0.04, 300, mat(layout.water.c, { specular: 0.45 }), 0, 0.01, layout.water.z + 150);
     w.receiveShadows = false;
   }
 
   const statics: Mesh[] = [];
+  const main: ModelGroup = { id: `${options.recipe.id}_main` };
+  const models = new Map<ModelGroup, { meshes: Mesh[]; motion?: Prop["m"] }>();
+  const modelMovers: { root: TransformNode; position: Vector3; motion: Prop["m"] }[] = [];
   const movers: Mover[] = [];
   const halos = new Map<string, StandardMaterial>();
   const halo = (c: string) => {
@@ -65,8 +70,13 @@ export function drawLayout3d(layout: Layout, { stage, options }: SetContext3D) {
   };
 
   const add = (mesh: Mesh, p: Prop, y: number) => {
+    const group = p.modelGroup ?? (!p.keep && !p.far && !p.m && !("glow" in p && p.glow) && p.k !== "arm" && ("h" in p ? p.h > 0.2 : true) ? main : undefined);
+    if (options.models && group) {
+      const entry = models.get(group) ?? { meshes: [], motion: p.m };
+      entry.meshes.push(mesh); models.set(group, entry);
+    }
     if ("m" in p && p.m) movers.push({ mesh, x: mesh.position.x, y, z: mesh.position.z, prop: p });
-    else statics.push(mesh);
+    else if (!options.models || !group) statics.push(mesh);
     return mesh;
   };
 
@@ -103,7 +113,7 @@ export function drawLayout3d(layout: Layout, { stage, options }: SetContext3D) {
         } else {
           const a = p.a, bar = box("arm", p.len, p.t, p.t, m, p.x + (p.len / 2) * Math.cos(a), p.axis === "z" ? p.y + (p.len / 2) * Math.sin(a) : p.y, p.axis === "z" ? p.z : p.z - (p.len / 2) * Math.sin(a));
           if (p.axis === "z") bar.rotation.z = a; else bar.rotation.y = a;
-          statics.push(bar);
+          add(bar, p, p.y);
         }
         break;
       }
@@ -122,14 +132,25 @@ export function drawLayout3d(layout: Layout, { stage, options }: SetContext3D) {
   // ---- People ----
   const prints = PRINTS.map((p, i) => ankara(scene, `print${i}`, p[0], p[1], p[2]));
   const crowd = layout.people.slice(0, crowdLimit(light));
-  const folk: Walker[] = crowd.map(p => {
-    const w = person(stage, p.seed + 1, prints);
+  const folk: Walker[] = crowd.map((p, i) => {
+    const w = person(stage, p.seed + 1, prints, options.models ? crowdModelId(options.recipe.id, i) : undefined);
     return { ...w, dir: p.walk && p.walk.v < 0 ? -1 : 1 };
   });
   const tmp: [number, number, number] = [0, 0, 0];
 
   return {
+    ready: Promise.all([
+      ...folk.map(p => p.ready),
+      ...[...models].map(async ([group, entry]) => {
+        const model = await replaceScenery(stage, group, entry.meshes, group === main ? 3.4 : -Infinity);
+        if (model && entry.motion) modelMovers.push({ root: model.root, position: model.root.position.clone(), motion: entry.motion });
+      })
+    ]),
     update(t: number) {
+      for (const item of modelMovers) {
+        moveAt(item.motion, t, tmp);
+        item.root.position.set(item.position.x + tmp[0], item.position.y + tmp[1], item.position.z + tmp[2]);
+      }
       for (const mv of movers) {
         const p = mv.prop;
         if (p.k === "arm") {
@@ -146,6 +167,7 @@ export function drawLayout3d(layout: Layout, { stage, options }: SetContext3D) {
         c.root.rotation.y = at.face;
         c.legs.forEach((l, j) => { l.rotation.x = j ? at.swing : -at.swing; });
         c.arms.forEach((a, j) => { a.rotation.x = j ? -at.swing : at.swing; });
+        c.applyModel(t, !!p.walk, t * Math.abs(p.walk?.v ?? 0) * 5 + p.seed);
       });
     }
   };

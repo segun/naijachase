@@ -111,9 +111,11 @@ test("dossier changes use only server-listed strings without normalising or gues
 });
 
 test("stored notes migrate from the old string format and group by stop", () => {
-  const notes = model.parseNotes(JSON.stringify(["old", { stop: "Kano", venue: "Market", message: "a" }, { stop: "Kano", venue: "Library", message: "b" }, 7]));
+  const notes = model.parseNotes(JSON.stringify(["old", { stop: "Kano", venue: "Market", message: "a", venueId: "market" }, { stop: "Kano", venue: "Library", message: "b" }, 7]));
   assert.equal(notes.length, 3);
   assert.equal(notes[0].stop, "Earlier");
+  assert.equal(notes[1].venueId, "market");
+  assert.equal(notes[2].venueId, undefined);
   const groups = model.groupNotes(notes);
   assert.deepEqual(groups.map(g => [g.stop, g.notes.length]), [["Earlier", 1], ["Kano", 2]]);
   assert.deepEqual(model.parseNotes("{broken"), []);

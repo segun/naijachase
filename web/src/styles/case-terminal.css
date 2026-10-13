@@ -52,9 +52,18 @@
 .t-tokens { color: var(--p-dim); font-weight: 400; }
 .t-tokens strong { color: var(--amber); }
 .pressure-list { list-style: none; margin: 0; padding: 0; display: grid; gap: .5em; }
-.pressure-list li { display: flex; flex-wrap: wrap; align-items: center; gap: .6em; }
-.pressure-list .t-who { flex: 1 1 10em; }
+.pressure-list li { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: .75em; padding: .5em .65em; border: 1px solid rgb(68 145 103 / .35); background: rgb(4 24 17 / .55); }
+.pressure-list .t-who { min-width: 0; }
+.pressure-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .45em; }
+.pressure-action { min-width: 7.2em; justify-content: space-between; gap: .55em; white-space: nowrap; }
+.pressure-action small { font-size: .78em; font-weight: 400; opacity: .8; text-transform: none; }
 .pressure-terms { margin: 0; padding-left: 1.2rem; display: grid; gap: .5rem; }
+
+@container (max-width: 480px) {
+  .pressure-list li { grid-template-columns: minmax(0, 1fr); gap: .4em; }
+  .pressure-actions { justify-content: stretch; }
+  .pressure-action { flex: 1; }
+}
 
 .t-status { flex-wrap: wrap; row-gap: .3em; column-gap: 1.8em; }
 .t-fig { display: inline-flex; gap: .5em; align-items: baseline; white-space: nowrap; }

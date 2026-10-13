@@ -6,8 +6,11 @@ import { StandardMaterial } from "@babylonjs/core/Materials/standardMaterial";
 import type { DynamicTexture } from "@babylonjs/core/Materials/Textures/dynamicTexture";
 import { seeded } from "../shared/chase3d-kit.ts";
 import type { Stage } from "../shared/chase3d-stage.ts";
+import { replacePerson } from "./chase3d-witness-models.ts";
+import type { ModelFigure } from "../shared/chase3d-model-figure.ts";
+import { standingPose } from "./witness-models.ts";
 
-export type Walker = { root: TransformNode; legs: TransformNode[]; arms: TransformNode[]; dir: 1 | -1 };
+export type Walker = ReturnType<typeof person> & { dir: 1 | -1 };
 
 /** A lit material carrying a printed cloth texture. */
 export function printed(scene: Scene, name: string, texture: DynamicTexture): StandardMaterial {
@@ -18,7 +21,7 @@ export function printed(scene: Scene, name: string, texture: DynamicTexture): St
 }
 
 /** A passer-by built from a handful of primitives. */
-export function person(stage: Stage, seed: number, prints: readonly DynamicTexture[]) {
+export function person(stage: Stage, seed: number, prints: readonly DynamicTexture[], modelId?: string) {
   const { scene, mat, cyl, sphere } = stage;
   const r = seeded(seed);
   const skin = mat(["#5a3a28", "#6e4630", "#8a5a3c", "#a06a45", "#3f2a1e"][Math.floor(r() * 5)]!);
@@ -59,5 +62,12 @@ export function person(stage: Stage, seed: number, prints: readonly DynamicTextu
   } else {
     cyl("cap", 0.2, 0.24, 0.1, colour(), 0, 1.78, 0, root);
   }
-  return { root, legs, arms };
+  let model: ModelFigure | null = null;
+  const ready = modelId ? replacePerson(stage, root, modelId).then(m => { model = m; }) : Promise.resolve();
+  return {
+    root, legs, arms, ready,
+    applyModel(t: number, walking: boolean, gait = t * 6 + seed) {
+      model?.apply(standingPose(gait, walking ? 1 : 0), t);
+    }
+  };
 }

@@ -2,10 +2,6 @@
   // After the journey: the vehicle pulls up at the venue, the player walks up to the witness and the witness speaks while the words
   // appear along the bottom of the screen as they are said. Its length follows the number of words (see witness-scene.ts).
   //
-  // THE 3D / 2D PATTERN (follow it for every scene): the scene is never skipped for being hard to render. It starts in 3D (Babylon.js)
-  // when the device looks capable and otherwise in 2D (Canvas 2D, witness-2d.ts), and if 3D then fails to start, stalls or runs too
-  // slowly it carries on in 2D from where it had got to. Both renderers take the same options, return the same handle and read the same
-  // timeline (witness-scene.ts), so they show the same events and cost the same time. Only if 2D also fails is the reason shown.
   import { untrack } from "svelte";
   import "../../styles/terminal.css";
   import "../../styles/witness.css";
@@ -17,10 +13,8 @@
   import type { WitnessFrame, WitnessHandle } from "./witness-driver.ts";
   import type { Page } from "./witness-scene.ts";
 
-  type Mode = "3d" | "2d";
-  /** Set once 3D has failed on this device in this session, so later scenes go straight to 2D instead of failing again. */
-  const FALLBACK_KEY = "nc-witness-2d";
-  /** If 3D never draws its first frame, or stops advancing, for this long (ms) we carry on in 2D. */
+  type Mode = "3d" | "flat";
+  const FALLBACK_KEY = "nc-witness-flat";
   const FIRST_FRAME_MS = 9000;
   const STALL_MS = 3000;
 
@@ -32,16 +26,16 @@
   const recipe = visit ? recipeFor(visit.venueId) : undefined;
   const stored = (storage: Storage, key: string) => { try { return storage.getItem(key); } catch { return null; } };
   // The picture detail the player chose (or the device allows). It can change at any moment: the scene is rebuilt in the new renderer or
-  // detail and carries on from the second it had reached. 3D that failed earlier in this session stays in 2D until the player changes the setting.
+  // detail and carries on from the second it had reached. Failed 3D opens the readable account until the player changes the setting.
   const level = $derived(detail.resolved);
   let broken = $state(stored(sessionStorage, FALLBACK_KEY) === "1");
-  const mode = $derived<Mode>(level.renderer === "3d" && !broken ? "3d" : "2d");
-  const canvasKey = $derived(mode === "3d" ? detailKey(level) : `2d-${level.quality}`);
+  const mode = $derived<Mode>(level.renderer === "3d" && !broken ? "3d" : "flat");
+  const canvasKey = $derived(mode === "3d" ? detailKey(level) : "flat");
   let lastChoice = detail.choice;
   $effect(() => {
     const choice = detail.choice;
     if (choice === lastChoice) return;
-    lastChoice = choice; broken = false;
+    lastChoice = choice; broken = false; failure = "";
     try { sessionStorage.removeItem(FALLBACK_KEY); } catch { /* private mode */ }
   });
 
@@ -54,7 +48,7 @@
   let failure = $state("");
   let skip: () => void = () => {};
   let finished = false;
-  /** Where the new renderer picks up when the detail changes or 3D hands over to 2D part-way through. */
+  /** Where 3D picks up after a detail change. */
   let resumeAt = 0;
 
   const page = $derived(frame.subtitle ? pages[frame.subtitle.page] : undefined);
@@ -68,23 +62,25 @@
     app.leaveWitness();
   }
 
-  /** 3D could not carry on: continue in 2D from `at` seconds, and remember it for the next scene. */
+  /** Retain the full account and its Continue action if the animation cannot carry on. */
   function fallBack(at: number, why: string) {
     if (mode !== "3d" || finished) return;
-    console.warn(`The 3D witness scene is switching to 2D: ${why}`);
+    console.warn(`The 3D witness scene is opening the witness account: ${why}`);
     try { sessionStorage.setItem(FALLBACK_KEY, "1"); } catch { /* private mode: the next scene just tries 3D again */ }
-    resumeAt = at; ready = false; broken = true;
+    resumeAt = at; ready = false; failure = why; broken = true;
   }
 
   $effect(() => {
     if (!visit || !recipe) { finish(); return; }
     const target = canvas, current = mode, key = canvasKey, { quality, models, reducedMotion } = level;
-    // The canvas is replaced when the renderer or detail changes (a canvas cannot switch from WebGL to 2D), so wait for the matching one.
+    if (current === "flat") return;
+    // Wait for the replacement canvas when detail changes.
     if (!target || target.dataset.key !== key) return;
     let cancelled = false;
+    const controller = new AbortController();
     let handle: WitnessHandle | undefined;
     let began = 0, lastTick = 0;
-    // 3D only: a scene that never draws, or stops drawing, hands over to 2D. A hidden tab is not a stall.
+    // A scene that never draws, or stops drawing, opens the account. A hidden tab is not a stall.
     const watchdog = current === "3d" ? setInterval(() => {
       if (document.hidden) { lastTick = performance.now(); return; }
       if (began && performance.now() - (lastTick || began) > (lastTick ? STALL_MS : FIRST_FRAME_MS)) fallBack(handle?.now() ?? 0, "no frames");
@@ -94,15 +90,16 @@
     if (sound) app.music.duck(true);
 
     const options = {
-      preset, hour, quality, models, recipe, arrival: visit.arrival, text: visit.message, venueName: visit.venueName || "Market", sound, reducedMotion,
-      onTick: () => { lastTick = performance.now(); ready = true; },
-      onFrame: (f: WitnessFrame) => { frame = f; if (f.subtitle) heard = true; },
-      onSlow: () => fallBack(handle?.now() ?? 0, "low frame rate"),
-      onFault: (why: string) => { if (current === "3d") fallBack(handle?.now() ?? 0, why); else failure = why; }
+      preset, hour, quality, models, signal: controller.signal, recipe, arrival: visit.arrival, text: visit.message, venueName: visit.venueName || "Market", sound, reducedMotion,
+      onTick: () => { if (!cancelled) { lastTick = performance.now(); ready = true; } },
+      onFrame: (f: WitnessFrame) => { if (!cancelled) { frame = f; if (f.subtitle) heard = true; } },
+      onSlow: () => { if (!cancelled) fallBack(handle?.now() ?? 0, "low frame rate"); },
+      onFault: (why: string) => { if (!cancelled) fallBack(handle?.now() ?? 0, why); }
     };
-    const load = current === "3d"
-      ? import("./chase3d-witness.ts").then(m => { began = performance.now(); return m.createWitnessScene(target, options); })
-      : import("./witness-2d.ts").then(m => m.createWitnessScene2D(target, options));
+    const load = import("./chase3d-witness.ts").then(m => {
+      if (cancelled) throw new DOMException("Witness setup cancelled", "AbortError");
+      began = performance.now(); return m.createWitnessScene(target, options);
+    });
 
     load
       .then(h => {
@@ -115,13 +112,13 @@
       .catch(e => {
         if (cancelled) return;
         console.error(`The ${current} witness scene failed.`, e);
-        if (current === "3d") fallBack(handle?.now() ?? 0, e instanceof Error ? e.message : String(e));
-        else failure = e instanceof Error ? e.message : String(e);
+        fallBack(handle?.now() ?? 0, e instanceof Error ? e.message : String(e));
       });
 
     return () => {
       cancelled = true; clearInterval(watchdog);
       if (handle && !finished) resumeAt = handle.now();
+      controller.abort();
       handle?.dispose();
       if (sound) app.music.duck(false);
     };
@@ -129,14 +126,25 @@
 
   function key(e: KeyboardEvent) {
     if (!["Escape", "Enter", " "].includes(e.key) || e.metaKey || e.ctrlKey || e.altKey) return;
+    if (e.key !== "Escape" && e.target instanceof Element && e.target.closest("button, input, select, textarea, a")) return;
     e.preventDefault();
-    if (failure || !ready) finish(); else skip();
+    if (mode === "flat" || failure || !ready) finish(); else skip();
   }
 </script>
 
 <svelte:window onkeydown={key} />
 
 <div class="room witness" role="region" aria-label="Meeting the witness">
+  {#if mode === "flat"}
+    <section class="witness-account" aria-label="Witness account">
+      <p class="caption-who">{visit?.venueName}</p>
+      <h1>{visit?.role || "Witness"}</h1>
+      {#if failure}<p role="alert">The 3D scene is unavailable. You can still read the witness's full account and continue.</p>{/if}
+      {#if failure}<details><summary>Scene details</summary><p>{failure}</p></details>{/if}
+      <p class="witness-account-text">{visit?.message}</p>
+      <button class="btn btn-primary" type="button" onclick={finish}>Continue to the investigation</button>
+    </section>
+  {:else}
   {#key canvasKey}<canvas class="room-canvas" class:ready data-mode={mode} data-key={canvasKey} bind:this={canvas} aria-hidden="true"></canvas>{/key}
   <div class="witness-fade" style:opacity={1 - frame.fade}></div>
   {#if failure}
@@ -157,4 +165,5 @@
   <!-- Screen readers get the whole account once, when the witness starts to speak, instead of one word at a time. -->
   <p class="sr-only" role="status">{#if heard && visit}{visit.role}: {visit.message}{/if}</p>
   <button class="room-skip" type="button" onclick={() => { if (failure || !ready) finish(); else skip(); }}>Skip <kbd>Esc</kbd></button>
+  {/if}
 </div>

@@ -8,7 +8,9 @@
 /** Where the front wall of every building is: 0.55 m behind the witness, who stands at z = 2.55. */
 export const FRONT = 3.1;
 
-export type Part =
+import { modelParts, type ModelGroup } from "./witness-models.ts";
+
+type Shape =
   | { k: "box"; x: number; y: number; z: number; w: number; h: number; d: number; c: string; lit?: string; neon?: string; ph?: number }
   | { k: "cyl"; x: number; y: number; z: number; r: number; rt?: number; h: number; c: string; swing?: number }
   | { k: "ball"; x: number; y: number; z: number; r: number; sy?: number; c: string }
@@ -20,6 +22,7 @@ export type Part =
   | { k: "beacon"; x: number; y: number; z: number; r: number; c: string; c2: string; period: number }
   | { k: "puff"; x: number; y: number; z: number; r: number; c: string }
   | { k: "lamp"; x: number; y: number; z: number; h: number; c: string };
+export type Part = Shape & { modelGroup?: ModelGroup };
 
 export type PartKind = Part["k"];
 
@@ -81,24 +84,24 @@ export function columns(xs: readonly number[], z: number, h: number, c = "#f0e8d
   return xs.flatMap(x => [box(x, 0, z, r * 2.8, 0.2, r * 2.8, c), cyl(x, 0.2, z, r, h - 0.45, c, r * 0.9), box(x, h - 0.25, z, r * 2.8, 0.25, r * 2.8, c)]);
 }
 
-export const tree = (x: number, z: number, h: number, leaf = "#2f6b3a", trunk = "#5b3d25"): Part[] => [
+export const tree = (x: number, z: number, h: number, leaf = "#2f6b3a", trunk = "#5b3d25"): Part[] => modelParts([
   cyl(x, 0, z, h * 0.06, h * 0.55, trunk, h * 0.045),
   ball(x, h * 0.62, z, h * 0.3, leaf, 0.85), ball(x - h * 0.17, h * 0.52, z - 0.1, h * 0.2, leaf, 0.8), ball(x + h * 0.17, h * 0.55, z + 0.1, h * 0.22, leaf, 0.8)
-];
+], "tree_neem");
 
-export const palm = (x: number, z: number, h: number): Part[] => [
+export const palm = (x: number, z: number, h: number): Part[] => modelParts([
   cyl(x, 0, z, 0.2, h, "#7a5a38", 0.14),
   ...Array.from({ length: 6 }, (_, i) => ball(x + Math.cos(i * 1.05) * 1.0, h + 0.05 + (i % 2) * 0.15, z + Math.sin(i * 1.05) * 1.0, 0.75, "#2f6b3a", 0.2))
-];
+], "lagos_palm");
 
 export const shrub = (x: number, z: number, r = 0.55, c = "#3b7a44"): Part => ball(x, r * 0.7, z, r, c, 0.75);
 
 export const lamp = (x: number, z: number, h = 3.4, c = "#2f3438"): Part => ({ k: "lamp", x, y: 0, z, h, c });
 
-export const bench = (x: number, z: number, c = "#7a5430"): Part[] => [
+export const bench = (x: number, z: number, c = "#7a5430"): Part[] => modelParts([
   box(x, 0.4, z, 1.6, 0.07, 0.5, c), box(x, 0.7, z + 0.22, 1.6, 0.35, 0.06, c),
   box(x - 0.7, 0, z, 0.08, 0.4, 0.45, "#3d3d3d"), box(x + 0.7, 0, z, 0.08, 0.4, 0.45, "#3d3d3d")
-];
+], "bench_wood");
 
 export const pole = (x: number, z: number, h: number, c = "#bdbdbd"): Part => cyl(x, 0, z, 0.06, h, c, 0.045);
 

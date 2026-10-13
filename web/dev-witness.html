@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Witness preview (development only)</title>
+    <style>
+      * { box-sizing: border-box; }
+      body { margin: 0; background: #081d17; color: #f4e8c1; font: 14px system-ui, sans-serif; }
+      canvas { width: 100vw; height: 100vh; display: block; }
+      nav { position: fixed; top: 8px; left: 8px; right: 8px; display: flex; flex-wrap: wrap; gap: 8px; padding: 8px; background: #081d17e6; }
+      button, select, input { font: inherit; padding: 8px; }
+      input { width: 5rem; }
+    </style>
+  </head>
+  <body>
+    <canvas id="c"></canvas>
+    <nav>
+      <select id="venue" aria-label="Venue"></select>
+      <select id="detail" aria-label="Detail"><option value="full">Full</option><option value="standard">Standard</option></select>
+      <select id="arrival" aria-label="Arrival"><option value="drive">Drive</option><option value="hitch">Hitch a ride</option></select>
+      <label>Hour <input id="hour" type="number" value="14" min="0" max="23"></label>
+      <label>Seconds <input id="time" type="number" value="8" min="0" step=".1"></label>
+      <button id="inspect">Inspect</button><button id="play">Play</button><span id="note" role="status"></span>
+    </nav>
+    <script type="module" src="/dev/witness-preview.ts"></script>
+  </body>
+</html>

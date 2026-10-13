@@ -47,6 +47,9 @@ const CHASE_CHECKED = new Set([
   "lagos_palm", "lagos_tower_a", "lagos_tower_b", "lagos_tower_c", "lagos_fishing_boat", "lagos_lighthouse", "bus_danfo",
   "anambra_market_stall", "anambra_shopfront_a", "anambra_shopfront_b", "kano_pyramid", "kano_house_a", "kano_house_b", "kano_baobab", "tree_neem", "lamp_post"
 ]);
+const WITNESS_CHECKED = new Set([
+  "witness_woman_trader", "market_stall_a", "market_cloth_stall", "conservation_office_main"
+]);
 
 const PLACES = [
   ...group("prop", "props/street", {
@@ -199,7 +202,7 @@ export const MODELS: Readonly<Record<string, ModelSpec>> = Object.fromEntries([
   vehicle("plane_airliner", 27), vehicle("airport_baggage_tractor", 8), vehicle("airport_stairs", 4.5), vehicle("airport_fuel_truck", 9),
   vehicle("boat_canoe", 6), vehicle("boat_launch", 8), vehicle("boat_dinghy", 3), vehicle("boat_barge", 20), vehicle("boat_tug", 12), vehicle("ship_cargo", 120),
   ...PLACES
-].map(([id, spec]): [string, ModelSpec] => [id, CHASE_CHECKED.has(id) ? { ...spec, checked: true } : spec]));
+].map(([id, spec]): [string, ModelSpec] => [id, CHASE_CHECKED.has(id) || WITNESS_CHECKED.has(id) ? { ...spec, checked: true } : spec]));
 
 /** The avatar picker's ids ("avatar-01" ...) map onto the files by their number. */
 export function avatarModelId(avatarId: string): string | null {

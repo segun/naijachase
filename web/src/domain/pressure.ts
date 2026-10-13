@@ -19,19 +19,17 @@ export const tokenCost = (method: PressureMethod): string => {
 
 export const canAfford = (method: PressureMethod, balance: number): boolean => balance >= PRESSURE_RULES[method].cost;
 
-/** Everything the confirmation must state. It never says whether this witness holds an extra clue. */
+/** Confirmation copy never says whether this witness holds an extra clue. */
 export function pressureWarnings(method: PressureMethod, balance: number): string[] {
-  const rule = PRESSURE_RULES[method];
-  const chance = method === "bribe" ? "1-in-5" : "1-in-2";
-  const lines = [
-    method === "bribe"
-      ? `Spend one earned bribe token to press this witness for more information? This witness may have nothing further to reveal. An unsuccessful bribe constitutes witness tampering and carries a ${chance} chance of detection. You can only pressure this witness once.`
-      : `Intimidate this witness for more information? This witness may have nothing further to reveal. Unnecessary intimidation constitutes excessive use of force and carries a ${chance} chance of detection. You can only pressure this witness once.`,
-    `Cost: ${tokenCost(method)}. Your balance: ${balance} token${balance === 1 ? "" : "s"}${rule.cost ? `, ${Math.max(balance - rule.cost, 0)} afterwards` : ""}.`,
-    "A detected offence goes to a five-member panel that can punish you with lost points, demotion or, for a Rookie, 24 hours in jail."
+  if (method === "intimidate") {
+    return ["This witness may have nothing further to reveal. If you're caught intimidating a witness, you could be punished with demotion or suspension."];
+  }
+
+  return [
+    "This witness may have nothing further to reveal. If you're caught bribing a witness, you could be punished with demotion or suspension.",
+    `You need 1 bribe token. You have ${balance} token${balance === 1 ? "" : "s"}.`,
+    "The token is spent even if the witness has nothing to reveal."
   ];
-  if (rule.cost) lines.push("The token is spent even if the witness has nothing to add. Tokens are earned only by playing and cannot be bought or refunded.");
-  return lines;
 }
 
 const COMPONENT_LABEL: Record<string, string> = {

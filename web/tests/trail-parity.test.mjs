@@ -55,7 +55,7 @@ for (const kind of ["ordinary", "replay"]) {
         await app.arriveAtWitness("drive");
         assert.equal(app.witnessVisit.message, message);
         app.leaveWitness();
-        assert.deepEqual(app.notes.at(-1), { stop: "Sokoto", venue, message });
+        assert.deepEqual(app.notes.at(-1), { stop: "Sokoto", venue, message, venueId: venue });
       }
       assert.equal(questionedHere(app.game.state).length, 3);
       assert.equal(app.notes.filter(n => n.stop === "Sokoto").length, 3);

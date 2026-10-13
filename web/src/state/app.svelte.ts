@@ -89,8 +89,6 @@ export class AppController {
   disciplineLoaded = $state(false);
   /** The panel to present now, and the witnesses already pressured (`case|stop|venue`), so each shows one attempt only. */
   panel = $state<PanelVisit | null>(null);
-  /** The witness just interviewed, for the Continue / Bribe / Intimidate choice that follows. */
-  pressurePrompt = $state<{ venueId: string; venueLabel: string } | null>(null);
   /** What a pressure attempt without a panel produced: the extra clue, or nothing. */
   pressureNotice = $state<{ clue: string | null; venue: string } | null>(null);
   private pendingPressure = new Map<string, { id: string; version: number }>();
@@ -211,7 +209,7 @@ export class AppController {
     this.weeklyId = null; this.weeklyTransit = null; clearTimeout(this.weeklyTimer); this.weeklyAccounts = [];
     this.player = null; this.game = null; this.caseId = ""; this.briefing = false; this.pendingLead = ""; this.lastWitness = null; this.witnessVisit = null; this.journey = null; this.returning = false;
     this.summary = null; this.archive = []; this.sessions = []; this.avatar = null; this.catalogueStatus = null; this.exhausted = false; this.quotes = []; this.ledger = []; this.notes = []; this.trail = []; this.rankAtStart = null;
-    this.tokenBalance = null; this.tokenLedger = []; this.tokenLedgerLoaded = false; this.awards = []; this.jail = null; this.discipline = []; this.disciplineLoaded = false; this.panel = null; this.pressured = []; this.pressurePrompt = null; this.pressureNotice = null; this.pendingPressure.clear();
+    this.tokenBalance = null; this.tokenLedger = []; this.tokenLedgerLoaded = false; this.awards = []; this.jail = null; this.discipline = []; this.disciplineLoaded = false; this.panel = null; this.pressured = []; this.pressureNotice = null; this.pendingPressure.clear();
     sessionStorage.clear();
     this.screen = "cases";
     if (message) this.toast(message, "info");
@@ -550,7 +548,6 @@ export class AppController {
     if (!result || this.caseId !== current.case_id || generation !== this.caseGeneration) return;
     this.pendingPressure.delete(attempt);
     this.markPressured(key);
-    this.pressurePrompt = null;
     this.tokenBalance = result.token_balance;
     if (result.extra_clue) {
       this.notes = [...this.notes, { stop, venue: `${venueLabel} (extra)`, message: result.extra_clue }];
@@ -672,8 +669,6 @@ export class AppController {
     if (this.weeklyTransit) { this.watchWeeklyTransit(arrival === "hitch" ? "hitch_ride" : "drive"); return; }
     const witness = this.lastWitness;
     this.lastWitness = null;
-    // Whether or not the venue has a scene, the Continue / Bribe / Intimidate choice waits for the investigation screen.
-    if (witness && !this.weeklyId && !this.game?.state.outcome) this.pressurePrompt = { venueId: witness.venueId, venueLabel: witness.venueName || witness.venueId.replaceAll("_", " ") };
     // The recipes are loaded on demand, so they never weigh on the first download however many venues have a scene.
     const recipes = witness ? await import("../scenes/witness/venue-recipes.ts").catch(() => null) : null;
     if (witness && recipes?.recipeFor(witness.venueId) && !this.game?.state.outcome) {
@@ -894,7 +889,8 @@ export class AppController {
       this.notes = [...this.notes, {
         stop: current.state.current_state,
         venue: account.venue_name ?? "Witness",
-        message: account.message
+        message: account.message,
+        ...(payload.type === "visit_venue" ? { venueId: payload.venue_id } : {})
       }];
     }
     if (next.state.current_state !== current.state.current_state) {
@@ -944,7 +940,7 @@ export class AppController {
     this.caseGeneration++;
     this.game = null; this.caseId = ""; this.notes = []; this.trail = []; this.rankAtStart = null;
     this.briefing = false; this.pendingLead = ""; this.lastWitness = null; this.witnessVisit = null; this.journey = null; this.returning = false;
-    this.quotes = []; this.quotesLoaded = false; this.ledger = []; this.awards = []; this.panel = null; this.pressured = []; this.pressurePrompt = null; this.pressureNotice = null; this.pendingPressure.clear();
+    this.quotes = []; this.quotesLoaded = false; this.ledger = []; this.awards = []; this.panel = null; this.pressured = []; this.pressureNotice = null; this.pendingPressure.clear();
     ["nc-case", "nc-notes", "nc-trail", "nc-rank"].forEach(k => sessionStorage.removeItem(k));
   }
 
@@ -1047,7 +1043,12 @@ export class AppController {
       if (id !== this.weeklyId) return;
       this.weeklyAccounts = events;
       this.notes = events.filter(e => e.event_type === "witness_account" && e.data.message)
-        .map(e => ({ stop: e.data.stop ?? "", venue: e.data.venue_name ?? "Witness", message: e.data.message! }));
+        .map(e => ({
+          stop: e.data.stop ?? "",
+          venue: e.data.venue_name ?? "Witness",
+          message: e.data.message!,
+          ...(e.data.venue_id ? { venueId: e.data.venue_id } : {})
+        }));
     } catch (e) { if (e instanceof ApiError && e.status === 401) this.fail(e); }
   }
 

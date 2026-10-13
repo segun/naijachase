@@ -1057,13 +1057,18 @@ pre-launch human-review handoffs remain outside the backend implementation.
   per UTC day; first `state_explorer` earns `2`, first
   `national_investigator` earns `5`, and the held balance is capped at `20`.
   Intimidation remains token-free; bribery spends one earned token.
-- [x] **FRONTEND HANDOFF:** show the token cost, current balance, one-attempt rule, possibility that a
-  witness has no extra clue, and offence risk before confirmation. Do not reveal
-  whether that specific witness holds an extra clue.
+- [x] **FRONTEND HANDOFF:** show the bribe token requirement and current balance,
+  the possibility that a witness has no extra clue, and possible punishment
+  before confirmation. Lock a witness after one attempt; do not reveal whether
+  that specific witness holds an extra clue.
   Implemented in `web/src/screens/case/Pressure.svelte` (actions after questioning,
   confirmation), `PanelPresentation.svelte` (five-member panel and punishment),
   the case-desk and case-terminal token balance, the token award breakdown on
   `Results.svelte`, and token plus disciplinary history in `Settings.svelte`.
+  Local leads omit redundant trail explanations; witness pressure actions are
+  compact and aligned beside each questioned witness.
+  Lead tiles show only their image and venue name; a questioned lead opens its
+  matching notebook statement instead of being disabled.
   Pure logic and tests: `web/src/domain/pressure.ts`, `web/tests/pressure.test.mjs`.
   The panel is a 3D scene (`web/src/scenes/panel/`: five judges raise vote papers, then a cut to the player accepting
   judgement) with `PanelPresentation.svelte` as its 2D fallback.
@@ -1235,7 +1240,7 @@ scores, rank, detection odds, panel votes, punishment, or jail time.
   - [x] Prompts, naming and folders (`docs/3d-generator-prompts.md`), asset checker page (`web/dev-assets.html`), optimiser (`pnpm assets:optimize`).
   - [x] Manifest, lazy loader with fallback to the procedural shapes, model-driven figure poses.
   - [x] Avatar picker and garage scene (player avatar and runabout car) use the models.
-  - [x] Manifest covers all 345 generated models with real-world sizes; the checker page shows each at its manifest size.
+  - [x] Manifest covers all 346 generated models with real-world sizes; the checker page shows each at its manifest size.
   - [ ] Move the scenes onto the models, one at a time, in this order. For each: use `stage.addModelFigure` with the procedural figure as fallback, drive it
     with `figure.apply(pose)`, check it in the scene (add a `dev/*-preview` page like `dev/garage-preview.ts` if the scene is hard to reach),
     set `checked` in `model-manifest.ts`, run `svelte-check` and the web tests, and update `docs/3d-models.md`.
@@ -1244,12 +1249,21 @@ scores, rank, detection odds, panel votes, punishment, or jail time.
       `office_room.glb` is not used because its furniture is baked in. Preview: `web/dev-office.html`; fitting notes in `docs/3d-models.md`.
       - [x] Correct the generated chair's sideways facing: quarter-turn in the manifest, keeping its backrest behind the avatar.
       - [x] Pause seated on every office entry, including witness returns, with "Look around the office", drag/swipe and arrow-key camera controls,
-        and "Continue to case desk" to resume the zoom. Full/Standard switching retains exploration; Simple keeps Continue without camera movement.
+        and "Continue to case desk" to resume the zoom. Full/Standard switching retains exploration; Simple opens the desk directly.
       - [x] Check phone-sized portrait/landscape layouts and emulated touch swipe/taps; keep the exploration card clear of the Detail button at narrow widths.
-      - [x] Show an accessible alert during Simple-mode office exploration, with Standard upgrade and Continue actions that wrap on mobile.
-    - [ ] Office Simple renderer: add a true timeline-matched Canvas 2D intro/return/exit. For now Simple opens the flat DOM terminal; it does not animate the office.
-    - [ ] 2. Witness scenes (`witness/chase3d-witness.ts`, buildings and open-air kits): player and witness from models. Pick the witness model per recipe look
-      (map each of the 90 looks to one of the 16 witness models and tint), and fake talking with small head and arm movement.
+      - [x] Simple office skips entry/return/exploration/exit animations and opens the functional desk directly, including mid-intro or mid-exploration changes.
+    - Future scene passes: remove non-login 2D animations one scene at a time, preserving dialogue, choices, server timing and outcomes.
+      Login retains its Canvas 2D chase. Other scenes are unchanged until their own pass.
+    - [x] 2. Witness scenes (`witness/chase3d-witness.ts`, buildings and open-air kits): all 35 venue types use the selected avatar,
+      role-matched witness, venue-specific crowds, arrival runabout/danfo, main frontage and tagged shared props at Full.
+      Manifest sizes and uniform footprint fitting preserve the walking/conversation corridor. Standard downloads no GLBs.
+      Baked character textures are retained rather than whole-body tinting; standing and speech gestures are driven through the shared bones.
+      Market keeps the witness's open stall procedural. Signs, ground, water, moving details and some specialist vehicles/animals remain procedural.
+      Preview: `web/dev-witness.html`; scope and calibration in `docs/3d-models.md`.
+      - [x] Simple skips the animation and shows the full server account with Continue; 3D failure shows the same account and an explicit alert.
+      - [x] Preserve the server visit/time/funds and pressure handoff; guard Continue and cancel pending setup/late callbacks on detail changes.
+      - [x] Check all 35 Full previews and five portrait/landscape mobile layouts, including long account/error scrolling and reachable Continue.
+      - [x] Size cattle-market cows to 1.9 m overall height in Full and Standard, without footprint fitting shrinking them below human height.
     - [ ] 3. Journey (`journey/chase3d-journey.ts`): the player at the wheel or on the bus, the hostess on the flight (`crew`), the player's car and the danfo/coach models,
       the aeroplane model. Check each vehicle's facing and set `yaw`.
     - [ ] 4. Archive (`archive/chase3d-archive.ts`): the player walking and reading.

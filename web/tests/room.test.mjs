@@ -121,7 +121,7 @@ test("continuing from an explored view zooms without snapping and still lands on
   }
 });
 
-test("every office entry offers exploration and Continue, without changing archive behaviour", () => {
+test("every 3D office entry offers exploration and Continue, without changing archive behaviour", () => {
   const view = read("scenes/office/Room.svelte"), stage = read("scenes/shared/Stage.svelte");
   assert.match(view, /exploreAt=\{T_ZOOM_START\}/);
   assert.match(stage, /!seen \|\| quick \|\| exploreAt !== undefined/);
@@ -143,15 +143,16 @@ test("mobile office exploration reserves space above the detail button and handl
   assert.match(stage, /canvas\.releasePointerCapture\(e\.pointerId\)/);
 });
 
-test("Simple office exploration shows an accessible alert with upgrade and Continue actions", () => {
-  const stage = read("scenes/shared/Stage.svelte"), css = read("styles/terminal.css");
-  assert.match(stage, /\{#if !wants3d\}\s*<div role="alert">/);
-  assert.match(stage, /Look around is unavailable in Simple mode/);
-  assert.match(stage, /Switch to Standard or Full to look around the office/);
-  assert.match(stage, /onclick=\{\(\) => detail\.set\("standard"\)\}>Use Standard detail/);
-  assert.match(stage, /onclick=\{continueToDesk\}>Continue to case desk/);
-  assert.match(css, /\.room-look-actions \{[^}]*flex-wrap: wrap/);
-  assert.match(css, /\.room-look-unavailable \{ border-color: var\(--gold\)/);
+test("Simple office opens the desk without animation or exploration and other rooms are unchanged", () => {
+  const stage = read("scenes/shared/Stage.svelte");
+  assert.match(read("scenes/office/Room.svelte"), /skipSimpleAnimation/);
+  assert.doesNotMatch(read("scenes/archive/ArchiveRoom.svelte"), /skipSimpleAnimation/);
+  assert.doesNotMatch(read("scenes/garage/GarageRoom.svelte"), /skipSimpleAnimation/);
+  assert.match(stage, /exploreAt !== undefined && !skipSimpleAnimation \? "look" : "desk"/);
+  assert.match(stage, /let continued = skipSimpleAnimation && !playIntro/);
+  assert.match(stage, /skipSimpleAnimation && !wants3d\) \{ continued = true; lookX = 0; lookY = 0; finish\(\); return; \}/);
+  assert.match(stage, /phase = "outro";\s*if \(skipSimpleAnimation && !wants3d\) return;/);
+  assert.doesNotMatch(stage, /Look around is unavailable in Simple mode|Use Standard detail/);
 });
 
 test("the rooms are lazy, primitive-built enhancements and the screens keep working without them", () => {

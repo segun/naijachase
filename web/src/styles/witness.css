@@ -1,5 +1,9 @@
 /* The witness scene: a full-screen 3D picture with a large subtitle band along the bottom. Shares .room, .room-canvas and .room-skip with terminal.css. */
 .witness { background: #000; }
+.witness:has(.witness-account) { overflow-y: auto; background: #071c14; }
+.witness-account { width: min(42rem, 100%); min-height: 100%; margin: auto; padding: max(5rem, env(safe-area-inset-top)) 1.25rem max(6rem, env(safe-area-inset-bottom)); display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: 1rem; color: var(--ink); box-sizing: border-box; }
+.witness-account h1, .witness-account p { margin: 0; }
+.witness-account-text { font-size: clamp(1.15rem, 3vw, 1.6rem); line-height: 1.6; overflow-wrap: anywhere; }
 /* Top left: the music buttons sit at the top right of every screen. */
 .witness .room-skip { top: 1.25rem; left: 1.25rem; right: auto; bottom: auto; }
 .witness-fade { position: absolute; inset: 0; z-index: 2; background: #000; pointer-events: none; }

@@ -2,7 +2,7 @@
 //
 //   full      3D scenes with the generated models (the most to download)
 //   standard  3D scenes drawn with the shapes built in code: no model files are downloaded
-//   simple    the 2D scenes: the lightest, for weak devices and slow networks
+//   simple    functional screens in migrated scenes, otherwise 2D: the lightest, for weak devices and slow networks
 //
 // The player picks one of these or leaves it on "auto", which chooses from the device (scene-capability.ts). The choice can change at any
 // moment, so scenes ask `resolveDetail` again and carry on from where they had got to.
@@ -20,7 +20,7 @@ export type Detail = {
   models: boolean;
   /** Scenery density and resolution for the 3D and 2D renderers. */
   quality: "high" | "light";
-  /** The device asks for reduced motion: the scenes show their calm 2D version whatever was chosen. */
+  /** The device asks for reduced motion: use functional screens or calm 2D, whatever was chosen. */
   reducedMotion: boolean;
   /** One plain sentence about why this level is in use (shown next to the setting). */
   why: string;
@@ -33,7 +33,7 @@ export const DETAIL_TEXT: Readonly<Record<DetailChoice, { label: string; summary
   auto: { label: "Automatic", summary: "Chooses for your device and connection." },
   full: { label: "Full", summary: "3D scenes with detailed models. Downloads the most." },
   standard: { label: "Standard", summary: "Simpler 3D scenes. No model downloads." },
-  simple: { label: "Simple", summary: "Light 2D scenes. Uses the least data and power." }
+  simple: { label: "Simple", summary: "Functional screens or light 2D scenes. Uses the least data and power." }
 };
 
 export const parseChoice = (value: unknown): DetailChoice => (CHOICES as readonly unknown[]).includes(value) ? value as DetailChoice : "auto";
@@ -54,7 +54,7 @@ export function resolveDetail(choice: DetailChoice, device: Device): Detail {
   let level: DetailLevel, why: string;
   if (reducedMotion) { level = "simple"; why = REASONS["reduced-motion"]!; }
   else if (choice === "auto") {
-    if (!decision.run) { level = "simple"; why = `${REASONS[decision.reason] ?? "This device is limited."} Using light 2D scenes.`; }
+    if (!decision.run) { level = "simple"; why = `${REASONS[decision.reason] ?? "This device is limited."} Using Simple detail.`; }
     else if (decision.quality === "light") { level = "standard"; why = "This device looks modest. Using simpler 3D without model downloads."; }
     else { level = "full"; why = "Your device can show the full scenes."; }
   } else { level = choice; why = `You chose ${DETAIL_TEXT[choice].label}.`; }

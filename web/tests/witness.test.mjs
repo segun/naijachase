@@ -220,14 +220,16 @@ test("the garage hands the visit to the witness scene, which loads lazily and ne
   assert.match(view, /import\("\.\/chase3d-witness\.ts"\)/, "Babylon.js is a dynamic import");
   assert.doesNotMatch(app + root, /from "[^"]*chase3d-witness/, "the 3D scene is not in the main bundle");
   assert.match(view, /h\.start\(resumeAt \|\| undefined\)\.then\(\(\) => \{ if \(!cancelled\) finish\(\); \}\)/, "the investigation opens when the scene ends");
-  assert.match(view, /fallBack\(handle\?\.now\(\) \?\? 0, e instanceof Error/, "a 3D failure continues in 2D");
-  assert.match(view, /import\("\.\/witness-2d\.ts"\)/, "2D is its own lazy chunk");
-  assert.match(view, /FIRST_FRAME_MS[\s\S]*STALL_MS/, "a stalled 3D scene hands over to 2D");
-  assert.match(view, /onSlow: \(\) => fallBack/, "a slow 3D scene hands over to 2D");
+  assert.match(view, /fallBack\(handle\?\.now\(\) \?\? 0, e instanceof Error/, "a 3D failure opens the full witness account");
+  assert.doesNotMatch(view, /import\("\.\/witness-2d\.ts"\)/, "Simple downloads no animated renderer");
+  assert.match(view, /FIRST_FRAME_MS[\s\S]*STALL_MS/, "a stalled 3D scene opens the full witness account");
+  assert.match(view, /onSlow: \(\) => \{ if \(!cancelled\) fallBack/, "a slow active 3D scene opens the full witness account");
   assert.match(view, /onFault:/, "an error while drawing hands over instead of leaving a black screen");
-  assert.match(view, /level\.renderer === "3d" && !broken/, "weak devices and a chosen 2D start in 2D");
-  assert.doesNotMatch(view, /if \(!decision\.run\)[^\n]*finish\(\)/, "no device is ever skipped");
-  assert.match(view, /failure = why|failure = e instanceof Error/, "only if 2D also fails is the reason shown");
+  assert.match(view, /level\.renderer === "3d" && !broken/, "Simple and weak devices skip animation");
+  assert.match(view, /failure = why/, "a failed scene reports its reason");
+  assert.match(view, /class="witness-account-text">\{visit\?\.message\}/, "the full account remains readable");
+  assert.match(view, /onclick=\{finish\}>Continue to the investigation/, "Continue preserves the normal handoff");
+  assert.match(view, /controller\.abort\(\)/, "changing detail cancels pending model setup");
   assert.match(view, /aria-hidden="true">\s*\{#if visit\?\.role\}/, "the word-by-word caption is hidden from screen readers");
   assert.match(view, /role="status">\{#if heard/, "who spoke and what they said is announced once");
 });
@@ -259,7 +261,11 @@ test("the 3D and 2D renderers share one driver and the conventions are written d
   assert.match(d3, /onFault/); assert.match(d2, /onFault/);
   assert.match(driver, /try \{[\s\S]*audio\.engine[\s\S]*\} catch/, "a sound error never stops the picture");
   const conv = fs.readFileSync(new URL("../../docs/scene-conventions.md", import.meta.url), "utf8"), agents = fs.readFileSync(new URL("../../AGENTS.md", import.meta.url), "utf8");
-  assert.match(conv, /3D with a 2D fallback/); assert.match(agents, /scene-conventions\.md/);
+  assert.match(conv, /login keeps its 2D chase/);
+  assert.match(conv, /Non-login scenes should skip\s+animation at Simple detail/);
+  assert.match(conv, /Witness has also adopted this policy: Simple shows the full server account/);
+  assert.match(conv, /Journey, panel, archive and garage behaviour is unchanged/);
+  assert.match(agents, /scene-conventions\.md/);
 });
 
 test("the 2D renderer plays the same plan: its start can be given, and reduced motion starts at the conversation", () => {

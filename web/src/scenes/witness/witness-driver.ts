@@ -17,6 +17,7 @@ export type WitnessOptions = {
   quality?: "high" | "light";
   /** Whether the generated GLB models may be used (the Full detail level); the shapes built in code are used otherwise. */
   models?: boolean;
+  signal?: AbortSignal;
   recipe: VenueRecipe;
   arrival: Arrival;
   /** What the witness says. */

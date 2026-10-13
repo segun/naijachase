@@ -108,14 +108,19 @@ export function questionedHere(state:PublicState):string[] {
   return state.visited_venues.filter(v=>v.startsWith(prefix)).map(v=>v.slice(prefix.length));
 }
 
-export type Note = {stop:string;venue:string;message:string};
+export type Note = {stop:string;venue:string;message:string;venueId?:string};
 export function parseNotes(raw:string|null):Note[] {
   try{
     const value:unknown=JSON.parse(raw??"[]");
     if(!Array.isArray(value)) return [];
     return value.flatMap((item):Note[]=>{
       if(typeof item==="string") return [{stop:"Earlier",venue:"Witness",message:item}];
-      if(item&&typeof item.message==="string") return [{stop:String(item.stop??"Earlier"),venue:String(item.venue??"Witness"),message:item.message}];
+      if(item&&typeof item.message==="string") return [{
+        stop:String(item.stop??"Earlier"),
+        venue:String(item.venue??"Witness"),
+        message:item.message,
+        ...(typeof item.venueId==="string" ? {venueId:item.venueId} : {})
+      }];
       return [];
     });
   }catch{return []}

@@ -25,8 +25,44 @@ Nothing from the models is in the main bundle, and the Babylon.js loader is impo
   counterpart. The shell, swinging door, time-of-day sky, case map, terminal glass, keyboard and mouse stay procedural.
 - **Login chase** (`scenes/chase/chase3d.ts`): the masked thief, three police officers, commuters, traders and farmers; palms, towers,
   fishing boats, lighthouse, danfo, stalls, shopfronts, pyramids, mud houses, baobabs, roadside trees and lamps.
-- Everything else (witness, journey, archive, panel) still draws the procedural figures. Moving a scene over means using
+- **Witness encounters** (`scenes/witness/chase3d-witness.ts`): all 35 venue types use the selected player, role-matched witness,
+  venue-specific crowds, arrival vehicle and model-backed scenery at Full detail. See calibration and exceptions below.
+- Everything else (journey, archive, panel) still draws the procedural figures. Moving a scene over means using
   `addModelFigure` and calling `figure.apply(pose)` instead of setting `rig` angles, as the garage does.
+
+### Witness calibration and fallbacks
+
+Full uses existing manifest dimensions for people and the runabout/danfo. The 34 non-market venue frontages and tagged shared props
+are uniformly fitted to their existing procedural layout dimensions, without stretching any axis independently. Main frontages stay
+behind the conversation corridor (minimum Z: **3.1 m** for buildings, **3.4 m** for open-air venues). Shared replacements include palms,
+trees, benches, tables, shade tents, crates, lamps, canoes, parked danfos and cattle. Market replaces nine surrounding stalls and palms;
+its witness's own open stall remains procedural because the supplied complete stall's front posts would obstruct the conversation.
+Sky, roads, water, readable signs, particles, some moving/detail geometry and specialist venue vehicles/animals remain procedural.
+Venue interiors and every individual supplied accessory are not wired by this pass.
+
+`witness-models.ts` maps each recipe's selected role/presentation onto the supplied character templates without changing the witness
+selection, voice or server account. Full retains the models' baked clothing/skin textures rather than tinting the entire textured body;
+Standard retains the original procedural recipe colours. Witness exports have Walk, not Talk/Idle: standing legs are corrected from
+the walk sample, and shared bone aiming drives timeline-matched arm gestures across different bone axes. Player and crowd movement
+still follows the pure witness timeline; horizontal exported hip travel is pinned while vertical walking bounce is retained.
+Static vehicle exports do not provide opening doors or spinning wheels; their existing round-trip trajectory is preserved.
+Cattle-market cows use a scene-specific **1.9 m overall height**, at least as tall as the people, in Full and procedural Standard.
+Their uniform height fit overrides footprint fitting so narrow pen anchors cannot shrink them; other scenes keep manifest animal sizes.
+A failed model or missing Walk leaves its procedural counterpart and logs the reason.
+
+Standard loads no GLBs. Simple creates no canvas or animated renderer: it presents the complete server account, role and venue, with
+**Continue to the investigation**. A stalled, slow or failed 3D scene opens the same account with an alert and expandable error details.
+The visit has already been charged by the server; Continue calls the existing guarded handoff, not another visit command. Full/Standard
+rebuilds resume the same timeline. Pending setup is aborted on detail changes and late callbacks cannot overwrite the readable account.
+Witness failures use `nc-witness-flat`, independent of the journey's legacy `nc-witness-2d`. Changing the detail choice clears the failure.
+Witness 2D source utilities remain because journey still imports their figures/vehicles; witness runtime no longer loads them.
+
+Development preview: [web/dev-witness.html](../web/dev-witness.html), all 35 venues, Full/Standard, Drive/Hitch, hour and seek controls.
+All 35 Full previews were loaded and sought through arrival, conversation and return; market and conservation-office images and both
+arrival vehicle facings were inspected. Only individually inspected assets gain new `checked` flags, not the entire inventory.
+Browser checks cover the actual Simple visit/Continue flow and 320x568, 360x640, 390x844, 568x320 and 844x390 layouts: full account,
+scrollable text, reachable Continue, no horizontal overflow or floating-control overlap. The production component was also checked
+with a long account, detail rebuilds and WebGL-loss recovery. These are Chromium emulation checks, not real-phone/Safari performance evidence.
 
 ## How sizes are set
 
@@ -71,20 +107,21 @@ pose; typing is a two-bone reach with a small timeline-driven hand movement, not
 The chair model's front is authored sideways relative to the other props. Its manifest `yaw: -Math.PI / 2` corrects that quarter-turn,
 putting the backrest behind the seated avatar and facing the seat towards the desk; the procedural chair's orientation is unchanged.
 
-Every office entry pauses at `T_ZOOM_START`, once the avatar is seated and before the terminal glass appears. The first entry still
+Every Full/Standard office entry pauses at `T_ZOOM_START`, once the avatar is seated and before the terminal glass appears. The first entry still
 walks in; later entries and witness returns start seated. The DOM hint says **Look around the office**, with bounded drag/swipe camera
 orbit and arrow-key controls. **Continue to case desk** resumes the zoom from the explored view, without snapping back. The paused scene
 renders only on camera input or resize; the shared timeline does not keep running during exploration. Skip intro stops at the exploration
-pause rather than bypassing it. Full/Standard changes retain the pause and camera offset. Simple or a failed 3D scene keeps the Continue
-step, then opens the flat terminal. Simple shows a highlighted, screen-reader-announced alert explaining that looking around needs
-Standard or Full, with **Use Standard detail** and **Continue to case desk** actions. It appears both on entering in Simple and when
-switching to Simple during exploration, and disappears when 3D detail resumes. A failed 3D scene retains its camera-unavailable message.
+pause rather than bypassing it. Full/Standard changes retain the pause and camera offset. Simple opens the functional terminal directly:
+no entry, return, exploration, exit fade, alert or Continue gate. Switching to Simple mid-intro or mid-exploration also opens the desk,
+and increasing detail afterwards does not replay the intro or reintroduce the gate. A failed 3D scene retains its camera-unavailable
+message and Continue step; failure handling has not changed in this pass.
 Archive and garage do not opt into this office-only pause.
 Mobile browser checks cover 320x568, 360x640 and 390x844 portrait, plus 568x320 and 844x390 landscape. The exploration card reserves
 space above the floating Detail button on narrow screens, including the bottom safe-area inset. Chromium touch emulation verified
-swiping without page scrolling, tapping Detail/Standard with zero GLB requests, and tapping Continue to open the terminal. The Simple
-alert and both actions fit all five sizes without overlapping Detail; touch taps restore Standard exploration or open the desk, and
-entering directly in Simple shows the alert with zero GLB requests. These are
+swiping without page scrolling, tapping Detail/Standard with zero GLB requests, and tapping Continue to open the terminal. The updated
+Simple desk was checked at all five sizes: interactive terminal, no office canvas, no exploration gate and no horizontal overflow.
+Switching from Standard exploration to Simple opens the desk; upgrading back to Standard leaves it interactive without re-gating.
+Simple requires no office canvas or model downloads. These are
 emulated mobile checks, not evidence of performance or Safari behaviour on a physical phone.
 
 `office_room.glb` is deliberately **not downloaded**: it contains baked-in furniture in one mesh, so it cannot replace the shell without
@@ -95,8 +132,9 @@ Generated slabs under the other objects are sunk slightly where practical. Do no
 Full requests the selected avatar and nine unique furniture GLBs (the plant is instantiated twice from one download). Standard requests no
 GLBs. Abandoning an office load on a detail change disposes its scene immediately; late/timed-out model containers are disposed rather than
 instantiated into an abandoned scene. Browser checks covered all ten seated avatars, blocked-asset fallback, intro/return/exit previews and live
-Full/Standard/Simple switching. **Simple currently opens the flat DOM terminal, not an animated Canvas 2D office**; a matching 2D office remains
-an explicit follow-up, rather than a claim that this room has one already.
+Full/Standard/Simple switching. **Simple intentionally opens the flat DOM terminal, not an animated Canvas 2D office**.
+As each remaining non-login scene is integrated, remove its 2D animation in that scene's own pass and preserve functional content and
+gameplay timing. Login keeps its Canvas 2D chase; no other scene's renderer is removed by the office-only change.
 
 ## Adding or fixing a model
 

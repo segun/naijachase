@@ -10,7 +10,7 @@
   import { detailKey } from "./detail-level.ts";
   import "../../styles/terminal.css";
 
-  let { app, seenKey, load, loading = "Opening the office…", sheet = "crt", quick = false, introFrom = 0, exploreAt, children }: {
+  let { app, seenKey, load, loading = "Opening the office…", sheet = "crt", quick = false, introFrom = 0, exploreAt, skipSimpleAnimation = false, children }: {
     app: AppController;
     /** sessionStorage key marking that this room's intro has played in this sign-in. Without one the intro plays every time. */
     seenKey?: string;
@@ -21,6 +21,8 @@
     quick?: boolean;
     introFrom?: number;
     exploreAt?: number;
+    /** Office opt-in: Simple opens the functional screen directly, without exploration or an exit fade. */
+    skipSimpleAnimation?: boolean;
     /** The look of the surface the camera lands on; a dock is a panel along the bottom over the settled shot, with no zoom. */
     sheet?: "crt" | "paper" | "dock";
     /** Receives whether the screen is awake, and `leave`, which plays the scene's exit animation (the player walking out) and resolves when it ends. */
@@ -44,9 +46,9 @@
   // svelte-ignore state_referenced_locally
   const playIntro = detail.resolved.renderer === "3d" && (!seen || quick || exploreAt !== undefined);
   // svelte-ignore state_referenced_locally
-  let phase = $state<"intro" | "look" | "desk" | "outro">(playIntro ? "intro" : exploreAt !== undefined ? "look" : "desk");
+  let phase = $state<"intro" | "look" | "desk" | "outro">(playIntro ? "intro" : exploreAt !== undefined && !skipSimpleAnimation ? "look" : "desk");
   // svelte-ignore state_referenced_locally
-  let glass = $state(playIntro || exploreAt !== undefined ? 0 : 1);
+  let glass = $state(playIntro || (exploreAt !== undefined && !skipSimpleAnimation) ? 0 : 1);
   let ready = $state(false);
   let has3d = $state(false);
   let failed = $state(false);
@@ -55,7 +57,8 @@
   let lastFrame = 0;
   /** Where the intro had got to when the scene was last rebuilt (a detail change mid-intro), so it carries on from there. */
   let resume = 0;
-  let continued = false;
+  // svelte-ignore state_referenced_locally
+  let continued = skipSimpleAnimation && !playIntro;
   let lookX = 0, lookY = 0;
   let dragging: number | undefined;
   let pointerX = 0, pointerY = 0;
@@ -77,6 +80,7 @@
   }
 
   function fallback() {
+    if (skipSimpleAnimation && !wants3d) { continued = true; lookX = 0; lookY = 0; finish(); return; }
     if (exploreAt !== undefined && !continued) { phase = "look"; glass = 0; }
     else finish();
   }
@@ -118,6 +122,7 @@
   async function leave(how?: string) {
     if (phase !== "desk") return;
     phase = "outro";
+    if (skipSimpleAnimation && !wants3d) return;
     const exit = handle?.leave;
     if (exit) await Promise.race([exit(how), new Promise(resolve => setTimeout(resolve, LEAVE_MAX_MS))]);
     else { glass = 0; await new Promise(resolve => setTimeout(resolve, 250)); }
@@ -191,20 +196,10 @@
     {@render children(awake, leave)}
   </div>
   {#if phase === "look"}
-    <section class="room-look" class:room-look-unavailable={!wants3d} aria-label="Look around the office">
-      {#if !wants3d}
-        <div role="alert">
-          <p>Look around is unavailable in Simple mode</p>
-          <span>Switch to Standard or Full to look around the office, or continue straight to the case desk.</span>
-        </div>
-      {:else}
-        <p role="status">Look around the office</p>
-        <span>{failed ? "The office camera is unavailable. You can still continue to the case desk." : ready ? "Drag or swipe the scene, or use the arrow keys." : "Preparing the office view..."}</span>
-      {/if}
-      <div class="room-look-actions">
-        {#if !wants3d}<button type="button" onclick={() => detail.set("standard")}>Use Standard detail</button>{/if}
-        <button type="button" onclick={continueToDesk}>Continue to case desk</button>
-      </div>
+    <section class="room-look" aria-label="Look around the office">
+      <p role="status">Look around the office</p>
+      <span>{failed ? "The office camera is unavailable. You can still continue to the case desk." : wants3d && ready ? "Drag or swipe the scene, or use the arrow keys." : wants3d ? "Preparing the office view..." : "Camera movement is unavailable at Simple detail."}</span>
+      <button type="button" onclick={continueToDesk}>Continue to case desk</button>
     </section>
   {:else if phase !== "desk"}<button class="room-skip" type="button" onclick={skip}>{phase === "intro" ? "Skip intro" : "Skip"} <kbd>Esc</kbd></button>{/if}
 </div>

@@ -13,6 +13,11 @@ import { armAngles, legAngles, type CameraShot } from "../shared/scene-core.ts";
 import { setFor } from "./chase3d-sets.ts";
 import { createDriver, fitShot, type WitnessFrame, type WitnessHandle, type WitnessOptions } from "./witness-driver.ts";
 import { ROAD_Z, VEHICLE_FROM_X, WITNESS, busDoorAt, cameraAt, listenLean, playerPoseAt, vehicleXAt, witnessAt } from "./witness-scene.ts";
+import { loadModel } from "../shared/chase3d-models.ts";
+import type { ModelFigure } from "../shared/chase3d-model-figure.ts";
+import { replacePerson, gesture } from "./chase3d-witness-models.ts";
+import { standingPose, witnessModelId } from "./witness-models.ts";
+import { avatarModelId } from "../shared/model-manifest.ts";
 
 export type { WitnessFrame, WitnessHandle, WitnessOptions };
 
@@ -31,8 +36,13 @@ function softBox(stage: Stage): Stage["box"] {
   };
 }
 
-export async function createWitnessScene(canvas: HTMLCanvasElement, options: WitnessOptions): Promise<WitnessHandle> {
+export async function createWitnessScene(canvas: HTMLCanvasElement, options: WitnessOptions): Promise<WitnessHandle & { scene: Scene }> {
   const stage = createStage(canvas, { hour: options.hour, quality: options.quality, models: options.models });
+  let disposeDriver = () => {};
+  const abort = () => stage.engine.dispose();
+  options.signal?.addEventListener("abort", abort, { once: true });
+  if (options.signal?.aborted) { abort(); throw new DOMException("Witness setup cancelled", "AbortError"); }
+  try {
   const { scene, camera, palette, mat, box, cyl, sphere, plane, textured, caster, engine } = stage;
   const light = stage.light;
   const night = palette.stars || palette.lamp > 0.5;
@@ -112,6 +122,7 @@ export async function createWitnessScene(canvas: HTMLCanvasElement, options: Wit
 
   // ---- The player and the witness ----
   const driver = createDriver(options);
+  disposeDriver = driver.dispose;
   const { plan, timings, words, pages } = driver;
   const player = stage.addFigure(options.preset);
   const witnessLook = driver.witness;
@@ -123,6 +134,25 @@ export async function createWitnessScene(canvas: HTMLCanvasElement, options: Wit
   const mouth = sphere("mouth", 1, mat("#4a1414", { specular: 0.1 }), 0, HEAD_Y - 0.11, -0.25);
   mouth.parent = witness.root;
   void head;
+  let playerModel: ModelFigure | null = null, witnessModel: ModelFigure | null = null;
+  if (options.models) {
+    await Promise.all([
+      dressing.ready,
+      player && options.preset && avatarModelId(options.preset.avatar_id) ? replacePerson(stage, player.root, avatarModelId(options.preset.avatar_id)!).then(m => {
+        playerModel = m;
+      }) : undefined,
+      replacePerson(stage, witness.root, witnessModelId(witnessLook)).then(m => { witnessModel = m; }),
+      loadModel(scene, car ? "car_player_runabout" : "bus_danfo").then(m => {
+        if (!m) return;
+        const bounds = m.root.getHierarchyBoundingVectors(true), size = bounds.max.subtract(bounds.min);
+        if (size.x > size.z) m.root.rotation.y = Math.PI / 2;
+        m.root.parent = vehicle.root;
+        vehicle.root.getChildMeshes().filter(mesh => !m.meshes.includes(mesh)).forEach(mesh => mesh.setEnabled(false));
+        m.meshes.forEach(mesh => caster(mesh));
+      })
+    ]);
+  }
+  if (options.signal?.aborted) throw new DOMException("Witness setup cancelled", "AbortError");
 
   const poseFigure = (figure: NonNullable<typeof player>, p: ReturnType<typeof playerPoseAt>, t: number, lean = 0) => {
     figure.root.position.set(p.x, p.y, p.z);
@@ -134,6 +164,10 @@ export async function createWitnessScene(canvas: HTMLCanvasElement, options: Wit
     const arms = armAngles(p, t);
     figure.rig.shoulders.forEach((s, i) => { s.rotation.x = arms[i]!; });
     figure.setAlpha(p.visible ? p.alpha : 0);
+    if (figure === player && playerModel) {
+      playerModel.apply(p, t); playerModel.setAlpha(p.visible ? p.alpha : 0);
+      playerModel.root.position.set(0, 0, 0);
+    }
   };
 
   const aim = (shot: CameraShot) => {
@@ -161,6 +195,10 @@ export async function createWitnessScene(canvas: HTMLCanvasElement, options: Wit
     witness.rig.elbows[1]!.rotation.x = w.elbows[1];
     witness.rig.elbows[1]!.rotation.z = w.wave * 0.6;
     mouth.scaling.set(0.1, 0.012 + 0.07 * w.mouth, 0.04);
+    if (witnessModel) {
+      witnessModel.apply(standingPose(), t);
+      gesture(witnessModel, w.arms, w.elbows, w.wave);
+    }
 
     dressing.update?.(t);
 
@@ -169,7 +207,7 @@ export async function createWitnessScene(canvas: HTMLCanvasElement, options: Wit
     driver.step(t, p);
   };
 
-  // A black screen is the worst outcome, so any failure while drawing is reported once and the caller switches to 2D.
+  // Report drawing failures once so the caller can open the readable witness account.
   let faulted = false;
   const fault = (why: unknown) => {
     if (faulted) return;
@@ -180,15 +218,27 @@ export async function createWitnessScene(canvas: HTMLCanvasElement, options: Wit
   const update = (t: number) => { if (faulted) return; try { frameStep(t); } catch (e) { fault(e); } };
   const render = scene.render.bind(scene);
   scene.render = (...args: Parameters<typeof render>) => { if (faulted) return; try { render(...args); } catch (e) { fault(e); } };
-  canvas.addEventListener("webglcontextlost", e => { e.preventDefault(); fault("the WebGL context was lost"); });
+  const contextLost = (e: Event) => { e.preventDefault(); fault("the WebGL context was lost"); };
+  canvas.addEventListener("webglcontextlost", contextLost);
 
   const handle = stage.run({ end: plan.end, update, onSlow: options.onSlow });
   return {
-    words, pages, duration: plan.end,
+    scene, words, pages, duration: plan.end,
     now: driver.now,
     start: (begin = 0) => handle.play({ end: plan.end, update }, begin),
     skip: handle.skip,
     seek(seconds) { stage.engine.stopRenderLoop(); update(seconds); scene.render(); },
-    dispose() { driver.dispose(); handle.dispose(); }
+    dispose() {
+      options.signal?.removeEventListener("abort", abort);
+      disposeDriver();
+      canvas.removeEventListener("webglcontextlost", contextLost);
+      handle.dispose();
+    }
   };
+  } catch (e) {
+    options.signal?.removeEventListener("abort", abort);
+    disposeDriver();
+    stage.engine.dispose();
+    throw e;
+  }
 }

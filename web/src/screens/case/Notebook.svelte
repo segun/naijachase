@@ -1,11 +1,26 @@
 <script lang="ts">
   import type { AppController } from "../../state/app.svelte";
+  import { onMount, tick } from "svelte";
   import { FIELDS, FIELD_META, dossierCount } from "../../domain/model.ts";
+  import type { Note } from "../../domain/model.ts";
   import Icon from "../../ui/Icon.svelte";
   import Ledger from "./Ledger.svelte";
 
-  let { app }: { app: AppController } = $props();
+  let { app, focus = null }: { app: AppController; focus?: { stop: string; venueId: string; venueLabel: string } | null } = $props();
   const gs = $derived(app.game!.state);
+  let focusedNote = $state<Note | null>(null);
+  const normalizeVenue = (venue: string) => venue.trim().replaceAll("_", " ").replace(/\s+/g, " ").toLocaleLowerCase();
+
+  onMount(async () => {
+    if (!focus) return;
+    focusedNote = app.notes.find(note =>
+      note.stop === focus.stop &&
+      (note.venueId === focus.venueId || (!note.venueId && normalizeVenue(note.venue) === normalizeVenue(focus.venueLabel)))
+    ) ?? null;
+    if (!focusedNote) return;
+    await tick();
+    document.querySelector<HTMLElement>(".notebook [data-focused-note]")?.scrollIntoView({ block: "center", behavior: "smooth" });
+  });
 </script>
 
 <div class="page">
@@ -23,7 +38,7 @@
           <h3><Icon name="pin" />{group.stop}</h3>
           <ol>
             {#each group.notes as note}
-              <li><span class="who">{note.venue}</span>{note.message}</li>
+            <li class:focused={note === focusedNote} data-focused-note={note === focusedNote ? "" : undefined} aria-current={note === focusedNote ? "location" : undefined}><span class="who">{note.venue}</span>{note.message}</li>
             {/each}
           </ol>
         </div>

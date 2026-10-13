@@ -2,17 +2,30 @@
 // ground (set id `market_variants`). Pure data, read by both renderers (chase3d-open-air-kit.ts, witness-2d-open-air-kit.ts). The witness stands at
 // (1.15, 2.55) and the cone behind her is kept to plain, large shapes so her face reads; see docs/agents/Agent1.md.
 import { type Layout, type Prop, awning, ball, box, crates, cyl, fenceX, fenceZ, floodlight, gantry, lampPost, nameOf, palm, pick, rng, skyline, standing, stroller, table, tree, variate } from "./layout-open-air-kit.ts";
+import { modelParts } from "./witness-models.ts";
 
 const PI = Math.PI;
+export const CATTLE_HEIGHT = 1.9;
 
 /** A zebu cow standing along x, nodding its head. */
-const cow = (x: number, z: number, dir: 1 | -1, hide: string, patch: string, ph: number, hi = false): Prop[] => [
+const cow = (x: number, z: number, dir: 1 | -1, hide: string, patch: string, ph: number, hi = false): Prop[] => {
+  const scale = CATTLE_HEIGHT / 1.54;
+  const parts = [
   box(x, 0.55, z, 1.7, 0.72, 0.62, hide, { hi }), ball(x + dir * 0.55, 1.1, z, 0.55, hide, { sy: 0.8, hi }),
   box(x + dir * 1.1, 0.82, z, 0.52, 0.4, 0.34, hide, { m: { ay: 0.04, f: 0.35, ph }, hi }), box(x + dir * 1.12, 1.22, z - 0.14, 0.05, 0.28, 0.05, "#e8e0cc", { hi }),
   box(x + dir * 1.12, 1.22, z + 0.14, 0.05, 0.28, 0.05, "#e8e0cc", { hi }),
   box(x + 0.62, 0, z - 0.2, 0.14, 0.56, 0.14, hide, { hi }), box(x - 0.62, 0, z - 0.2, 0.14, 0.56, 0.14, hide, { hi }), box(x + 0.62, 0, z + 0.2, 0.14, 0.56, 0.14, hide, { hi }), box(x - 0.62, 0, z + 0.2, 0.14, 0.56, 0.14, hide, { hi }),
   box(x - dir * 0.9, 0.35, z, 0.05, 0.75, 0.05, hide), box(x - 0.1, 0.72, z - 0.32, 0.8, 0.4, 0.02, patch, { hi })
-];
+  ].map(p => ({
+    ...p, x: x + (p.x - x) * scale, y: p.y * scale, z: z + (p.z - z) * scale,
+    ...("w" in p ? { w: p.w * scale } : {}),
+    ...("h" in p ? { h: p.h * scale } : {}),
+    ...("d" in p ? { d: p.d * scale } : {}),
+    ...(p.m ? { m: { ...p.m, ay: (p.m.ay ?? 0) * scale } } : {})
+  }));
+  return modelParts(parts, hide === "#2b2420" ? "cow_black" : hide === "#e8e0cc" ? "cow_white" : "cow_brown",
+    dir < 0 ? Math.PI / 2 : -Math.PI / 2, CATTLE_HEIGHT);
+};
 
 const stripes = (x: number, y: number, z: number, w: number, h: number, cols: readonly string[]): Prop[] =>
   cols.map((c, i) => box(x - w / 2 + ((i + 0.5) * w) / cols.length, y, z, w / cols.length + 0.01, h, 0.05, c));

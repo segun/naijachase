@@ -189,10 +189,11 @@ Rules of the layout: Babylon.js may only be imported by TypeScript modules under
   ordinary page. A status strip shows the location (zone, stop of 8), the case clock, time left to the
   Monday 07:00 deadline, funds and score. The side menu has Local leads (L), Notebook (B), Dossier (D),
   Travel (T) and Warrant (W), plus the usual Menu (archive, groups, weekly, helpers, settings, log out). There is
-  no "start a new case" here. Local leads are the server's local quotes as terminal tiles with questioned
-  witnesses marked, the latest accounts and, on ordinary cases, "Ask a friend for help". Choosing a lead
+  no "start a new case" here. Local leads are the server's local quotes as image-and-name terminal tiles; questioned
+  witnesses remain clickable and open their matching notebook account. On ordinary cases the leads also offer "Ask a friend for help". Choosing a lead
   stands the player up, walks them out of the office and on to the garage, so every witness is visited the same
-  way. Notebook, Dossier, Travel and Warrant are the ordinary screens drawn inside the glass (`.t-embed`),
+  way. Questioned witnesses have compact Bribe (1 token) and Intimidate (free) actions; confirmation retains the published risks.
+  Notebook, Dossier, Travel and Warrant are the ordinary screens drawn inside the glass (`.t-embed`),
   so they behave exactly as before. The five case screens (`investigate`, `notebook`, `dossier`, `travel`,
   `warrant`) all render the same office, which stays mounted between them; shortcuts are ignored while typing
   or while a fare dialog is open. There is no side rail or HUD over it.

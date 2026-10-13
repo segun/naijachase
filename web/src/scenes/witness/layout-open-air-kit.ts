@@ -4,6 +4,7 @@
 // No graphics library and no randomness here: everything is a pure function of its arguments and of `t`.
 import { ROAD_Z } from "./witness-scene.ts";
 import { hashOf } from "./venue-recipes.ts";
+import { modelParts, type ModelGroup } from "./witness-models.ts";
 
 /** Movement of a prop, a pure function of `t`: a gentle sway (water, flags, nodding heads) and/or a slide that stops after `until` seconds. */
 export type Motion = {
@@ -30,7 +31,7 @@ type Flags = {
 };
 type Base = Flags & { /** Centre of the footprint. */ x: number; /** Height of the bottom. */ y: number; z: number; c: string };
 
-export type Prop =
+type Shape =
   | (Base & { k: "box"; w: number; h: number; d: number })
   /** Upright cylinder or cone: `w` is the bottom diameter, `w2` the top one. */
   | (Base & { k: "cyl"; w: number; h: number; w2?: number })
@@ -46,6 +47,7 @@ export type Prop =
   | { k: "sign"; x: number; y: number; z: number; w: number; h: number; text: string; bg: string; fg: string; hi?: boolean; night?: boolean; far?: boolean; m?: Motion }
   /** A soft halo of light at (x, y, z), after dark only. */
   | { k: "glow"; x: number; y: number; z: number; r: number; c: string; hi?: boolean; night?: boolean; far?: boolean; m?: Motion };
+export type Prop = Shape & { modelGroup?: ModelGroup; keep?: boolean };
 
 /** Someone standing or strolling. `walk` strolls between x0 and x1 at `v` metres a second (negative walks left) and wraps round. */
 export type Person = { x: number; z: number; /** Heading: 0 faces the camera, PI faces away. */ face: number; seed: number; walk?: { x0: number; x1: number; v: number } };
@@ -84,12 +86,12 @@ export const glow = (x: number, y: number, z: number, r: number, c = "#ffe2a0", 
 export const gantry = (x: number, z: number, w: number, h: number, top: number, text: string, bg: string, fg: string, post = "#5a3d22"): Prop[] => [
   cyl(x - w / 2 + 0.2, 0, z + 0.1, 0.16, top - h, post), cyl(x + w / 2 - 0.2, 0, z + 0.1, 0.16, top - h, post),
   sign(x, top - h, z, w, h, text, bg, fg)
-];
+].map(p => ({ ...p, keep: true }));
 
 /** A lamp on a pole that lights up after dark. */
-export const lampPost = (x: number, z: number, h = 4.2, c = "#fff1c4"): Prop[] => [
+export const lampPost = (x: number, z: number, h = 4.2, c = "#fff1c4"): Prop[] => modelParts([
   cyl(x, 0, z, 0.14, h, "#3a3d40"), box(x, h, z, 0.5, 0.14, 0.34, "#2b2e31"), box(x, h - 0.1, z, 0.36, 0.1, 0.24, c, { glow: true }), glow(x, h - 0.15, z, 1.6, c)
-];
+], "lamp_post");
 
 /** A floodlight mast: a pole with a bank of lamps. */
 export const floodlight = (x: number, z: number, h = 9, c = "#fff7dc"): Prop[] => [
@@ -118,42 +120,42 @@ export const fenceZ = (x: number, z0: number, z1: number, h = 1.1, c = "#7a5430"
 export const crates = (x: number, z: number, n: number, rows: number, c = "#8a6a3a", c2 = "#6e5230", s = 0.62): Prop[] => {
   const out: Prop[] = [];
   for (let r = 0; r < rows; r++) for (let i = 0; i < n - (r % 2 ? 1 : 0); i++) out.push(box(x + (i + (r % 2 ? 0.5 : 0)) * s, r * s * 0.8, z, s - 0.03, s * 0.8 - 0.03, s - 0.03, (i + r) % 2 ? c : c2));
-  return out;
+  return modelParts(out, "crates_wood");
 };
 
 /** A tree: a trunk and a rounded crown, `flat` squashing the crown into an acacia's umbrella. */
-export const tree = (x: number, z: number, h: number, crown = "#2f6b3a", flat = 0.55): Prop[] => [
+export const tree = (x: number, z: number, h: number, crown = "#2f6b3a", flat = 0.55): Prop[] => modelParts([
   cyl(x, 0, z, h * 0.07, h * 0.62, "#6b4a2b", { w2: h * 0.05 }), ball(x, h * 0.4, z, h * 0.78, crown, { sy: flat }), ball(x + h * 0.18, h * 0.5, z - 0.2, h * 0.5, crown, { sy: flat, hi: true })
-];
+], "tree_neem");
 
 /** A palm: a leaning trunk and a star of fronds. */
-export const palm = (x: number, z: number, h: number): Prop[] => [
+export const palm = (x: number, z: number, h: number): Prop[] => modelParts([
   cyl(x, 0, z, 0.4, h, "#6b4a2b", { w2: 0.25 }),
   ...[0, 1, 2, 3, 4, 5].map(i => arm(x, h, z, 2.0, 0.12, "z", i % 2 ? -0.35 : Math.PI + 0.35, "#2f6b3a", { hi: i > 3 }))
-];
+], "lagos_palm");
 
 /** A striped awning made of `n` slats along x on four poles, `h` high. */
 export const awning = (x: number, z: number, w: number, d: number, h: number, c1: string, c2: string, n = 8, poles = true): Prop[] => {
   const out: Prop[] = [];
   for (let i = 0; i < n; i++) out.push(box(x - w / 2 + ((i + 0.5) * w) / n, h, z, w / n + 0.01, 0.07, d, i % 2 ? c2 : c1));
   if (poles) for (const sx of [-1, 1]) for (const sz of [-1, 1]) out.push(cyl(x + sx * (w / 2 - 0.08), 0, z + sz * (d / 2 - 0.08), 0.09, h, "#5a3d22"));
-  return out;
+  return poles ? modelParts(out, "tent_shade") : out;
 };
 
 /** A table with a top and four legs. */
-export const table = (x: number, z: number, w: number, d: number, h = 0.8, top = "#7a5430", legs = "#5a3d22"): Prop[] => [
+export const table = (x: number, z: number, w: number, d: number, h = 0.8, top = "#7a5430", legs = "#5a3d22"): Prop[] => modelParts([
   box(x, h - 0.06, z, w, 0.06, d, top), ...[-1, 1].flatMap(sx => [-1, 1].map(sz => box(x + sx * (w / 2 - 0.07), 0, z + sz * (d / 2 - 0.07), 0.07, h - 0.06, 0.07, legs)))
-];
+], "table_plastic");
 
 /** A wooden fishing canoe lying along x with a raised prow, bobbing if `bob` is given. */
-export const boat = (x: number, z: number, len: number, hull: string, stripe: string, bob?: Motion, y = 0.05): Prop[] => [
+export const boat = (x: number, z: number, len: number, hull: string, stripe: string, bob?: Motion, y = 0.05): Prop[] => modelParts([
   box(x, y, z, len, 0.5, 1.1, hull, { m: bob }), box(x, y + 0.36, z - 0.56, len, 0.12, 0.06, stripe, { m: bob }), box(x, y + 0.36, z + 0.56, len, 0.12, 0.06, stripe, { m: bob }),
   box(x - len / 2, y + 0.3, z, 0.4, 0.55, 0.9, hull, { m: bob }), box(x + len / 2 + 0.1, y + 0.4, z, 0.5, 0.6, 0.85, hull, { m: bob }),
   box(x + len * 0.1, y + 0.5, z, 0.12, 0.1, 1.1, "#5a3d22", { m: bob }), box(x - len * 0.25, y + 0.5, z, 0.12, 0.1, 1.1, "#5a3d22", { m: bob })
-];
+], "boat_canoe", Math.PI / 2);
 
 /** A parked minibus on its side, front to the left (`dir` -1) or right (1): yellow with a dark stripe, windows, wheels and headlamps. */
-export const minibus = (x: number, z: number, dir: 1 | -1, c = "#f2b705", lamp = true, rack = true): Prop[] => [
+export const minibus = (x: number, z: number, dir: 1 | -1, c = "#f2b705", lamp = true, rack = true): Prop[] => modelParts([
   box(x, 0.45, z, 5, 1.1, 2, c, { soft: 0.3 }), box(x - dir * 0.2, 1.55, z, 4.4, 0.95, 1.95, c, { soft: 0.32 }), box(x, 1.0, z - 1.005, 5, 0.18, 0.02, "#15191c"),
   box(x - dir * 0.2, 1.75, z - 0.985, 4.0, 0.5, 0.02, "#27414f"), box(x + dir * 2.3, 1.65, z - 0.995, 0.02, 0.5, 0.02, "#27414f"),
   box(x + dir * 2.52, 0.55, z, 0.1, 0.4, 2, "#15191c"), box(x - dir * 2.52, 0.55, z, 0.1, 0.4, 2, "#15191c"),
@@ -161,7 +163,7 @@ export const minibus = (x: number, z: number, dir: 1 | -1, c = "#f2b705", lamp =
   ...[-1.6, 1.6].flatMap(wx => [cylz(x + wx, 0, z - 0.95, 0.78, 0.26, "#15191c"), cylz(x + wx, 0.17, z - 1.0, 0.44, 0.2, "#aeb6bc")]),
   box(x + dir * 2.52, 0.78, z - 0.5, 0.06, 0.2, 0.34, "#fff4cf", { glow: lamp }),
   glow(x + dir * 2.7, 0.88, z - 0.5, 1.5, "#fff4cf")
-];
+], "bus_danfo", dir < 0 ? Math.PI : 0);
 
 /** A small deterministic random generator for scenery, so a venue always draws the same. */
 export const rng = (seed: number) => { let s = (Math.abs(Math.trunc(seed)) % 2147483646) + 1; return () => { s = (s * 16807) % 2147483647; return (s - 1) / 2147483646; }; };
