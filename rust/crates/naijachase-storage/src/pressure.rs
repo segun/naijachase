@@ -119,7 +119,7 @@ impl MysqlStore {
         player_id: &str,
         case_id: &str,
     ) -> Result<Vec<PressureAttemptRecord>, StorageError> {
-        let mut connection = self.pool.get_conn()?;
+        let mut connection = self.connection()?;
         let owner: Option<Option<String>> = connection.exec_first(
             "SELECT player_id FROM active_cases WHERE case_id=:case",
             params! {"case"=>case_id},
@@ -169,7 +169,7 @@ impl MysqlStore {
         &self,
         player_id: &str,
     ) -> Result<Vec<TokenLedgerEntry>, StorageError> {
-        self.pool.get_conn()?.exec_map("SELECT amount,balance_after,reason,reference_id,CAST(created_at AS CHAR) FROM bribe_token_ledger WHERE player_id=:player ORDER BY ledger_id DESC",params!{"player"=>player_id},|(amount,balance_after,reason,reference_id,created_at)|TokenLedgerEntry{amount,balance_after,reason,reference_id,created_at}).map_err(Into::into)
+        self.connection()?.exec_map("SELECT amount,balance_after,reason,reference_id,CAST(created_at AS CHAR) FROM bribe_token_ledger WHERE player_id=:player ORDER BY ledger_id DESC",params!{"player"=>player_id},|(amount,balance_after,reason,reference_id,created_at)|TokenLedgerEntry{amount,balance_after,reason,reference_id,created_at}).map_err(Into::into)
     }
 
     #[allow(clippy::too_many_arguments)]
@@ -189,7 +189,7 @@ impl MysqlStore {
                 "method must be bribe or intimidate".into(),
             ));
         }
-        let mut connection = self.pool.get_conn()?;
+        let mut connection = self.connection()?;
         let mut tx = connection.start_transaction(TxOpts::default())?;
         super::lock_case_player(&mut tx, player_id)?;
         let (owner, version, bytes):(Option<String>,u64,Vec<u8>)=tx.exec_first(
@@ -405,7 +405,7 @@ impl MysqlStore {
             Option<String>,
             Option<String>,
         );
-        let mut conn = self.pool.get_conn()?;
+        let mut conn = self.connection()?;
         let rows:Vec<Row>=conn.exec("SELECT disciplinary_case_id,offence_type,prior_offence_count,decision,punishment,points_before,points_after,old_rank,new_rank,CAST(jailed_until AS CHAR),CAST(acknowledged_at AS CHAR) FROM disciplinary_cases WHERE player_id=:player ORDER BY created_at DESC",params!{"player"=>player_id})?;
         rows.into_iter().map(|r|{let votes=conn.exec_map("SELECT vote FROM disciplinary_votes WHERE disciplinary_case_id=:id ORDER BY panel_position",params!{"id"=>&r.0},|v:String|v)?;Ok(DisciplinaryCase{disciplinary_case_id:r.0,offence:r.1,repeat_offender:r.2>0,votes,decision:r.3,punishment:r.4,points_before:r.5,points_after:r.6,old_rank:r.7,new_rank:r.8,jailed_until:r.9,acknowledged:r.10.is_some()})}).collect()
     }
@@ -415,7 +415,7 @@ impl MysqlStore {
         player_id: &str,
         id: &str,
     ) -> Result<(), StorageError> {
-        let mut conn = self.pool.get_conn()?;
+        let mut conn = self.connection()?;
         conn.exec_drop("UPDATE disciplinary_cases SET acknowledged_at=COALESCE(acknowledged_at,UTC_TIMESTAMP()) WHERE disciplinary_case_id=:id AND player_id=:player",params!{"id"=>id,"player"=>player_id})?;
         if conn.affected_rows() == 0 {
             return Err(StorageError::Forbidden);
@@ -424,7 +424,7 @@ impl MysqlStore {
     }
 
     pub fn jail_status(&self, player_id: &str) -> Result<Option<String>, StorageError> {
-        self.pool.get_conn()?.exec_first("SELECT CAST(jailed_until AS CHAR) FROM players WHERE player_id=:player AND jailed_until>UTC_TIMESTAMP()",params!{"player"=>player_id}).map_err(Into::into)
+        self.connection()?.exec_first("SELECT CAST(jailed_until AS CHAR) FROM players WHERE player_id=:player AND jailed_until>UTC_TIMESTAMP()",params!{"player"=>player_id}).map_err(Into::into)
     }
 }
 

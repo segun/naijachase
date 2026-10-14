@@ -1,4 +1,7 @@
-use mysql::{OptsBuilder, Pool, SslOpts, TxOpts, params, prelude::Queryable};
+use mysql::{
+    DriverError, OptsBuilder, Pool, PoolConstraints, PoolOpts, PooledConn, SslOpts, TxOpts, params,
+    prelude::Queryable,
+};
 use naijachase_contracts::{Event, GameState};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
@@ -7,6 +10,7 @@ use std::{
     env, fs,
     num::ParseIntError,
     path::{Path, PathBuf},
+    time::Duration,
 };
 use thiserror::Error;
 mod weekly;
@@ -33,6 +37,26 @@ const MIGRATION_14: &str = include_str!("../migrations/0014_witness_pressure.sql
 const MIGRATION_15: &str = include_str!("../migrations/0015_avatar_selection.sql");
 const MIGRATION_16: &str = include_str!("../migrations/0016_player_date_of_birth.sql");
 const MIGRATION_17: &str = include_str!("../migrations/0017_weekly_transit_events.sql");
+const MIGRATION_18: &str = include_str!("../migrations/0018_email_outbox.sql");
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct EmailMessage {
+    pub recipient: String,
+    pub subject: String,
+    pub text: String,
+    pub html: String,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct QueuedEmail {
+    pub email_id: u64,
+    pub message_kind: String,
+    pub recipient: String,
+    pub subject: String,
+    pub text: String,
+    pub html: String,
+    pub attempts: u32,
+}
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum CaseCommandResult {
@@ -431,6 +455,12 @@ pub struct MysqlConfig {
     pub password: String,
     pub database: String,
     pub ssl_mode: String,
+    pub pool_min: usize,
+    pub pool_max: usize,
+    pub pool_wait_timeout: Duration,
+    pub connect_timeout: Duration,
+    pub read_timeout: Duration,
+    pub write_timeout: Duration,
 }
 
 impl MysqlConfig {
@@ -447,6 +477,22 @@ impl MysqlConfig {
         if !matches!(ssl_mode.as_str(), "disabled" | "required") {
             return Err(StorageError::InvalidMysqlSslMode(ssl_mode));
         }
+        let pool_min = mysql_setting(&mut lookup, "MYSQL_POOL_MIN", 2, 0, 512)?;
+        let pool_max = mysql_setting(&mut lookup, "MYSQL_POOL_MAX", 32, 1, 512)?;
+        if pool_min > pool_max {
+            return Err(StorageError::InvalidMysqlSetting(
+                "MYSQL_POOL_MIN",
+                format!("{pool_min} must not exceed MYSQL_POOL_MAX ({pool_max})"),
+            ));
+        }
+        let pool_wait_timeout_ms =
+            mysql_setting(&mut lookup, "MYSQL_POOL_WAIT_TIMEOUT_MS", 2_000, 1, 300_000)?;
+        let connect_timeout_ms =
+            mysql_setting(&mut lookup, "MYSQL_CONNECT_TIMEOUT_MS", 5_000, 1, 300_000)?;
+        let read_timeout_ms =
+            mysql_setting(&mut lookup, "MYSQL_READ_TIMEOUT_MS", 15_000, 1, 300_000)?;
+        let write_timeout_ms =
+            mysql_setting(&mut lookup, "MYSQL_WRITE_TIMEOUT_MS", 15_000, 1, 300_000)?;
         Ok(Self {
             host: required(&mut lookup, "MYSQL_HOST")?,
             port: required(&mut lookup, "MYSQL_PORT")?.parse()?,
@@ -454,16 +500,28 @@ impl MysqlConfig {
             password: required(&mut lookup, "MYSQL_PASSWORD")?,
             database: required(&mut lookup, "MYSQL_DATABASE")?,
             ssl_mode,
+            pool_min,
+            pool_max,
+            pool_wait_timeout: Duration::from_millis(pool_wait_timeout_ms as u64),
+            connect_timeout: Duration::from_millis(connect_timeout_ms as u64),
+            read_timeout: Duration::from_millis(read_timeout_ms as u64),
+            write_timeout: Duration::from_millis(write_timeout_ms as u64),
         })
     }
 
     fn options(&self) -> OptsBuilder {
+        let constraints = PoolConstraints::new(self.pool_min, self.pool_max)
+            .expect("validated MySQL pool constraints");
         let options = OptsBuilder::new()
             .ip_or_hostname(Some(self.host.clone()))
             .tcp_port(self.port)
             .user(Some(self.user.clone()))
             .pass(Some(self.password.clone()))
-            .db_name(Some(self.database.clone()));
+            .db_name(Some(self.database.clone()))
+            .pool_opts(Some(PoolOpts::default().with_constraints(constraints)))
+            .tcp_connect_timeout(Some(self.connect_timeout))
+            .read_timeout(Some(self.read_timeout))
+            .write_timeout(Some(self.write_timeout));
         if self.ssl_mode == "required" {
             options.ssl_opts(Some(
                 SslOpts::default()
@@ -476,16 +534,42 @@ impl MysqlConfig {
     }
 }
 
+fn mysql_setting(
+    lookup: &mut dyn FnMut(&str) -> Option<String>,
+    key: &'static str,
+    default: usize,
+    minimum: usize,
+    maximum: usize,
+) -> Result<usize, StorageError> {
+    let Some(raw) = lookup(key) else {
+        return Ok(default);
+    };
+    let value = raw.parse::<usize>().map_err(|_| {
+        StorageError::InvalidMysqlSetting(key, format!("{raw:?} is not an integer"))
+    })?;
+    if !(minimum..=maximum).contains(&value) {
+        return Err(StorageError::InvalidMysqlSetting(
+            key,
+            format!("{value} must be between {minimum} and {maximum}"),
+        ));
+    }
+    Ok(value)
+}
+
 #[derive(Debug, Error)]
 pub enum StorageError {
     #[error("mysql: {0}")]
     Mysql(#[from] mysql::Error),
+    #[error("timed out waiting for a MySQL connection")]
+    PoolTimeout,
     #[error("missing required environment variable {0}")]
     MissingEnvironment(&'static str),
     #[error("invalid MYSQL_PORT: {0}")]
     InvalidPort(#[from] ParseIntError),
     #[error("MYSQL_SSL_MODE must be disabled or required, got {0}")]
     InvalidMysqlSslMode(String),
+    #[error("invalid {0}: {1}")]
+    InvalidMysqlSetting(&'static str, String),
     #[error("could not load .env: {0}")]
     Dotenv(#[from] dotenvy::Error),
     #[error("csv: {0}")]
@@ -552,13 +636,24 @@ pub fn load_repository_dotenv() -> Result<Option<PathBuf>, StorageError> {
 
 pub struct MysqlStore {
     pool: Pool,
+    pool_wait_timeout: Duration,
 }
 
 impl MysqlStore {
     pub fn connect(config: &MysqlConfig) -> Result<Self, StorageError> {
         Ok(Self {
             pool: Pool::new(config.options())?,
+            pool_wait_timeout: config.pool_wait_timeout,
         })
+    }
+
+    pub(crate) fn connection(&self) -> Result<PooledConn, StorageError> {
+        self.pool
+            .try_get_conn(self.pool_wait_timeout)
+            .map_err(|error| match error {
+                mysql::Error::DriverError(DriverError::Timeout) => StorageError::PoolTimeout,
+                other => StorageError::Mysql(other),
+            })
     }
 
     pub fn connect_from_env() -> Result<Self, StorageError> {
@@ -566,7 +661,7 @@ impl MysqlStore {
     }
 
     pub fn migrate(&self) -> Result<(), StorageError> {
-        let mut connection = self.pool.get_conn()?;
+        let mut connection = self.connection()?;
         apply_migration(&mut connection, MIGRATION_1)?;
         let version: u32 = connection
             .query_first("SELECT COALESCE(MAX(version), 0) FROM schema_migrations")?
@@ -668,11 +763,17 @@ impl MysqlStore {
         if version < 17 {
             apply_migration(&mut connection, MIGRATION_17)?;
         }
+        let version: u32 = connection
+            .query_first("SELECT COALESCE(MAX(version),0) FROM schema_migrations")?
+            .unwrap_or(0);
+        if version < 18 {
+            apply_migration(&mut connection, MIGRATION_18)?;
+        }
         Ok(())
     }
 
     pub fn ping(&self) -> Result<(), StorageError> {
-        let value: Option<u8> = self.pool.get_conn()?.query_first("SELECT 1")?;
+        let value: Option<u8> = self.connection()?.query_first("SELECT 1")?;
         if value == Some(1) {
             Ok(())
         } else {
@@ -692,7 +793,7 @@ impl MysqlStore {
         verification_hash: &str,
         birth_date: BirthDate,
     ) -> Result<(), StorageError> {
-        let mut connection = self.pool.get_conn()?;
+        let mut connection = self.connection()?;
         let mut transaction = connection.start_transaction(TxOpts::default())?;
         if let Err(error)=transaction.exec_drop(
             "INSERT INTO players(player_id,display_name,email,username,home_base,password_hash,date_of_birth)
@@ -708,31 +809,134 @@ impl MysqlStore {
         Ok(())
     }
 
+    pub fn register_player_with_email(
+        &self,
+        player_id: &str,
+        email: &str,
+        username: &str,
+        home_base: &str,
+        password_hash: &str,
+        verification_hash: &str,
+        birth_date: BirthDate,
+        message: &EmailMessage,
+    ) -> Result<(), StorageError> {
+        let mut connection = self.connection()?;
+        let mut transaction = connection.start_transaction(TxOpts::default())?;
+        if let Err(error) = transaction.exec_drop(
+            "INSERT INTO players(player_id,display_name,email,username,home_base,password_hash,date_of_birth)
+             VALUES (:id,:username,:email,:username,:home,:password,:dob)",
+            params!{"id"=>player_id,"username"=>username,"email"=>email,"home"=>home_base,"password"=>password_hash,"dob"=>birth_date.database_value()},
+        ) {
+            if matches!(&error, mysql::Error::MySqlError(server) if server.code == 1062) {
+                return Err(StorageError::DuplicateAccount);
+            }
+            return Err(error.into());
+        }
+        transaction.exec_drop(
+            "INSERT INTO email_verifications(token_hash,player_id,expires_at)
+             VALUES (:token,:id,DATE_ADD(UTC_TIMESTAMP(), INTERVAL 24 HOUR))",
+            params! {"token"=>verification_hash,"id"=>player_id},
+        )?;
+        enqueue_email(
+            &mut transaction,
+            Some(player_id),
+            "confirmation",
+            message,
+            24 * 60,
+        )?;
+        transaction.commit()?;
+        Ok(())
+    }
+
+    /// Replaces every unused confirmation link and queues exactly one current
+    /// message. The generic API response deliberately does not reveal whether
+    /// the address exists or has already been verified.
+    pub fn resend_confirmation(
+        &self,
+        email: &str,
+        verification_hash: &str,
+        message: &EmailMessage,
+    ) -> Result<bool, StorageError> {
+        let mut connection = self.connection()?;
+        let mut transaction = connection.start_transaction(TxOpts::default())?;
+        let player_id: Option<String> = transaction.exec_first(
+            "SELECT player_id FROM players
+             WHERE email=:email AND email_verified_at IS NULL FOR UPDATE",
+            params! {"email"=>email},
+        )?;
+        let Some(player_id) = player_id else {
+            transaction.commit()?;
+            return Ok(false);
+        };
+        transaction.exec_drop(
+            "DELETE FROM email_verifications WHERE player_id=:player AND used_at IS NULL",
+            params! {"player"=>&player_id},
+        )?;
+        transaction.exec_drop(
+            "UPDATE email_outbox
+             SET status='superseded',recipient='',subject='',text_body='',html_body='',locked_at=NULL
+             WHERE player_id=:player AND message_kind='confirmation'
+               AND status IN ('queued','sending')",
+            params! {"player"=>&player_id},
+        )?;
+        transaction.exec_drop(
+            "INSERT INTO email_verifications(token_hash,player_id,expires_at)
+             VALUES (:token,:player,DATE_ADD(UTC_TIMESTAMP(), INTERVAL 24 HOUR))",
+            params! {"token"=>verification_hash,"player"=>&player_id},
+        )?;
+        enqueue_email(
+            &mut transaction,
+            Some(&player_id),
+            "confirmation",
+            message,
+            24 * 60,
+        )?;
+        transaction.commit()?;
+        Ok(true)
+    }
+
     pub fn delete_unverified_player(&self, player_id: &str) -> Result<(), StorageError> {
-        self.pool.get_conn()?.exec_drop(
+        self.connection()?.exec_drop(
             "DELETE FROM players WHERE player_id=:id AND email_verified_at IS NULL",
-            params! {"id"=>player_id},
+            params! {"id"=>&player_id},
         )?;
         Ok(())
     }
 
     pub fn verify_email(&self, token_hash: &str) -> Result<bool, StorageError> {
-        let mut connection = self.pool.get_conn()?;
+        let mut connection = self.connection()?;
         let mut transaction = connection.start_transaction(TxOpts::default())?;
-        let player: Option<String> = transaction.exec_first(
-            "SELECT player_id FROM email_verifications
-             WHERE token_hash=:token AND used_at IS NULL AND expires_at>UTC_TIMESTAMP() FOR UPDATE",
+        let verification: Option<(String, bool, bool, bool)> = transaction.exec_first(
+            "SELECT v.player_id,v.used_at IS NOT NULL,v.expires_at>UTC_TIMESTAMP(),
+                    p.email_verified_at IS NOT NULL
+             FROM email_verifications v JOIN players p ON p.player_id=v.player_id
+             WHERE v.token_hash=:token FOR UPDATE",
             params! {"token"=>token_hash},
         )?;
-        let Some(player_id) = player else {
+        let Some((player_id, used, unexpired, already_verified)) = verification else {
             return Ok(false);
         };
+        if used {
+            transaction.commit()?;
+            return Ok(already_verified);
+        }
+        if !unexpired {
+            transaction.commit()?;
+            return Ok(false);
+        }
         transaction.exec_drop(
             "UPDATE email_verifications SET used_at=UTC_TIMESTAMP() WHERE token_hash=:token",
             params! {"token"=>token_hash},
         )?;
         transaction.exec_drop(
             "UPDATE players SET email_verified_at=UTC_TIMESTAMP() WHERE player_id=:id",
+            params! {"id"=>&player_id},
+        )?;
+        transaction.exec_drop(
+            "UPDATE email_outbox
+             SET status='superseded',recipient='',subject='',text_body='',html_body='',locked_at=NULL
+             WHERE player_id=:id AND message_kind='confirmation'
+               AND status IN ('queued','sending')",
             params! {"id"=>player_id},
         )?;
         transaction.commit()?;
@@ -757,7 +961,7 @@ impl MysqlStore {
             Option<String>,
             u8,
         );
-        let row: Option<LoginRow> = self.pool.get_conn()?.exec_first(
+        let row: Option<LoginRow> = self.connection()?.exec_first(
             "SELECT player_id,email,username,home_base,password_hash,email_verified_at IS NOT NULL,
                         display_name,pronouns,sex,avatar_id,uniform_id,
                         ((avatar_setup_completed_at IS NOT NULL) * 2 + leaderboard_opt_in)
@@ -807,7 +1011,7 @@ impl MysqlStore {
         family_id: &str,
         device_label: Option<&str>,
     ) -> Result<(), StorageError> {
-        self.pool.get_conn()?.exec_drop(
+        self.connection()?.exec_drop(
             "INSERT INTO player_sessions(token_hash,player_id,family_id,session_id,device_label,expires_at)
              VALUES (:token,:player,:family,:session,:device,DATE_ADD(UTC_TIMESTAMP(), INTERVAL 24 HOUR))",
             params! {"token"=>token_hash,"player"=>player_id,"family"=>family_id,"session"=>uuid::Uuid::new_v4().to_string(),"device"=>device_label},
@@ -833,7 +1037,7 @@ impl MysqlStore {
             bool,
             bool,
         );
-        let mut connection = self.pool.get_conn()?;
+        let mut connection = self.connection()?;
         let row: Option<AccountRow> = connection.exec_first(
             "SELECT p.player_id,p.email,p.username,p.home_base,TRUE,p.display_name,
                         p.pronouns,p.sex,p.avatar_id,p.uniform_id,p.avatar_setup_completed_at IS NOT NULL,p.leaderboard_opt_in
@@ -880,7 +1084,7 @@ impl MysqlStore {
     }
 
     pub fn rotate_session(&self, old_hash: &str, new_hash: &str) -> Result<bool, StorageError> {
-        let mut connection = self.pool.get_conn()?;
+        let mut connection = self.connection()?;
         let mut transaction = connection.start_transaction(TxOpts::default())?;
         let row:Option<(String,Option<String>,bool,Option<String>)>=transaction.exec_first(
             "SELECT player_id,family_id,(revoked_at IS NOT NULL OR replaced_at IS NOT NULL OR expires_at<=UTC_TIMESTAMP()),device_label FROM player_sessions WHERE token_hash=:token FOR UPDATE",
@@ -903,7 +1107,7 @@ impl MysqlStore {
     }
 
     pub fn revoke_all_sessions(&self, player_id: &str) -> Result<(), StorageError> {
-        self.pool.get_conn()?.exec_drop("UPDATE player_sessions SET revoked_at=COALESCE(revoked_at,UTC_TIMESTAMP()) WHERE player_id=:player",params!{"player"=>player_id})?;
+        self.connection()?.exec_drop("UPDATE player_sessions SET revoked_at=COALESCE(revoked_at,UTC_TIMESTAMP()) WHERE player_id=:player",params!{"player"=>player_id})?;
         Ok(())
     }
 
@@ -912,7 +1116,7 @@ impl MysqlStore {
         player_id: &str,
         current_hash: &str,
     ) -> Result<Vec<PlayerSession>, StorageError> {
-        self.pool.get_conn()?.exec_map("SELECT session_id,device_label,CAST(created_at AS CHAR),CAST(last_seen_at AS CHAR),CAST(expires_at AS CHAR),token_hash=:current FROM player_sessions WHERE player_id=:player AND revoked_at IS NULL AND expires_at>UTC_TIMESTAMP() ORDER BY last_seen_at DESC",params!{"player"=>player_id,"current"=>current_hash},|(session_id,device_label,created_at,last_seen_at,expires_at,current)|PlayerSession{session_id,device_label,created_at,last_seen_at,expires_at,current}).map_err(Into::into)
+        self.connection()?.exec_map("SELECT session_id,device_label,CAST(created_at AS CHAR),CAST(last_seen_at AS CHAR),CAST(expires_at AS CHAR),token_hash=:current FROM player_sessions WHERE player_id=:player AND revoked_at IS NULL AND expires_at>UTC_TIMESTAMP() ORDER BY last_seen_at DESC",params!{"player"=>player_id,"current"=>current_hash},|(session_id,device_label,created_at,last_seen_at,expires_at,current)|PlayerSession{session_id,device_label,created_at,last_seen_at,expires_at,current}).map_err(Into::into)
     }
 
     pub fn revoke_session_id(
@@ -920,7 +1124,7 @@ impl MysqlStore {
         player_id: &str,
         session_id: &str,
     ) -> Result<bool, StorageError> {
-        let mut connection = self.pool.get_conn()?;
+        let mut connection = self.connection()?;
         connection.exec_drop("UPDATE player_sessions SET revoked_at=COALESCE(revoked_at,UTC_TIMESTAMP()) WHERE player_id=:player AND session_id=:session",params!{"player"=>player_id,"session"=>session_id})?;
         Ok(connection.affected_rows() > 0)
     }
@@ -930,7 +1134,7 @@ impl MysqlStore {
         email: &str,
         token_hash: &str,
     ) -> Result<Option<String>, StorageError> {
-        let mut connection = self.pool.get_conn()?;
+        let mut connection = self.connection()?;
         let player: Option<String> = connection.exec_first(
             "SELECT player_id FROM players WHERE email=:email AND email_verified_at IS NOT NULL",
             params! {"email"=>email},
@@ -945,12 +1149,125 @@ impl MysqlStore {
         Ok(player)
     }
 
+    pub fn create_password_reset_with_email(
+        &self,
+        email: &str,
+        token_hash: &str,
+        message: &EmailMessage,
+    ) -> Result<Option<String>, StorageError> {
+        let mut connection = self.connection()?;
+        let mut transaction = connection.start_transaction(TxOpts::default())?;
+        let player: Option<String> = transaction.exec_first(
+            "SELECT player_id FROM players
+             WHERE email=:email AND email_verified_at IS NOT NULL FOR UPDATE",
+            params! {"email"=>email},
+        )?;
+        if let Some(id) = &player {
+            transaction.exec_drop(
+                "DELETE FROM password_resets WHERE player_id=:player AND used_at IS NULL",
+                params! {"player"=>id},
+            )?;
+            transaction.exec_drop(
+                "UPDATE email_outbox
+                 SET status='superseded',recipient='',subject='',text_body='',html_body='',locked_at=NULL
+                 WHERE player_id=:player AND message_kind='password_reset'
+                   AND status IN ('queued','sending')",
+                params! {"player"=>id},
+            )?;
+            transaction.exec_drop(
+                "INSERT INTO password_resets(token_hash,player_id,expires_at)
+                 VALUES (:token,:player,DATE_ADD(UTC_TIMESTAMP(),INTERVAL 30 MINUTE))",
+                params! {"token"=>token_hash,"player"=>id},
+            )?;
+            enqueue_email(&mut transaction, Some(id), "password_reset", message, 30)?;
+        }
+        transaction.commit()?;
+        Ok(player)
+    }
+
+    /// Claims one due email. `SKIP LOCKED` permits multiple API instances to
+    /// run workers without sending the same row concurrently.
+    pub fn claim_email(&self) -> Result<Option<QueuedEmail>, StorageError> {
+        type Row = (u64, String, String, String, String, String, u32);
+        let mut connection = self.connection()?;
+        let mut transaction = connection.start_transaction(TxOpts::default())?;
+        let row: Option<Row> = transaction.query_first(
+            "SELECT email_id,message_kind,recipient,subject,text_body,html_body,attempts
+             FROM email_outbox
+             WHERE ((status='queued' AND next_attempt_at<=UTC_TIMESTAMP())
+                    OR (status='sending' AND locked_at<DATE_SUB(UTC_TIMESTAMP(),INTERVAL 5 MINUTE)))
+               AND expires_at>UTC_TIMESTAMP()
+             ORDER BY email_id LIMIT 1 FOR UPDATE SKIP LOCKED",
+        )?;
+        let Some((email_id, message_kind, recipient, subject, text, html, attempts)) = row else {
+            transaction.query_drop(
+                "UPDATE email_outbox SET status='expired',recipient='',subject='',text_body='',html_body=''
+                 WHERE status IN ('queued','sending') AND expires_at<=UTC_TIMESTAMP()",
+            )?;
+            transaction.commit()?;
+            return Ok(None);
+        };
+        transaction.exec_drop(
+            "UPDATE email_outbox
+             SET status='sending',attempts=attempts+1,locked_at=UTC_TIMESTAMP(),last_error=NULL
+             WHERE email_id=:id",
+            params! {"id"=>email_id},
+        )?;
+        transaction.commit()?;
+        Ok(Some(QueuedEmail {
+            email_id,
+            message_kind,
+            recipient,
+            subject,
+            text,
+            html,
+            attempts: attempts + 1,
+        }))
+    }
+
+    pub fn mark_email_sent(&self, email_id: u64) -> Result<(), StorageError> {
+        self.connection()?.exec_drop(
+            "UPDATE email_outbox
+             SET status='sent',sent_at=UTC_TIMESTAMP(),locked_at=NULL,
+                 recipient='',subject='',text_body='',html_body='',last_error=NULL
+             WHERE email_id=:id AND status='sending'",
+            params! {"id"=>email_id},
+        )?;
+        Ok(())
+    }
+
+    pub fn retry_email(
+        &self,
+        email_id: u64,
+        attempts: u32,
+        error: &str,
+    ) -> Result<(), StorageError> {
+        let delay_seconds = match attempts {
+            0 | 1 => 60,
+            2 => 5 * 60,
+            3 => 15 * 60,
+            4 => 60 * 60,
+            _ => 6 * 60 * 60,
+        };
+        let terminal = attempts >= 8;
+        self.connection()?.exec_drop(
+            "UPDATE email_outbox
+             SET status=IF(:terminal,'dead','queued'),locked_at=NULL,last_error=:error,
+                 next_attempt_at=TIMESTAMPADD(SECOND,:delay,UTC_TIMESTAMP()),
+                 recipient=IF(:terminal,'',recipient),subject=IF(:terminal,'',subject),
+                 text_body=IF(:terminal,'',text_body),html_body=IF(:terminal,'',html_body)
+             WHERE email_id=:id AND status='sending'",
+            params! {"id"=>email_id,"terminal"=>terminal,"error"=>error,"delay"=>delay_seconds},
+        )?;
+        Ok(())
+    }
+
     pub fn complete_password_reset(
         &self,
         token_hash: &str,
         password_hash: &str,
     ) -> Result<bool, StorageError> {
-        let mut connection = self.pool.get_conn()?;
+        let mut connection = self.connection()?;
         let mut transaction = connection.start_transaction(TxOpts::default())?;
         let player:Option<String>=transaction.exec_first("SELECT player_id FROM password_resets WHERE token_hash=:token AND used_at IS NULL AND expires_at>UTC_TIMESTAMP() FOR UPDATE",params!{"token"=>token_hash})?;
         let Some(player) = player else {
@@ -975,7 +1292,7 @@ impl MysqlStore {
         event_type: &str,
         outcome: &str,
     ) -> Result<(), StorageError> {
-        self.pool.get_conn()?.exec_drop("INSERT INTO security_events(player_id,event_type,outcome) VALUES (:player,:kind,:outcome)",params!{"player"=>player_id,"kind"=>event_type,"outcome"=>outcome})?;
+        self.connection()?.exec_drop("INSERT INTO security_events(player_id,event_type,outcome) VALUES (:player,:kind,:outcome)",params!{"player"=>player_id,"kind"=>event_type,"outcome"=>outcome})?;
         Ok(())
     }
 
@@ -985,7 +1302,7 @@ impl MysqlStore {
         action: &str,
         limit: u32,
     ) -> Result<bool, StorageError> {
-        let mut connection = self.pool.get_conn()?;
+        let mut connection = self.connection()?;
         let mut transaction = connection.start_transaction(TxOpts::default())?;
         let row:Option<(u32,bool)>=transaction.exec_first("SELECT attempts,window_started<DATE_SUB(UTC_TIMESTAMP(),INTERVAL 1 MINUTE) FROM auth_rate_limits WHERE subject_hash=:subject AND action=:action FOR UPDATE",params!{"subject"=>subject_hash,"action"=>action})?;
         let allowed = match row {
@@ -1018,14 +1335,14 @@ impl MysqlStore {
         home_base: &str,
         leaderboard_opt_in: bool,
     ) -> Result<(), StorageError> {
-        self.pool.get_conn()?.exec_drop(
+        self.connection()?.exec_drop(
             "UPDATE players SET display_name=COALESCE(:display_name,display_name),pronouns=:pronouns,sex=:sex,avatar_id=:avatar,uniform_id=:uniform,home_base=:home,leaderboard_opt_in=:leaderboard WHERE player_id=:player",
             params!{"display_name"=>display_name,"pronouns"=>pronouns,"sex"=>sex,"avatar"=>avatar_id,"uniform"=>uniform_id,"home"=>home_base,"leaderboard"=>leaderboard_opt_in,"player"=>player_id})?;
         Ok(())
     }
 
     pub fn select_avatar(&self, player_id: &str, avatar_id: &str) -> Result<(), StorageError> {
-        let mut connection = self.pool.get_conn()?;
+        let mut connection = self.connection()?;
         connection.exec_drop("UPDATE players SET avatar_id=:avatar,avatar_setup_completed_at=COALESCE(avatar_setup_completed_at,UTC_TIMESTAMP()) WHERE player_id=:player",params!{"avatar"=>avatar_id,"player"=>player_id})?;
         Ok(())
     }
@@ -1040,7 +1357,7 @@ impl MysqlStore {
             return Ok(vec![]);
         };
         let mut token_awards = Vec::new();
-        let mut connection = self.pool.get_conn()?;
+        let mut connection = self.connection()?;
         let mut transaction = connection.start_transaction(TxOpts::default())?;
         lock_case_player(&mut transaction, player_id)?;
         let attempt_kind: String = transaction
@@ -1206,7 +1523,7 @@ impl MysqlStore {
             u32,
             u32,
         );
-        let mut connection = self.pool.get_conn()?;
+        let mut connection = self.connection()?;
         let rows:Vec<Row>=connection.exec("SELECT case_id,mission_id,thief_id,outcome,score,elapsed_minutes,CAST(completed_at AS CHAR),CAST(states_visited_json AS CHAR),correct_travels,wrong_travels,correct_deductions,wrong_deductions FROM case_archive WHERE player_id=:player ORDER BY completed_at DESC",params!{"player"=>player_id})?;
         Ok(rows
             .into_iter()
@@ -1253,7 +1570,7 @@ impl MysqlStore {
     }
 
     pub fn achievements(&self, player_id: &str) -> Result<Vec<Achievement>, StorageError> {
-        self.pool.get_conn()?.exec_map("SELECT achievement_id,CAST(earned_at AS CHAR) FROM player_achievements WHERE player_id=:player ORDER BY earned_at",params!{"player"=>player_id},|(achievement_id,earned_at)|Achievement{achievement_id,earned_at}).map_err(Into::into)
+        self.connection()?.exec_map("SELECT achievement_id,CAST(earned_at AS CHAR) FROM player_achievements WHERE player_id=:player ORDER BY earned_at",params!{"player"=>player_id},|(achievement_id,earned_at)|Achievement{achievement_id,earned_at}).map_err(Into::into)
     }
 
     pub fn career_points(&self, player_id: &str) -> Result<u64, StorageError> {
@@ -1268,7 +1585,7 @@ impl MysqlStore {
     }
 
     pub fn progression_summary(&self, player_id: &str) -> Result<ProgressionSummary, StorageError> {
-        let mut connection = self.pool.get_conn()?;
+        let mut connection = self.connection()?;
         let points: u64 = connection
             .exec_first(
                 "SELECT points FROM careers WHERE player_id=:player",
@@ -1301,7 +1618,7 @@ impl MysqlStore {
     }
 
     pub fn revoke_session(&self, token_hash: &str) -> Result<(), StorageError> {
-        self.pool.get_conn()?.exec_drop(
+        self.connection()?.exec_drop(
             "UPDATE player_sessions SET revoked_at=UTC_TIMESTAMP() WHERE token_hash=:token",
             params! {"token"=>token_hash},
         )?;
@@ -1327,7 +1644,7 @@ impl MysqlStore {
         attempt_kind: &str,
     ) -> Result<u64, StorageError> {
         let data = serde_json::to_vec(state)?;
-        let mut connection = self.pool.get_conn()?;
+        let mut connection = self.connection()?;
         let mut transaction = connection.start_transaction(TxOpts::default())?;
         // All ordinary assignments for a player share this row lock, including
         // concurrent requests that selected different missions.
@@ -1404,7 +1721,7 @@ impl MysqlStore {
 
     pub fn unseen_published_missions(&self, player_id: &str) -> Result<Vec<String>, StorageError> {
         self.publish_due_missions()?;
-        self.pool.get_conn()?.exec_map(
+        self.connection()?.exec_map(
             "SELECT m.mission_id FROM missions m LEFT JOIN player_mission_completions c ON c.player_id=:player AND c.mission_id=m.mission_id LEFT JOIN active_mission_assignments a ON a.player_id=:player AND a.mission_id=m.mission_id WHERE m.lifecycle_status='published' AND c.mission_id IS NULL AND a.mission_id IS NULL ORDER BY m.published_at DESC,m.mission_id",
             params!{"player"=>player_id},
             |mission_id:String| mission_id,
@@ -1413,7 +1730,7 @@ impl MysqlStore {
 
     pub fn catalogue_progress(&self, player_id: &str) -> Result<CatalogueProgress, StorageError> {
         self.publish_due_missions()?;
-        let mut connection = self.pool.get_conn()?;
+        let mut connection = self.connection()?;
         let published_cases: u64 = connection
             .exec_first(
                 "SELECT COUNT(*) FROM missions WHERE lifecycle_status='published'",
@@ -1435,7 +1752,7 @@ impl MysqlStore {
 
     pub fn runtime_mission(&self, mission_id: &str) -> Result<RuntimeMission, StorageError> {
         type Row = (String, u8, String, String, String, String, String, u32);
-        let row: Option<Row> = self.pool.get_conn()?.exec_first(
+        let row: Option<Row> = self.connection()?.exec_first(
             "SELECT mission_id,difficulty,thief_id,start_location_id,stop_2_location_id,stop_3_location_id,capture_location_id,content_version FROM missions WHERE mission_id=:mission",
             params!{"mission"=>mission_id},
         )?;
@@ -1464,7 +1781,7 @@ impl MysqlStore {
     }
 
     pub fn publish_due_missions(&self) -> Result<u64, StorageError> {
-        let mut connection = self.pool.get_conn()?;
+        let mut connection = self.connection()?;
         let mut transaction = connection.start_transaction(TxOpts::default())?;
         let due: Vec<(String,String,u32)> = transaction.query(
             "SELECT mission_id,lifecycle_updated_by,content_version FROM missions WHERE lifecycle_status='scheduled' AND scheduled_for<=UTC_TIMESTAMP() FOR UPDATE"
@@ -1513,7 +1830,7 @@ impl MysqlStore {
                 )));
             }
         }
-        let mut connection = self.pool.get_conn()?;
+        let mut connection = self.connection()?;
         let mut transaction = connection.start_transaction(TxOpts::default())?;
         let current: Option<(String,u32)> = transaction.exec_first("SELECT lifecycle_status,content_version FROM missions WHERE mission_id=:mission FOR UPDATE",params!{"mission"=>mission_id})?;
         let Some((from, version)) = current else {
@@ -1558,7 +1875,7 @@ impl MysqlStore {
 
     pub fn validate_mission(&self, mission_id: &str) -> Result<MissionValidation, StorageError> {
         type Row = (u8, String, String, String, String, String, String, String);
-        let mut connection = self.pool.get_conn()?;
+        let mut connection = self.connection()?;
         let row:Option<Row>=connection.exec_first("SELECT difficulty,thief_id,start_location_id,stop_2_location_id,stop_3_location_id,capture_location_id,CAST(content_json AS CHAR),CAST(narrative_json AS CHAR) FROM missions WHERE mission_id=:mission",params!{"mission"=>mission_id})?;
         let Some((difficulty, thief, start, stop2, stop3, capture, content, narrative)) = row
         else {
@@ -1634,7 +1951,7 @@ impl MysqlStore {
             Option<String>,
             Option<String>,
         );
-        let mut connection = self.pool.get_conn()?;
+        let mut connection = self.connection()?;
         let row:Option<MissionRow>=connection.exec_first("SELECT mission_id,difficulty,thief_id,start_location_id,stop_2_location_id,stop_3_location_id,capture_location_id,lifecycle_status,content_version,CAST(published_at AS CHAR),CAST(scheduled_for AS CHAR),CAST(retired_at AS CHAR) FROM missions WHERE mission_id=:mission",params!{"mission"=>mission_id})?;
         let Some((
             mission_id,
@@ -1662,7 +1979,7 @@ impl MysqlStore {
 
     pub fn catalogue_health(&self, reserve_target: u64) -> Result<CatalogueHealth, StorageError> {
         self.publish_due_missions()?;
-        let mut connection = self.pool.get_conn()?;
+        let mut connection = self.connection()?;
         let count =
             |connection: &mut mysql::PooledConn, status: &str| -> Result<u64, StorageError> {
                 Ok(connection
@@ -1695,7 +2012,7 @@ impl MysqlStore {
     }
 
     pub fn publish_initial_catalogue(&self) -> Result<u64, StorageError> {
-        let mut connection = self.pool.get_conn()?;
+        let mut connection = self.connection()?;
         let missions: Vec<(String, String)> = connection
             .query("SELECT mission_id,lifecycle_status FROM missions ORDER BY mission_id")?;
         if missions.is_empty() {
@@ -1725,7 +2042,7 @@ impl MysqlStore {
         }
 
         const ACTOR: &str = "system-catalogue-bootstrap";
-        let mut connection = self.pool.get_conn()?;
+        let mut connection = self.connection()?;
         let mut transaction = connection.start_transaction(TxOpts::default())?;
         transaction.exec_drop(
             "INSERT INTO players(player_id,display_name,content_role) VALUES (:actor,'Catalogue Bootstrap','admin') ON DUPLICATE KEY UPDATE display_name=VALUES(display_name),content_role='admin'",
@@ -1766,7 +2083,7 @@ impl MysqlStore {
         player_id: &str,
     ) -> Result<Vec<ReleaseNotification>, StorageError> {
         type Row = (u64, String, String, Option<String>);
-        let rows:Vec<Row>=self.pool.get_conn()?.exec("SELECT notification_id,mission_id,CAST(published_at AS CHAR),CAST(read_at AS CHAR) FROM catalogue_release_notifications WHERE player_id=:player ORDER BY published_at DESC",params!{"player"=>player_id})?;
+        let rows:Vec<Row>=self.connection()?.exec("SELECT notification_id,mission_id,CAST(published_at AS CHAR),CAST(read_at AS CHAR) FROM catalogue_release_notifications WHERE player_id=:player ORDER BY published_at DESC",params!{"player"=>player_id})?;
         Ok(rows
             .into_iter()
             .map(
@@ -1785,7 +2102,7 @@ impl MysqlStore {
         player_id: &str,
         notification_id: u64,
     ) -> Result<(), StorageError> {
-        let mut connection = self.pool.get_conn()?;
+        let mut connection = self.connection()?;
         connection.exec_drop("UPDATE catalogue_release_notifications SET read_at=COALESCE(read_at,UTC_TIMESTAMP()) WHERE notification_id=:id AND player_id=:player",params!{"id"=>notification_id,"player"=>player_id})?;
         if connection.affected_rows() == 0 {
             return Err(StorageError::CaseNotFound);
@@ -1798,7 +2115,7 @@ impl MysqlStore {
         case_id: &str,
         player_id: &str,
     ) -> Result<String, StorageError> {
-        self.pool.get_conn()?.exec_first(
+        self.connection()?.exec_first(
             "SELECT attempt_kind FROM active_cases WHERE case_id=:case_id AND player_id=:player",
             params!{"case_id"=>case_id,"player"=>player_id},
         )?.ok_or(StorageError::CaseNotFound)
@@ -1809,7 +2126,7 @@ impl MysqlStore {
         case_id: &str,
         player_id: &str,
     ) -> Result<(u64, GameState), StorageError> {
-        let row: Option<(Option<String>, u64, Vec<u8>)> = self.pool.get_conn()?.exec_first(
+        let row: Option<(Option<String>, u64, Vec<u8>)> = self.connection()?.exec_first(
             "SELECT player_id,version,state_json FROM active_cases WHERE case_id=:case_id",
             params! { "case_id"=>case_id },
         )?;
@@ -1840,7 +2157,7 @@ impl MysqlStore {
         if !matches!(attempt_kind, "ordinary" | "replay") {
             return Err(StorageError::Command("invalid attempt kind".into()));
         }
-        let rows: Vec<(String, u64, Vec<u8>)> = self.pool.get_conn()?.exec(
+        let rows: Vec<(String, u64, Vec<u8>)> = self.connection()?.exec(
             "SELECT case_id,version,state_json FROM active_cases WHERE player_id=:player AND attempt_kind=:kind ORDER BY updated_at DESC,created_at DESC",
             params! { "player" => player_id, "kind" => attempt_kind },
         )?;
@@ -1860,7 +2177,7 @@ impl MysqlStore {
         player_id: &str,
         expected_version: u64,
     ) -> Result<AbandonCaseResult, StorageError> {
-        let mut connection = self.pool.get_conn()?;
+        let mut connection = self.connection()?;
         let mut transaction = connection.start_transaction(TxOpts::default())?;
         lock_case_player(&mut transaction, player_id)?;
         let row: Option<(Option<String>, String, String, u64, Vec<u8>)> = transaction.exec_first(
@@ -1935,7 +2252,7 @@ impl MysqlStore {
     where
         F: FnOnce(GameState) -> Result<(GameState, Vec<Event>), String>,
     {
-        let mut connection = self.pool.get_conn()?;
+        let mut connection = self.connection()?;
         let mut transaction = connection.start_transaction(TxOpts::default())?;
         lock_case_player(&mut transaction, player_id)?;
         let row: Option<(Option<String>, u64, Vec<u8>)> = transaction.exec_first(
@@ -1996,14 +2313,14 @@ impl MysqlStore {
     }
 
     pub fn schema_version(&self) -> Result<u32, StorageError> {
-        let mut connection = self.pool.get_conn()?;
+        let mut connection = self.connection()?;
         Ok(connection
             .query_first("SELECT COALESCE(MAX(version), 0) FROM schema_migrations")?
             .unwrap_or(0))
     }
 
     pub fn state_version(&self, id: &str) -> Result<Option<u64>, StorageError> {
-        let mut connection = self.pool.get_conn()?;
+        let mut connection = self.connection()?;
         Ok(connection.exec_first(
             "SELECT version FROM active_cases WHERE case_id = :id",
             params! { "id" => id },
@@ -2017,7 +2334,7 @@ impl MysqlStore {
         row_count: usize,
     ) -> Result<String, StorageError> {
         let checksum = sha256(bytes);
-        let mut connection = self.pool.get_conn()?;
+        let mut connection = self.connection()?;
         connection.exec_drop(
             "INSERT INTO content_imports(file_path, sha256, row_count)
              VALUES (:path, :checksum, :rows)
@@ -2036,7 +2353,7 @@ impl MysqlStore {
         &self,
         relative_path: &str,
     ) -> Result<Option<(String, u64)>, StorageError> {
-        let mut connection = self.pool.get_conn()?;
+        let mut connection = self.connection()?;
         Ok(connection.exec_first(
             "SELECT sha256, row_count FROM content_imports WHERE file_path = :path",
             params! { "path" => relative_path },
@@ -2071,7 +2388,7 @@ impl MysqlStore {
         }
 
         let total_rows = prepared.iter().map(|(_, _, _, rows)| rows.len()).sum();
-        let mut connection = self.pool.get_conn()?;
+        let mut connection = self.connection()?;
         let mut transaction = connection.start_transaction(TxOpts::default())?;
         transaction.query_drop("SET FOREIGN_KEY_CHECKS = 1")?;
         transaction.query_drop("DELETE FROM content_sources")?;
@@ -2113,7 +2430,7 @@ impl MysqlStore {
     ) -> Result<ContentImportSummary, StorageError> {
         let files = csv_files(&repository_root.join("data"))?;
         let mut total_rows = 0usize;
-        let mut connection = self.pool.get_conn()?;
+        let mut connection = self.connection()?;
         for path in &files {
             let bytes = fs::read(path)?;
             let relative = path
@@ -2196,7 +2513,7 @@ impl MysqlStore {
         &self,
         destination_root: &Path,
     ) -> Result<ContentImportSummary, StorageError> {
-        let mut connection = self.pool.get_conn()?;
+        let mut connection = self.connection()?;
         let sources: Vec<(String, String, u64)> = connection.query(
             "SELECT file_path, header_json, row_count FROM content_sources ORDER BY file_path",
         )?;
@@ -2236,7 +2553,7 @@ impl MysqlStore {
         &self,
         player_id: &str,
     ) -> Result<Option<(u64, Vec<u8>)>, StorageError> {
-        let mut connection = self.pool.get_conn()?;
+        let mut connection = self.connection()?;
         Ok(connection.exec_first(
             "SELECT version, career_json FROM terminal_careers WHERE player_id = :id",
             params! { "id" => player_id },
@@ -2249,7 +2566,7 @@ impl MysqlStore {
         version: u64,
         data: &[u8],
     ) -> Result<(), StorageError> {
-        let mut connection = self.pool.get_conn()?;
+        let mut connection = self.connection()?;
         let mut transaction = connection.start_transaction(TxOpts::default())?;
         let current: Option<u64> = transaction.exec_first(
             "SELECT version FROM terminal_careers WHERE player_id = :id FOR UPDATE",
@@ -2271,7 +2588,7 @@ impl MysqlStore {
     }
 
     pub fn delete_terminal_career(&self, player_id: &str) -> Result<(), StorageError> {
-        self.pool.get_conn()?.exec_drop(
+        self.connection()?.exec_drop(
             "DELETE FROM terminal_careers WHERE player_id=:id",
             params! { "id" => player_id },
         )?;
@@ -2279,7 +2596,7 @@ impl MysqlStore {
     }
 
     pub fn backup_operational(&self, path: &Path) -> Result<(), StorageError> {
-        let mut connection = self.pool.get_conn()?;
+        let mut connection = self.connection()?;
         let backup = OperationalBackup {
             format_version: 7,
             players: connection.query("SELECT player_id, display_name FROM players")?,
@@ -2329,7 +2646,7 @@ impl MysqlStore {
                 "unsupported backup version".into(),
             ));
         }
-        let mut connection = self.pool.get_conn()?;
+        let mut connection = self.connection()?;
         let mut transaction = connection.start_transaction(TxOpts::default())?;
         for (id, name) in backup.players {
             transaction.exec_drop(
@@ -2477,7 +2794,7 @@ impl MysqlStore {
         &self,
         player: &str,
     ) -> Result<CooperationPreferences, StorageError> {
-        self.pool.get_conn()?.exec_first(
+        self.connection()?.exec_first(
             "SELECT cooperation_enabled,cooperation_email_enabled,age_assurance_status FROM players WHERE player_id=:player",
             params!{"player"=>player},
         )?.map(|(enabled,email,age):(bool,bool,String)| CooperationPreferences{enabled,email_enabled:email,age_assurance_status:age}).ok_or(StorageError::Forbidden)
@@ -2489,7 +2806,7 @@ impl MysqlStore {
         enabled: bool,
         email: bool,
     ) -> Result<CooperationPreferences, StorageError> {
-        self.pool.get_conn()?.exec_drop(
+        self.connection()?.exec_drop(
             "UPDATE players SET cooperation_enabled=:enabled,cooperation_email_enabled=:email WHERE player_id=:player AND age_assurance_status='adult'",
             params!{"player"=>player,"enabled"=>enabled,"email"=>email},
         )?;
@@ -2497,7 +2814,7 @@ impl MysqlStore {
     }
 
     pub fn cooperation_block(&self, actor: &str, username: &str) -> Result<(), StorageError> {
-        let mut connection = self.pool.get_conn()?;
+        let mut connection = self.connection()?;
         let mut tx = connection.start_transaction(TxOpts::default())?;
         let target: Option<String> = tx.exec_first(
             "SELECT player_id FROM players WHERE username=:username",
@@ -2531,7 +2848,7 @@ impl MysqlStore {
         {
             return Err(StorageError::Command("invalid report".into()));
         }
-        let mut connection = self.pool.get_conn()?;
+        let mut connection = self.connection()?;
         let target: Option<String> = connection.exec_first(
             "SELECT player_id FROM players WHERE username=:username",
             params! {"username"=>username},
@@ -2550,7 +2867,7 @@ impl MysqlStore {
         command_id: &str,
         public_scene: &serde_json::Value,
     ) -> Result<String, StorageError> {
-        let mut connection = self.pool.get_conn()?;
+        let mut connection = self.connection()?;
         let mut tx = connection.start_transaction(TxOpts::default())?;
         let helper:Option<String>=tx.exec_first("SELECT player_id FROM players WHERE username=:username AND email_verified_at IS NOT NULL AND cooperation_enabled=TRUE AND age_assurance_status='adult' AND (SELECT COUNT(*) FROM player_mission_completions WHERE player_id=players.player_id)>=3",params!{"username"=>helper_username})?;
         let helper = helper.ok_or(StorageError::Command("helper is not eligible".into()))?;
@@ -2581,7 +2898,7 @@ impl MysqlStore {
             "acknowledge" => ("completed", "acknowledged", "owner"),
             _ => return Err(StorageError::Command("invalid cooperation action".into())),
         };
-        let mut connection = self.pool.get_conn()?;
+        let mut connection = self.connection()?;
         let mut tx = connection.start_transaction(TxOpts::default())?;
         tx.exec_drop("UPDATE cooperation_requests SET status=:to,recommendation_json=COALESCE(:recommendation,recommendation_json) WHERE request_id=:id AND status=:from AND expires_at>UTC_TIMESTAMP() AND ((:role='helper' AND helper_id=:actor) OR (:role='owner' AND owner_id=:actor))",params!{"to"=>to,"from"=>from,"id"=>request_id,"actor"=>actor,"role"=>role,"recommendation"=>recommendation.map(serde_json::to_string).transpose()?})?;
         if tx.affected_rows() != 1 {
@@ -2607,7 +2924,7 @@ impl MysqlStore {
         &self,
         player: &str,
     ) -> Result<Vec<CooperationRequest>, StorageError> {
-        let mut connection = self.pool.get_conn()?;
+        let mut connection = self.connection()?;
         connection.exec_drop("UPDATE cooperation_requests SET status='expired' WHERE status IN ('pending','accepted') AND expires_at<=UTC_TIMESTAMP()",())?;
         let rows:Vec<(String,String,String,String,String,String,String,Option<String>,bool,String)>=connection.exec(
             "SELECT r.request_id,o.username,h.username,r.case_id,r.venue_id,r.status,CAST(r.public_scene_json AS CHAR),CAST(r.recommendation_json AS CHAR),r.reward_granted,DATE_FORMAT(r.expires_at,'%Y-%m-%dT%H:%i:%sZ') FROM cooperation_requests r JOIN players o ON o.player_id=r.owner_id JOIN players h ON h.player_id=r.helper_id WHERE r.owner_id=:player OR r.helper_id=:player ORDER BY r.created_at DESC LIMIT 100",
@@ -2656,7 +2973,7 @@ impl MysqlStore {
     }
 
     pub fn cooperation_unblock(&self, actor: &str, blocked: &str) -> Result<(), StorageError> {
-        self.pool.get_conn()?.exec_drop(
+        self.connection()?.exec_drop(
             "DELETE FROM cooperation_blocks WHERE blocker_id=:actor AND blocked_id=:blocked",
             params! {"actor"=>actor,"blocked"=>blocked},
         )?;
@@ -2664,7 +2981,7 @@ impl MysqlStore {
     }
 
     pub fn cooperation_blocks(&self, actor: &str) -> Result<Vec<(String, String)>, StorageError> {
-        Ok(self.pool.get_conn()?.exec("SELECT p.player_id,p.username FROM cooperation_blocks b JOIN players p ON p.player_id=b.blocked_id WHERE b.blocker_id=:actor ORDER BY p.username",params!{"actor"=>actor})?)
+        Ok(self.connection()?.exec("SELECT p.player_id,p.username FROM cooperation_blocks b JOIN players p ON p.player_id=b.blocked_id WHERE b.blocker_id=:actor ORDER BY p.username",params!{"actor"=>actor})?)
     }
 }
 
@@ -2792,6 +3109,33 @@ fn project_normalized_content(
     Ok(())
 }
 
+fn enqueue_email(
+    transaction: &mut mysql::Transaction<'_>,
+    player_id: Option<&str>,
+    message_kind: &str,
+    message: &EmailMessage,
+    lifetime_minutes: u32,
+) -> Result<(), StorageError> {
+    transaction.exec_drop(
+        "INSERT INTO email_outbox(
+             player_id,message_kind,recipient,subject,text_body,html_body,expires_at
+         ) VALUES (
+             :player,:kind,:recipient,:subject,:text,:html,
+             TIMESTAMPADD(MINUTE,:lifetime,UTC_TIMESTAMP())
+         )",
+        params! {
+            "player"=>player_id,
+            "kind"=>message_kind,
+            "recipient"=>&message.recipient,
+            "subject"=>&message.subject,
+            "text"=>&message.text,
+            "html"=>&message.html,
+            "lifetime"=>lifetime_minutes,
+        },
+    )?;
+    Ok(())
+}
+
 fn apply_migration(connection: &mut mysql::PooledConn, sql: &str) -> Result<(), StorageError> {
     for statement in sql.split(';').map(str::trim).filter(|s| !s.is_empty()) {
         connection.query_drop(statement)?;
@@ -2803,7 +3147,7 @@ impl StateStore for MysqlStore {
     type Error = StorageError;
 
     fn load(&self, id: &str) -> Result<Option<Vec<u8>>, Self::Error> {
-        let mut connection = self.pool.get_conn()?;
+        let mut connection = self.connection()?;
         Ok(connection.exec_first(
             "SELECT state_json FROM active_cases WHERE case_id = :id",
             params! { "id" => id },
@@ -2811,7 +3155,7 @@ impl StateStore for MysqlStore {
     }
 
     fn save(&self, id: &str, version: u64, data: &[u8]) -> Result<(), Self::Error> {
-        let mut connection = self.pool.get_conn()?;
+        let mut connection = self.connection()?;
         let mut transaction = connection.start_transaction(TxOpts::default())?;
         let current: Option<u64> = transaction.exec_first(
             "SELECT version FROM active_cases WHERE case_id = :id FOR UPDATE",
@@ -3108,6 +3452,12 @@ mod tests {
             ("MYSQL_PASSWORD", "secret"),
             ("MYSQL_DATABASE", "naijachase"),
             ("MYSQL_SSL_MODE", "required"),
+            ("MYSQL_POOL_MIN", "3"),
+            ("MYSQL_POOL_MAX", "24"),
+            ("MYSQL_POOL_WAIT_TIMEOUT_MS", "1500"),
+            ("MYSQL_CONNECT_TIMEOUT_MS", "4000"),
+            ("MYSQL_READ_TIMEOUT_MS", "12000"),
+            ("MYSQL_WRITE_TIMEOUT_MS", "9000"),
         ];
         let config = MysqlConfig::from_lookup(|key| {
             values
@@ -3121,7 +3471,41 @@ mod tests {
         assert_eq!(config.user, "naijachase");
         assert_eq!(config.database, "naijachase");
         assert_eq!(config.ssl_mode, "required");
-        assert!(mysql::Opts::from(config.options()).get_ssl_opts().is_some());
+        let options = mysql::Opts::from(config.options());
+        assert!(options.get_ssl_opts().is_some());
+        assert_eq!(options.get_pool_opts().constraints().min(), 3);
+        assert_eq!(options.get_pool_opts().constraints().max(), 24);
+        assert_eq!(config.pool_wait_timeout, Duration::from_millis(1500));
+        assert_eq!(
+            options.get_tcp_connect_timeout(),
+            Some(Duration::from_secs(4))
+        );
+        assert_eq!(options.get_read_timeout(), Some(&Duration::from_secs(12)));
+        assert_eq!(options.get_write_timeout(), Some(&Duration::from_secs(9)));
+    }
+
+    #[test]
+    fn invalid_mysql_limits_are_rejected_before_connecting() {
+        let values = [
+            ("MYSQL_HOST", "127.0.0.1"),
+            ("MYSQL_PORT", "3306"),
+            ("MYSQL_USER", "naijachase"),
+            ("MYSQL_PASSWORD", "secret"),
+            ("MYSQL_DATABASE", "naijachase"),
+            ("MYSQL_POOL_MIN", "20"),
+            ("MYSQL_POOL_MAX", "10"),
+        ];
+        let error = MysqlConfig::from_lookup(|key| {
+            values
+                .iter()
+                .find(|(candidate, _)| candidate == &key)
+                .map(|(_, value)| (*value).to_owned())
+        })
+        .unwrap_err();
+        assert!(matches!(
+            error,
+            StorageError::InvalidMysqlSetting("MYSQL_POOL_MIN", _)
+        ));
     }
 
     #[test]
@@ -3745,8 +4129,14 @@ mod tests {
         let email = format!("auth-{id}@example.invalid");
         let token =
             |label: &str| format!("{:x}", Sha256::digest(format!("{id}-{label}")))[..32].to_owned();
+        let confirmation = EmailMessage {
+            recipient: email.clone(),
+            subject: "Confirm test account".into(),
+            text: "confirmation text".into(),
+            html: "<p>confirmation</p>".into(),
+        };
         store
-            .register_player(
+            .register_player_with_email(
                 player,
                 &email,
                 &id[..24],
@@ -3754,8 +4144,20 @@ mod tests {
                 "argon-hash",
                 &token("verification"),
                 BirthDate::new(29, 2, 2000).unwrap(),
+                &confirmation,
             )
             .unwrap();
+        let queued: u64 = store
+            .connection()
+            .unwrap()
+            .exec_first(
+                "SELECT COUNT(*) FROM email_outbox
+                 WHERE player_id=:player AND message_kind='confirmation' AND status='queued'",
+                params! {"player"=>player},
+            )
+            .unwrap()
+            .unwrap_or(0);
+        assert_eq!(queued, 1);
         let birth_date: Option<String> = store
             .pool
             .get_conn()
@@ -3770,7 +4172,33 @@ mod tests {
         assert!(!account.email_verified);
         assert_eq!(password, "argon-hash");
         assert!(!store.verify_email("wrong-hash").unwrap());
-        assert!(store.verify_email(&token("verification")).unwrap());
+        assert!(
+            store
+                .resend_confirmation(&email, &token("replacement-verification"), &confirmation)
+                .unwrap()
+        );
+        assert!(!store.verify_email(&token("verification")).unwrap());
+        let current_links: u64 = store
+            .connection()
+            .unwrap()
+            .exec_first(
+                "SELECT COUNT(*) FROM email_outbox
+                 WHERE player_id=:player AND message_kind='confirmation' AND status='queued'",
+                params! {"player"=>player},
+            )
+            .unwrap()
+            .unwrap_or(0);
+        assert_eq!(current_links, 1);
+        assert!(
+            store
+                .verify_email(&token("replacement-verification"))
+                .unwrap()
+        );
+        assert!(
+            store
+                .verify_email(&token("replacement-verification"))
+                .unwrap()
+        );
         store
             .create_session(
                 player,

@@ -86,3 +86,16 @@ test("password recovery is available without exposing account existence", () => 
   assert.match(controller, /completeRecovery\(\{ token/);
   assert.doesNotMatch(controller, /localStorage\.setItem\([^\n]*password/);
 });
+
+test("email confirmation supports pending login, expired links, and safe resend", () => {
+  const panel = read("screens/entry/AuthPanel.svelte");
+  const controller = read("state/app.svelte.ts");
+  const api = read("api/api.ts");
+  assert.match(panel, /Resend confirmation email/);
+  assert.match(panel, /app\.confirmationLinkInvalid/);
+  assert.match(controller, /e\.code === "invalid_confirmation"/);
+  assert.match(controller, /e\.code !== "email_unconfirmed"/);
+  assert.match(controller, /resendConfirmation\(email\)/);
+  assert.match(api, /\/v1\/auth\/confirmation\/resend/);
+  assert.doesNotMatch(panel + controller, /localStorage[^\n]*(confirm|token)/i);
+});

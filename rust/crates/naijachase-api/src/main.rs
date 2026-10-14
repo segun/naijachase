@@ -1,4 +1,4 @@
-use naijachase_api::{load_state, router, weekly_expiration_loop};
+use naijachase_api::{email_delivery_loop, load_state, router, weekly_expiration_loop};
 use tracing_subscriber::EnvFilter;
 
 #[tokio::main]
@@ -16,6 +16,9 @@ async fn main() {
     });
     let bind = state.config.bind.clone();
     tokio::spawn(weekly_expiration_loop(state.store.clone()));
+    for _ in 0..state.config.email_worker_count {
+        tokio::spawn(email_delivery_loop(state.clone()));
+    }
     let listener = tokio::net::TcpListener::bind(&bind)
         .await
         .unwrap_or_else(|error| {

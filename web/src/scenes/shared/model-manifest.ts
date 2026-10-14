@@ -26,8 +26,14 @@ export type ModelSpec = {
   checked?: boolean;
 };
 
+declare const __NAIJACHASE_3D_ASSET_VERSION__: string;
+
 export const ASSET_ROOT = "/assets/3d/";
-export const modelUrl = (spec: ModelSpec) => ASSET_ROOT + spec.file;
+/** Vite replaces this with a hash of every deployed GLB. */
+export const ASSET_VERSION = typeof __NAIJACHASE_3D_ASSET_VERSION__ === "string"
+  ? __NAIJACHASE_3D_ASSET_VERSION__
+  : "development";
+export const modelUrl = (spec: ModelSpec) => `${ASSET_ROOT}${spec.file}?v=${encodeURIComponent(ASSET_VERSION)}`;
 
 const person = (folder: string, name: string, size: number): [string, ModelSpec] => [name, { file: `characters/${folder}/${name}.glb`, kind: "person", size }];
 const animal = (name: string, size: number): [string, ModelSpec] => [name, { file: `animals/${name}.glb`, kind: "animal", size }];

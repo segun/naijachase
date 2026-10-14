@@ -41,10 +41,14 @@ NAIJACHASE_ALLOWED_ORIGINS=http://localhost:4173,http://127.0.0.1:4173
 ```
 
 The sender must be authorized in Cloudflare. The public web URL becomes the
-base of each one-time confirmation link. Registration commits before delivery
-and returns immediately; email is attempted asynchronously. A provider outage
-is logged but does not delete the account or turn registration into a 502. The
-account remains unable to log in until its confirmation token is consumed.
+base of each one-time confirmation link. Registration commits the account,
+confirmation token, and durable outbox row in one transaction, then returns
+immediately. A background worker claims queued mail, retries temporary provider
+failures with bounded backoff, and recovers rows left in-flight by a restart.
+Password-reset mail uses the same outbox. Sent, expired, superseded, and
+terminally failed rows have their address, link, and message bodies erased. A
+provider outage does not delete the account or turn registration into a 502.
+The account remains unable to log in until its confirmation token is consumed.
 
 `CLOUDFLARE_ACCOUNT_ID` must be the Cloudflare **account ID**, not a zone ID.
 In Compute → Email Service → Email Sending, onboard the sender domain and wait
@@ -66,6 +70,10 @@ inherited from an IDE or parent shell.
   Returns after the account and confirmation token are
   persisted, without waiting for Cloudflare delivery.
 - `POST /v1/auth/confirm`: consumes the one-time `token` from the email link.
+- `POST /v1/auth/confirmation/resend`: accepts `email`, invalidates unused old
+  links, and transactionally queues a new 24-hour link. Unknown, verified, and
+  pending accounts receive the same generic `202` response. The operation is
+  rate-limited.
 - `POST /v1/auth/login`: `email` and `password`; email must be confirmed.
 - `POST /v1/auth/logout`: revokes the current session.
 - `POST /v1/auth/logout-all`: revokes every session for the account.
@@ -73,7 +81,8 @@ inherited from an IDE or parent shell.
 - `GET /v1/auth/sessions`: lists safe device-session metadata.
 - `DELETE /v1/auth/sessions/{session_id}`: revokes one owned device session.
 - `POST /v1/auth/recovery/request`: sends a generic, rate-limited recovery
-  response without revealing whether an email is registered.
+  response without revealing whether an email is registered. A new request
+  supersedes older unused reset links and queued messages.
 - `POST /v1/auth/recovery/complete`: consumes a 30-minute recovery token,
   replaces the Argon2id password hash, and revokes all sessions.
 - `GET /v1/auth/me`: returns the current public account.
@@ -99,6 +108,32 @@ moderation, and anti-cheat requirements are implemented.
 The machine-readable contract is `schemas/openapi-v1.json`; generated frontend
 DTOs are in `contracts/typescript/api-v1.ts`, with integration guidance and
 examples in `docs/ui-api-handoff.md`.
+
+## Runtime limits
+
+The API bounds work before it reaches MySQL. Configure these per API process:
+
+```dotenv
+MYSQL_POOL_MIN=2
+MYSQL_POOL_MAX=32
+MYSQL_POOL_WAIT_TIMEOUT_MS=2000
+MYSQL_CONNECT_TIMEOUT_MS=5000
+MYSQL_READ_TIMEOUT_MS=15000
+MYSQL_WRITE_TIMEOUT_MS=15000
+NAIJACHASE_REQUEST_TIMEOUT_SECONDS=25
+NAIJACHASE_MAX_CONCURRENT_REQUESTS=128
+```
+
+Pool exhaustion returns `503` with `{"error":"database_busy",...}`. API
+deadline expiry returns `503` with `{"error":"request_timed_out",...}` and
+immediate load shedding returns `503` with `{"error":"service_busy",...}`.
+Clients may offer a manual retry. They must not create a new command ID when
+retrying a state-changing case command. Liveness remains available while the
+application is shedding load; readiness performs a bounded MySQL check.
+
+These are starting values, not permanent capacity claims. The combined
+`MYSQL_POOL_MAX` of every API process must fit the database server's connection
+budget, and changes should follow production-shaped load tests.
 
 ## Case endpoints
 

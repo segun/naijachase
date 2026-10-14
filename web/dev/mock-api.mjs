@@ -230,8 +230,10 @@ const server = http.createServer(async (req, res) => {
       return send(201, { message: "Account created. Check your email to confirm it." });
     }
     if (path === "/v1/auth/confirm") return send(200, { message: "Email confirmed. You can now log in." });
+    if (path === "/v1/auth/confirmation/resend") return send(202, { message: "If that account is awaiting confirmation, a new link has been queued." });
     if (path === "/v1/auth/login") {
       if (body.email === "limit@x.com") throw new HttpError(429, "rate_limited", "slow down");
+      if (body.email === "pending@x.com") throw new HttpError(403, "email_unconfirmed", "confirm your email before logging in");
       if (!body.email || !body.password || body.password === "wrong") throw new HttpError(401, "unauthorized", "Email or password is incorrect.");
       player = { ...player, email: body.email, username: body.email.split("@")[0] };
       const id = `s${Math.random().toString(16).slice(2)}`;

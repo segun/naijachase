@@ -1,7 +1,7 @@
 import type {
   AbandonCaseRequest, AbandonCaseResponse, AssignCaseRequest, AuthResponse, AvatarCatalogue, AvatarProfile, AvatarSelectionRequest, CaseArchiveEntry, CaseResponse, CatalogueProgress, ClientCommand, CurrentActivityResponse, CurrentCaseResponse, ExecuteRequest, GameEvent,
   LoginRequest, PlayerSession, ProfileUpdate, ProgressionSummary, RecoveryCompleteRequest,
-  RecoveryRequest, RegisterRequest, ReplayCaseRequest, TransportLedgerEntry, TransportQuote,
+  RecoveryRequest, ResendConfirmationRequest, RegisterRequest, ReplayCaseRequest, TransportLedgerEntry, TransportQuote,
   DisciplinaryCase, JailStatus, PressureAttemptRecord, PressureResult, PressureWitnessRequest, TokenBalance, TokenLedgerEntry,
   AssistantRoutesResponse, CatalogueHealth, CompleteCooperationRequest, ContentRoleResponse, CooperationPreferences, CooperationReportRequest, CooperationRequest, CreateCooperationRequest, DossierOptions, MissionAdminDetails, MissionTransitionRequest, MissionValidation, ReleaseNotification
 } from "../../../contracts/typescript/api-v1.ts";
@@ -64,6 +64,7 @@ export class ContentApi {
 export class Api {
   register = (body: RegisterRequest) => call<Message>("/v1/auth/register", "POST", body);
   confirm = (token: string) => call<Message>("/v1/auth/confirm", "POST", { token });
+  resendConfirmation = (email: string) => call<Message>("/v1/auth/confirmation/resend", "POST", { email } satisfies ResendConfirmationRequest);
   login = (body: LoginRequest) => call<AuthResponse>("/v1/auth/login", "POST", body);
   me = () => call<AuthResponse>("/v1/auth/me");
   refresh = () => call<Message>("/v1/auth/refresh", "POST");

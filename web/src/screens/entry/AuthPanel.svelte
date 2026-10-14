@@ -8,7 +8,7 @@
   import { birthDateError, birthDays, birthYears } from "../../domain/birth-date.mjs";
 
   let { app }: { app: AppController } = $props();
-  type Mode="login"|"register"|"forgot"|"forgot-sent"|"reset";
+  type Mode="login"|"register"|"confirmation"|"forgot"|"forgot-sent"|"reset";
   const resetToken=new URLSearchParams(location.search).get("reset")??"";
   let mode = $state<Mode>(resetToken?"reset":"login");
   let email = $state(""), password = $state(""), confirm = $state(""), username = $state("");
@@ -21,6 +21,9 @@
   const days = $derived(birthDays(dobYear, dobMonth));
   $effect(() => {
     if (dobDay !== undefined && !days.includes(dobDay)) dobDay = undefined;
+  });
+  $effect(() => {
+    if (app.confirmationLinkInvalid && mode === "login") mode = "confirmation";
   });
   const dobError = $derived(
     dobSubmitted || (dobDay !== undefined && dobMonth !== undefined && dobYear !== undefined)
@@ -35,13 +38,16 @@
     event.preventDefault();
     if (mode === "login") {
       if (await app.login(email, password)) { password = ""; app.go("cases"); }
+      else if (app.confirmationRequiredFor) { email = app.confirmationRequiredFor; password = ""; mode = "confirmation"; }
     } else if(mode==="register") {
       dobSubmitted = true;
       if (!accepted) return;
       if (dobDay === undefined || dobMonth === undefined || dobYear === undefined || birthDateError(dobDay, dobMonth, dobYear)) return;
       if (await app.register({ email, password, confirm, username, homeBase, dobDay, dobMonth, dobYear })) {
-        password = ""; confirm = ""; dobDay = undefined; dobMonth = undefined; dobYear = undefined; dobSubmitted = false; accepted = false; mode = "login";
+        password = ""; confirm = ""; dobDay = undefined; dobMonth = undefined; dobYear = undefined; dobSubmitted = false; accepted = false; mode = "confirmation";
       }
+    } else if(mode==="confirmation" && await app.resendConfirmation(email)) {
+      app.confirmationLinkInvalid = false;
     } else if(mode==="forgot" && await app.requestPasswordReset(email)){
       mode="forgot-sent";
     } else if(mode==="reset" && matches && await app.completePasswordReset(resetToken,password,confirm)){
@@ -71,13 +77,22 @@
     <MusicToggle music={app.music} />
     <div class="auth-card card rise">
       <p class="eyebrow">Investigator access</p>
-      <h1>{mode === "login" ? "Welcome back" : mode === "register" ? "Join the agency" : mode === "reset" ? "Choose a new password" : "Recover your account"}</h1>
+      <h1>{mode === "login" ? "Welcome back" : mode === "register" ? "Join the agency" : mode === "confirmation" ? "Confirm your email" : mode === "reset" ? "Choose a new password" : "Recover your account"}</h1>
       {#if mode==="login"||mode==="register"}<div class="segmented" role="group" aria-label="Account action">
         <button type="button" aria-pressed={mode === "login"} onclick={() => (mode = "login")}>Log in</button>
         <button type="button" aria-pressed={mode === "register"} onclick={() => (mode = "register")}>Create account</button>
       </div>{/if}
 
-      {#if mode==="forgot-sent"}
+      {#if mode==="confirmation"}
+        <div class="recovery-sent" role="status">
+          <Icon name="mail"/><h2>Check your email</h2>
+          <p class="muted">We queued a confirmation link for <strong>{email || "your account email"}</strong>. It expires after 24 hours.</p>
+          {#if app.confirmationLinkInvalid}<p class="muted">That confirmation link is invalid, expired, or has already been replaced. Enter your email to request a fresh link.</p>{/if}
+          <label class="field"><span>Email</span><input class="input" bind:value={email} required type="email" autocomplete="email" /></label>
+          <button class="btn btn-primary btn-block" type="button" disabled={app.busy || !email} onclick={() => app.resendConfirmation(email)}>{app.busy ? `${app.busyLabel}…` : "Resend confirmation email"}</button>
+          <button class="auth-link" type="button" onclick={() => { app.confirmationRequiredFor = ""; mode = "login"; }}>Return to login</button>
+        </div>
+      {:else if mode==="forgot-sent"}
         <div class="recovery-sent" role="status"><Icon name="mail"/><h2>Check your email</h2><p class="muted">If an account exists for <strong>{email}</strong>, we sent a password-reset link. The link expires in 30 minutes.</p><button class="btn btn-primary btn-block" type="button" onclick={() => mode = "login"}>Return to login</button></div>
       {:else}
       <form class="form" class:form-grid={mode === "register"} onsubmit={submit}>

@@ -31,7 +31,7 @@ impl MysqlStore {
             ));
         }
         let id = uuid::Uuid::new_v4().to_string();
-        let mut c = self.pool.get_conn()?;
+        let mut c = self.connection()?;
         let mut tx = c.start_transaction(TxOpts::default())?;
         tx.exec_drop("INSERT INTO player_groups(group_id,group_name,owner_id,capacity) VALUES(:id,:name,:owner,:capacity)",params!{"id"=>&id,"name"=>name,"owner"=>owner,"capacity"=>capacity})?;
         tx.exec_drop(
@@ -58,7 +58,7 @@ impl MysqlStore {
         group: &str,
         username: &str,
     ) -> Result<String, StorageError> {
-        let mut c = self.pool.get_conn()?;
+        let mut c = self.connection()?;
         let mut tx = c.start_transaction(TxOpts::default())?;
         if !matches!(
             Self::group_role(&mut tx, group, actor)?.as_deref(),
@@ -88,7 +88,7 @@ impl MysqlStore {
         id: &str,
         accept: bool,
     ) -> Result<(), StorageError> {
-        let mut c = self.pool.get_conn()?;
+        let mut c = self.connection()?;
         let mut tx = c.start_transaction(TxOpts::default())?;
         let row:Option<(String,String,u16,u64)>=tx.exec_first("SELECT i.group_id,i.invitee_id,g.capacity,(SELECT COUNT(*) FROM group_members WHERE group_id=i.group_id) FROM group_invitations i JOIN player_groups g ON g.group_id=i.group_id WHERE i.invitation_id=:id AND i.status='pending' AND i.expires_at>UTC_TIMESTAMP() FOR UPDATE",params!{"id"=>id})?;
         let (group, invitee, capacity, count) = row.ok_or(StorageError::Forbidden)?;
@@ -115,7 +115,7 @@ impl MysqlStore {
         player: &str,
         group: &str,
     ) -> Result<serde_json::Value, StorageError> {
-        let mut c = self.pool.get_conn()?;
+        let mut c = self.connection()?;
         let member: u64 = c
             .exec_first(
                 "SELECT COUNT(*) FROM group_members WHERE group_id=:group AND player_id=:player",
@@ -137,7 +137,7 @@ impl MysqlStore {
         )
     }
     pub fn leave_group(&self, player: &str, group: &str) -> Result<(), StorageError> {
-        let mut c = self.pool.get_conn()?;
+        let mut c = self.connection()?;
         let mut tx = c.start_transaction(TxOpts::default())?;
         let role = Self::group_role(&mut tx, group, player)?.ok_or(StorageError::Forbidden)?;
         if role == "owner" {
@@ -159,7 +159,7 @@ impl MysqlStore {
         group: &str,
         target: &str,
     ) -> Result<(), StorageError> {
-        let mut c = self.pool.get_conn()?;
+        let mut c = self.connection()?;
         let mut tx = c.start_transaction(TxOpts::default())?;
         if Self::group_role(&mut tx, group, owner)?.as_deref() != Some("owner")
             || Self::group_role(&mut tx, group, target)?.is_none()
@@ -185,7 +185,7 @@ impl MysqlStore {
         seed: u64,
         template: &GameState,
     ) -> Result<String, StorageError> {
-        let mut c = self.pool.get_conn()?;
+        let mut c = self.connection()?;
         let mut tx = c.start_transaction(TxOpts::default())?;
         let existing:Option<String>=tx.exec_first("SELECT challenge_id FROM weekly_challenges WHERE group_id=:group AND week_key=DATE(FROM_UNIXTIME(:starts)) FOR UPDATE",params!{"group"=>group,"starts"=>starts})?;
         if let Some(id) = existing {
@@ -214,7 +214,7 @@ impl MysqlStore {
         player: &str,
         challenge: &str,
     ) -> Result<String, StorageError> {
-        let mut c = self.pool.get_conn()?;
+        let mut c = self.connection()?;
         let mut tx = c.start_transaction(TxOpts::default())?;
         let row:Option<(String,String)>=tx.exec_first("SELECT CAST(w.template_state_json AS CHAR),w.status FROM weekly_challenges w JOIN weekly_entrants e ON e.challenge_id=w.challenge_id AND e.player_id=:player AND e.eligible=TRUE WHERE w.challenge_id=:challenge AND UTC_TIMESTAMP()>=w.starts_at AND UTC_TIMESTAMP()<w.ends_at FOR UPDATE",params!{"player"=>player,"challenge"=>challenge})?;
         let (state, status) = row.ok_or(StorageError::Forbidden)?;
@@ -237,7 +237,7 @@ impl MysqlStore {
         player: &str,
         attempt: &str,
     ) -> Result<WeeklyAttemptView, StorageError> {
-        let mut c = self.pool.get_conn()?;
+        let mut c = self.connection()?;
         let row:Option<(String,String,u64,String,String,String,Option<String>,Option<String>,Option<String>,Option<i64>,Option<u32>,u32)>=c.exec_first("SELECT a.challenge_id,a.status,a.state_version,CAST(a.state_json AS CHAR),DATE_FORMAT(w.starts_at,'%Y-%m-%dT%H:%i:%sZ'),DATE_FORMAT(w.ends_at,'%Y-%m-%dT%H:%i:%sZ'),w.winner_attempt_id,t.destination,t.mode,TIMESTAMPDIFF(SECOND,UTC_TIMESTAMP(),t.arrives_at),t.duration_seconds,GREATEST(0,TIMESTAMPDIFF(MINUTE,DATE_SUB(w.ends_at,INTERVAL 7 DAY),UTC_TIMESTAMP())) FROM weekly_attempts a JOIN weekly_challenges w ON w.challenge_id=a.challenge_id LEFT JOIN weekly_transits t ON t.attempt_id=a.attempt_id AND t.completed_at IS NULL WHERE a.attempt_id=:attempt AND a.player_id=:player",params!{"attempt"=>attempt,"player"=>player})?;
         let (
             challenge_id,
@@ -265,7 +265,7 @@ impl MysqlStore {
         &self,
         player: &str,
     ) -> Result<Vec<WeeklyAttemptView>, StorageError> {
-        let attempt_ids: Vec<String> = self.pool.get_conn()?.exec(
+        let attempt_ids: Vec<String> = self.connection()?.exec(
             "SELECT a.attempt_id FROM weekly_attempts a JOIN weekly_challenges w ON w.challenge_id=a.challenge_id WHERE a.player_id=:player AND a.status IN('active','in_transit') AND w.status='open' AND UTC_TIMESTAMP()>=w.starts_at AND UTC_TIMESTAMP()<w.ends_at ORDER BY a.started_at DESC",
             params! { "player" => player },
         )?;
@@ -291,7 +291,7 @@ impl MysqlStore {
         if !matches!(mode, "fly" | "drive" | "hitch_ride") || duration_seconds == 0 {
             return Err(StorageError::Command("invalid transit".into()));
         }
-        let mut c = self.pool.get_conn()?;
+        let mut c = self.connection()?;
         let mut tx = c.start_transaction(TxOpts::default())?;
         let row:Option<(String,String,String,String)>=tx.exec_first("SELECT a.challenge_id,a.status,CAST(a.state_json AS CHAR),w.status FROM weekly_attempts a JOIN weekly_challenges w ON w.challenge_id=a.challenge_id WHERE a.attempt_id=:attempt AND a.player_id=:player AND UTC_TIMESTAMP()<w.ends_at FOR UPDATE",params!{"attempt"=>attempt,"player"=>player})?;
         let (challenge, status, current_json, challenge_status) =
@@ -321,7 +321,7 @@ impl MysqlStore {
         player: &str,
         attempt: &str,
     ) -> Result<Vec<serde_json::Value>, StorageError> {
-        let rows: Vec<String> = self.pool.get_conn()?.exec(
+        let rows: Vec<String> = self.connection()?.exec(
             "SELECT CAST(t.event_json AS CHAR) FROM weekly_transits t JOIN weekly_attempts a ON a.attempt_id=t.attempt_id WHERE t.attempt_id=:attempt AND a.player_id=:player AND t.completed_at IS NOT NULL AND t.event_json IS NOT NULL ORDER BY t.departed_at,t.transit_id",
             params! {"attempt"=>attempt,"player"=>player},
         )?;
@@ -334,7 +334,7 @@ impl MysqlStore {
         player: &str,
         attempt: &str,
     ) -> Result<bool, StorageError> {
-        let mut c = self.pool.get_conn()?;
+        let mut c = self.connection()?;
         let mut tx = c.start_transaction(TxOpts::default())?;
         let row:Option<(String,String,String)>=tx.exec_first("SELECT t.transit_id,CAST(t.arrival_state_json AS CHAR),a.challenge_id FROM weekly_transits t JOIN weekly_attempts a ON a.attempt_id=t.attempt_id WHERE t.attempt_id=:attempt AND a.player_id=:player AND t.completed_at IS NULL AND t.arrives_at<=UTC_TIMESTAMP() FOR UPDATE",params!{"attempt"=>attempt,"player"=>player})?;
         let Some((transit, state, challenge)) = row else {
@@ -359,7 +359,7 @@ impl MysqlStore {
     where
         F: FnOnce(GameState) -> Result<GameState, String>,
     {
-        let mut c = self.pool.get_conn()?;
+        let mut c = self.connection()?;
         let mut tx = c.start_transaction(TxOpts::default())?;
         let row:Option<(String,String,u64,String,String,u32)>=tx.exec_first("SELECT a.challenge_id,a.status,a.state_version,CAST(a.state_json AS CHAR),w.status,GREATEST(0,TIMESTAMPDIFF(MINUTE,DATE_SUB(w.ends_at,INTERVAL 7 DAY),UTC_TIMESTAMP())) FROM weekly_attempts a JOIN weekly_challenges w ON w.challenge_id=a.challenge_id WHERE a.attempt_id=:attempt AND a.player_id=:player AND UTC_TIMESTAMP()<w.ends_at FOR UPDATE",params!{"attempt"=>attempt,"player"=>player})?;
         let (challenge, status, version, state, challenge_status, real_minutes) =
@@ -398,7 +398,7 @@ impl MysqlStore {
         target: &str,
         role: Option<&str>,
     ) -> Result<(), StorageError> {
-        let mut c = self.pool.get_conn()?;
+        let mut c = self.connection()?;
         let mut tx = c.start_transaction(TxOpts::default())?;
         let actor_role = Self::group_role(&mut tx, group, actor)?.ok_or(StorageError::Forbidden)?;
         let target_role =
@@ -426,7 +426,7 @@ impl MysqlStore {
         Ok(())
     }
     pub fn delete_group(&self, owner: &str, group: &str) -> Result<(), StorageError> {
-        let mut c = self.pool.get_conn()?;
+        let mut c = self.connection()?;
         let mut tx = c.start_transaction(TxOpts::default())?;
         if Self::group_role(&mut tx, group, owner)?.as_deref() != Some("owner") {
             return Err(StorageError::Forbidden);
@@ -443,7 +443,7 @@ impl MysqlStore {
         player: &str,
         challenge: &str,
     ) -> Result<serde_json::Value, StorageError> {
-        let mut c = self.pool.get_conn()?;
+        let mut c = self.connection()?;
         let member:u64=c.exec_first("SELECT COUNT(*) FROM weekly_challenges w JOIN group_members m ON m.group_id=w.group_id WHERE w.challenge_id=:challenge AND m.player_id=:player",params!{"challenge"=>challenge,"player"=>player})?.unwrap_or(0);
         if member != 1 {
             return Err(StorageError::Forbidden);
@@ -455,7 +455,7 @@ impl MysqlStore {
         )
     }
     pub fn weekly_history(&self, player: &str) -> Result<Vec<serde_json::Value>, StorageError> {
-        let rows:Vec<(String,String,String,String)>=self.pool.get_conn()?.exec("SELECT w.challenge_id,g.group_name,w.status,DATE_FORMAT(w.week_key,'%Y-%m-%d') FROM weekly_challenges w JOIN player_groups g ON g.group_id=w.group_id JOIN group_members m ON m.group_id=g.group_id WHERE m.player_id=:player ORDER BY w.week_key DESC LIMIT 52",params!{"player"=>player})?;
+        let rows:Vec<(String,String,String,String)>=self.connection()?.exec("SELECT w.challenge_id,g.group_name,w.status,DATE_FORMAT(w.week_key,'%Y-%m-%d') FROM weekly_challenges w JOIN player_groups g ON g.group_id=w.group_id JOIN group_members m ON m.group_id=g.group_id WHERE m.player_id=:player ORDER BY w.week_key DESC LIMIT 52",params!{"player"=>player})?;
         Ok(rows.into_iter().map(|(challenge_id,group_name,status,week)|serde_json::json!({"challenge_id":challenge_id,"group_name":group_name,"status":status,"week":week})).collect())
     }
     pub fn set_weekly_notifications(
@@ -464,18 +464,18 @@ impl MysqlStore {
         web: bool,
         email: bool,
     ) -> Result<(), StorageError> {
-        self.pool.get_conn()?.exec_drop("UPDATE players SET weekly_web_notifications=:web,weekly_email_notifications=:email WHERE player_id=:player",params!{"player"=>player,"web"=>web,"email"=>email})?;
+        self.connection()?.exec_drop("UPDATE players SET weekly_web_notifications=:web,weekly_email_notifications=:email WHERE player_id=:player",params!{"player"=>player,"web"=>web,"email"=>email})?;
         Ok(())
     }
     pub fn weekly_notifications(
         &self,
         player: &str,
     ) -> Result<Vec<serde_json::Value>, StorageError> {
-        let rows:Vec<(u64,String,String,String,Option<String>)>=self.pool.get_conn()?.exec("SELECT notification_id,notification_type,channel,CAST(payload_json AS CHAR),DATE_FORMAT(read_at,'%Y-%m-%dT%H:%i:%sZ') FROM weekly_notifications WHERE player_id=:player ORDER BY created_at DESC LIMIT 100",params!{"player"=>player})?;
+        let rows:Vec<(u64,String,String,String,Option<String>)>=self.connection()?.exec("SELECT notification_id,notification_type,channel,CAST(payload_json AS CHAR),DATE_FORMAT(read_at,'%Y-%m-%dT%H:%i:%sZ') FROM weekly_notifications WHERE player_id=:player ORDER BY created_at DESC LIMIT 100",params!{"player"=>player})?;
         rows.into_iter().map(|(id,kind,channel,payload,read_at)|Ok(serde_json::json!({"notification_id":id,"type":kind,"channel":channel,"payload":serde_json::from_str::<serde_json::Value>(&payload)?,"read_at":read_at}))).collect()
     }
     pub fn group_invitations(&self, player: &str) -> Result<Vec<serde_json::Value>, StorageError> {
-        let rows:Vec<(String,String,String,String,String)>=self.pool.get_conn()?.exec("SELECT i.invitation_id,i.status,g.group_id,g.group_name,DATE_FORMAT(i.expires_at,'%Y-%m-%dT%H:%i:%sZ') FROM group_invitations i JOIN player_groups g ON g.group_id=i.group_id WHERE i.invitee_id=:player ORDER BY i.created_at DESC LIMIT 100",params!{"player"=>player})?;
+        let rows:Vec<(String,String,String,String,String)>=self.connection()?.exec("SELECT i.invitation_id,i.status,g.group_id,g.group_name,DATE_FORMAT(i.expires_at,'%Y-%m-%dT%H:%i:%sZ') FROM group_invitations i JOIN player_groups g ON g.group_id=i.group_id WHERE i.invitee_id=:player ORDER BY i.created_at DESC LIMIT 100",params!{"player"=>player})?;
         Ok(rows.into_iter().map(|(invitation_id,status,group_id,group_name,expires_at)|serde_json::json!({"invitation_id":invitation_id,"status":status,"group_id":group_id,"group_name":group_name,"expires_at":expires_at})).collect())
     }
     pub fn cancel_weekly_challenge(
@@ -487,7 +487,7 @@ impl MysqlStore {
         if reason.trim().is_empty() || reason.len() > 500 {
             return Err(StorageError::Command("cancellation reason required".into()));
         }
-        let mut c = self.pool.get_conn()?;
+        let mut c = self.connection()?;
         let mut tx = c.start_transaction(TxOpts::default())?;
         let role:Option<String>=tx.exec_first("SELECT m.role FROM weekly_challenges w JOIN group_members m ON m.group_id=w.group_id WHERE w.challenge_id=:challenge AND m.player_id=:actor FOR UPDATE",params!{"challenge"=>challenge,"actor"=>actor})?;
         if !matches!(role.as_deref(), Some("owner" | "admin")) {
@@ -505,7 +505,7 @@ impl MysqlStore {
         Ok(())
     }
     pub fn expire_weekly_challenges(&self) -> Result<u64, StorageError> {
-        let mut c = self.pool.get_conn()?;
+        let mut c = self.connection()?;
         let mut tx = c.start_transaction(TxOpts::default())?;
         tx.exec_drop("UPDATE weekly_challenges SET status='expired' WHERE status IN('registration','open') AND ends_at<=UTC_TIMESTAMP() AND winner_attempt_id IS NULL",())?;
         let count = tx.affected_rows();
@@ -519,7 +519,7 @@ impl MysqlStore {
         challenge: &str,
         after: u64,
     ) -> Result<Vec<serde_json::Value>, StorageError> {
-        let mut c = self.pool.get_conn()?;
+        let mut c = self.connection()?;
         let member:u64=c.exec_first("SELECT COUNT(*) FROM weekly_challenges w JOIN group_members m ON m.group_id=w.group_id WHERE w.challenge_id=:challenge AND m.player_id=:player",params!{"challenge"=>challenge,"player"=>player})?.unwrap_or(0);
         if member != 1 {
             return Err(StorageError::Forbidden);

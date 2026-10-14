@@ -1,7 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import { MODELS, ASSET_ROOT, avatarModelId, baseYaw, measureOf, modelSpec, modelUrl } from "../src/scenes/shared/model-manifest.ts";
+import { MODELS, ASSET_ROOT, ASSET_VERSION, avatarModelId, baseYaw, measureOf, modelSpec, modelUrl } from "../src/scenes/shared/model-manifest.ts";
+import { assetVersion } from "../dev/asset-version.mjs";
 
 const assetDir = new URL("../public/assets/3d/", import.meta.url);
 
@@ -14,7 +15,16 @@ test("every model has a sensible size, a unique file and a .glb path", () => {
     files.add(spec.file);
     assert.equal(spec.file.split("/").pop(), `${id}.glb`, `${id}: the id is the file name`);
   }
-  assert.equal(modelUrl(MODELS.car_player_runabout), `${ASSET_ROOT}vehicles/car_player_runabout.glb`);
+  assert.equal(modelUrl(MODELS.car_player_runabout), `${ASSET_ROOT}vehicles/car_player_runabout.glb?v=${ASSET_VERSION}`);
+});
+
+test("production model URLs use a stable content-derived cache version", () => {
+  const version = assetVersion(new URL("../public/assets/3d", import.meta.url).pathname);
+  assert.match(version, /^[a-f0-9]{20}$/);
+  assert.match(modelUrl(MODELS.car_player_runabout), /\.glb\?v=[a-zA-Z0-9]+$/);
+  const vite = fs.readFileSync(new URL("../vite.config.ts", import.meta.url), "utf8");
+  assert.match(vite, /__NAIJACHASE_3D_ASSET_VERSION__/);
+  assert.match(vite, /assetVersion\(\)/);
 });
 
 test("the ten avatar picker ids map onto their model files", () => {

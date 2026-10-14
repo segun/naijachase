@@ -69,6 +69,8 @@ export class AppController {
   trail = $state<string[]>(JSON.parse(sessionStorage.getItem("nc-trail") ?? "[]"));
   toasts = $state<Toast[]>([]);
   announcement = $state("");
+  confirmationRequiredFor = $state("");
+  confirmationLinkInvalid = $state(false);
   settings = $state<Settings>(readSettings());
 
   summary = $state<ProgressionSummary | null>(null);
@@ -262,6 +264,7 @@ export class AppController {
       if (confirmToken) {
         const out = await this.api.confirm(confirmToken);
         history.replaceState({}, "", "/");
+        this.confirmationLinkInvalid = false;
         this.screen = "cases";
         this.toast(out.message ?? "Email confirmed. You can now log in.", "success");
       } else if (reset) {
@@ -288,13 +291,25 @@ export class AppController {
       }
     } catch (e) {
       // Confirmation or reset links can fail; a plain 401 just means "not signed in".
-      if (confirmToken || reset) { this.screen = "cases"; this.fail(e); }
+      if (confirmToken || reset) {
+        this.screen = "cases";
+        if (confirmToken && e instanceof ApiError && e.code === "invalid_confirmation") {
+          history.replaceState({}, "", "/");
+          this.confirmationLinkInvalid = true;
+        }
+        this.fail(e);
+      }
       else { this.player = null; this.screen = "welcome"; }
     } finally { this.booting = false; }
   }
 
   async login(email: string, password: string) {
-    const out = await this.run("Signing in", () => this.api.login({ email, password }));
+    this.confirmationRequiredFor = "";
+    const out = await this.run("Signing in", () => this.api.login({ email, password }), e => {
+      if (e.code !== "email_unconfirmed") return false;
+      this.confirmationRequiredFor = email.trim();
+      return true;
+    });
     if (!out) return false;
     this.player = out.player;
     void this.loadDossierOptions();
@@ -351,6 +366,12 @@ export class AppController {
       dob_day: form.dobDay, dob_month: form.dobMonth, dob_year: form.dobYear
     }));
     if (out) this.toast(out.message ?? "Account created. Check your email to confirm it.", "success");
+    return Boolean(out);
+  }
+
+  async resendConfirmation(email: string) {
+    const out = await this.run("Queueing confirmation email", () => this.api.resendConfirmation(email));
+    if (out) this.toast(out.message ?? "If that account is awaiting confirmation, a new link has been queued.", "success");
     return Boolean(out);
   }
 

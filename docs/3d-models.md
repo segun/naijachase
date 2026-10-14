@@ -13,6 +13,8 @@ for what exists see [3d-asset-progress.md](./3d-asset-progress.md).
 | `Stage.addModelFigure(preset)` | The player's avatar from its GLB, or `null` (then use `addFigure`, the procedural avatar). |
 
 Files are plain static files served from `/assets/3d/`; a scene downloads a model only when it needs it, and the browser caches it.
+Production builds append a content-derived catalogue version to every model URL. This makes the one-year immutable Nginx cache safe:
+changing any GLB changes the version used by the next deployment, while unchanged releases keep the same cache key.
 Nothing from the models is in the main bundle, and the Babylon.js loader is imported lazily.
 
 ## Where the models are used so far

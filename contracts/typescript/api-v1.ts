@@ -16,6 +16,7 @@ export type RegisterRequest={email:string;username:string;home_base:string;passw
 export type LoginRequest={email:string;password:string};
 export type ProfileUpdate={display_name?:string|null;pronouns?:string|null;sex?:string|null;avatar_id?:string|null;uniform_id?:string|null;home_base:string;leaderboard_opt_in:boolean};
 export type RecoveryRequest={email:string};
+export type ResendConfirmationRequest={email:string};
 export type RecoveryCompleteRequest={token:string;password:string;confirm_password:string};
 export type InterstateMode="fly"|"drive"|"hitch_ride";
 export type LocalMode="drive"|"hitch_ride";

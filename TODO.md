@@ -1410,6 +1410,10 @@ scores, rank, detection odds, panel votes, punishment, or jail time.
 
 #### P3.11 — Release readiness
 
+- [x] Bound MySQL pool size and connect/read/write time, and protect the API with
+  configurable request deadlines, concurrent-request limits, load shedding, and
+  stable JSON `503` responses. Production defaults remain below Nginx's timeout.
+
 - [x] Add explicit MySQL transport encryption configuration, require it in the
   staging/production environment templates, and bind the API to loopback for
   Nginx proxying.
@@ -1425,7 +1429,7 @@ scores, rank, detection odds, panel votes, punishment, or jail time.
 - [ ] Verify the production Cloudflare Email Sending account, onboarded sender
   domain, `Email Sending: Edit` token, delivery/bounce monitoring, suppression
   handling, and confirmation/password-reset delivery before launch.
-- [ ] Replace best-effort background confirmation delivery with a durable MySQL
+- [x] Replace best-effort background confirmation delivery with a durable MySQL
   email outbox, bounded exponential retries, dead-letter/support visibility,
   expiry-aware token regeneration, and a rate-limited resend-confirmation API.
   Registration must remain successful when the provider is unavailable.

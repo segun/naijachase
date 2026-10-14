@@ -1,7 +1,8 @@
 mod email_templates;
 use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier, password_hash::SaltString};
 use axum::{
-    Json, Router,
+    BoxError, Json, Router,
+    error_handling::HandleErrorLayer,
     extract::{DefaultBodyLimit, Path, State},
     http::{HeaderMap, HeaderValue, StatusCode, header},
     response::{IntoResponse, Response},
@@ -12,7 +13,7 @@ use naijachase_content::{Catalogue, Mission};
 use naijachase_contracts::{Command, Event, GameState};
 use naijachase_storage::{
     Achievement, BirthDate, CaseArchiveEntry, CaseCommandResult, CatalogueHealth,
-    CatalogueProgress, MissionValidation, MysqlStore, PlayerAccount, PlayerSession,
+    CatalogueProgress, EmailMessage, MissionValidation, MysqlStore, PlayerAccount, PlayerSession,
     ProgressionSummary, ReleaseNotification, StorageError,
 };
 use rand::RngCore;
@@ -25,6 +26,7 @@ use std::{
     sync::{Arc, Mutex},
     time::{Duration, Instant},
 };
+use tower::ServiceBuilder;
 use tower_http::{catch_panic::CatchPanicLayer, trace::TraceLayer};
 
 pub const API_VERSION: &str = "v1";
@@ -213,6 +215,10 @@ pub struct ConfirmRequest {
 }
 #[derive(Deserialize)]
 pub struct RecoveryRequest {
+    email: String,
+}
+#[derive(Deserialize)]
+pub struct ResendConfirmationRequest {
     email: String,
 }
 #[derive(Deserialize)]
@@ -721,6 +727,11 @@ impl From<StorageError> for ApiError {
                 "ordinary_case_exists",
                 "resume or abandon your ongoing ordinary case before starting another",
             ),
+            StorageError::PoolTimeout => Self::new(
+                StatusCode::SERVICE_UNAVAILABLE,
+                "database_busy",
+                "the service is busy; please try again shortly",
+            ),
             other => {
                 tracing::error!(error = %other, "storage operation failed");
                 Self::new(
@@ -745,6 +756,9 @@ pub struct ServiceConfig {
     pub environment: Environment,
     pub bind: String,
     pub rate_limit_per_minute: usize,
+    pub request_timeout: Duration,
+    pub max_concurrent_requests: usize,
+    pub email_worker_count: usize,
     cloudflare_email_api_url: String,
     cloudflare_api_token: String,
     email_from: String,
@@ -771,6 +785,27 @@ impl ServiceConfig {
         if !(1..=10_000).contains(&rate_limit_per_minute) {
             return Err("rate limit must be between 1 and 10000".into());
         }
+        let request_timeout_seconds = bounded_setting(
+            "NAIJACHASE_REQUEST_TIMEOUT_SECONDS",
+            env::var("NAIJACHASE_REQUEST_TIMEOUT_SECONDS").ok(),
+            25,
+            1,
+            120,
+        )?;
+        let max_concurrent_requests = bounded_setting(
+            "NAIJACHASE_MAX_CONCURRENT_REQUESTS",
+            env::var("NAIJACHASE_MAX_CONCURRENT_REQUESTS").ok(),
+            128,
+            1,
+            4096,
+        )?;
+        let email_worker_count = bounded_setting(
+            "NAIJACHASE_EMAIL_WORKERS",
+            env::var("NAIJACHASE_EMAIL_WORKERS").ok(),
+            4,
+            1,
+            32,
+        )?;
         let public_web_url = env::var("NAIJACHASE_PUBLIC_WEB_URL")
             .unwrap_or_else(|_| "http://127.0.0.1:4173".into());
         let allowed_origins = env::var("NAIJACHASE_ALLOWED_ORIGINS")
@@ -782,17 +817,30 @@ impl ServiceConfig {
         if allowed_origins.is_empty() {
             return Err("NAIJACHASE_ALLOWED_ORIGINS must contain at least one origin".into());
         }
+        let cloudflare_email_api_url = env::var("CLOUDFLARE_ACCOUNT_ID")
+            .map(|id| {
+                format!("https://api.cloudflare.com/client/v4/accounts/{id}/email/sending/send")
+            })
+            .unwrap_or_default();
+        let cloudflare_api_token = env::var("CLOUDFLARE_EMAIL_API_TOKEN").unwrap_or_default();
+        let email_from = env::var("NAIJACHASE_EMAIL_FROM").unwrap_or_default();
+        if environment != Environment::Development
+            && (cloudflare_email_api_url.is_empty()
+                || cloudflare_api_token.is_empty()
+                || email_from.is_empty())
+        {
+            return Err("Cloudflare email configuration is required outside development".into());
+        }
         Ok(Self {
             environment,
             bind,
             rate_limit_per_minute,
-            cloudflare_email_api_url: env::var("CLOUDFLARE_ACCOUNT_ID")
-                .map(|id| {
-                    format!("https://api.cloudflare.com/client/v4/accounts/{id}/email/sending/send")
-                })
-                .unwrap_or_default(),
-            cloudflare_api_token: env::var("CLOUDFLARE_EMAIL_API_TOKEN").unwrap_or_default(),
-            email_from: env::var("NAIJACHASE_EMAIL_FROM").unwrap_or_default(),
+            request_timeout: Duration::from_secs(request_timeout_seconds as u64),
+            max_concurrent_requests,
+            email_worker_count,
+            cloudflare_email_api_url,
+            cloudflare_api_token,
+            email_from,
             public_web_url,
             allowed_origins: Arc::new(allowed_origins),
         })
@@ -804,6 +852,9 @@ impl ServiceConfig {
             environment: Environment::Development,
             bind: "127.0.0.1:0".into(),
             rate_limit_per_minute: 4,
+            request_timeout: Duration::from_secs(5),
+            max_concurrent_requests: 16,
+            email_worker_count: 1,
             cloudflare_email_api_url: String::new(),
             cloudflare_api_token: String::new(),
             email_from: String::new(),
@@ -811,6 +862,25 @@ impl ServiceConfig {
             allowed_origins: Arc::new(vec!["http://127.0.0.1:4173".into()]),
         }
     }
+}
+
+fn bounded_setting(
+    key: &str,
+    raw: Option<String>,
+    default: usize,
+    minimum: usize,
+    maximum: usize,
+) -> Result<usize, String> {
+    let Some(raw) = raw else {
+        return Ok(default);
+    };
+    let value = raw
+        .parse::<usize>()
+        .map_err(|_| format!("{key} must be an integer"))?;
+    if !(minimum..=maximum).contains(&value) {
+        return Err(format!("{key} must be between {minimum} and {maximum}"));
+    }
+    Ok(value)
 }
 
 fn hash_token(token: &str) -> String {
@@ -896,6 +966,8 @@ pub struct Metrics {
     rejected: std::sync::atomic::AtomicU64,
     commands: std::sync::atomic::AtomicU64,
     duplicates: std::sync::atomic::AtomicU64,
+    emails_sent: std::sync::atomic::AtomicU64,
+    email_failures: std::sync::atomic::AtomicU64,
 }
 
 #[derive(Default)]
@@ -925,6 +997,71 @@ pub struct AppState {
     pub config: ServiceConfig,
     metrics: Metrics,
     limiter: RateLimiter,
+    email_client: reqwest::Client,
+}
+
+/// Delivers durable outbox rows. Database claiming is safe across multiple API
+/// instances; failed messages are returned to the queue with bounded backoff.
+pub async fn email_delivery_loop(state: Arc<AppState>) {
+    loop {
+        let store = state.store.clone();
+        let queued = match tokio::task::spawn_blocking(move || store.claim_email()).await {
+            Ok(Ok(value)) => value,
+            Ok(Err(error)) => {
+                tracing::error!(%error, "email outbox claim failed");
+                continue;
+            }
+            Err(error) => {
+                tracing::error!(%error, "email outbox task failed");
+                continue;
+            }
+        };
+        let Some(email) = queued else {
+            tokio::time::sleep(Duration::from_secs(1)).await;
+            continue;
+        };
+        let result = send_email(
+            &state.email_client,
+            &state.config,
+            &email.recipient,
+            &email.subject,
+            &email.text,
+            &email.html,
+        )
+        .await;
+        let store = state.store.clone();
+        if let Err(error) = result {
+            state
+                .metrics
+                .email_failures
+                .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+            let detail = format!("{}: {}", error.code, error.message);
+            tracing::error!(email_id=email.email_id, kind=%email.message_kind, attempts=email.attempts, "email delivery failed; retry scheduled");
+            match tokio::task::spawn_blocking(move || {
+                store.retry_email(email.email_id, email.attempts, &detail)
+            })
+            .await
+            {
+                Ok(Ok(())) => {}
+                Ok(Err(error)) => tracing::error!(%error, "could not return email to outbox"),
+                Err(error) => tracing::error!(%error, "email retry acknowledgement task failed"),
+            }
+        } else {
+            state
+                .metrics
+                .emails_sent
+                .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+            match tokio::task::spawn_blocking(move || store.mark_email_sent(email.email_id)).await {
+                Ok(Ok(())) => {}
+                Ok(Err(error)) => {
+                    tracing::error!(%error, email_id=email.email_id, "email was sent but outbox acknowledgement failed")
+                }
+                Err(error) => {
+                    tracing::error!(%error, email_id=email.email_id, "email acknowledgement task failed")
+                }
+            }
+        }
+    }
 }
 
 /// Keeps persisted weekly status aligned with the authoritative wall clock even
@@ -946,12 +1083,15 @@ pub async fn weekly_expiration_loop(store: Arc<MysqlStore>) {
 }
 
 pub fn router(state: Arc<AppState>) -> Router {
-    Router::new()
-        .route("/health/live", get(live))
-        .route("/health/ready", get(ready))
-        .route("/metrics", get(metrics))
+    let limits = ServiceBuilder::new()
+        .layer(HandleErrorLayer::new(handle_capacity_error))
+        .load_shed()
+        .concurrency_limit(state.config.max_concurrent_requests)
+        .timeout(state.config.request_timeout);
+    let application = Router::new()
         .route("/v1/auth/register", post(register))
         .route("/v1/auth/confirm", post(confirm_email))
+        .route("/v1/auth/confirmation/resend", post(resend_confirmation))
         .route("/v1/auth/login", post(login))
         .route("/v1/auth/refresh", post(refresh_session))
         .route("/v1/auth/logout", post(logout))
@@ -1111,10 +1251,45 @@ pub fn router(state: Arc<AppState>) -> Router {
             post(acknowledge_disciplinary_case),
         )
         .route("/v1/cases/{case_id}/commands", post(execute_command))
-        .with_state(state)
+        .with_state(state.clone())
         .layer(DefaultBodyLimit::max(32 * 1024))
+        .layer(limits);
+    // Liveness must still answer while the gameplay service is shedding load;
+    // readiness has its own bounded MySQL pool wait.
+    Router::new()
+        .route("/health/live", get(live))
+        .route("/health/ready", get(ready))
+        .route("/metrics", get(metrics))
+        .with_state(state)
+        .merge(application)
         .layer(CatchPanicLayer::new())
         .layer(TraceLayer::new_for_http())
+}
+
+async fn handle_capacity_error(error: BoxError) -> Response {
+    if error.is::<tower::timeout::error::Elapsed>() {
+        return ApiError::new(
+            StatusCode::SERVICE_UNAVAILABLE,
+            "request_timed_out",
+            "the service took too long to respond; please try again",
+        )
+        .into_response();
+    }
+    if error.is::<tower::load_shed::error::Overloaded>() {
+        return ApiError::new(
+            StatusCode::SERVICE_UNAVAILABLE,
+            "service_busy",
+            "the service is busy; please try again shortly",
+        )
+        .into_response();
+    }
+    tracing::error!(%error, "unhandled middleware failure");
+    ApiError::new(
+        StatusCode::INTERNAL_SERVER_ERROR,
+        "internal_error",
+        "the service could not process the request",
+    )
+    .into_response()
 }
 
 fn session_token(headers: &HeaderMap) -> Result<String, ApiError> {
@@ -1190,11 +1365,13 @@ async fn ready(State(state): State<Arc<AppState>>) -> Result<impl IntoResponse, 
 async fn metrics(State(state): State<Arc<AppState>>) -> String {
     use std::sync::atomic::Ordering::Relaxed;
     format!(
-        "naijachase_http_requests_total {}\nnaijachase_http_rejected_total {}\nnaijachase_commands_total {}\nnaijachase_duplicate_commands_total {}\n",
+        "naijachase_http_requests_total {}\nnaijachase_http_rejected_total {}\nnaijachase_commands_total {}\nnaijachase_duplicate_commands_total {}\nnaijachase_emails_sent_total {}\nnaijachase_email_failures_total {}\n",
         state.metrics.requests.load(Relaxed),
         state.metrics.rejected.load(Relaxed),
         state.metrics.commands.load(Relaxed),
-        state.metrics.duplicates.load(Relaxed)
+        state.metrics.duplicates.load(Relaxed),
+        state.metrics.emails_sent.load(Relaxed),
+        state.metrics.email_failures.load(Relaxed)
     )
 }
 
@@ -1243,34 +1420,70 @@ async fn register(
         password_hash,
         hash_token(&verification),
     );
-    tokio::task::spawn_blocking(move || {
-        store.register_player(
-            &values.0, &values.1, &values.2, &values.3, &values.4, &values.5, birth_date,
-        )
-    })
-    .await
-    .map_err(task_error)??;
     let link = format!(
         "{}/?confirm={}",
         state.config.public_web_url.trim_end_matches('/'),
         verification
     );
-    let email_config = state.config.clone();
-    tokio::spawn(async move {
-        if email_config.cloudflare_email_api_url.is_empty()
-            || email_config.cloudflare_api_token.is_empty()
-            || email_config.email_from.is_empty()
-        {
-            tracing::error!(player_id=%player_id,"confirmation email is not configured; registration remains pending confirmation");
-            return;
-        }
-        if let Err(error) = send_confirmation(&email_config, &email, &link).await {
-            tracing::error!(error_code=error.code,error_message=%error.message,player_id=%player_id,"confirmation email delivery failed asynchronously; registration remains pending confirmation");
-        }
-    });
+    let content = email_templates::confirmation(&link);
+    let message = EmailMessage {
+        recipient: email.clone(),
+        subject: content.subject.into(),
+        text: content.text,
+        html: content.html,
+    };
+    tokio::task::spawn_blocking(move || {
+        store.register_player_with_email(
+            &values.0, &values.1, &values.2, &values.3, &values.4, &values.5, birth_date, &message,
+        )
+    })
+    .await
+    .map_err(task_error)??;
     Ok((
         StatusCode::CREATED,
         Json(serde_json::json!({"message":"Account created. Confirmation email has been queued."})),
+    ))
+}
+
+async fn resend_confirmation(
+    State(state): State<Arc<AppState>>,
+    headers: HeaderMap,
+    Json(request): Json<ResendConfirmationRequest>,
+) -> Result<(StatusCode, Json<serde_json::Value>), ApiError> {
+    ensure_origin(&headers, &state.config)?;
+    let email = request.email.trim().to_lowercase();
+    if !email.contains('@') || email.len() > 320 {
+        return Err(bad_request("enter a valid email address"));
+    }
+    enforce_auth_limit(&state, &email, "resend_confirmation", 3).await?;
+    let token = random_token();
+    let link = format!(
+        "{}/?confirm={}",
+        state.config.public_web_url.trim_end_matches('/'),
+        token
+    );
+    let content = email_templates::confirmation(&link);
+    let message = EmailMessage {
+        recipient: email.clone(),
+        subject: content.subject.into(),
+        text: content.text,
+        html: content.html,
+    };
+    let store = state.store.clone();
+    let token_hash = hash_token(&token);
+    let queued = tokio::task::spawn_blocking(move || {
+        store.resend_confirmation(&email, &token_hash, &message)
+    })
+    .await
+    .map_err(task_error)??;
+    if queued {
+        tracing::info!("replacement confirmation email queued");
+    }
+    Ok((
+        StatusCode::ACCEPTED,
+        Json(serde_json::json!({
+            "message":"If that account is awaiting confirmation, a new link has been queued."
+        })),
     ))
 }
 
@@ -1501,34 +1714,26 @@ async fn request_recovery(
     enforce_auth_limit(&state, &email, "recovery", 3).await?;
     let token = random_token();
     let token_hash = hash_token(&token);
+    let link = format!(
+        "{}/?reset={}",
+        state.config.public_web_url.trim_end_matches('/'),
+        token
+    );
+    let content = email_templates::password_reset(&link);
+    let message = EmailMessage {
+        recipient: email.clone(),
+        subject: content.subject.into(),
+        text: content.text,
+        html: content.html,
+    };
     let store = state.store.clone();
     let lookup = email.clone();
-    let player =
-        tokio::task::spawn_blocking(move || store.create_password_reset(&lookup, &token_hash))
-            .await
-            .map_err(task_error)??;
+    let player = tokio::task::spawn_blocking(move || {
+        store.create_password_reset_with_email(&lookup, &token_hash, &message)
+    })
+    .await
+    .map_err(task_error)??;
     if let Some(player_id) = player {
-        let link = format!(
-            "{}/?reset={}",
-            state.config.public_web_url.trim_end_matches('/'),
-            token
-        );
-        let content = email_templates::password_reset(&link);
-        if let Err(error) = send_email(
-            &state.config,
-            &email,
-            content.subject,
-            &content.text,
-            &content.html,
-        )
-        .await
-        {
-            tracing::error!(
-                code = error.code,
-                message = %error.message,
-                "password recovery email delivery failed"
-            );
-        }
         let store = state.store.clone();
         let _ = tokio::task::spawn_blocking(move || {
             store.security_event(Some(&player_id), "password_recovery", "requested")
@@ -1536,7 +1741,7 @@ async fn request_recovery(
         .await;
     }
     Ok(Json(
-        serde_json::json!({"message":"If that account exists, a recovery email has been sent."}),
+        serde_json::json!({"message":"If that account exists, a recovery email has been queued."}),
     ))
 }
 
@@ -2383,20 +2588,17 @@ async fn achievement_catalog() -> Json<serde_json::Value> {
     ]}))
 }
 
-async fn send_confirmation(config: &ServiceConfig, to: &str, link: &str) -> Result<(), ApiError> {
-    let email = email_templates::confirmation(link);
-    send_email(config, to, email.subject, &email.text, &email.html).await
-}
 async fn send_email(
+    client: &reqwest::Client,
     config: &ServiceConfig,
     to: &str,
     subject: &str,
     text: &str,
     html: &str,
 ) -> Result<(), ApiError> {
-    let response=reqwest::Client::new().post(&config.cloudflare_email_api_url).bearer_auth(&config.cloudflare_api_token)
+    let response=client.post(&config.cloudflare_email_api_url).bearer_auth(&config.cloudflare_api_token)
         .json(&serde_json::json!({"from":config.email_from,"to":to,"subject":subject,"text":text,"html":html}))
-        .send().await.map_err(|error|{tracing::error!(%error,"confirmation email failed");ApiError::new(StatusCode::BAD_GATEWAY,"email_failed","confirmation email could not be sent")})?;
+        .send().await.map_err(|error|{tracing::error!(%error,"email delivery request failed");ApiError::new(StatusCode::BAD_GATEWAY,"email_failed","email could not be sent")})?;
     if !response.status().is_success() {
         let status = response.status();
         let request_id = response
@@ -2410,11 +2612,11 @@ async fn send_email(
             .await
             .unwrap_or_else(|_| "response body unavailable".into());
         let provider_body = provider_body.chars().take(2_000).collect::<String>();
-        tracing::error!(%status,%request_id,%provider_body,"Cloudflare rejected confirmation email");
+        tracing::error!(%status,%request_id,%provider_body,"Cloudflare rejected email delivery");
         return Err(ApiError::new(
             StatusCode::BAD_GATEWAY,
             "email_failed",
-            "confirmation email could not be sent",
+            "email could not be sent",
         ));
     }
     Ok(())
@@ -4169,13 +4371,58 @@ pub fn load_state() -> Result<Arc<AppState>, String> {
         config,
         metrics: Metrics::default(),
         limiter: RateLimiter::default(),
+        email_client: reqwest::Client::builder()
+            .connect_timeout(Duration::from_secs(5))
+            .timeout(Duration::from_secs(15))
+            .build()
+            .map_err(|error| error.to_string())?,
     }))
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use axum::{body::Body, http::Request};
     use std::collections::BTreeMap;
+    use tower::ServiceExt;
+
+    #[test]
+    fn service_limits_have_safe_defaults_and_reject_bad_values() {
+        assert_eq!(bounded_setting("LIMIT", None, 128, 1, 4096).unwrap(), 128);
+        assert_eq!(
+            bounded_setting("LIMIT", Some("64".into()), 128, 1, 4096).unwrap(),
+            64
+        );
+        assert!(bounded_setting("LIMIT", Some("0".into()), 128, 1, 4096).is_err());
+        assert!(bounded_setting("LIMIT", Some("many".into()), 128, 1, 4096).is_err());
+    }
+
+    #[tokio::test]
+    async fn request_deadline_returns_a_retryable_json_error() {
+        let app = Router::new()
+            .route(
+                "/slow",
+                get(|| async {
+                    tokio::time::sleep(Duration::from_millis(25)).await;
+                    "late"
+                }),
+            )
+            .layer(
+                ServiceBuilder::new()
+                    .layer(HandleErrorLayer::new(handle_capacity_error))
+                    .timeout(Duration::from_millis(1)),
+            );
+        let response = app
+            .oneshot(Request::builder().uri("/slow").body(Body::empty()).unwrap())
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::SERVICE_UNAVAILABLE);
+        let body = axum::body::to_bytes(response.into_body(), 1024)
+            .await
+            .unwrap();
+        let body: serde_json::Value = serde_json::from_slice(&body).unwrap();
+        assert_eq!(body["error"], "request_timed_out");
+    }
 
     fn state() -> GameState {
         GameState {
@@ -4486,6 +4733,7 @@ mod tests {
             config: ServiceConfig::test(),
             metrics: Metrics::default(),
             limiter: RateLimiter::default(),
+            email_client: reqwest::Client::new(),
         }));
         let id = uuid::Uuid::new_v4().simple().to_string();
         let email = format!("dob-{id}@example.invalid");

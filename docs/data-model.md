@@ -12,6 +12,14 @@ encrypted; `disabled` is the local-development default. Production database
 accounts must also use MySQL's `REQUIRE SSL` policy so a client cannot silently
 downgrade to plaintext. Credentials are never stored in source control.
 
+Pool and network bounds are explicit: `MYSQL_POOL_MIN`, `MYSQL_POOL_MAX`,
+`MYSQL_POOL_WAIT_TIMEOUT_MS`, `MYSQL_CONNECT_TIMEOUT_MS`, `MYSQL_READ_TIMEOUT_MS`, and
+`MYSQL_WRITE_TIMEOUT_MS`. Production defaults to 2–32 connections per API
+process, a 2-second pool wait, a 5-second connection timeout, and 15-second
+read/write timeouts. Count
+the maximum across every API process when sizing MySQL; do not raise it without
+load-test and pool-wait evidence.
+
 ## Rebuild and recovery
 
 `make db-rebuild` applies pending migrations, transactionally imports every
@@ -55,6 +63,10 @@ by checksum but are not required by the live game transaction path.
   lock version.
 - `case_events` is the append-only command/event audit log. The unique
   `(case_id, command_id)` constraint makes retried commands idempotent.
+- `email_outbox` durably owns queued confirmation and password-reset messages.
+  Account/token creation and enqueueing share one transaction; workers claim
+  due rows with row locking, retry transient failures, and erase recipient and
+  message bodies after a terminal status.
 - `terminal_careers` owns terminal-player career and resumable-case state. The
   terminal no longer reads or writes a repository JSON save file.
 

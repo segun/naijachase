@@ -51,6 +51,7 @@ The Rust HTTP service is available with `make api`. It exposes versioned
 `/v1` authentication, case, and command endpoints while keeping hidden routes,
 thief identities, answer keys, timing rules, and hideouts on the server.
 Configure `NAIJACHASE_API_BIND`, `NAIJACHASE_RATE_LIMIT_PER_MINUTE`,
+`NAIJACHASE_REQUEST_TIMEOUT_SECONDS`, `NAIJACHASE_MAX_CONCURRENT_REQUESTS`,
 `NAIJACHASE_ENV`, and the Cloudflare email settings in the repository `.env`.
 Registration uses verified email/password accounts; browser sessions are
 opaque, revocable, HttpOnly cookies. Environment-specific examples live in
@@ -59,6 +60,8 @@ opaque, revocable, HttpOnly cookies. Environment-specific examples live in
 Run `make p35` for the complete service-safety gate. API contracts, status
 codes, authentication, deployment requirements, health checks, metrics, and
 recovery behaviour are documented in `docs/api-v1.md`.
+Email queueing, confirmation, resend, password recovery, and production
+monitoring are documented in `docs/email-delivery-and-verification.md`.
 
 ## Web client
 
