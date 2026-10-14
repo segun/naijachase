@@ -96,7 +96,7 @@ export function consequenceLines(panel: DisciplinaryCase, now = new Date()): str
   }
   if (panel.points_after < panel.points_before) lines.push(`Career points: ${panel.points_before.toLocaleString()} → ${panel.points_after.toLocaleString()} (−${(panel.points_before - panel.points_after).toLocaleString()}).`);
   if (panel.new_rank !== panel.old_rank) lines.push(`Rank: ${panel.old_rank} → ${panel.new_rank}.`);
-  if (panel.repeat_offender) lines.push("This judgement is final and can not be appealed.");
+  if (panel.repeat_offender) lines.push("Repeat offence: punishment was mandatory. This judgement is final and can not be appealed.");
   return lines;
 }
 

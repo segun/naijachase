@@ -20,6 +20,7 @@
     garage: () => import("./scenes/garage/GarageRoom.svelte"),
     witness: () => import("./scenes/witness/WitnessScene.svelte"),
     journey: () => import("./scenes/journey/JourneyScene.svelte"),
+    raid: () => import("./scenes/chase/RaidScene.svelte"),
     settings: () => import("./screens/account/Settings.svelte"),
     tokens: () => import("./screens/account/Tokens.svelte"),
     panel: () => import("./scenes/panel/PanelScene.svelte"),
@@ -75,6 +76,7 @@
       {:else if app.game && app.screen === "garage"}{#await lazy.garage() then { default: Screen }}<Screen {app} />{/await}
       {:else if app.game && app.screen === "witness" && app.witnessVisit}{#await lazy.witness() then { default: Screen }}<Screen {app} />{/await}
       {:else if app.game && app.screen === "journey" && app.journey}{#await lazy.journey() then { default: Screen }}<Screen {app} loop={app.journey.loop === true} onclose={() => app.leaveJourney()} />{/await}
+      {:else if app.game && app.screen === "raid" && app.raidVisit}{#await lazy.raid() then { default: Screen }}<Screen {app} />{/await}
       {:else if app.game && app.screen === "results"}<Results {app} />
       {:else}{@render room()}{/if}
 
@@ -90,5 +92,5 @@
     {#if app.signedIn && app.panel}{#await lazy.panel() then { default: Screen }}<Screen {app} />{/await}{/if}
   </Shell>
   <!-- Animated scenes can be made lighter or richer at any moment, without leaving the game. -->
-  {#if app.signedIn && !app.needsAvatar && (app.panel || isCaseScreen(app.screen) || ["garage", "witness", "journey", "cases", "archive"].includes(app.screen))}<DetailQuick />{/if}
+  {#if app.signedIn && !app.needsAvatar && (app.panel || isCaseScreen(app.screen) || ["garage", "witness", "journey", "raid", "cases", "archive"].includes(app.screen))}<DetailQuick />{/if}
 {/if}

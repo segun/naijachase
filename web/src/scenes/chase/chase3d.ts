@@ -23,7 +23,7 @@ import { CreateSphere } from "@babylonjs/core/Meshes/Builders/sphereBuilder";
 import { sirenLevels } from "./chase-motion.ts";
 import { tooSlow } from "../shared/scene-capability.ts";
 import { type Rgb } from "./chase-biomes.ts";
-import { chaseFrame, OFFICERS } from "./chase-frame.ts";
+import { chaseFrame, OFFICERS, type ChaseFrame } from "./chase-frame.ts";
 import { hex, material, paint, seeded } from "../shared/chase3d-kit.ts";
 import { makeFigure } from "./chase3d-actors.ts";
 import { buildWorld } from "./chase3d-world.ts";
@@ -41,6 +41,10 @@ export type ChaseOptions = {
   /** Jump ahead in the looping journey (used by tests and previews). */
   startSeconds?: number;
   seconds?: () => number;
+  /** The timeline to draw; the endless login chase unless a scene (such as the hideout raid) supplies its own. */
+  frame?: (seconds: number) => ChaseFrame;
+  /** Called after each rendered frame, so a caller knows the picture is moving. */
+  onTick?: () => void;
 };
 
 const rgb = (c: Rgb) => new Color3(c[0], c[1], c[2]);
@@ -143,7 +147,7 @@ export async function createChaseScene(canvas: HTMLCanvasElement, options: Chase
     const t = now();
     // The world eases down while a city's sign passes. Running cadence follows half of that change, so the chase
     // reads as a slightly slower pace rather than slow motion.
-    const frameState = chaseFrame(t);
+    const frameState = (options.frame ?? chaseFrame)(t);
     const { gait, weights, palette } = frameState;
 
     scene.clearColor = new Color4(...palette.fog, 1);
@@ -167,14 +171,16 @@ export async function createChaseScene(canvas: HTMLCanvasElement, options: Chase
     for (const runner of frameState.runners) {
       const figure = runner.name === "thief" ? thief : officers.find(o => o.name === runner.name)!.figure;
       figure.root.position.set(runner.x, 0, runner.z);
-      figure.apply(runner.pose, runner.cycle);
+      figure.root.rotation.y = runner.heading ?? 0;
+      figure.apply(runner.pose, runner.cycle, runner);
     }
     world.update(frameState.worldTime, palette, weights, gait);
     const s = sirenLevels(t);
     sirenRed.intensity = s.red * 2.2; sirenBlue.intensity = s.blue * 2.2;
     camera.position.set(...frameState.camera);
-    camera.setTarget(lookTarget);
+    camera.setTarget(lookTarget.set(...frameState.target));
   });
+  scene.onAfterRenderObservable.add(() => options.onTick?.());
 
   // One-way fallback: if the device cannot hold a usable frame rate, hand back to the 2D scene (never oscillates).
   const samples: number[] = [];

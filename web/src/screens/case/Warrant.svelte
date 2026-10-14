@@ -1,9 +1,7 @@
 <script lang="ts">
   import type { AppController } from "../../state/app.svelte";
-  import { FIELDS, FIELD_META, cheapest, dossierCount, duration, groupQuotes, money, quoteMinutes, venueInfo, type QuoteGroup, type TransportQuote } from "../../domain/model.ts";
+  import { FIELDS, FIELD_META, dossierCount, duration, groupQuotes, quoteMinutes, raidQuote, venueInfo } from "../../domain/model.ts";
   import Icon from "../../ui/Icon.svelte";
-  import MoveDialog from "./MoveDialog.svelte";
-  import MoveOptions from "./MoveOptions.svelte";
 
   let { app }: { app: AppController } = $props();
   const gs = $derived(app.game!.state);
@@ -13,12 +11,8 @@
   let confirming = $state(false);
   // The final journey to a hideout is quoted by the server under the "apprehension" scope.
   const hideouts = $derived(groupQuotes(app.quotes, "apprehension"));
-  let raiding = $state<QuoteGroup | null>(null);
-
-  async function raid(group: QuoteGroup, quote: TransportQuote) {
-    const ok = await app.command({ type: "search_hideout", venue_id: group.id, mode: quote.mode as "drive" | "hitch_ride" }, "Hideout searched.", "Searching hideout");
-    if (ok) { raiding = null; app.watchWeeklyTransit(quote.mode); }
-  }
+  const searched = $derived(new Set(gs.searched_hideouts ?? []));
+  const suspectName = $derived(suspects.find(s => s.suspect_id === gs.warrant_suspect)?.name ?? gs.warrant_suspect);
 
   async function apply() {
     if (!picked) return;
@@ -82,8 +76,8 @@
   {:else}
     <section class="card issued rise">
       <div class="stamp-mark" role="img" aria-label="Warrant issued">Warrant issued</div>
-      <h2>{suspects.find(s => s.suspect_id === gs.warrant_suspect)?.name ?? gs.warrant_suspect}</h2>
-      <p class="muted">The suspect is hiding somewhere nearby. Choose where to search.</p>
+      <h2>{suspectName}</h2>
+      <p class="muted">{suspectName} is hiding at one of these places. Raid them one at a time until you find them.</p>
     </section>
     <section class="venues" aria-label="Search for the hideout">
       {#if !app.quotesLoaded}
@@ -93,18 +87,15 @@
       {/if}
       {#each hideouts as venue, i (venue.id)}
         {@const info = venueInfo(venue.id)}
-        {@const best = cheapest(venue.options.filter(o => o.affordable))}
-        <button type="button" class="venue rise" disabled={app.busy} style:animation-delay="{i * 0.08}s" onclick={() => (raiding = venue)}>
-          <span class="venue-icon"><Icon name={info.icon} /></span>
-          <span class="venue-body"><strong>Search the {venue.label.toLowerCase()}</strong><span class="muted">{info.who}</span></span>
-          <span class="venue-status">{#if best}{best.cost === 0 ? "Free" : money(best.cost)} · {duration(quoteMinutes(best))}{:else}Unaffordable{/if} <Icon name="arrow" /></span>
+        {@const quote = raidQuote(venue.options)}
+        {@const done = searched.has(venue.id)}
+        <!-- No transport choice here: the raid drives if the player can afford it and otherwise hitches a ride (see raidQuote). -->
+        <button type="button" class="venue rise" class:seen={done} disabled={app.busy || done || !quote} style:animation-delay="{i * 0.08}s" onclick={() => app.raid(venue)}>
+          <span class="venue-icon"><Icon name={done ? "check" : info.icon} /></span>
+          <span class="venue-body"><strong>{venue.label}</strong><span class="muted">{done ? "Raided. The suspect got away." : info.who}</span></span>
+          <span class="venue-status">{#if done}Searched{:else if quote}Raid this location · {duration(quoteMinutes(quote))} <Icon name="arrow" />{:else}Out of reach{/if}</span>
         </button>
       {/each}
     </section>
-    {#if raiding}
-      <MoveDialog title="Raid the {raiding.label.toLowerCase()}" subtitle="Choose how to get there. If the suspect is not here, the case may be lost." onclose={() => (raiding = null)}>
-        <MoveOptions group={raiding} elapsed={gs.elapsed} balance={gs.balance} busy={app.busy} confirmLabel="Raid this hideout" working="Searching hideout" onconfirm={(q) => raid(raiding!, q)} oncancel={() => (raiding = null)} />
-      </MoveDialog>
-    {/if}
   {/if}
 </div>

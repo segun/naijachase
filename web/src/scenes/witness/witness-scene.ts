@@ -257,6 +257,20 @@ function leavingPoseAt(plan: Plan, t: number): WitnessPose {
   return pose({ x: mix(exit[0], exit[0] - 1.3, k), z: exit[1], heading: turnTo(toward, headingOf(-1, 0), smooth(k / 0.5)), alpha: 1 - smooth((k - 0.45) / 0.35), gait: k * 5, stride: Math.sin(k * Math.PI) * 0.8 });
 }
 
+/** When the minibus door starts to open on arrival. */
+export const busDoorOpensAt = (plan: Plan) => plan.stopped + 0.25;
+
+/** The seats in the minibus relative to its centre (it faces -x; +z is the far side from the camera): the driver's, and the player's behind it. */
+export const BUS_SEATS = { driver: { x: -1.5, z: -0.4 }, player: { x: -1.0, z: 0.4 }, y: -0.07 } as const;
+
+/** How visible the player is seated in the minibus (0 to 1): on the way in until the door opens, and after climbing back on. */
+export function busRideAt(plan: Plan, t: number): number {
+  if (plan.arrival !== "hitch") return 0;
+  const open = busDoorOpensAt(plan);
+  if (!(plan.leave && t >= plan.leaveStart)) return 1 - smooth((t - (open - 0.25)) / 0.25);
+  return t >= plan.boarded ? smooth((t - plan.boarded) / 0.2) : 0;
+}
+
 export function playerPoseAt(plan: Plan, t: number): WitnessPose {
   if (plan.leave && t >= plan.leaveStart) return leavingPoseAt(plan, t);
   const exit = EXIT_POINT[plan.arrival];
@@ -272,7 +286,7 @@ export function playerPoseAt(plan: Plan, t: number): WitnessPose {
     }
   } else {
     // Hitching: the player is inside the minibus until its door opens, then steps down.
-    const open = plan.stopped + 0.25;
+    const open = busDoorOpensAt(plan);
     const inside = exit[0] - 1.3;
     if (t < open) return pose({ x: inside, z: exit[1], heading: FACE_REAR, visible: false, alpha: 0 });
     if (t < plan.walkStart) {

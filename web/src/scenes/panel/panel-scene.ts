@@ -78,6 +78,7 @@ export const resumeTime = (plan: PanelPlan, shown: number): number =>
 export const announce = (seat: number, vote: Vote): string => `Judge ${seat + 1} raises a paper: ${vote === "punish" ? "punish" : "warning"}.`;
 
 export type PanelOptions = {
+  signal?: AbortSignal;
   /** The player's avatar. Without one the player is simply not drawn. */
   preset?: import("../../avatar/avatar-model.ts").AvatarPreset | null;
   hour: number;
@@ -93,6 +94,7 @@ export type PanelOptions = {
   onFault?: (why: string) => void;
 };
 export type PanelHandle = {
+  scene?: unknown;
   /** Plays from `from` seconds; resolves when the scene ends or is skipped. */
   start(from?: number): Promise<void>;
   skip(): void;

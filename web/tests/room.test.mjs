@@ -155,12 +155,13 @@ test("Simple office opens the desk without animation or exploration and other ro
   assert.doesNotMatch(stage, /Look around is unavailable in Simple mode|Use Standard detail/);
 });
 
-test("the rooms are lazy, primitive-built enhancements and the screens keep working without them", () => {
+test("the rooms are lazy enhancements and the screens keep working without them", () => {
   const stage = read("scenes/shared/Stage.svelte"), roomView = read("scenes/office/Room.svelte"), archiveView = read("scenes/archive/ArchiveRoom.svelte");
   const desk = read("scenes/office/CaseDesk.svelte"), app = read("App.svelte"), shell = read("ui/Shell.svelte");
   const scenes = ["scenes/office/chase3d-room.ts", "scenes/archive/chase3d-archive.ts", "scenes/shared/chase3d-stage.ts"].map(read).join("\n");
   assert.match(roomView, /import\("\.\/chase3d-room\.ts"\)/);
   assert.match(archiveView, /import\("\.\/chase3d-archive\.ts"\)/);
+  assert.match(read("scenes/archive/chase3d-archive.ts"), /stage\.addModelFigure\(options\.preset\)/, "archive Full detail uses the selected player model");
   for (const view of [stage, roomView, archiveView]) assert.doesNotMatch(view, /^\s*import\s+(?!type\b)[^\n]*chase3d/m, "Babylon.js stays out of the main bundle");
   assert.doesNotMatch(scenes, /\.(glb|gltf)|SceneLoader|ImportMesh|AppendAsync|LoadAssetContainer/i);
   assert.doesNotMatch(scenes, /from "@babylonjs\/core"/, "use deep imports so unused features are tree-shaken");
@@ -171,7 +172,7 @@ test("the rooms are lazy, primitive-built enhancements and the screens keep work
   assert.match(app, /import\("\.\/scenes\/office\/Room\.svelte"\)/, "the room is a lazy chunk: nobody needs it on the sign-in path");
   assert.match(app, /import\("\.\/scenes\/archive\/ArchiveRoom\.svelte"\)/);
   assert.doesNotMatch(app, /^\s*import\s+(Room|ArchiveRoom)/m);
-  assert.match(shell, /\["welcome", "cases", "archive", "garage", "witness", "journey"\]\.includes\(app\.screen\)/, "the rooms are full-screen: no side rail");
+  assert.match(shell, /\["welcome", "cases", "archive", "garage", "witness", "journey", "raid"\]\.includes\(app\.screen\)/, "the rooms are full-screen: no side rail");
   assert.match(desk, /greeting\(now\)/);
   assert.match(desk, /app\.summary\.rank/);
   for (const label of ["Start new case", "Achievements", "Career file", "Settings", "Log out"]) assert.match(desk, new RegExp(label), label);

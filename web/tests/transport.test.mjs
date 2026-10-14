@@ -57,7 +57,8 @@ test("the UI never calculates fares and always submits a server-quoted mode", ()
   assert.match(read("api/api.ts"), /\/ledger/);
   assert.match(read("screens/case/Travel.svelte"), /type: "travel", destination, mode: quote\.mode/);
   assert.match(read("scenes/garage/GarageRoom.svelte"), /type: "visit_venue", venue_id: venueId, mode: quote\.mode/);
-  assert.match(read("screens/case/Warrant.svelte"), /type: "search_hideout", venue_id: group\.id, mode:/);
+  assert.match(read("state/app.svelte.ts"), /type: "search_hideout", venue_id: group\.id, mode \}/);
+  assert.match(read("screens/case/Warrant.svelte"), /raidQuote\(venue\.options\)/);
   assert.doesNotMatch(ui, /cost\s*[:=]\s*\d|fare\s*=\s*\d|\* 1\.\d/, "no browser-side fare maths");
   assert.match(read("screens/case/Travel.svelte"), /groupQuotes\(app\.quotes, "interstate"\)/);
   assert.match(read("screens/case/Warrant.svelte"), /groupQuotes\(app\.quotes, "apprehension"\)/);

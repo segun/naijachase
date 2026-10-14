@@ -75,6 +75,12 @@ pub fn key_witness_trait_index(state: &GameState) -> usize {
     }
     order[state.stage as usize % order.len()]
 }
+fn reject_repeat_search(state: &GameState, venue_id: &str) -> Result<(), Error> {
+    if state.searched_hideouts.iter().any(|v| v == venue_id) {
+        return Err(Error::Invalid("this hideout has already been searched".into()));
+    }
+    Ok(())
+}
 fn key_witness_questioned(state: &GameState) -> bool {
     const PROFILE_FIELDS: [&str; 8] = [
         "sex",
@@ -360,9 +366,11 @@ pub fn apply(mut state: GameState, command: Command) -> Result<(GameState, Vec<E
                     "question the key witness before searching".into(),
                 ));
             }
+            reject_repeat_search(&state, venue_id)?;
             state.elapsed += minutes;
             data.insert("venue_id".into(), venue_id.clone());
             if venue_id != &state.hideout_venue {
+                state.searched_hideouts.push(venue_id.clone());
                 "hideout_empty"
             } else if state.warrant_suspect.is_none() {
                 state.outcome = Some("escaped_no_warrant".into());
@@ -400,6 +408,7 @@ pub fn apply(mut state: GameState, command: Command) -> Result<(GameState, Vec<E
                     "question the key witness before searching".into(),
                 ));
             }
+            reject_repeat_search(&state, venue_id)?;
             let total = travel_minutes.saturating_add(*search_minutes);
             charge_transport(&mut state, "apprehension", venue_id, mode, *cost, total)?;
             state.elapsed = state.elapsed.saturating_add(total);
@@ -408,6 +417,7 @@ pub fn apply(mut state: GameState, command: Command) -> Result<(GameState, Vec<E
             data.insert("cost".into(), cost.to_string());
             data.insert("balance".into(), state.economy.balance.to_string());
             if venue_id != &state.hideout_venue {
+                state.searched_hideouts.push(venue_id.clone());
                 "hideout_empty"
             } else if state.warrant_suspect.is_none() {
                 state.outcome = Some("escaped_no_warrant".into());
@@ -481,6 +491,7 @@ mod tests {
             ],
             warrant_suspect: None,
             hideout_venue: "market".into(),
+            searched_hideouts: vec![],
             replay: vec![],
             outcome: None,
             economy: Default::default(),
@@ -821,6 +832,34 @@ mod tests {
         assert_eq!(events[0].event_type, "wrong_warrant");
         assert_eq!(s.score, 1375);
         assert_eq!(s.career_points, 420);
+    }
+
+    #[test]
+    fn an_empty_hideout_is_recorded_and_cannot_be_searched_again() {
+        let mut s = state();
+        s.stage = 3;
+        s.state = "Abuja".into();
+        let final_trait = [
+            "sex",
+            "height",
+            "skin_tone",
+            "hair",
+            "hobby",
+            "vehicle",
+            "accessory",
+            "feature",
+        ][key_witness_trait_index(&s)];
+        s.observations.insert(final_trait.into(), "observed".into());
+        s.hideout_venue = "market".into();
+        let search = || Command::SearchHideout {
+            venue_id: "church".into(),
+            minutes: 45,
+        };
+        let (s, events) = apply(s, search()).unwrap();
+        assert_eq!(events[0].event_type, "hideout_empty");
+        assert_eq!(s.searched_hideouts, vec!["church".to_string()]);
+        assert!(s.outcome.is_none());
+        assert!(apply(s, search()).is_err());
     }
 
     #[test]

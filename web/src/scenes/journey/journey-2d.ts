@@ -187,12 +187,15 @@ export async function createJourneyScene2D(canvas: HTMLCanvasElement, options: J
       }
     });
     const v = f.vehicle;
+    const pl = f.player;
     items.push({
       z: 0, draw: () => {
         const o = at(v.x, 0, v.y);
         if (v.kind === "plane") { drawPlane(g, o, v, true); return; }
         g.save(); g.translate(o.x, 0); g.scale(-1, 1); g.translate(-o.x, 0);
-        if (v.kind === "car") drawCar(g, o, -v.spin); else drawBus(g, o, -v.spin, v.door);
+        const seatedInBus = v.kind === "bus" && pl && pl.sit > 0.5;
+        if (v.kind === "car") drawCar(g, o, -v.spin);
+        else drawBus(g, o, -v.spin, v.door, seatedInBus && look ? { skin: look.skin, hair: look.hair, top: look.top } : null);
         g.restore();
       }
     });
@@ -200,8 +203,8 @@ export async function createJourneyScene2D(canvas: HTMLCanvasElement, options: J
       const h = f.hostess;
       items.push({ z: -0.2, draw: () => figure(g, at(h.x, -0.2, h.y), { ...crew, heading: h.heading, hips: [0, 0], knees: [0, 0], arms: [0, 0], alpha: h.alpha }) });
     }
-    const pl = f.player;
-    if (pl && look && pl.visible && pl.alpha > 0.01) {
+    const insideBus = v.kind === "bus" && pl && pl.sit > 0.5;
+    if (pl && look && pl.visible && pl.alpha > 0.01 && !insideBus) {
       items.push({
         z: pl.sit > 0.5 ? 0.2 : -0.5, draw: () => {
           const pose: Pose = { x: pl.x, y: pl.y, z: 0, heading: pl.heading, sit: pl.sit, gait: pl.gait, stride: pl.stride, type: pl.type, visible: true };

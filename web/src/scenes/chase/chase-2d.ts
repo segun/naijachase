@@ -1,10 +1,10 @@
-import { chaseFrame } from "./chase-frame.ts";
+import { chaseFrame, type ChaseFrame } from "./chase-frame.ts";
 import { BIOMES, RING, SPEED, smoothstep, type Rgb } from "./chase-biomes.ts";
 import { sirenLevels, treadmillX } from "./chase-motion.ts";
 
 const css = (rgb: Rgb) => `rgb(${rgb.map(v => Math.round(v * 255)).join(",")})`;
 
-export function createChase2d(canvas: HTMLCanvasElement, seconds: () => number, reducedMotion: boolean, onFault: (error: unknown) => void) {
+export function createChase2d(canvas: HTMLCanvasElement, seconds: () => number, reducedMotion: boolean, onFault: (error: unknown) => void, timeline: (seconds: number) => ChaseFrame = chaseFrame) {
   const g = canvas.getContext("2d");
   if (!g) throw new Error("Canvas 2D is unavailable");
   let raf = 0, disposed = false;
@@ -16,7 +16,7 @@ export function createChase2d(canvas: HTMLCanvasElement, seconds: () => number, 
       canvas.width = Math.round(w * ratio); canvas.height = Math.round(h * ratio);
     }
     g.setTransform(ratio, 0, 0, ratio, 0, 0);
-    const frame = chaseFrame(reducedMotion ? 0 : seconds()), p = frame.palette;
+    const frame = timeline(reducedMotion ? 0 : seconds()), p = frame.palette;
     const sky = g.createLinearGradient(0, 0, 0, h);
     sky.addColorStop(0, css(p.skyTop)); sky.addColorStop(1, css(p.skyHorizon));
     g.fillStyle = sky; g.fillRect(0, 0, w, h);
@@ -73,7 +73,9 @@ export function createChase2d(canvas: HTMLCanvasElement, seconds: () => number, 
     g.globalAlpha = 1;
     for (const r of [...frame.runners].sort((a, b) => b.z - a.z)) {
       const base = point(r.x, r.pose.bodyY, r.z);
-      g.save(); g.translate(base.x, base.y); g.scale(base.k, -base.k);
+      // Seen side-on, a turn shows as narrowing and, past a quarter turn, facing the other way.
+      const facing = Math.cos(r.heading ?? 0);
+      g.save(); g.translate(base.x, base.y); g.scale(base.k * (facing < 0 ? -1 : 1) * Math.max(0.55, Math.abs(facing)), -base.k);
       g.lineCap = "round";
       const limb = (y: number, upper: number, lower: number, a: number, b: number, color: string, width: number) => {
         const x1 = Math.sin(a) * upper, y1 = y - Math.cos(a) * upper;

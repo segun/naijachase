@@ -180,7 +180,12 @@ in only one or two dossier fields. Send the selected `suspect_id` in the normal
 After a warrant is issued, the apprehension section of
 `GET /v1/cases/{case_id}/transport-quotes` contains exactly five possible
 hideouts, including the real hideout. Only offer those five locations. Empty
-hideouts keep the case active. If the player reaches the real hideout with the
+hideouts keep the case active and are listed in `state.searched_hideouts`;
+searching one again is rejected with a 422. The web client shows one **Raid this
+location** button per hideout (it drives when the player can afford it, otherwise
+hitches; see `raidQuote`), disables hideouts already searched, and plays a short
+raid chase (`scenes/chase/RaidScene.svelte`): the thief outruns the police at an
+empty hideout and is caught at the real one before the results screen. If the player reaches the real hideout with the
 wrong warrant, the command returns `state.outcome = "escaped"`, a
 `wrong_warrant` event containing `thief_name` and `thief_alias`, and no reward.
 Show a terminal dialog explaining that the named real thief avoided arrest due

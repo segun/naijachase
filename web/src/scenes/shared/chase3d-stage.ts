@@ -182,9 +182,11 @@ export function createStage(canvas: HTMLCanvasElement, options: StageOptions) {
     return {
       root, rig: root.rig,
       setAlpha(alpha: number) {
-        if (Math.abs(alpha - last) <= 0.004) return;
+        // Small changes are skipped, but never one that shows or hides the figure.
+        const shown = alpha > 0.002;
+        if (Math.abs(alpha - last) <= 0.004 && shown === last > 0.002) return;
         last = alpha;
-        root.setEnabled(alpha > 0.002);
+        root.setEnabled(shown);
         meshes.forEach(m => { m.visibility = alpha; });
       }
     };

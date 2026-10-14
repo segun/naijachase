@@ -1,5 +1,5 @@
-import { biomeWeights, blendPalette, distanceAt, progressAt, SPEED } from "./chase-biomes.ts";
-import { cycleAt, gapOffset, runPose } from "./chase-motion.ts";
+import { biomeWeights, blendPalette, distanceAt, progressAt, SPEED, type Palette } from "./chase-biomes.ts";
+import { cycleAt, gapOffset, runPose, type Pose } from "./chase-motion.ts";
 
 export const OFFICERS = [
   { name: "cop-a", x: -0.2, z: -0.9, phase: 0.4, period: 4.2, drift: 0.9, baton: true },
@@ -7,8 +7,22 @@ export const OFFICERS = [
   { name: "cop-c", x: -3.4, z: -0.4, phase: 4.0, period: 6.0, drift: 1.0, baton: false }
 ] as const;
 
+export type ChaseRunner = {
+  name: string; x: number; z: number; baton: boolean; pose: Pose; cycle: number;
+  /** Turn about the vertical axis in radians; 0 faces the way the chase runs (+x), π faces back. */
+  heading?: number;
+  /** 0 running to 1 standing: model figures straighten their legs. */
+  stand?: number;
+  /** Hands up (thief giving up) and arms out to take hold (officer), 0 to 1. */
+  raise?: number; reach?: number;
+};
+export type ChaseFrame = {
+  seconds: number; gait: number; worldTime: number; weights: number[]; palette: Palette;
+  camera: readonly [number, number, number]; target: readonly [number, number, number]; runners: ChaseRunner[];
+};
+
 /** Shared camera, running cadence and city progression for both chase renderers. */
-export function chaseFrame(seconds: number) {
+export function chaseFrame(seconds: number): ChaseFrame {
   const distance = distanceAt(seconds);
   const gait = 0.5 * seconds + 0.5 * distance / SPEED;
   const weights = biomeWeights(progressAt(seconds));

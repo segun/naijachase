@@ -146,6 +146,7 @@ when those matter.
 | `dossier` | Suspect traits earned so far. It correctly begins as `{}`. |
 | `visited_venues` | Venue IDs already visited at the current stage. |
 | `warrant_suspect` | Suspect ID after a warrant is obtained; otherwise `null`. |
+| `searched_hideouts` | Hideout venue IDs already searched and found empty. A repeat `search_hideout` for one of them is rejected (422). |
 | `outcome` | `null` while ongoing. Terminal attempts are not returned here. |
 | `opening_budget` | Virtual-money allocation at case start. |
 | `balance` | Remaining virtual money. |

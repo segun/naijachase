@@ -6,7 +6,7 @@ import { TransformNode } from "@babylonjs/core/Meshes/transformNode";
 import { CreateTorus } from "@babylonjs/core/Meshes/Builders/torusBuilder";
 import { material } from "./chase3d-kit.ts";
 import type { Stage } from "./chase3d-stage.ts";
-import { type Rgb, type Zone, contactShadow, loft, rgb, roundedBox, tyre } from "./chase3d-shapes.ts";
+import { type Rgb, type Rgba, type Zone, contactShadow, loft, rgb, rgba, roundedBox, tyre } from "./chase3d-shapes.ts";
 
 export type Wheels = TransformNode[];
 
@@ -121,14 +121,14 @@ export function runabout(stage: Stage): { root: TransformNode; wheels: Wheels } 
 export function danfo(stage: Stage): { root: TransformNode; wheels: Wheels; door: TransformNode } {
   const { mat, caster, scene, sphere } = stage;
   const root = new TransformNode("danfo", scene);
-  const paint = rgb("#f2b705"), black = rgb("#15181a"), glass = rgb(GLASS), trim = rgb("#1b1e20");
+  const paint = rgb("#f2b705"), black = rgb("#15181a"), trim = rgb("#1b1e20");
 
   const zone: Zone = (x, y, z, i, stations) => {
     const hw = stations[i]!.hw;
     if (y < 0.56) return trim;
     if (z > -1.9 && y > 1.0 && y < 1.2) return black;
-    if (z > -1.95 && z < 2.25 && y > 1.5 && y < 2.12 && Math.abs(x) > hw * 0.86) return glass;
-    if (z > -2.3 && z < -2.0 && y > 1.45 && Math.abs(x) < hw * 0.9) return glass;
+    if (z > -1.95 && z < 2.25 && y > 1.5 && y < 2.12 && Math.abs(x) > hw * 0.86) return null;
+    if (z > -2.3 && z < -2.0 && y > 1.45 && Math.abs(x) < hw * 0.9) return null;
     return paint;
   };
   const shell = loft(scene, "shell", [
@@ -141,10 +141,31 @@ export function danfo(stage: Stage): { root: TransformNode; wheels: Wheels; door
     { z: 2.42, y0: 0.38, y1: 2.24, hw: 0.97, n: 5 },
     { z: 2.52, y0: 0.46, y1: 1.95, hw: 0.88, n: 4 }
   ], { zone, ring: 28, cap: paint });
-  shell.material = mat("#ffffff", { specular: 0.45 }); shell.parent = root; caster(shell);
+  const shellMat = mat("#ffffff", { specular: 0.45 }); shellMat.backFaceCulling = false; shell.material = shellMat; shell.parent = root; caster(shell);
 
   // Window pillars, bumpers, grille, lamps, mirrors, rack.
   const yellow = mat("#f2b705", { specular: 0.45 }), chrome = mat(CHROME, { specular: 0.8 }), blackMat = mat("#15181a", { specular: 0.25 });
+
+  // Cabin interior: dark floor, seats, dashboard, steering wheel
+  part(stage, root, 1.86, 0.05, 4.2, 0.02, mat("#202428", { specular: 0.1 }), 0, 0.45, 0.15);
+  const seatMat = mat("#3a4046", { specular: 0.2 });
+  for (const z of [-1.25, 0.1, 1.15]) {
+    part(stage, root, 1.7, 0.1, 0.36, 0.03, seatMat, 0, 0.52, z);
+    part(stage, root, 1.7, 0.35, 0.06, 0.03, seatMat, 0, 0.72, z + 0.16);
+  }
+  part(stage, root, 1.7, 0.22, 0.32, 0.04, blackMat, 0, 0.82, -1.8);
+  const wheel = tyre(scene, "steeringWheel", 0.16, 0.03);
+  wheel.material = blackMat; wheel.parent = root;
+  wheel.position.set(0.42, 0.95, -1.65); wheel.rotation.x = Math.PI / 4;
+
+  // Transparent window panes
+  const glassMat = glassMaterial(stage, "danfoGlass");
+  const nearGlass = stage.plane("nearGlass", 4.1, 0.65, glassMat, -0.99, 1.81, 0.15);
+  nearGlass.parent = root; nearGlass.rotation.y = Math.PI / 2; nearGlass.receiveShadows = false;
+  const farGlass = stage.plane("farGlass", 4.1, 0.65, glassMat, 0.99, 1.81, 0.15);
+  farGlass.parent = root; farGlass.rotation.y = -Math.PI / 2; farGlass.receiveShadows = false;
+  const frontGlass = stage.plane("frontGlass", 1.8, 0.65, glassMat, 0, 1.82, -2.12);
+  frontGlass.parent = root; frontGlass.rotation.x = 0.35; frontGlass.receiveShadows = false;
   for (const s of [-1, 1]) for (const z of [-1.55, -0.45, 0.65, 1.75]) part(stage, root, 0.05, 0.66, 0.1, 0.02, yellow, s * 1.0, 1.82, z);
   for (const z of [-2.55, 2.56]) part(stage, root, 2.02, 0.2, 0.16, 0.07, blackMat, 0, 0.52, z);
   part(stage, root, 0.9, 0.24, 0.05, 0.05, blackMat, 0, 0.86, -2.5);

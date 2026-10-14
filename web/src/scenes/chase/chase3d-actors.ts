@@ -32,7 +32,9 @@ export type FigureSpec = {
   scale?: number;
 };
 
-export type Figure = { root: TransformNode; meshes: Mesh[]; apply(pose: Pose, cycle?: number): void };
+/** How a model figure leaves its running clip: straight legs, hands up or arms out (see ChaseRunner). Built-in figures read it all from the pose. */
+export type FigureExtras = { stand?: number; raise?: number; reach?: number };
+export type Figure = { root: TransformNode; meshes: Mesh[]; apply(pose: Pose, cycle?: number, extras?: FigureExtras): void };
 
 function limb(scene: Scene, parent: TransformNode, name: string, at: Vector3, upper: [number, number, number], lower: [number, number, number], mats: { upper: StandardMaterial; lower: StandardMaterial }) {
   const joint = new TransformNode(`${name}-joint`, scene);

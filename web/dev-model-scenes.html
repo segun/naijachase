@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Archive and panel model preview</title>
+    <style>
+      body { margin: 0; background: #101a1a; color: #eee; font: 14px system-ui, sans-serif; }
+      nav { position: fixed; z-index: 1; inset: 8px 8px auto; display: flex; flex-wrap: wrap; align-items: center; gap: 7px; padding: 8px; background: #101a1aee; }
+      button, select, input { font: inherit; padding: 5px; }
+      input[type=number] { width: 5rem; }
+      canvas { width: 100vw; height: 100vh; display: block; }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <select id="scene" aria-label="Scene"><option value="archive">Archive</option><option value="panel">Disciplinary panel</option></select>
+      <select id="detail" aria-label="Detail"><option value="full">Full</option><option value="standard">Standard</option></select>
+      <select id="avatar" aria-label="Player avatar"></select>
+      <label>Hour <input id="hour" type="number" min="0" max="23" value="14"></label>
+      <label>Seconds <input id="time" type="number" min="0" step="0.1" value="3.5"></label>
+      <button id="inspect" type="button">Inspect frame</button>
+      <span id="status" role="status"></span>
+    </nav>
+    <canvas id="scene-canvas"></canvas>
+    <script type="module" src="/dev/model-scenes-preview.ts"></script>
+  </body>
+</html>

@@ -24,13 +24,18 @@ Nothing from the models is in the main bundle, and the Babylon.js loader is impo
   models: desk, monitor, lamp, chair, filing cabinet, corkboard, plant, papers and window. Each failed model retains its own procedural
   counterpart. The shell, swinging door, time-of-day sky, case map, terminal glass, keyboard and mouse stay procedural.
 - **Login chase** (`scenes/chase/chase3d.ts`): the masked thief, three police officers, commuters, traders and farmers; palms, towers,
-  fishing boats, lighthouse, danfo, stalls, shopfronts, pyramids, mud houses, baobabs, roadside trees and lamps.
+  fishing boats, lighthouse, danfo (with a seated driver), stalls, shopfronts, pyramids, mud houses, baobabs, roadside trees and lamps. The raid
+  scene reuses it with a custom timeline; runners may carry `heading`, `stand`, `raise` and `reach`, which the model actors apply by aiming
+  leg and arm bones on top of the run clip (hands up for the arrest, officers reaching for the thief).
 - **Witness encounters** (`scenes/witness/chase3d-witness.ts`): all 35 venue types use the selected player, role-matched witness,
   venue-specific crowds, arrival vehicle and model-backed scenery at Full detail. See calibration and exceptions below.
 - **Journeys** (`scenes/journey/chase3d-journey.ts`): the selected player walking, sitting and steering, flight cabin crew, runabout,
   moving danfo, parked coaches and airliner at Full detail. See calibration and limitations below.
-- Everything else (archive, panel) still draws the procedural figures. Moving a scene over means using
-  `addModelFigure` and calling `figure.apply(pose)` instead of setting `rig` angles, as the garage does.
+- **Case archive** (`scenes/archive/chase3d-archive.ts`): Full attempts to use the selected avatar as it walks to the case file, reaches for it, turns and holds it in a reading pose.
+  The procedural avatar remains the fallback, and model hands are aimed at the file during the reach and reading poses. Current avatar exports need loader validation:
+  the preview reports `Cannot set properties of undefined (setting 'weight')` for an avatar GLB, so that avatar currently uses the fallback.
+- **Disciplinary panel** (`scenes/panel/chase3d-panel.ts`): Full attempts to use the five seated judge models and selected player avatar; vote papers remain procedural.
+  The judge exports are unrigged and need visual fitting—the current preview shows oversized dark silhouettes—so do not treat their integration as calibrated.
 
 ### Witness calibration and fallbacks
 
@@ -68,15 +73,17 @@ arrival vehicle facings were inspected. Only individually inspected assets gain 
 Full keeps manifest dimensions: runabout **3.6 m**, danfo **4.4 m**, parked coach **11 m**, airliner **27 m**.
 The runabout and danfo have different authored axes; only the danfo receives the extra quarter-turn before the timeline's rightward heading.
 Portrait ground cameras follow the approaching player and then centre the vehicle, rather than leaving both outside the desktop camera's lead.
-Coaches stay parked in the bus park. All ten players use Walk/Sit clips and steering-hand targets; the hitch passenger fades inside the
-opaque minibus rather than being drawn through its body. The flight boarding pass follows the player's right hand.
+Coaches stay parked in the bus park. All ten players use Walk/Sit clips and steering-hand targets; the hitch journey uses the danfo model, with a driver at the
+wheel and the player at the passenger window (the witness scene seats both too, until the door opens). The flight boarding pass follows the player's right hand.
 No dedicated `crew` asset exists: cabin crew reuses `witness_woman_uniform` at **1.65 m**, retaining its supplied uniform texture.
 
 The airliner has a higher door and wider wings than the procedural plane. `MODEL_AIR` and `modelBoardingPosition` fit the existing
 boarding/deplaning choreography to its **3.55 m sill**, with diagonal procedural stairs ahead of the engine and a wider camera.
 Sequence, pass presentation, fades and travel outcomes remain unchanged. The supplied vehicles are single static meshes:
 they cannot spin wheels, swing their textured doors or retract baked landing gear. The plane keeps procedural stairs and a doorway overlay;
-true moving parts require revised, separately rigged exports. Journey landscapes, buildings and readable signs remain procedural.
+true moving parts require revised, separately rigged exports. Full-detail drive and hitch journeys use supplied journey models for
+landscape props and set pieces; destination and location text stays as a readable overlay on the model signs. Standard keeps procedural
+scenery, as do road, ground, water and sky surfaces. Flight scenery remains procedural.
 A failed model or missing required Walk/Sit keeps its procedural counterpart and logs the reason.
 
 Standard requests no GLBs. Simple skips ordinary journey animation and performs the existing guarded desk handoff once.
@@ -89,6 +96,15 @@ Development preview: [web/dev-journey.html](../web/dev-journey.html), Drive/Hitc
 Browser checks cover the actual Simple visit/Continue flow and 320x568, 360x640, 390x844, 568x320 and 844x390 layouts: full account,
 scrollable text, reachable Continue, no horizontal overflow or floating-control overlap. The production component was also checked
 with a long account, detail rebuilds and WebGL-loss recovery. These are Chromium emulation checks, not real-phone/Safari performance evidence.
+
+### Archive and panel scene integration
+
+Full uses the selected avatar model for the archive walk, file reach and reading pose; the shared model-figure hand targets keep the held file aligned
+to the player's hands while the procedural file remains available at every detail level.
+The panel uses the five seated judge exports and the selected avatar, with the existing procedural vote papers and per-figure procedural fallback.
+The judge exports currently contain one static mesh each, with no skin or named arm joints. As a result, papers rise in the existing timeline but the
+judge's arm cannot yet move with them; that gesture needs a rigged judge export. Preview both scenes and all player avatars at [web/dev-model-scenes.html](../web/dev-model-scenes.html),
+or use the dedicated panel/judges inspection harness at [web/dev-judges.html](../web/dev-judges.html) (redirected also from `web/dev-panel.html`).
 
 ## How sizes are set
 
@@ -107,7 +123,8 @@ The sizes are real-world starting points: tune one when its scene is moved over 
 
 Full uses the registered runner/crowd models and 16 matching scenery/vehicle models (23 unique files, each downloaded once per scene).
 Scenery is uniformly fitted to the existing procedural anchors: building/tree heights and boat/bus lengths. The danfo's long axis is
-already X, so it needs no quarter-turn; people turn from the loader's -Z facing to the chase's +X. The checked manifest flags cover only
+already X, so it needs no quarter-turn. Its windows are see-through, so each danfo model gets a seated primitive driver at the
+wheel (Standard keeps the built-in danfo with riders' heads). People turn from the loader's -Z facing to the chase's +X. The checked manifest flags cover only
 models inspected in this scene. Roads, kerbs, water, sky, bridges, distant hills, far shop facades and readable city signs stay procedural.
 Generated scenery may retain its baked base; no source geometry is destructively edited.
 

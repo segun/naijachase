@@ -15,7 +15,7 @@ export type ModelFigure = {
   /** The model's own node, for scenes that want to add shadows or parents. */
   model: ModelHandle;
   /** Poses the figure for this instant. Cheap; call it every frame. */
-  apply(pose: Pose, seconds?: number, hands?: readonly [Vector3, Vector3]): void;
+  apply(pose: Pose, seconds?: number, hands?: readonly [Vector3 | null, Vector3 | null]): void;
   setAlpha(alpha: number): void;
 };
 
@@ -98,7 +98,7 @@ export function modelFigure(model: ModelHandle, options: { pinHorizontalTravel?:
       model.fit.position.y = baseY + (sit ? lift * pose.sit : 0);
       if (hands && pose.type > 0) {
         arms.forEach(([upper, lower, hand], i) => {
-          if (!upper || !lower || !hand) return;
+          if (!upper || !lower || !hand || !hands[i]) return;
           upper.computeWorldMatrix(true); lower.computeWorldMatrix(true); hand.computeWorldMatrix(true);
           const shoulder = upper.getAbsolutePosition().clone();
           const a = Vector3.Distance(shoulder, lower.getAbsolutePosition());
@@ -117,9 +117,12 @@ export function modelFigure(model: ModelHandle, options: { pinHorizontalTravel?:
       }
     },
     setAlpha(alpha) {
-      if (Math.abs(alpha - last) <= 0.004) return;
+      // Small changes are skipped, but never one that shows or hides the figure: glTF materials are opaque, so a figure left enabled
+      // at a tiny alpha would still be drawn in full.
+      const shown = alpha > 0.002;
+      if (Math.abs(alpha - last) <= 0.004 && shown === last > 0.002) return;
       last = alpha;
-      model.root.setEnabled(alpha > 0.002);
+      model.root.setEnabled(shown);
       meshes.forEach(m => { m.visibility = alpha; });
     }
   };

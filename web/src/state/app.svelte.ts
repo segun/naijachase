@@ -9,14 +9,22 @@ import { alreadyPressured, parseUtc, tokenAwards, type DisciplinaryCase, type Ja
 import {
   dossierChanges, RATE_LIMIT_MESSAGE, errorKind, groupNotes, nearestHomeBase, parseNotes,
   catalogueView, isTransitReply, resumableCase, STATES, unreadReleases, type WeeklyAttempt, type ReportCategory, type AchievementDef, type CaseArchiveEntry, type CaseResponse, type CatalogueProgress, type ClientCommand, type GameEvent, type Note,
-  type AvatarCatalogue, type AvatarPreset, type DossierOptions, type CooperationPreferences, type CooperationRequest, type Player, type PlayerSession, type ReleaseNotification, type TransportLedgerEntry, type TransportQuote, type ProfileUpdate, type ProgressionSummary, type Screen
+  type AvatarCatalogue, type AvatarPreset, type DossierOptions, type CooperationPreferences, type CooperationRequest, type Player, type PlayerSession, type ReleaseNotification, type TransportLedgerEntry, type TransportQuote, type ProfileUpdate, type ProgressionSummary, type Screen,
+  raidQuote, type QuoteGroup
 } from "../domain/model.ts";
+
+const sentence = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
 
 export type Toast = { id: number; kind: "info" | "error" | "success"; text: string };
 /** The witness just questioned, for the arrival scene that follows the journey to the venue. */
 export type WitnessVisit = { venueId: string; venueName: string; role: string; message: string; arrival: "drive" | "hitch" };
 /** A journey between states about to be played: where from and to, how, and the seed that fixes which landscapes it passes through. */
 export type JourneyVisit = { from: string; to: string; mode: "drive" | "hitch" | "fly"; seed: number; loop?: boolean; label?: string };
+/**
+ * A hideout raid being played: the short chase in which the suspect either outruns the officers or is caught.
+ * `finale` replaces the last caption when the case ended some other way (a wrong warrant, or the deadline).
+ */
+export type RaidVisit = { venueId: string; label: string; suspect: string; state: string; ending: "escape" | "catch"; finale?: string; seed: number };
 /** Where a weekly attempt is travelling, as the server told us: the journey really takes this long and animations never shorten it. */
 export type WeeklyTransit = { destination: string; mode: string; arrivesAt: number; seconds: number };
 /** A disciplinary panel the player has yet to see: the server's own result, played back and then acknowledged. */
@@ -107,6 +115,10 @@ export class AppController {
   witnessVisit = $state<WitnessVisit | null>(null);
   /** The travelling scene being played between two states; null when none is. */
   journey = $state<JourneyVisit | null>(null);
+  /** The hideout raid being played; null when none is. */
+  raidVisit = $state<RaidVisit | null>(null);
+  /** The raid the server is answering: its scene plays once the result (or, weekly, the arrival) is in. */
+  private pendingRaid: Omit<RaidVisit, "ending" | "finale"> | null = null;
   /** Set when the player has just come back from a venue: the office plays a short return (seated, then the zoom) instead of the long walk-in. */
   returning = $state(false);
 
@@ -156,7 +168,7 @@ export class AppController {
   }
 
   /** Screens that belong to the weekly desk; any other screen leaves it and brings the ordinary case back. */
-  private static readonly WEEKLY_SCREENS: readonly Screen[] = ["investigate", "notebook", "dossier", "travel", "warrant", "results", "garage", "witness", "journey"];
+  private static readonly WEEKLY_SCREENS: readonly Screen[] = ["investigate", "notebook", "dossier", "travel", "warrant", "results", "garage", "witness", "journey", "raid"];
 
   go(next: Screen) {
     if (this.weeklyId && !AppController.WEEKLY_SCREENS.includes(next) && !(next === "cases" && this.briefing)) this.leaveWeekly();
@@ -207,7 +219,7 @@ export class AppController {
     this.dossierLoad = undefined;
     this.dossierOptions = null; this.dossierOptionsLoading = false; this.dossierOptionsError = "";
     this.weeklyId = null; this.weeklyTransit = null; clearTimeout(this.weeklyTimer); this.weeklyAccounts = [];
-    this.player = null; this.game = null; this.caseId = ""; this.briefing = false; this.pendingLead = ""; this.lastWitness = null; this.witnessVisit = null; this.journey = null; this.returning = false;
+    this.player = null; this.game = null; this.caseId = ""; this.briefing = false; this.pendingLead = ""; this.lastWitness = null; this.witnessVisit = null; this.journey = null; this.raidVisit = null; this.pendingRaid = null; this.returning = false;
     this.summary = null; this.archive = []; this.sessions = []; this.avatar = null; this.catalogueStatus = null; this.exhausted = false; this.quotes = []; this.ledger = []; this.notes = []; this.trail = []; this.rankAtStart = null;
     this.tokenBalance = null; this.tokenLedger = []; this.tokenLedgerLoaded = false; this.awards = []; this.jail = null; this.discipline = []; this.disciplineLoaded = false; this.panel = null; this.pressured = []; this.pressureNotice = null; this.pendingPressure.clear();
     sessionStorage.clear();
@@ -710,6 +722,48 @@ export class AppController {
     this.go(this.game?.state.outcome ? "results" : "investigate");
   }
 
+  /** Raids a hideout with the fastest transport the player can afford; the chase scene follows once the server has answered. */
+  async raid(group: QuoteGroup): Promise<boolean> {
+    const gs = this.game?.state, quote = raidQuote(group.options);
+    if (!gs || !quote || this.busy) return false;
+    const suspect = gs.suspect_files.find(s => s.suspect_id === gs.warrant_suspect)?.name ?? "the suspect";
+    // The case varies the captions from one case to the next; the count keeps a second raid in the same case from repeating the first.
+    const caseSeed = [...this.caseId].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7) % 9973;
+    this.pendingRaid = { venueId: group.id, label: group.label, suspect, state: gs.current_state, seed: caseSeed + (gs.searched_hideouts?.length ?? 0) };
+    const mode = quote.mode as "drive" | "hitch_ride";
+    const ok = await this.command({ type: "search_hideout", venue_id: group.id, mode }, "", "Raiding hideout", true);
+    if (!ok) { this.pendingRaid = null; return false; }
+    // A weekly raid is a real journey: watch it, and the chase plays on arrival.
+    if (this.weeklyTransit) this.watchWeeklyTransit(mode);
+    return true;
+  }
+
+  /** Starts the scene for the raid the server has just settled. False if there was none to play. */
+  private playRaid(): boolean {
+    const raid = this.pendingRaid, gs = this.game?.state;
+    this.pendingRaid = null;
+    if (!raid || !gs) return false;
+    const outcome = gs.outcome;
+    const finale = outcome === "escaped" ? `The thief got away. Your warrant named ${raid.suspect}: the wrong person.`
+      : outcome === "deadline" ? "Time has run out. The thief got away."
+      : outcome && outcome !== "solved" ? "The thief got away."
+      : undefined;
+    this.raidVisit = { ...raid, ending: outcome === "solved" ? "catch" : "escape", ...(finale ? { finale } : {}) };
+    this.go("raid");
+    return true;
+  }
+
+  /** The raid scene is over (or was skipped): the results if the case has ended, otherwise back to the remaining hideouts. */
+  leaveRaid() {
+    const raid = this.raidVisit;
+    this.raidVisit = null;
+    if (this.game?.state.outcome) { this.go("results"); return; }
+    // Straight back to the remaining hideouts, with the short office return rather than the walk-in.
+    this.returning = true;
+    this.go("warrant");
+    if (raid) this.toast(`${sentence(raid.suspect)} got away from the ${raid.label.toLowerCase()}. Try another hideout.`, "info");
+  }
+
   /** Ordinary assignment: the server picks an unseen mission and returns the case id. */
   async openCase() {
     if (this.busy) return;
@@ -918,8 +972,9 @@ export class AppController {
     if (next.state.outcome) {
       this.awards = tokenAwards(next.events);
       await this.loadProgression();
-      this.go("results");
     }
+    if (payload.type === "search_hideout" && this.playRaid()) return true;
+    if (next.state.outcome) this.go("results");
     return true;
   }
 
@@ -939,7 +994,7 @@ export class AppController {
   private clearCase() {
     this.caseGeneration++;
     this.game = null; this.caseId = ""; this.notes = []; this.trail = []; this.rankAtStart = null;
-    this.briefing = false; this.pendingLead = ""; this.lastWitness = null; this.witnessVisit = null; this.journey = null; this.returning = false;
+    this.briefing = false; this.pendingLead = ""; this.lastWitness = null; this.witnessVisit = null; this.journey = null; this.raidVisit = null; this.pendingRaid = null; this.returning = false;
     this.quotes = []; this.quotesLoaded = false; this.ledger = []; this.awards = []; this.panel = null; this.pressured = []; this.pressureNotice = null; this.pendingPressure.clear();
     ["nc-case", "nc-notes", "nc-trail", "nc-rank"].forEach(k => sessionStorage.removeItem(k));
   }
@@ -1064,6 +1119,14 @@ export class AppController {
     const watching = this.screen === "journey" && this.journey?.loop === true;
     const arrival = this.journey?.mode === "hitch" ? "hitch" : "drive";
     this.journey = null;
+    // A raid ends in its chase: shown at once if the player was watching the journey or the case is over, otherwise reported.
+    const raided = this.pendingRaid;
+    if (raided) {
+      if ((watching || state?.outcome) && this.playRaid()) return;
+      this.pendingRaid = null;
+      this.toast(`You raided the ${raided.label.toLowerCase()}. ${sentence(raided.suspect)} was not there.`, "info");
+      return;
+    }
     if (state?.outcome) { this.go("results"); return; }
     if (newest?.data.message) {
       this.lastWitness = { venueId: newest.data.venue_id ?? "", venueName: newest.data.local_venue_name || newest.data.venue_name || "", role: newest.data.witness_role ?? "Witness", message: newest.data.message };
@@ -1115,7 +1178,9 @@ export class AppController {
     if (reply.state.current_state !== before.current_state) { this.trail = [...this.trail, reply.state.current_state]; this.quotes = []; this.quotesLoaded = false; }
     if (payload.type !== "record_trait" && !reply.state.outcome) void this.refreshQuotes();
     if (!quiet) this.toast(message, "success");
-    if (reply.state.outcome) { this.awards = []; void this.groups.loadChallenge(); this.go("results"); }
+    if (reply.state.outcome) { this.awards = []; void this.groups.loadChallenge(); }
+    if (payload.type === "search_hideout" && this.playRaid()) return true;
+    if (reply.state.outcome) this.go("results");
     return true;
   }
 }

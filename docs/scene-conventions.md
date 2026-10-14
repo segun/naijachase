@@ -17,7 +17,7 @@ Journey has adopted this policy: ordinary Simple journeys hand off to the desk o
 Panel, archive and garage behaviour is unchanged. The following two-renderer instructions document legacy implementations
 until each is updated; they do not require adding witness, office or journey 2D animation back.
 
-A scene is never skipped because the device is weak, and it never leaves a black screen. Every scene
+A scene is never skipped because the device is weak, and it never leaves a black screen. Every animated scene
 has **two renderers that show the same thing**:
 
 1. **3D** (Babylon.js, `chase3d-*.ts`), lazily imported. It is the default on devices that look capable.
@@ -91,7 +91,7 @@ A venue is a recipe plus a 3D scenery set; the choreography is shared and does n
 | --- | --- |
 | `journey-scene.ts` | The rules, pure and unit-tested (`tests/journey.test.mjs`): the landscapes, the random route, the timeline of a drive, a hitch ride and a flight, and `frameAt(plan, t)`, which says where the camera, vehicle, player and cabin crew are at second `t`. |
 | `journey-driver.ts` | The options and handle both renderers share. |
-| `chase3d-journey.ts` | Draws the pure timeline; Full uses supplied people/vehicles and model-specific boarding fitting, Standard stays procedural. |
+| `chase3d-journey.ts` | Draws the pure timeline; Full drive/hitch journeys use supplied people, vehicles and scenery models, Standard stays procedural. Flight scenery remains procedural. |
 | `journey-2d.ts` | Legacy, no longer imported by the runtime. |
 | `JourneyScene.svelte` | Picks 3D or functional status/handoff, handles failure, keeps journey narration out of the UI, and owns status notes, Skip/Back and the guarded hand-over to the desk. |
 
@@ -106,6 +106,19 @@ A venue is a recipe plus a 3D scenery set; the choreography is shared and does n
   flying a plane in cruise among 150 random clouds. Props are stored once per lap and drawn at the copy nearest the camera (`propX`), so there is no jump at the seam.
   Esc (or Back) calls `onclose` instead of skipping; it never affects the real wait. Reduced motion shows one still frame.
 - The flight's two airports are named from the case: `"<from> Airport"` and `"Welcome to <to> Airport"`. Avoid a green and white livery (it reads as a flag).
+
+## The raid scene
+
+`web/src/scenes/chase/` also plays the end-game raid after the player picks a hideout on the warrant screen (`app.raid` then `app.playRaid`,
+`app.leaveRaid` at the end). It reuses the login chase world:
+
+| File | Holds |
+| --- | --- |
+| `raid-scene.ts` | Pure and unit-tested (`tests/raid.test.mjs`): `raidFrame(s, ending, start)` for the 7.5 s escape (the thief pulls away, officers fall back) and the 8.5 s catch (officers surround him, he stops and raises his hands), and the captions (`raidLines`) naming the warrant suspect. |
+| `RaidScene.svelte` | 3D through `createChaseScene({ frame })`, the 2D chase (`drawChase(..., timeline)`) at Simple detail or after a 3D failure, from the same second. Reduced motion shows the captions with Continue. Skip/Esc ends early. |
+
+An empty hideout plays the escape and returns to the warrant list, where that hideout is now disabled. The real hideout plays the catch
+when the case is solved; a wrong warrant or the deadline plays the escape with a closing caption, then the results screen.
 
 ## Looks: cheap upgrades, no artist
 

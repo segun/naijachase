@@ -74,7 +74,10 @@ test("driving shows the car, hitching the minibus, and the player is seen gettin
   const seated = frameAt(car, car.go + 5);
   assert.equal(seated.player.sit, 1, "the driver stays seated in the open car");
   assert.ok(Math.abs(seated.player.x - (seated.vehicle.x - 0.25)) < 1e-6, "and moves with it");
-  assert.equal(frameAt(bus, bus.go + 5).player.visible, false, "inside the minibus");
+  const busSeated = frameAt(bus, bus.go + 5);
+  assert.equal(busSeated.player.visible, true, "visible inside the minibus");
+  assert.equal(busSeated.player.sit, 1, "seated inside the minibus");
+  assert.ok(Math.abs(busSeated.player.x - (busSeated.vehicle.x + 0.8)) < 1e-6, "and moves with it");
   assert.ok(frameAt(bus, 2.8).vehicle.door > 0.9, "the door opens for the player");
 });
 
@@ -248,7 +251,7 @@ test("driving and hitching loop through many different landscapes, with the vehi
     assert.ok(p.spans.length >= 6 && new Set(p.spans.map(s => s.land.id)).size === p.spans.length);
     assert.equal(frameAt(p, 0.7).vehicle.kind, mode === "drive" ? "car" : "bus");
     assert.ok(frameAt(p, 3).vehicle.x > frameAt(p, 2).vehicle.x || frameAt(p, 3).vehicle.x < frameAt(p, 2).vehicle.x - p.period / 2, "keeps moving");
-    assert.equal(frameAt(p, 9).player.visible, mode === "drive", "the driver is seen, the minibus passenger is not");
+    assert.equal(frameAt(p, 9).player.visible, true, "the player is seen, in the car or at the minibus window");
     assert.equal(p.period % 8, 0, "road dashes line up across the seam");
   }
 });

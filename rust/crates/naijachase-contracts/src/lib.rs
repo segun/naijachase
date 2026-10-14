@@ -110,6 +110,9 @@ pub struct GameState {
     pub warrant_suspect: Option<String>,
     #[serde(default)]
     pub hideout_venue: String,
+    /// Hideouts already raided without finding the suspect; each can be raided only once.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub searched_hideouts: Vec<String>,
     pub replay: Vec<Command>,
     pub outcome: Option<String>,
     #[serde(default)]
@@ -155,6 +158,7 @@ pub fn migrate_legacy_state(
         visited_venues: vec![],
         warrant_suspect: None,
         hideout_venue: String::new(),
+        searched_hideouts: vec![],
         replay: vec![],
         outcome: None,
         economy: CaseEconomy::default(),

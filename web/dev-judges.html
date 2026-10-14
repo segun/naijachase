@@ -1,0 +1,522 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Disciplinary Panel & Judges Preview</title>
+    <link rel="stylesheet" href="/src/styles/terminal.css">
+    <link rel="stylesheet" href="/src/styles/witness.css">
+    <link rel="stylesheet" href="/src/styles/screens.css">
+    <style>
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        background: #081d17;
+        color: #f4e8c1;
+        font: 14px system-ui, -apple-system, sans-serif;
+        overflow: hidden;
+        height: 100vh;
+        width: 100vw;
+      }
+      #stage-container {
+        position: relative;
+        width: 100vw;
+        height: 100vh;
+      }
+      canvas#scene-canvas {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+      .witness-fade {
+        position: absolute;
+        inset: 0;
+        z-index: 2;
+        background: #000;
+        pointer-events: none;
+        transition: opacity 0.05s linear;
+      }
+      /* Top Floating Control Bar */
+      #hud-controls {
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        right: 10px;
+        z-index: 10;
+        background: rgb(8 29 23 / 0.94);
+        backdrop-filter: blur(8px);
+        border: 1px solid var(--line-soft, #264a3d);
+        border-radius: 12px;
+        padding: 10px 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        box-shadow: 0 8px 32px rgb(0 0 0 / 0.6);
+        max-height: calc(100vh - 20px);
+        overflow-y: auto;
+      }
+      #hud-controls.collapsed .controls-body {
+        display: none;
+      }
+      .controls-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      .controls-title {
+        font-weight: 700;
+        font-size: 0.95rem;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: var(--gold, #e8b94d);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .controls-title .badge {
+        font-size: 0.72rem;
+        padding: 2px 7px;
+        border-radius: 6px;
+        background: #17382d;
+        color: #a8cfc2;
+        text-transform: none;
+        font-weight: normal;
+      }
+      .controls-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+      }
+      .control-group {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #112a22;
+        padding: 4px 8px;
+        border-radius: 8px;
+        border: 1px solid #1e4537;
+      }
+      .control-group label {
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: #9bb8ad;
+        font-weight: 600;
+      }
+      button, select, input {
+        font: inherit;
+        background: #1d3e33;
+        color: #f4e8c1;
+        border: 1px solid #2e594a;
+        border-radius: 6px;
+        padding: 5px 9px;
+        cursor: pointer;
+      }
+      button:hover {
+        background: #275244;
+        border-color: #427864;
+      }
+      button:active {
+        transform: translateY(1px);
+      }
+      button.primary {
+        background: #176b4d;
+        border-color: #279b71;
+        color: #fff;
+        font-weight: 600;
+      }
+      button.primary:hover {
+        background: #1d825e;
+      }
+      button.active-toggle {
+        background: var(--gold, #e8b94d);
+        color: #12211b;
+        font-weight: 700;
+        border-color: #fff;
+      }
+      input[type="number"] {
+        width: 4.8rem;
+      }
+      input[type="range"] {
+        width: 140px;
+        accent-color: var(--gold, #e8b94d);
+        cursor: pointer;
+      }
+      /* Judge Vote Buttons */
+      .judge-btn {
+        font-size: 0.78rem;
+        font-weight: 700;
+        padding: 5px 10px;
+        border-radius: 6px;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        transition: all 0.15s ease;
+      }
+      .judge-btn.vote-punish {
+        background: #4a1d1a;
+        color: #ffb4ab;
+        border: 1px solid #8f2a22;
+      }
+      .judge-btn.vote-punish:hover {
+        background: #612521;
+      }
+      .judge-btn.vote-warning {
+        background: #123d24;
+        color: #9ee5b4;
+        border: 1px solid #1f6b34;
+      }
+      .judge-btn.vote-warning:hover {
+        background: #195230;
+      }
+      .tally-pill {
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: 99px;
+        font-size: 0.8rem;
+        letter-spacing: 0.04em;
+      }
+      .tally-pill.verdict-punish {
+        background: #5c1815;
+        color: #ffdad6;
+        border: 1px solid #93000a;
+      }
+      .tally-pill.verdict-warning {
+        background: #0f3d23;
+        color: #bbf2cb;
+        border: 1px solid #1b6339;
+      }
+      /* Bottom HUD Status & Live Meters */
+      #hud-status {
+        position: fixed;
+        bottom: 12px;
+        left: 12px;
+        right: 12px;
+        z-index: 10;
+        background: rgb(8 29 23 / 0.92);
+        backdrop-filter: blur(8px);
+        border: 1px solid var(--line-soft, #264a3d);
+        border-radius: 12px;
+        padding: 8px 14px;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        box-shadow: 0 4px 20px rgb(0 0 0 / 0.5);
+      }
+      .judge-meters {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .judge-meter-box {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 3px;
+        font-size: 0.72rem;
+        background: #112a22;
+        padding: 4px 6px;
+        border-radius: 6px;
+        border: 1px solid #1e4537;
+        min-width: 54px;
+      }
+      .meter-bar {
+        width: 100%;
+        height: 6px;
+        background: #091914;
+        border-radius: 3px;
+        overflow: hidden;
+      }
+      .meter-fill {
+        height: 100%;
+        width: 0%;
+        background: #888;
+        transition: width 0.05s linear;
+      }
+      .meter-fill.fill-punish {
+        background: #e05b50;
+      }
+      .meter-fill.fill-warning {
+        background: #4ade80;
+      }
+      .status-text {
+        font-size: 0.82rem;
+        color: #d1dfd8;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .phase-badge {
+        padding: 3px 8px;
+        border-radius: 6px;
+        font-weight: 700;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        background: #1c3e34;
+        color: var(--gold, #e8b94d);
+        border: 1px solid #2b5749;
+      }
+      /* 2D Fallback Presentation View */
+      #view-2d-wrapper {
+        position: absolute;
+        inset: 0;
+        z-index: 5;
+        background: #081d17;
+        display: none;
+        place-items: center;
+        padding: 2rem 1rem;
+        overflow-y: auto;
+      }
+      #view-2d-wrapper.active {
+        display: grid;
+      }
+      .dialog-card {
+        width: min(100%, 36rem);
+        background: #0d2820;
+        border: 1px solid var(--line, #285444);
+        border-radius: 16px;
+        padding: 1.5rem;
+        display: grid;
+        gap: 1.2rem;
+        box-shadow: 0 16px 40px rgb(0 0 0 / 0.7);
+      }
+      .dialog-header h1 {
+        margin: 0;
+        font-size: 1.3rem;
+        color: var(--gold, #e8b94d);
+      }
+      .dialog-header p {
+        margin: 0.3rem 0 0;
+        font-size: 0.95rem;
+        color: #9bb8ad;
+      }
+      /* Quick links */
+      .links-row {
+        margin-left: auto;
+        display: flex;
+        gap: 10px;
+        font-size: 0.8rem;
+      }
+      .links-row a {
+        color: var(--gold, #e8b94d);
+        text-decoration: none;
+      }
+      .links-row a:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Top HUD Controls -->
+    <header id="hud-controls" aria-label="Judges scene controls">
+      <div class="controls-header">
+        <div class="controls-title">
+          <span>🏛️ Disciplinary Panel Test Bench</span>
+          <span class="badge" id="model-status-badge">Checking models…</span>
+        </div>
+        <div class="links-row">
+          <a href="/dev-model-scenes.html">Combined Archive & Panel</a>
+          <button type="button" id="toggle-hud" style="padding: 2px 8px; font-size: 0.75rem;">Collapse controls</button>
+        </div>
+      </div>
+
+      <div class="controls-body">
+        <!-- Row 1: Playback & Timeline -->
+        <div class="controls-row">
+          <div class="control-group">
+            <label>Playback</label>
+            <button type="button" id="btn-play" class="primary">▶ Play</button>
+            <button type="button" id="btn-restart">↺ Restart</button>
+            <button type="button" id="btn-skip">⏩ Skip to cut</button>
+          </div>
+
+          <div class="control-group">
+            <label for="time-slider">Timeline</label>
+            <input type="range" id="time-slider" min="0" max="11.8" step="0.05" value="0">
+            <input type="number" id="time-input" min="0" max="20" step="0.1" value="0">
+            <span id="time-display" style="font-family: var(--mono, monospace); font-size: 0.82rem; color: var(--gold, #e8b94d);">0.00s / 11.80s</span>
+          </div>
+
+          <div class="control-group">
+            <label for="select-detail">Renderer</label>
+            <select id="select-detail">
+              <option value="full">3D Full (GLB Models)</option>
+              <option value="standard">3D Standard (Procedural)</option>
+              <option value="2d">2D Presentation Fallback</option>
+            </select>
+          </div>
+
+          <div class="control-group">
+            <label for="select-camera">Camera</label>
+            <select id="select-camera">
+              <option value="scene">Scene Camera (Animated)</option>
+              <option value="orbit">Free Orbit (Drag & Zoom)</option>
+            </select>
+            <button type="button" id="btn-reset-cam">Reset</button>
+          </div>
+        </div>
+
+        <!-- Row 2: Judges & Votes -->
+        <div class="controls-row">
+          <div class="control-group">
+            <label for="select-preset-votes">Votes Preset</label>
+            <select id="select-preset-votes">
+              <option value="default">Default (3 Punish, 2 Warning)</option>
+              <option value="all-punish">Unanimous Punish (5P)</option>
+              <option value="all-warning">Unanimous Warning (5W)</option>
+              <option value="majority-warning">Majority Warning (2P, 3W)</option>
+              <option value="alternate">Alternate (P, W, P, W, P)</option>
+              <option value="custom">Custom</option>
+            </select>
+          </div>
+
+          <div class="control-group">
+            <label>Judge Votes (Click to Toggle)</label>
+            <button type="button" class="judge-btn vote-warning" id="jbtn-0" data-index="0">J1: WARNING</button>
+            <button type="button" class="judge-btn vote-punish" id="jbtn-1" data-index="1">J2: PUNISH</button>
+            <button type="button" class="judge-btn vote-punish" id="jbtn-2" data-index="2">J3: PUNISH</button>
+            <button type="button" class="judge-btn vote-warning" id="jbtn-3" data-index="3">J4: WARNING</button>
+            <button type="button" class="judge-btn vote-punish" id="jbtn-4" data-index="4">J5: PUNISH</button>
+          </div>
+
+          <span class="tally-pill verdict-punish" id="tally-display">3 Punish : 2 Warning → Decision: Punish</span>
+        </div>
+
+        <!-- Row 3: Player Avatar, Lighting & Verdict Card Simulation -->
+        <div class="controls-row">
+          <div class="control-group">
+            <label for="select-avatar">Player Avatar</label>
+            <select id="select-avatar"></select>
+          </div>
+
+          <div class="control-group">
+            <label for="input-hour">Hour (0-23)</label>
+            <input type="number" id="input-hour" min="0" max="23" value="14">
+          </div>
+
+          <div class="control-group">
+            <label for="select-verdict-mode">Verdict Card</label>
+            <select id="select-verdict-mode">
+              <option value="auto">Auto (Appear at Cut)</option>
+              <option value="always">Always Show</option>
+              <option value="hidden">Always Hide</option>
+            </select>
+          </div>
+
+          <div class="control-group">
+            <label for="select-offence">Offence</label>
+            <select id="select-offence">
+              <option value="excessive_force">Excessive use of force (Intimidate)</option>
+              <option value="witness_tampering">Witness tampering (Bribe)</option>
+            </select>
+          </div>
+
+          <div class="control-group">
+            <label for="select-punishment">Punishment</label>
+            <select id="select-punishment">
+              <option value="points_deducted">Career points deducted (-1,000)</option>
+              <option value="demoted">Demoted to Investigator</option>
+              <option value="none">Warning only (no deduction)</option>
+              <option value="jailed">Jailed for 24 hours</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Stage Container -->
+    <main id="stage-container">
+      <canvas id="scene-canvas" touch-action="none"></canvas>
+      <div class="witness-fade" id="fade-overlay" style="opacity: 0;"></div>
+
+      <!-- Verdict Overlay Card (Styled as in PanelScene.svelte) -->
+      <div class="panel-card" id="verdict-card" style="display: none;" role="status">
+        <p class="eyebrow" id="card-offence">Excessive use of force</p>
+        <h2 id="card-decision">Punished · 3 to 2</h2>
+        <p id="card-punishment">Career points deducted.</p>
+        <ul id="card-consequences">
+          <li>Career points: 4,200 → 3,200 (−1,000).</li>
+          <li>This judgement is final and can not be appealed.</li>
+        </ul>
+        <small class="muted">The panel's decision is final. Punishments cannot be bought off.</small>
+        <button class="btn btn-primary" id="btn-accept-verdict" type="button">Accept judgement and return to the case</button>
+      </div>
+
+      <!-- 2D Fallback Presentation View -->
+      <div id="view-2d-wrapper">
+        <div class="dialog-card">
+          <div class="dialog-header">
+            <h1>Disciplinary panel</h1>
+            <p id="v2d-subtitle">Excessive use of force reported after pressing Ile-Ife Community Market.</p>
+          </div>
+
+          <ol class="panel-seats" aria-label="Panel members">
+            <li id="seat-1"><span class="icon">👤</span><span>Member 1</span><span class="vote" id="vote-txt-1"></span></li>
+            <li id="seat-2"><span class="icon">👤</span><span>Member 2</span><span class="vote" id="vote-txt-2"></span></li>
+            <li id="seat-3"><span class="icon">👤</span><span>Member 3</span><span class="vote" id="vote-txt-3"></span></li>
+            <li id="seat-4"><span class="icon">👤</span><span>Member 4</span><span class="vote" id="vote-txt-4"></span></li>
+            <li id="seat-5"><span class="icon">👤</span><span>Member 5</span><span class="vote" id="vote-txt-5"></span></li>
+          </ol>
+
+          <div class="panel-verdict" id="v2d-verdict" role="status">
+            <strong id="v2d-decision-heading">The panel is convening…</strong>
+            <span id="v2d-punishment-desc"></span>
+            <ul id="v2d-consequence-list"></ul>
+            <small class="muted">The panel's decision is final. Punishments cannot be bought off.</small>
+          </div>
+
+          <div class="row-actions">
+            <button class="btn btn-ghost" type="button" id="btn-v2d-skip">Skip to verdict</button>
+            <button class="btn btn-primary" type="button" id="btn-v2d-accept">Accept judgement and return to the case</button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Bottom HUD Status & Live Meters -->
+    <footer id="hud-status">
+      <div class="status-text">
+        <span class="phase-badge" id="badge-phase">Intro</span>
+        <span id="announcement-text">The panel is convening…</span>
+      </div>
+
+      <div class="judge-meters" aria-label="Judge paper positions">
+        <div class="judge-meter-box" id="jbox-0">
+          <span>J1</span>
+          <div class="meter-bar"><div class="meter-fill" id="mfill-0"></div></div>
+          <span id="mtxt-0">0%</span>
+        </div>
+        <div class="judge-meter-box" id="jbox-1">
+          <span>J2</span>
+          <div class="meter-bar"><div class="meter-fill" id="mfill-1"></div></div>
+          <span id="mtxt-1">0%</span>
+        </div>
+        <div class="judge-meter-box" id="jbox-2">
+          <span>J3</span>
+          <div class="meter-bar"><div class="meter-fill" id="mfill-2"></div></div>
+          <span id="mtxt-2">0%</span>
+        </div>
+        <div class="judge-meter-box" id="jbox-3">
+          <span>J4</span>
+          <div class="meter-bar"><div class="meter-fill" id="mfill-3"></div></div>
+          <span id="mtxt-3">0%</span>
+        </div>
+        <div class="judge-meter-box" id="jbox-4">
+          <span>J5</span>
+          <div class="meter-bar"><div class="meter-fill" id="mfill-4"></div></div>
+          <span id="mtxt-4">0%</span>
+        </div>
+      </div>
+
+      <div class="status-text" style="font-size: 0.78rem; opacity: 0.85;">
+        <span id="camera-shot-indicator">Camera: Bench Wide</span>
+      </div>
+    </footer>
+
+    <script type="module" src="/dev/judges-preview.ts"></script>
+  </body>
+</html>

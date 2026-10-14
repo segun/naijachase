@@ -84,7 +84,7 @@ test("both chase renderers share deterministic city, camera and running progress
     assert.ok(frame.runners.every(r => Number.isFinite(r.cycle) && Number.isFinite(r.x)));
     assert.ok(Math.abs(frame.weights.reduce((a, b) => a + b) - 1) < 1e-9);
   }
-  for (const f of ["chase3d.ts", "chase-2d.ts"]) assert.match(read(`scenes/chase/${f}`), /chaseFrame\(/);
+  for (const f of ["chase3d.ts", "chase-2d.ts"]) assert.match(read(`scenes/chase/${f}`), /chaseFrame\)?\(|= chaseFrame\)/);
   assert.match(read("scenes/chase/ChaseStage.svelte"), /models, signal: controller\.signal, seconds/);
   assert.match(read("scenes/chase/chase3d.ts"), /webglcontextlost/);
 });

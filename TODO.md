@@ -138,6 +138,10 @@ completed.
 - [x] Limit the final search to five server-selected hideouts, close a case with
   no reward when the real thief is found under a wrong warrant, and expose the
   real thief's name for the terminal result dialog.
+- [x] Raid list: one "Raid this location" button per hideout (drive if
+  affordable, else hitch), searched hideouts disabled (`searched_hideouts`),
+  and a short raid chase: the thief escapes from empty hideouts and is caught
+  at the real one.
 - [x] Preserve score, travel, stop, and deduction statistics in the
   archive for failed, expired, and wrong-warrant cases.
 
@@ -1267,13 +1271,14 @@ scores, rank, detection odds, panel votes, punishment, or jail time.
     - [x] 3. Journey (`journey/chase3d-journey.ts`): Full uses all ten selected avatars walking/sitting/steering, supplied uniformed cabin crew,
       the runabout, moving danfo, parked coaches and airliner. Correct vehicle axes/facing and manifest sizing; fit flight stairs/people to the model's higher door.
       Boarding pass stays procedural and follows the hand. Static exports cannot spin wheels, open textured doors or retract gear.
-      Standard retains procedural figures/vehicles; journey scenery remains procedural. Preview: `web/dev-journey.html`.
+      Standard retains procedural figures/vehicles. Full-detail drive and hitch journeys use supplied models for landscape props and set pieces; destination/location text remains overlaid, while road, ground, water and sky surfaces and flight scenery stay procedural. Preview: `web/dev-journey.html`.
+      - [x] Use the supplied journey scenery models behind Full-detail road journeys, retaining the procedural props as per-model fallbacks.
       - [x] Simple skips ordinary animation with one guarded handoff; weekly Simple preserves server progress and Back without shortening the wait.
       - [x] 3D failure shows functional status with alert/details/Continue; abort abandoned setup and suppress late callbacks.
       - [x] Check all ten seated avatars, vehicle facing, boarding, and five mobile portrait/landscape functional layouts.
-    - [ ] 4. Archive (`archive/chase3d-archive.ts`): the player walking and reading.
-    - [ ] 5. Disciplinary panel (`panel/chase3d-panel.ts`): the five judges (`judge_1` to `judge_5`, seated) and the player; the raise-paper pose needs a small arm
-      rotation on the model's arm bones, and the vote papers stay procedural until `held_vote_paper.glb` exists.
+    - [ ] 4. Archive (`archive/chase3d-archive.ts`): finish visually verifying the selected player avatar walking to the file, taking it and holding it in a reading pose. The integration and procedural fallback are wired, but the preview reports an avatar GLB loader error (`Cannot set properties of undefined (setting 'weight')`), so Full currently falls back to procedural figures.
+    - [ ] 5. Disciplinary panel (`panel/chase3d-panel.ts`): finish fitting and visually verifying all five seated judge models and the player at Full detail; vote papers remain procedural. The current judge models render as oversized dark silhouettes and are single static meshes.
+      - [ ] Re-export the judge models with a rig and named arm bones before adding the raise-paper arm motion.
     - [x] 6. Login chase (`chase/chase3d-actors.ts`, `chase3d-world.ts`): masked thief, police and passers-by from models, danfo and matching scenery.
       - [x] Add the omitted masked thief prompt, register its generated Walk/Run model at 1.78 m, and optimise it.
       - [x] Verify and optimise the corrected police Walk/Run export; fit at 1.72 m and retain procedural held props.
@@ -1287,7 +1292,8 @@ scores, rank, detection odds, panel votes, punishment, or jail time.
   - [ ] Generate the remaining assets in this order (names and prompts in `docs/3d-generator-prompts.md`, progress in `docs/3d-asset-progress.md`): held items, interior
     rooms (office, garage, hearing room, archive), shared street and market pieces, the 16 open-air venues, the 18 building venues and their interiors, chase and
     journey scenery, then textures and effects. After each batch: check on `dev-assets.html`, run `pnpm assets:optimize`, add the models to the manifest.
-  - [ ] Dev tools to add as needed: a tiny "preview this scene" page per scene, and a manifest check that lists files with no manifest entry and the reverse.
+  - [x] Add a combined archive/panel preview page for checking model-backed scenes and frame timing.
+  - [ ] Dev tools to add as needed: a manifest check that lists files with no manifest entry and the reverse.
 
 - [x] Migrate the current TypeScript DOM renderer to Svelte 5 components while
   retaining Vite, the Rust HTTP API, native HTML semantics, keyboard support,

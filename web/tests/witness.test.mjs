@@ -274,3 +274,15 @@ test("the 2D renderer plays the same plan: its start can be given, and reduced m
   assert.match(d2, /start\(begin = options\.reducedMotion \? plan\.walkEnd : 0\)/);
   assert.match(drv, /start\(from\?: number\)/);
 });
+
+test("a fading figure is always hidden once its alpha reaches zero, even after a near-zero frame", () => {
+  // glTF materials are opaque, so a figure left enabled at a tiny alpha is drawn in full (the player was left on the road while the bus left).
+  for (const file of ["scenes/shared/chase3d-model-figure.ts", "scenes/shared/chase3d-stage.ts"]) {
+    const src = read(file);
+    assert.match(src, /const shown = alpha > 0\.002;\s*if \(Math\.abs\(alpha - last\) <= 0\.004 && shown === last > 0\.002\) return;/, file);
+    assert.match(src, /setEnabled\(shown\)/, file);
+  }
+  const plan = w.planScene("hitch", 24);
+  assert.equal(w.playerPoseAt(plan, plan.boarded).alpha, 0);
+  assert.equal(w.playerPoseAt(plan, plan.boarded).visible, false);
+});

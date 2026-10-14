@@ -66,6 +66,7 @@
     const target = canvas, key = canvasKey, { quality, models } = level;
     if (mode !== "3d" || !target || target.dataset.key !== key) return;
     let cancelled = false;
+    const controller = new AbortController();
     let handle: PanelHandle | undefined;
     let began = 0, lastTick = 0;
     const watchdog = setInterval(() => {
@@ -76,7 +77,7 @@
     }, 500);
 
     const options = {
-      preset: app.avatar, hour, quality, models, votes,
+      preset: app.avatar, hour, quality, models, votes, signal: controller.signal,
       onTick: () => { lastTick = performance.now(); ready = true; },
       onFrame: (f: { fade: number; revealed: (Vote | null)[]; verdict: boolean }) => { fade = f.fade; revealed = f.revealed; verdict = f.verdict; },
       // The scene lasts about ten seconds, so a slow frame rate alone is not worth leaving 3D for; only breakage is.
@@ -96,7 +97,7 @@
         console.error("The 3D panel scene failed.", e);
         fallBack(e instanceof Error ? e.message : String(e), true);
       });
-    return () => { cancelled = true; clearInterval(watchdog); handle?.dispose(); };
+    return () => { cancelled = true; controller.abort(); clearInterval(watchdog); handle?.dispose(); };
   });
 
   $effect(() => { if (verdict) queueMicrotask(() => card?.focus()); });

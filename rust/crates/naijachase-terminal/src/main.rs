@@ -356,6 +356,7 @@ fn main() {
         visited_venues: vec![],
         warrant_suspect: None,
         hideout_venue: String::new(),
+        searched_hideouts: vec![],
         replay: vec![],
         outcome: None,
         economy: Default::default(),

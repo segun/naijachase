@@ -1,0 +1,8 @@
+/* The hideout raid: the chase full screen with one caption at a time. Shares .room, .room-canvas, .room-skip (terminal.css) and .witness-caption, .witness-account (witness.css). */
+.raid { background: #000; }
+.raid:has(.witness-account) { overflow-y: auto; background: #071c14; }
+.raid .room-skip { top: 1.25rem; left: 1.25rem; right: auto; bottom: auto; }
+.raid-caption { width: auto; max-width: min(94vw, 52rem); padding: .6rem 1.6rem .8rem; }
+.raid-caption .caption-line { min-height: 0; color: #fff; animation: raid-line .35s ease both; }
+@keyframes raid-line { from { opacity: 0; transform: translateY(.4rem); } }
+@media (prefers-reduced-motion: reduce) { .raid-caption .caption-line { animation: none; } }

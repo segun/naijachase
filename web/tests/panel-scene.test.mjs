@@ -42,3 +42,13 @@ test("the 3D scene is lazy and the 2D panel is the fallback", () => {
   for (const file of ["scenes/panel/panel-scene.ts", "scenes/panel/PanelScene.svelte"]) assert.doesNotMatch(read(file), /@babylonjs/);
   assert.match(view, /if \(verdict\) return;/, "the stall watchdog must not hand over once the verdict is showing");
 });
+
+test("Full detail uses seated judge and player models while retaining procedural vote papers", () => {
+  const scene = read("scenes/panel/chase3d-panel.ts");
+  assert.match(scene, /options\.models\s*\?\s*await Promise\.all\(SEAT_X\.map\(\(_, i\) => loadModel\(scene, `judge_\$\{i \+ 1\}`\)\)\)/);
+  assert.match(scene, /stage\.addModelFigure\(options\.preset\)/);
+  assert.match(scene, /judgeBodies\[i\]!\.setEnabled\(false\)/, "the procedural judge remains the per-model fallback");
+  assert.match(scene, /plane\(`paper\$\{i\}`/);
+  assert.match(scene, /RightArm/);
+  assert.match(scene, /options\.signal\?\.addEventListener/);
+});

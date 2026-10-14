@@ -14,7 +14,9 @@ import { CreatePlane } from "@babylonjs/core/Meshes/Builders/planeBuilder";
 import type { TransformNode } from "@babylonjs/core/Meshes/transformNode";
 
 export type Rgb = readonly [number, number, number];
+export type Rgba = readonly [number, number, number, number];
 export const rgb = (hex: string): Rgb => [parseInt(hex.slice(1, 3), 16) / 255, parseInt(hex.slice(3, 5), 16) / 255, parseInt(hex.slice(5, 7), 16) / 255];
+export const rgba = (hex: string, alpha = 1): Rgba => [parseInt(hex.slice(1, 3), 16) / 255, parseInt(hex.slice(3, 5), 16) / 255, parseInt(hex.slice(5, 7), 16) / 255, alpha];
 
 /**
  * One cross-section of a loft, at `z` along its length: it spans y0 (bottom) to y1 (top), is `hw` wide either side of the middle, and
@@ -23,14 +25,14 @@ export const rgb = (hex: string): Rgb => [parseInt(hex.slice(1, 3), 16) / 255, p
 export type Station = { z: number; y0: number; y1: number; hw: number; n?: number; /** Shifts the section sideways. */ x?: number };
 
 /** Chooses the colour of one face: where its middle is (x, y, z), and which pair of stations it lies between (the nearer-start one, `station`). */
-export type Zone = (x: number, y: number, z: number, station: number, stations: readonly Station[]) => Rgb;
+export type Zone = (x: number, y: number, z: number, station: number, stations: readonly Station[]) => Rgb | Rgba | null;
 
 export type LoftOptions = {
   /** Points round each section, spaced evenly along its outline so a colour band keeps a clean edge. */
   ring?: number;
   zone: Zone;
   /** The colour of the two end caps (default: the zone's colour at the middle of the end). */
-  cap?: Rgb;
+  cap?: Rgb | Rgba;
   /** Make the mesh carry the same vertex data as a Babylon box (positions, normals, UVs, no colours) so it can be merged with boxes. */
   plain?: boolean;
 };
@@ -82,18 +84,22 @@ export function loft(scene: Scene, name: string, stations: readonly Station[], o
       const pts = ids.map(([r, c]) => grid[r]![c]!);
       const mx = (pts[0]![0] + pts[1]![0] + pts[2]![0] + pts[3]![0]) / 4, my = (pts[0]![1] + pts[1]![1] + pts[2]![1] + pts[3]![1]) / 4, mz = (pts[0]![2] + pts[2]![2]) / 2;
       const colour = options.zone(mx, my, mz, i, stations);
+      if (!colour) continue;
+      const alpha = colour.length > 3 ? (colour as Rgba)[3] : 1;
       const base = positions.length / 3;
-      ids.forEach(([r, c], k) => { positions.push(...pts[k]!); normals.push(...norm[r]![c]!); colours.push(...colour, 1); });
+      ids.forEach(([r, c], k) => { positions.push(...pts[k]!); normals.push(...norm[r]![c]!); colours.push(colour[0], colour[1], colour[2], alpha); });
       indices.push(base, base + 2, base + 1, base + 1, base + 2, base + 3);
     }
   }
   // The caps: a fan to the middle of the first and last station, with flat normals.
   const cap = (i: number, dir: 1 | -1) => {
     const s = stations[i]!, cy = (s.y0 + s.y1) / 2, colour = options.cap ?? options.zone(s.x ?? 0, cy, s.z, i, stations);
+    if (!colour) return;
+    const alpha = colour.length > 3 ? (colour as Rgba)[3] : 1;
     const centre = positions.length / 3;
-    positions.push(s.x ?? 0, cy, s.z); normals.push(0, 0, dir); colours.push(...colour, 1);
+    positions.push(s.x ?? 0, cy, s.z); normals.push(0, 0, dir); colours.push(colour[0], colour[1], colour[2], alpha);
     const first = positions.length / 3;
-    for (let j = 0; j < ring; j++) { positions.push(...grid[i]![j]!); normals.push(0, 0, dir); colours.push(...colour, 1); }
+    for (let j = 0; j < ring; j++) { positions.push(...grid[i]![j]!); normals.push(0, 0, dir); colours.push(colour[0], colour[1], colour[2], alpha); }
     for (let j = 0; j < ring; j++) { const a = first + j, b = first + wrap(j + 1); if (dir === -1) indices.push(centre, a, b); else indices.push(centre, b, a); }
   };
   cap(0, -1); cap(count - 1, 1);
@@ -103,6 +109,7 @@ export function loft(scene: Scene, name: string, stations: readonly Station[], o
   data.positions = positions; data.indices = indices; data.normals = normals;
   if (options.plain) data.uvs = new Array((positions.length / 3) * 2).fill(0); else data.colors = colours;
   data.applyToMesh(mesh);
+  if (colours.some((c, idx) => idx % 4 === 3 && c < 0.999)) mesh.hasVertexAlpha = true;
   return mesh;
 }
 

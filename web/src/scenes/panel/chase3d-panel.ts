@@ -1,10 +1,12 @@
 // Lazily loaded Babylon.js scene for the disciplinary panel: a courtroom, five judges behind a bench, the player standing before them.
 // Each judge raises a paper on a stick with their vote, then the camera cuts to the player accepting judgement.
 // Timing and camera are in panel-scene.ts; this file only draws frame `t`.
-import { Vector3 } from "@babylonjs/core/Maths/math.vector";
+import { Quaternion, Vector3 } from "@babylonjs/core/Maths/math.vector";
 import { TransformNode } from "@babylonjs/core/Meshes/transformNode";
 import { createStage } from "../shared/chase3d-stage.ts";
 import { contactShadow } from "../shared/chase3d-shapes.ts";
+import { loadModel, type ModelHandle } from "../shared/chase3d-models.ts";
+import type { ModelFigure } from "../shared/chase3d-model-figure.ts";
 import { FOV } from "../shared/scene-core.ts";
 import { LAYOUT, SEAT_X, frameAt, planPanel, type PanelHandle, type PanelOptions, type Vote } from "./panel-scene.ts";
 
@@ -12,7 +14,11 @@ const SKIN = ["#8a5a3c", "#6b4226", "#a56c47", "#5a3720", "#7c4f33"];
 const TONEMAPPING_ACES = 1;
 
 export async function createPanelScene3D(canvas: HTMLCanvasElement, options: PanelOptions): Promise<PanelHandle> {
+  options.signal?.throwIfAborted();
   const stage = createStage(canvas, { hour: options.hour, quality: options.quality, models: options.models, minLamp: 0.8 });
+  const abort = () => { stage.scene.dispose(); stage.engine.dispose(); };
+  options.signal?.addEventListener("abort", abort, { once: true });
+  stage.scene.onDisposeObservable.addOnce(() => options.signal?.removeEventListener("abort", abort));
   const { scene, camera, mat, box, cyl, sphere, plane, textured, caster, sun } = stage;
   const sunFront = sun.direction.clone();
   const plan = planPanel(options.votes);
@@ -49,17 +55,23 @@ export async function createPanelScene3D(canvas: HTMLCanvasElement, options: Pan
 
   // ---- The judges ----
   const papers: TransformNode[] = [];
+  const judgeRoots: TransformNode[] = [];
+  const judgeBodies: TransformNode[] = [];
   const judgeRoot = new TransformNode("judges", scene);
   SEAT_X.forEach((x, i) => {
     const node = new TransformNode(`judge${i}`, scene);
     node.parent = judgeRoot;
     node.position.set(x, LAYOUT.daisY, LAYOUT.judgeZ);
+    judgeRoots.push(node);
+    const body = new TransformNode(`judgeBody${i}`, scene);
+    body.parent = node;
+    judgeBodies.push(body);
     const robe = mat(i % 2 ? "#1b1b2b" : "#2a1a1a", { specular: 0.05 });
     box(`chair${i}`, 0.7, 1.5, 0.12, mat("#3a2412"), 0, 0.75, 0.45, node);
-    caster(cyl(`robe${i}`, 0.42, 0.62, 0.75, robe, 0, 0.9, 0, node));
-    const head = sphere(`head${i}`, 0.34, mat(SKIN[i]!), 0, 1.5, -0.02); head.parent = node; caster(head);
-    cyl(`collar${i}`, 0.5, 0.5, 0.06, mat("#f2eee0"), 0, 1.27, -0.02, node);
-    caster(cyl(`cap${i}`, 0.3, 0.34, 0.1, robe, 0, 1.68, -0.02, node));
+    caster(cyl(`robe${i}`, 0.42, 0.62, 0.75, robe, 0, 0.9, 0, body));
+    const head = sphere(`head${i}`, 0.34, mat(SKIN[i]!), 0, 1.5, -0.02); head.parent = body; caster(head);
+    cyl(`collar${i}`, 0.5, 0.5, 0.06, mat("#f2eee0"), 0, 1.27, -0.02, body);
+    caster(cyl(`cap${i}`, 0.3, 0.34, 0.1, robe, 0, 1.68, -0.02, body));
 
     // The paper on a stick: it starts below the bench top and rises beside the judge's head.
     const sign = new TransformNode(`sign${i}`, scene);
@@ -87,6 +99,24 @@ export async function createPanelScene3D(canvas: HTMLCanvasElement, options: Pan
     player.root.rotation.y = Math.PI;
     if (!stage.light) contactShadow(scene, player.root, 0.9, 0.7);
   }
+  const playerModel: ModelFigure | null = await stage.addModelFigure(options.preset);
+  const judgeModels: (ModelHandle | null)[] = options.models
+    ? await Promise.all(SEAT_X.map((_, i) => loadModel(scene, `judge_${i + 1}`)))
+    : SEAT_X.map(() => null);
+  if (options.signal?.aborted) throw options.signal.reason;
+  if (playerModel && player) player.root.setEnabled(false);
+  const judgeArms: ({ joint: TransformNode; base: Quaternion } | null)[] = [];
+  const unriggedJudges: string[] = [];
+  judgeModels.forEach((model, i) => {
+    if (!model) { judgeArms.push(null); return; }
+    model.root.parent = judgeRoots[i]!;
+    model.meshes.forEach(m => caster(m));
+    judgeBodies[i]!.setEnabled(false);
+    const joint = model.root.getDescendants().filter((n): n is TransformNode => n instanceof TransformNode).find(n => n.name.endsWith(":RightArm"));
+    if (joint?.rotationQuaternion) judgeArms.push({ joint, base: joint.rotationQuaternion.clone() });
+    else { judgeArms.push(null); unriggedJudges.push(model.id); }
+  });
+  if (unriggedJudges.length) console.warn(`Panel judge models have no rigged right arm (${unriggedJudges.join(", ")}); vote papers remain animated.`);
 
   const aim = (shot: ReturnType<typeof frameAt>["camera"]) => {
     camera.position.set(...shot.position);
@@ -106,6 +136,15 @@ export async function createPanelScene3D(canvas: HTMLCanvasElement, options: Pan
       player.root.rotation.x = -0.22 * f.bow;
       player.rig.hips.forEach(h => { h.rotation.x = 0; });
     }
+    if (playerModel) {
+      playerModel.root.position.set(0, 0, LAYOUT.playerZ);
+      playerModel.root.rotation.set(-0.22 * f.bow, Math.PI, 0);
+      playerModel.apply({ x: 0, y: 0, z: LAYOUT.playerZ, heading: Math.PI, sit: 0, gait: 0, stride: 0, type: 0, visible: true });
+    }
+    judgeArms.forEach((arm, i) => {
+      if (!arm) return;
+      arm.joint.rotationQuaternion!.copyFrom(arm.base.multiply(Quaternion.RotationAxis(Vector3.Right(), -0.22 * f.raised[i]!)));
+    });
     // The accept-judgement shot looks back at the player's front, so the light swings round to meet it.
     if (f.verdict !== lastVerdict) sun.direction = f.verdict ? new Vector3(-0.3, -0.5, -0.8) : sunFront.clone();
     aim(f.camera);
@@ -132,6 +171,7 @@ export async function createPanelScene3D(canvas: HTMLCanvasElement, options: Pan
 
   const handle = stage.run({ end: plan.end, update, onSlow: options.onSlow });
   return {
+    scene,
     plan, duration: plan.end,
     now: () => lastT,
     start: (from = 0) => handle.play({ end: plan.end, update }, from),

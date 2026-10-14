@@ -10,7 +10,12 @@ import { createStage, type Stage } from "../shared/chase3d-stage.ts";
 import { danfo, runabout } from "../shared/chase3d-cars.ts";
 import { contactShadow } from "../shared/chase3d-shapes.ts";
 import { armAngles, legAngles, mix, type Pose } from "../shared/scene-core.ts";
-import { AIR, FOV, HOSTESS, MODEL_AIR, SEAT_Z, coloursAt, frameAt, groundCameraX, mixColour, modelBoardingPosition, propColours, propX, tone, weightAt, type JourneyPlan, type Prop } from "./journey-scene.ts";
+import {
+  AIR, FOV, HOSTESS, MODEL_AIR, SEAT_Z,
+  BUS_DRIVER,
+  BUS_DRIVER_X, BUS_DRIVER_Y, BUS_DRIVER_Z,
+  coloursAt, frameAt, groundCameraX, mixColour, modelBoardingPosition, propColours, propX, tone, weightAt, type JourneyPlan, type Prop
+} from "./journey-scene.ts";
 import { createJourneyDriver, type JourneyHandle, type JourneyOptions } from "./journey-driver.ts";
 import { loadModel, type ModelHandle } from "../shared/chase3d-models.ts";
 import { aimJoint, modelFigure, type ModelFigure } from "../shared/chase3d-model-figure.ts";
@@ -24,6 +29,15 @@ const SKY_HEIGHT = 160;
 const TILE = 6;
 
 type Build = { root: TransformNode; stage: Stage; c: ReturnType<typeof propColours>; p: Prop; plan: JourneyPlan };
+
+const SCENERY_MODELS: Partial<Record<Prop["kind"], string>> = {
+  tree: "journey_tree", palm: "journey_palm", pine: "journey_pine", baobab: "journey_baobab", cactus: "journey_cactus",
+  rock: "journey_rock", bush: "journey_bush", reed: "journey_reed", crop: "journey_crop_field", hut: "journey_hut",
+  stall: "journey_stall", building: "journey_building", boat: "journey_boat", pole: "journey_pole", hill: "journey_hill",
+  garage: "journey_garage", busstop: "journey_busstop", billboard: "journey_billboard", terminal: "journey_terminal",
+  tower: "journey_tower", hangar: "journey_hangar"
+};
+const TEXTURED_SIGNS = new Set<Prop["kind"]>(["garage", "busstop", "billboard", "terminal"]);
 
 export async function createJourneyScene3D(canvas: HTMLCanvasElement, options: JourneyOptions): Promise<JourneyHandle & { scene: Scene }> {
   const stage = createStage(canvas, { hour: options.hour, quality: options.quality, models: options.models });
@@ -164,6 +178,19 @@ export async function createJourneyScene3D(canvas: HTMLCanvasElement, options: J
     root.position.set(p.x, p.y, p.kind === "water" ? 37 : p.z);
     BUILD[p.kind]?.({ root, stage, c: propColours(plan, p), p, plan });
     built.set(p, root);
+    const modelId = !air && options.models ? SCENERY_MODELS[p.kind] : undefined;
+    if (modelId) {
+      const fallbackMeshes = root.getChildMeshes();
+      void loadModel(scene, modelId).then(model => {
+        if (!model) return;
+        if (scene.isDisposed) { model.dispose(); return; }
+        model.root.parent = root;
+        model.meshes.forEach(m => stage.caster(m));
+        fallbackMeshes.filter(m => !(TEXTURED_SIGNS.has(p.kind) && m.name.startsWith("sign-"))).forEach(m => m.setEnabled(false));
+      }).catch(error => {
+        console.error(`Journey scenery model "${modelId}" failed to load; keeping its built-in shape.`, error);
+      });
+    }
     return root;
   };
 
@@ -200,9 +227,10 @@ export async function createJourneyScene3D(canvas: HTMLCanvasElement, options: J
     return { pivot, body, doorShut, doorOpen, gear, stairs };
   })() : null;
 
-  // ---- The player and the cabin crew ----
+  // ---- The player, the cabin crew, and bus occupants ----
   const player = skyOnly ? null : stage.addFigure(options.preset);
   const crew = air && !skyOnly ? stage.addFigure(HOSTESS) : null;
+  const busDriver = bus && !skyOnly ? stage.addFigure(BUS_DRIVER) : null;
   // The boarding pass the player holds up: a card in the right hand, facing the camera.
   const card = air && player ? box("pass", 0.26, 0.17, 0.02, mat("#ffffff"), 0, -0.44, -0.12, player.rig.elbows[1]) : null;
   if (card) { card.setEnabled(false); box("passStripe", 0.26, 0.04, 0.025, mat("#1f4f9f"), 0, 0.05, 0).parent = card; }
@@ -237,9 +265,10 @@ export async function createJourneyScene3D(canvas: HTMLCanvasElement, options: J
   if (options.models) {
     await Promise.all([
       player && options.preset && avatarModelId(options.preset.avatar_id)
-        ? replacePerson(player, avatarModelId(options.preset.avatar_id)!, !!car).then(m => { playerModel = m; }) : undefined,
+        ? replacePerson(player, avatarModelId(options.preset.avatar_id)!, !!(car || bus)).then(m => { playerModel = m; }) : undefined,
       crew ? replacePerson(crew, "witness_woman_uniform", false).then(m => { crewModel = m; }) : undefined,
-      ground ? replaceVehicle(ground.root, car ? "car_player_runabout" : "bus_danfo", car ? 0 : Math.PI / 2) : undefined,
+      ground && car ? replaceVehicle(ground.root, "car_player_runabout", 0) : undefined,
+      bus ? replaceVehicle(bus.root, "bus_danfo", Math.PI / 2).then(m => { if (m) bus.door.setEnabled(false); }) : undefined,
       planeRig ? replaceVehicle(planeRig.body, "plane_airliner", 0, [planeRig.stairs, planeRig.doorOpen]).then(m => { planeModel = m; }) : undefined,
       ...plan.props.filter(p => p.kind === "parkedbus").map(async p => {
         const root = ensure(p);
@@ -329,7 +358,7 @@ export async function createJourneyScene3D(canvas: HTMLCanvasElement, options: J
       if (pl && pl.visible) {
         const pose: Pose = { x: pl.x, y: pl.y, z: 0, heading: pl.heading, sit: pl.sit, gait: pl.gait, stride: pl.stride, type: pl.type, visible: true };
         const legs = legAngles(pose), arms = armAngles(pose, t);
-        const z = pl.sit > 0 ? mix(-1.4, SEAT_Z, pl.sit) : air ? -2.3 : -1.4;
+        const z = pl.z !== undefined ? pl.z : (pl.sit > 0 ? mix(-1.4, SEAT_Z, pl.sit) : air ? -2.3 : -1.4);
         const position = boarding ? modelBoardingPosition(pl.x, pl.y, v.x) : { x: pl.x, y: pl.y, z };
         player.root.position.set(position.x, position.y, position.z);
         player.root.rotation.y = pl.heading;
@@ -347,6 +376,15 @@ export async function createJourneyScene3D(canvas: HTMLCanvasElement, options: J
           playerModel.setAlpha(pl.alpha);
         }
       } else { player.setAlpha(0); playerModel?.setAlpha(0); }
+    }
+    if (busDriver) {
+      const seatedLegs = legAngles({ x: 0, y: 0, z: 0, heading: -Math.PI / 2, sit: 1, gait: 0, stride: 0, type: 1, visible: true });
+      busDriver.root.position.set(v.x + BUS_DRIVER_X, v.y + BUS_DRIVER_Y, BUS_DRIVER_Z);
+      busDriver.root.rotation.y = -Math.PI / 2;
+      busDriver.rig.hips.forEach((hp, i) => { hp.rotation.x = seatedLegs.hips[i]!; });
+      busDriver.rig.knees.forEach((k, i) => { k.rotation.x = seatedLegs.knees[i]!; });
+      busDriver.rig.shoulders.forEach(s => { s.rotation.x = 0.5; });
+      busDriver.rig.elbows.forEach(e => { e.rotation.x = 0.4; });
     }
     if (crew) {
       const hs = f.hostess;

@@ -7,8 +7,8 @@ import { TransformNode } from "@babylonjs/core/Meshes/transformNode";
 import { CreateGround } from "@babylonjs/core/Meshes/Builders/groundBuilder";
 import { hex, seeded } from "../shared/chase3d-kit.ts";
 import { createStage, type Ctx, type SceneHandle, type SceneOptions } from "../shared/chase3d-stage.ts";
-import { ROOM, legAngles } from "../shared/scene-core.ts";
-import { DOOR, FILE, T_END, armAngles, avatarAlpha, doorAt, fileAt, glassAt, poseAt, shotAt } from "./archive-scene.ts";
+import { ROOM, legAngles, type Pose } from "../shared/scene-core.ts";
+import { DOOR, FILE, SLOT, T_END, armAngles, avatarAlpha, doorAt, fileAt, glassAt, poseAt, shotAt } from "./archive-scene.ts";
 
 export type ArchiveHandle = SceneHandle;
 export type ArchiveOptions = SceneOptions;
@@ -20,7 +20,11 @@ const PLANKS = [0.1, 0.7, 1.4, 2.1, 2.75];
 const GAP = { unit: 0, row: 2, u: 1.35 / UNIT.w, half: 0.26 / UNIT.w };
 
 export async function createArchiveScene(canvas: HTMLCanvasElement, options: ArchiveOptions): Promise<ArchiveHandle> {
+  options.signal?.throwIfAborted();
   const stage = createStage(canvas, { hour: options.hour, quality: options.quality, models: options.models, minLamp: 0.85 });
+  const abort = () => { stage.scene.dispose(); stage.engine.dispose(); };
+  options.signal?.addEventListener("abort", abort, { once: true });
+  stage.scene.onDisposeObservable.addOnce(() => options.signal?.removeEventListener("abort", abort));
   const { scene, palette, mat, box, cyl, sphere, plane, textured, place, caster: casters, trim, wood, darkWood } = stage;
 
   for (const x of [0.5, 2.8]) {
@@ -138,11 +142,31 @@ export async function createArchiveScene(canvas: HTMLCanvasElement, options: Arc
   plane("fileFront", FILE.w, FILE.h, cover.material, 0, 0, -(FILE.d / 2 + 0.001)).parent = file;
 
   // ---- The player ----
-  const figure = stage.addFigure(options.preset);
+  const model = await stage.addModelFigure(options.preset);
+  if (options.signal?.aborted) throw options.signal.reason;
+  const figure = model ? null : stage.addFigure(options.preset);
 
   const update = (t: number) => {
-    if (figure) {
-      const pose = poseAt(t);
+    const pose = poseAt(t);
+    if (model) {
+      model.root.position.set(pose.x, pose.y, pose.z);
+      model.root.rotation.y = pose.heading;
+      const held = fileAt(t);
+      const raised = Math.max(pose.reach, pose.carry);
+      const modelPose: Pose = { ...pose, type: raised };
+      const right = new Vector3(Math.cos(held.heading), 0, -Math.sin(held.heading));
+      const frontZ = -Math.cos(held.heading) * (FILE.d / 2 + 0.04);
+      const hand = (side: number) => new Vector3(
+        held.x + right.x * side * FILE.w * 0.32,
+        held.y - FILE.h * 0.2,
+        held.z + frontZ + right.z * side * FILE.w * 0.32
+      );
+      const hands: readonly [Vector3 | null, Vector3 | null] | undefined = pose.reach > 0
+        ? [null, new Vector3(SLOT.x, SLOT.y - 0.05, SLOT.z + 0.04)]
+        : pose.carry > 0 ? [hand(-1), hand(1)] : undefined;
+      model.apply(modelPose, t, hands);
+      model.setAlpha(pose.visible ? avatarAlpha(t) : 0);
+    } else if (figure) {
       figure.root.position.set(pose.x, pose.y, pose.z);
       figure.root.rotation.y = pose.heading;
       const legs = legAngles(pose);
@@ -160,5 +184,7 @@ export async function createArchiveScene(canvas: HTMLCanvasElement, options: Arc
     options.onGlass(glassAt(t));
   };
 
+  update(options.startSeconds ?? 0);
+  stage.scene.render();
   return stage.run({ end: T_END, update, onSlow: options.onSlow, startSeconds: options.startSeconds });
 }

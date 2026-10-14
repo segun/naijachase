@@ -28,13 +28,34 @@ test("journey vehicles and cabin crew use supplied, sized assets", () => {
   }
 });
 
+test("Full-detail road journeys use supplied scenery models with procedural fallbacks", () => {
+  const renderer = read("chase3d-journey.ts");
+  const mapping = /const SCENERY_MODELS:[\s\S]*?= \{([\s\S]*?)\n\};/.exec(renderer)?.[1];
+  assert.ok(mapping, "the journey scenery model mapping exists");
+  const models = [
+    ["tree", "journey_tree"], ["palm", "journey_palm"], ["pine", "journey_pine"], ["baobab", "journey_baobab"],
+    ["cactus", "journey_cactus"], ["rock", "journey_rock"], ["bush", "journey_bush"], ["reed", "journey_reed"],
+    ["crop", "journey_crop_field"], ["hut", "journey_hut"], ["stall", "journey_stall"], ["building", "journey_building"],
+    ["boat", "journey_boat"], ["pole", "journey_pole"], ["hill", "journey_hill"], ["garage", "journey_garage"],
+    ["busstop", "journey_busstop"], ["billboard", "journey_billboard"], ["terminal", "journey_terminal"],
+    ["tower", "journey_tower"], ["hangar", "journey_hangar"]
+  ];
+  for (const [kind, id] of models) {
+    assert.match(mapping, new RegExp(`${kind}:\\s*"${id}"`));
+    asset(id);
+  }
+  assert.match(renderer, /const modelId = !air && options\.models \? SCENERY_MODELS\[p\.kind\] : undefined/);
+  assert.match(renderer, /TEXTURED_SIGNS\.has\(p\.kind\).*m\.name\.startsWith\("sign-"\)/);
+  assert.match(renderer, /fallbackMeshes\.filter\(m => !\(TEXTURED_SIGNS\.has\(p\.kind\) && m\.name\.startsWith\("sign-"\)\)\)\.forEach\(m => m\.setEnabled\(false\)\)/);
+});
+
 test("journey models preserve the timeline and cancel abandoned setup", () => {
   const renderer = read("chase3d-journey.ts");
   assert.match(renderer, /if \(options\.models\) \{\s*await Promise\.all/);
   assert.match(renderer, /pinHorizontalTravel: true, neutralStanding: true/);
   assert.match(renderer, /playerModel\.apply\(pose, t, hands\)/);
   assert.match(renderer, /card\.parent = hand/);
-  assert.match(renderer, /car \? 0 : Math\.PI \/ 2/, "runabout and danfo have different authored axes");
+  assert.match(renderer, /replaceVehicle\(bus\.root, "bus_danfo", Math\.PI \/ 2\)/, "the danfo model replaces the procedural minibus, turned to face right");
   assert.match(renderer, /replaceVehicle\(root, "bus_coach", Math\.PI\)/);
   assert.match(renderer, /signal\?\.addEventListener\("abort", abort/);
   assert.match(renderer, /removeEventListener\("webglcontextlost", contextLost\)/);

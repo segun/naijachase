@@ -328,6 +328,9 @@ const WHEEL = { car: 0.31, bus: 0.38, plane: 0.45 } as const;
 /** Where the driver sits in the open car and the bus's rear step, relative to the vehicle (it faces right). */
 /** The driver's seat in the car's own frame, as in the witness scene (garage-scene.ts SEAT, CAR_SIT_DROP): hips sink a little, hands on the wheel. */
 export const SEAT_X = -0.25, SEAT_Y = -0.09, SEAT_Z = -0.38, STEP_X = -2.5;
+/** Where the player and other occupants sit in the danfo minibus. */
+export const BUS_SEAT_X = 0.8, BUS_SEAT_Y = -0.07, BUS_SEAT_Z = -0.35;
+export const BUS_DRIVER_X = 1.35, BUS_DRIVER_Y = -0.07, BUS_DRIVER_Z = 0.35;
 
 // ---- The frame ----
 const dip = (t: number, cut: number) => 1 - clamp01(1 - Math.abs(t - cut) / CUT_FADE);
@@ -341,7 +344,9 @@ export function frameAt(plan: JourneyPlan, tIn: number): JourneyFrame {
 
 export function groundCameraX(frame: JourneyFrame, aspect: number) {
   const focus = frame.stage === "depart" && frame.player?.visible ? frame.player.x + 0.5 : frame.vehicle.x + 0.15;
-  return mix(frame.cam.x, focus, clamp01((1 - aspect) / 0.4));
+  const portrait = clamp01((1 - aspect) / 0.4);
+  if (portrait > 0) return mix(frame.cam.x, focus, portrait);
+  return frame.cam.x;
 }
 
 /** The weekly "show travel route" view: already under way, nothing to board and nowhere to arrive. */
@@ -360,7 +365,7 @@ function loopFrame(plan: JourneyPlan, t: number): JourneyFrame {
   const car = plan.mode === "drive";
   const kind: VehicleKind = car ? "car" : "bus";
   const bob = Math.sin(t * 9) * 0.012;
-  const p = car ? player(x + SEAT_X, SEAT_Y + bob, { sit: 1, type: 1 }) : player(x, 0, { visible: false, alpha: 0 });
+  const p = car ? player(x + SEAT_X, SEAT_Y + bob, { sit: 1, type: 1 }) : player(x + BUS_SEAT_X, BUS_SEAT_Y + bob, { sit: 1, type: 1, z: BUS_SEAT_Z, visible: true, alpha: 1 });
   return {
     t, stage: "travel", fade, cam: { x: x + CAM_LEAD, y: 2.3, d: 11 },
     vehicle: { kind, x, y: bob, pitch: 0, spin: run / WHEEL[kind], door: 0, stairs: 0, gearDown: 1 },
@@ -383,11 +388,24 @@ function groundFrame(plan: JourneyPlan, t: number, fade: number): JourneyFrame {
       const k = smooth(board);
       p = player(board >= 1 ? x + SEAT_X : mix(-1.7, SEAT_X, k), SEAT_Y * k + 0.25 * Math.sin(Math.PI * k) + bob, { sit: k, type: k, gait: t * 7.5, stride: 1 - k });
     }
-  } else if (t < WALK) p = player(-7.4 + ((STEP_X - 0.4 + 7.4) * t) / WALK, 0, walking(t));
-  else p = player(mix(STEP_X - 0.4, STEP_X + 0.1, smooth(board)), 0.45 * smooth(board), { ...walking(t), stride: 1 - board * 0.4, alpha: 1 - smooth((board - 0.35) / 0.6), visible: board < 1 });
+  } else if (t < WALK) {
+    p = player(-5.2 + ((STEP_X - 0.4 + 5.2) * t) / WALK, 0, walking(t, { z: -1.4 }));
+  } else {
+    const k = smooth(board);
+    if (board < 1) {
+      const stepUp = 0.25 * Math.sin(Math.PI * k);
+      const px = mix(STEP_X - 0.4, BUS_SEAT_X, k);
+      const py = BUS_SEAT_Y * k + stepUp;
+      const pz = mix(-1.4, BUS_SEAT_Z, k);
+      p = player(px, py, { z: pz, sit: k, type: k, gait: t * 7.5, stride: 1 - k, visible: true, alpha: 1 });
+    } else {
+      p = player(x + BUS_SEAT_X, BUS_SEAT_Y + bob, { z: BUS_SEAT_Z, sit: 1, type: 1, gait: t * 7.5, stride: 0, visible: true, alpha: 1 });
+    }
+  }
+  const lead = stage === "depart" && !car ? mix(0.5, CAM_LEAD, smooth(clamp01((t - (WALK + BOARD)) / LEAD_OUT))) : CAM_LEAD;
   return {
     t, stage, fade,
-    cam: { x: x + CAM_LEAD, y: 2.3, d: 11 },
+    cam: { x: x + lead, y: 2.3, d: 11 },
     vehicle: { kind, x, y: bob, pitch: 0, spin: x / WHEEL[kind], door: car ? 0 : open, stairs: 0, gearDown: 1 },
     player: p, hostess: null
   };
@@ -460,6 +478,12 @@ function airFrame(plan: JourneyPlan, t: number, fade: number): JourneyFrame {
 export const HOSTESS = {
   avatar_id: "journey-crew", label: "Cabin crew", presentation: "feminine", skin_tone: "brown", skin_color: "#7a4f35", hair_style: "bob", hair_color: "#1b130e",
   uniform_primary: "#1f4f9f", uniform_secondary: "#f4ecd8", uniform_accent: "#c9a227"
+} as AvatarPreset;
+
+/** Minibus driver in 3D hitch journeys. */
+export const BUS_DRIVER = {
+  avatar_id: "journey-bus-driver", label: "Bus driver", presentation: "masculine", skin_tone: "warm_dark", skin_color: "#5c3826", hair_style: "short", hair_color: "#16100c",
+  uniform_primary: "#2c3e50", uniform_secondary: "#ecf0f1", uniform_accent: "#e67e22"
 } as AvatarPreset;
 
 /** The one camera both renderers use, so a prop is always drawn at the same size and place. */

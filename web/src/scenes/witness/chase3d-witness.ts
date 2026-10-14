@@ -9,15 +9,16 @@ import { hex, seeded } from "../shared/chase3d-kit.ts";
 import { createStage, type Stage } from "../shared/chase3d-stage.ts";
 import { danfo, runabout } from "../shared/chase3d-cars.ts";
 import { contactShadow, roundedBox } from "../shared/chase3d-shapes.ts";
-import { armAngles, legAngles, type CameraShot } from "../shared/scene-core.ts";
+import { armAngles, headingOf, legAngles, type CameraShot } from "../shared/scene-core.ts";
 import { setFor } from "./chase3d-sets.ts";
 import { createDriver, fitShot, type WitnessFrame, type WitnessHandle, type WitnessOptions } from "./witness-driver.ts";
-import { ROAD_Z, VEHICLE_FROM_X, WITNESS, busDoorAt, cameraAt, listenLean, playerPoseAt, vehicleXAt, witnessAt } from "./witness-scene.ts";
+import { BUS_SEATS, ROAD_Z, VEHICLE_FROM_X, WITNESS, busDoorAt, busRideAt, cameraAt, listenLean, playerPoseAt, vehicleXAt, witnessAt } from "./witness-scene.ts";
 import { loadModel } from "../shared/chase3d-models.ts";
 import type { ModelFigure } from "../shared/chase3d-model-figure.ts";
 import { replacePerson, gesture } from "./chase3d-witness-models.ts";
 import { standingPose, witnessModelId } from "./witness-models.ts";
 import { avatarModelId } from "../shared/model-manifest.ts";
+import { BUS_DRIVER } from "../journey/journey-scene.ts";
 
 export type { WitnessFrame, WitnessHandle, WitnessOptions };
 
@@ -126,6 +127,8 @@ export async function createWitnessScene(canvas: HTMLCanvasElement, options: Wit
   const { plan, timings, words, pages } = driver;
   const player = stage.addFigure(options.preset);
   const witnessLook = driver.witness;
+  const busDriver = bus ? stage.addFigure(BUS_DRIVER) : null;
+  const busRider = bus ? stage.addFigure(options.preset) : null;
   const witness = stage.addFigure(witnessLook)!;
   witness.root.position.set(WITNESS.x, 0, WITNESS.z);
   contactShadow(scene, witness.root, 0.9, 0.7);
@@ -134,7 +137,7 @@ export async function createWitnessScene(canvas: HTMLCanvasElement, options: Wit
   const mouth = sphere("mouth", 1, mat("#4a1414", { specular: 0.1 }), 0, HEAD_Y - 0.11, -0.25);
   mouth.parent = witness.root;
   void head;
-  let playerModel: ModelFigure | null = null, witnessModel: ModelFigure | null = null;
+  let playerModel: ModelFigure | null = null, riderModel: ModelFigure | null = null, witnessModel: ModelFigure | null = null;
   if (options.models) {
     await Promise.all([
       dressing.ready,
@@ -142,6 +145,7 @@ export async function createWitnessScene(canvas: HTMLCanvasElement, options: Wit
         playerModel = m;
       }) : undefined,
       replacePerson(stage, witness.root, witnessModelId(witnessLook)).then(m => { witnessModel = m; }),
+      busRider && options.preset && avatarModelId(options.preset.avatar_id) ? replacePerson(stage, busRider.root, avatarModelId(options.preset.avatar_id)!).then(m => { riderModel = m; }) : undefined,
       loadModel(scene, car ? "car_player_runabout" : "bus_danfo").then(m => {
         if (!m) return;
         const bounds = m.root.getHierarchyBoundingVectors(true), size = bounds.max.subtract(bounds.min);
@@ -180,6 +184,23 @@ export async function createWitnessScene(canvas: HTMLCanvasElement, options: Wit
     vehicle.root.position.x = x;
     vehicle.wheels.forEach(w => { w.rotation.x = (VEHICLE_FROM_X - x) / wheelRadius; });
     if (bus) bus.door.rotation.y = -1.6 * busDoorAt(plan, t);
+
+    if (bus && busDriver && busRider) {
+      const seat = (figure: typeof busDriver, at: { x: number; z: number }, alpha: number) => {
+        const sat = { x: 0, y: 0, z: 0, heading: 0, sit: 1, gait: 0, stride: 0, type: 1, visible: true };
+        const legs = legAngles(sat);
+        figure.root.position.set(x + at.x, BUS_SEATS.y, ROAD_Z + at.z);
+        figure.root.rotation.y = headingOf(-1, 0);
+        figure.rig.hips.forEach((h, i) => { h.rotation.x = legs.hips[i]!; });
+        figure.rig.knees.forEach((k, i) => { k.rotation.x = legs.knees[i]!; });
+        figure.rig.shoulders.forEach(s => { s.rotation.x = 0.5; });
+        figure.rig.elbows.forEach(e => { e.rotation.x = 0.4; });
+        figure.setAlpha(alpha);
+        if (figure === busRider && riderModel) { riderModel.apply(sat, t); riderModel.setAlpha(alpha); riderModel.root.position.set(0, 0, 0); }
+      };
+      seat(busDriver, BUS_SEATS.driver, 1);
+      seat(busRider, BUS_SEATS.player, busRideAt(plan, t));
+    }
 
     const p = playerPoseAt(plan, t);
     if (player) poseFigure(player, p, t, listenLean(plan, t));

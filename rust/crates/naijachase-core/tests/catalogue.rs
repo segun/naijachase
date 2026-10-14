@@ -25,6 +25,7 @@ fn all_missions_complete_in_rust() {
             visited_venues: vec![],
             warrant_suspect: None,
             hideout_venue: "market".into(),
+            searched_hideouts: vec![],
             replay: vec![],
             outcome: None,
             economy: Default::default(),

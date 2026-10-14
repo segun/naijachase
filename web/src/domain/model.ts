@@ -27,7 +27,7 @@ export type {
 } from "../../../contracts/typescript/api-v1.ts";
 import type { GroupMember, GroupRole, PlayerGroup, WeeklyAttempt, CompleteCooperationRequest, CooperationPreferences, CooperationReportRequest, CooperationRequest, CreateCooperationRequest, CatalogueHealth, ContentRoleResponse, InterstateMode, LocalMode, MissionAdminDetails, MissionLifecycleEvent, MissionTransitionRequest, MissionValidation, ReleaseNotification, PublicGameState as PublicState, TransportLedgerEntry, TransportQuote } from "../../../contracts/typescript/api-v1.ts";
 import type { DossierOptions } from "../../../contracts/typescript/api-v1.ts";
-export type Screen = "welcome"|"cases"|"investigate"|"notebook"|"dossier"|"travel"|"warrant"|"results"|"settings"|"archive"|"garage"|"witness"|"journey"|"content"|"helpers"|"groups"|"weekly"|"tokens";
+export type Screen = "welcome"|"cases"|"investigate"|"notebook"|"dossier"|"travel"|"warrant"|"results"|"settings"|"archive"|"garage"|"witness"|"journey"|"raid"|"content"|"helpers"|"groups"|"weekly"|"tokens";
 /** The case's own screens. They are all shown on the office computer, so the office stays mounted while the player moves between them. */
 export const CASE_SCREENS: readonly Screen[] = ["investigate", "notebook", "dossier", "travel", "warrant"];
 export const isCaseScreen = (screen: Screen): boolean => CASE_SCREENS.includes(screen);
@@ -246,6 +246,12 @@ export function defaultOption(options: readonly TransportQuote[], elapsed: numbe
 }
 export const cheapest = (options: readonly TransportQuote[]): TransportQuote | null =>
   options.slice().sort((a, b) => a.cost - b.cost || a.travel_minutes - b.travel_minutes)[0] ?? null;
+
+/** How a raid reaches a hideout: no choice is offered, so the player drives if they can afford it and otherwise hitches a ride. */
+export const raidQuote = (options: readonly TransportQuote[]): TransportQuote | null => {
+  const ok = options.filter(o => o.affordable);
+  return ok.find(o => o.mode === "drive") ?? ok.find(o => o.mode === "hitch_ride") ?? cheapest(ok);
+};
 
 export type LedgerView = { sequence: number; title: string; detail: string; cost: number; balanceAfter: number; allocation: boolean };
 export function ledgerView(entries: readonly TransportLedgerEntry[]): LedgerView[] {

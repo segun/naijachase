@@ -16,7 +16,7 @@ import { CreateSphere } from "@babylonjs/core/Meshes/Builders/sphereBuilder";
 import { CreateCylinder } from "@babylonjs/core/Meshes/Builders/cylinderBuilder";
 import { CreatePlane } from "@babylonjs/core/Meshes/Builders/planeBuilder";
 import { CreateGround } from "@babylonjs/core/Meshes/Builders/groundBuilder";
-import { treadmillX, idlePose, walkPose, cycleAt } from "./chase-motion.ts";
+import { treadmillX, idlePose, walkPose, cycleAt, type Pose } from "./chase-motion.ts";
 import { BIOMES, RING, SEGMENT, SPEED, smoothstep, type Palette } from "./chase-biomes.ts";
 import { hex, material, merge, paint, seeded } from "../shared/chase3d-kit.ts";
 import { ankara, makeFigure, type FigureSpec } from "./chase3d-actors.ts";
@@ -39,6 +39,8 @@ export type World = {
 
 const LAGOS = 0, ANAMBRA = 1, KANO = 2;
 const WINDOW_RANGE = 95;
+/** The danfo driver's seat as fractions of the model: along its length from the centre (+ is the front), hip height, and across (0 is the camera side). */
+const DRIVER_SEAT = { x: 0.22, y: 0.34, z: 0.3 } as const;
 
 export function buildWorld(scene: Scene, shadows: ShadowGenerator | null, models = false): World {
   const items: Item[] = [];
@@ -441,6 +443,19 @@ export function buildWorld(scene: Scene, shadows: ShadowGenerator | null, models
     groundnutPyramid: "kano_pyramid", mudA: "kano_house_a", mudB: "kano_house_b", mudC: "kano_house_a",
     baobab: "kano_baobab", acacia: "tree_neem", lamp: "lamp_post"
   };
+  // The danfo model has see-through windows, so it gets a driver at the wheel (the built-in danfo shows riders' heads instead).
+  const SEATED: Pose = { bodyY: 0, lean: 0, headBob: 0, thighL: 1.45, thighR: 1.45, shinL: -1.45, shinR: -1.45, armL: 1.1, armR: 1.1, elbowL: 0.5, elbowR: 0.5 };
+  let drivers = 0;
+  const seatDriver = (holder: TransformNode) => {
+    const { min, max } = holder.getHierarchyBoundingVectors(true);
+    const local = (v: Vector3) => v.subtract(holder.position);
+    const lo = local(min), hi = local(max), length = hi.x - lo.x, height = hi.y - lo.y, scale = length / 4.4;
+    const driver = makeFigure(scene, { name: `danfoDriver${drivers++}`, skin: "#5c3826", top: "#2c3e50", bottom: "#1a1a22", head: "redcap", headColor: "#1b130e", scale });
+    driver.apply(SEATED);
+    driver.root.parent = holder;
+    driver.root.position.set(lo.x + length * (0.5 + DRIVER_SEAT.x), lo.y + height * DRIVER_SEAT.y - 0.95 * scale, lo.z + (hi.z - lo.z) * DRIVER_SEAT.z);
+    driver.meshes.forEach(m => shadows?.addShadowCaster(m));
+  };
   const setup = async () => {
     await Promise.all([
       ...shops.filter(shop => !shop.parts[0]!.off).map(async shop => {
@@ -480,6 +495,7 @@ export function buildWorld(scene: Scene, shadows: ShadowGenerator | null, models
         holder.position.copyFrom(old.position); holder.rotation.copyFrom(old.rotation);
         old.setEnabled(false); item.node = holder;
         model.meshes.forEach(m => { m.receiveShadows = true; shadows?.addShadowCaster(m); });
+        if (old.sourceMesh.name === "danfo") seatDriver(holder);
       }),
       ...walkers.map(w => replaceActor(scene, w.figure, w.modelId, w.mode, shadows))
     ]);

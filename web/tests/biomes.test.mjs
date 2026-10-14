@@ -87,7 +87,7 @@ test("there is no corner label: each city is named by signage inside the scene",
   assert.doesNotMatch(read("styles/screens.css"), /\.stage-place/);
   assert.doesNotMatch(read("scenes/chase/chase3d.ts"), /onLocation/);
   assert.match(read("scenes/chase/chase-frame.ts"), /palette: blendPalette\(weights\)/);
-  assert.match(read("scenes/chase/chase3d.ts"), /chaseFrame\(t\)/);
+  assert.match(read("scenes/chase/chase3d.ts"), /\(options\.frame \?\? chaseFrame\)\(t\)/);
 });
 
 test("signboards carry the requested wording, one per city, in the scene", () => {

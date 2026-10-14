@@ -168,16 +168,52 @@ export function drawCar(g: Ctx, o: Proj, spin: number) {
   for (const wx of [-1.15, 1.15]) { arch(g, o, wx, 0.31, 0.31); wheel(g, o, wx, 0.31, 0.31, spin); }
 }
 /** The shared-ride minibus, side on, facing left, with its rear door opening at the right-hand end. */
-export function drawBus(g: Ctx, o: Proj, spin: number, door: number) {
+export function drawBus(g: Ctx, o: Proj, spin: number, door: number, playerOccupant?: { skin: string; hair: string; top: string } | null) {
   groundShadow(g, o, 3.0);
   paintBody(g, o, [[-2.5, 0.42], [2.5, 0.42], [2.5, 2.3], [2.3, 2.42], [-1.9, 2.42], [-2.35, 1.95], [-2.5, 1.2]], 0.3, "#fbd23a", "#dba400", 0.4, 2.45);
   soften(g, o, [[-2.5, 0.98], [2.5, 0.98], [2.5, 1.12], [-2.5, 1.12]], 0.04); g.fillStyle = "#15191c"; g.fill();
+
+  // Dark interior inside the 4 side windows.
   for (let i = 0; i < 4; i++) {
     const x = -2.0 + i * 1.1;
-    paintBody(g, o, [[x, 1.3], [x + 0.95, 1.3], [x + 0.95, 2.05], [x, 2.05]], 0.1, "#3a5a6b", "#1f3340", 1.3, 2.05);
-    stroke(g, o, x + 0.1, 1.95, x + 0.4, 1.4, 0.04, "rgba(255,255,255,.18)");
+    soften(g, o, [[x, 1.3], [x + 0.95, 1.3], [x + 0.95, 2.05], [x, 2.05]], 0.08);
+    g.fillStyle = "#18242d"; g.fill();
   }
-  paintBody(g, o, [[-2.33, 1.35], [-2.1, 1.35], [-2.1, 2.0], [-2.2, 2.0]], 0.06, "#3a5a6b", "#1f3340", 1.3, 2.0);
+
+  // Occupants inside the minibus: driver in cab, passengers and player in windows.
+  // Window 0: Driver
+  soften(g, o, [[-1.80, 1.3], [-1.25, 1.3], [-1.35, 1.62], [-1.70, 1.62]], 0.06); g.fillStyle = "#2c3e50"; g.fill();
+  disc(g, o, -1.52, 1.76, 0.16, "#5c3826");
+  soften(g, o, [[-1.70, 1.80], [-1.35, 1.80], [-1.32, 1.92], [-1.70, 1.92]], 0.03); g.fillStyle = "#2c3e50"; g.fill();
+  stroke(g, o, -1.90, 1.62, -1.78, 1.45, 0.04, "#111111");
+  disc(g, o, -1.76, 1.50, 0.05, "#5c3826");
+
+  // Window 1: Front passenger
+  soften(g, o, [[-0.68, 1.3], [-0.18, 1.3], [-0.26, 1.60], [-0.60, 1.60]], 0.06); g.fillStyle = "#16a085"; g.fill();
+  disc(g, o, -0.43, 1.74, 0.16, "#6b4423");
+  disc(g, o, -0.43, 1.83, 0.18, "#1b130e");
+
+  // Window 2: Player or mid passenger
+  const mid = playerOccupant ?? { skin: "#7a4f35", hair: "#111111", top: "#d35400" };
+  soften(g, o, [[0.42, 1.3], [0.92, 1.3], [0.84, 1.60], [0.50, 1.60]], 0.06); g.fillStyle = mid.top; g.fill();
+  disc(g, o, 0.67, 1.74, 0.16, mid.skin);
+  disc(g, o, 0.67, 1.83, 0.18, mid.hair);
+
+  // Window 3: Rear passenger
+  soften(g, o, [[1.52, 1.3], [2.02, 1.3], [1.94, 1.58], [1.60, 1.58]], 0.06); g.fillStyle = "#8e44ad"; g.fill();
+  disc(g, o, 1.77, 1.72, 0.16, "#8a5836");
+  disc(g, o, 1.77, 1.81, 0.17, "#1b130e");
+
+  // Window glass over the openings
+  for (let i = 0; i < 4; i++) {
+    const x = -2.0 + i * 1.1;
+    soften(g, o, [[x, 1.3], [x + 0.95, 1.3], [x + 0.95, 2.05], [x, 2.05]], 0.08);
+    g.fillStyle = "rgba(70,120,150,0.38)"; g.fill();
+    stroke(g, o, x + 0.1, 1.95, x + 0.4, 1.4, 0.03, "rgba(255,255,255,0.22)");
+  }
+  soften(g, o, [[-2.33, 1.35], [-2.1, 1.35], [-2.1, 2.0], [-2.2, 2.0]], 0.05);
+  g.fillStyle = "rgba(70,120,150,0.42)"; g.fill();
+
   soften(g, o, [[-2.45, 2.42], [2.45, 2.42], [2.45, 2.5], [-2.45, 2.5]], 0.03); g.fillStyle = "#2b2f33"; g.fill();
   disc(g, o, -2.46, 0.82, 0.13, "#fff4cf"); disc(g, o, -2.46, 0.82, 0.07, "#ffffff");
   soften(g, o, [[2.42, 0.62], [2.52, 0.62], [2.52, 0.82], [2.42, 0.82]], 0.03); g.fillStyle = "#d63a2e"; g.fill();
