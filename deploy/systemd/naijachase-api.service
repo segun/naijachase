@@ -10,9 +10,11 @@ Group=drawback-admin
 WorkingDirectory=/opt/naijachase/source
 EnvironmentFile=/opt/naijachase/shared/production.env
 Environment=RUST_BACKTRACE=1
+Environment=NAIJACHASE_ENV_FILE=/opt/naijachase/shared/production.env
 ExecStart=/opt/naijachase/source/rust/target/release/naijachase-api
 Restart=on-failure
 RestartSec=5s
+KillSignal=SIGTERM
 TimeoutStopSec=30s
 UMask=0027
 NoNewPrivileges=true

@@ -9,6 +9,7 @@
   import Results from "./screens/case/Results.svelte";
   import Shell from "./ui/Shell.svelte";
   import DetailQuick from "./ui/DetailQuick.svelte";
+  import { reportBrowserError } from "./telemetry.ts";
 
   // Secondary screens are separate chunks: nobody needs them on the sign-in path, so they load on first visit.
   const lazy = {
@@ -30,6 +31,7 @@
   const app = new AppController();
   function reportRenderError(error: unknown) {
     console.error("[NaijaChase] Unhandled screen render error", error);
+    reportBrowserError(error, "svelte.boundary");
   }
   // The music starts on the home screen and carries on through sign-in and the game.
   $effect(() => { app.music.setActive(!app.booting); });

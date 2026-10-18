@@ -1,0 +1,20 @@
+[Unit]
+Description=NaijaChase controlled schema migration
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=naijachase-migrate
+Group=naijachase-migrate
+WorkingDirectory=/opt/naijachase/source
+EnvironmentFile=/opt/naijachase/shared/migrations.env
+Environment=NAIJACHASE_ENV_FILE=/opt/naijachase/shared/migrations.env
+ExecStart=/opt/naijachase/source/rust/target/release/naijachase-tools migrate-mysql
+TimeoutStartSec=300s
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6

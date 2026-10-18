@@ -142,6 +142,20 @@ ORDER BY created_at DESC
 LIMIT 100;
 ```
 
-Metrics include `naijachase_emails_sent_total` and
-`naijachase_email_failures_total`. Alert on new dead rows, a growing queued
-count, an old queued row, or sustained failure-counter growth.
+The reusable provider client has a five-second connection timeout and a
+fifteen-second total request timeout. Metrics include:
+
+- `naijachase_emails_sent_total`
+- `naijachase_email_failures_total`
+- `naijachase_email_retries_total`
+- `naijachase_email_permanent_failures_total`
+- `naijachase_email_queue_messages`
+- `naijachase_email_sending_messages`
+- `naijachase_email_retry_messages`
+- `naijachase_email_permanent_failure_messages`
+- `naijachase_email_oldest_pending_age_seconds`
+
+Load `deploy/prometheus/naijachase-alerts.yml` into Prometheus. It alerts when
+the oldest pending message exceeds ten minutes, retries rise repeatedly, or any
+dead outbox row exists. Route warning and critical alerts to the production
+on-call destination in Alertmanager.

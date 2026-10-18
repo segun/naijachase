@@ -74,6 +74,9 @@ by checksum but are not required by the live game transaction path.
   it keys hashed subjects by action so registration, login, confirmation resend,
   and recovery can use stricter limits without disclosing email addresses.
   Entries older than ten minutes are removed in small indexed batches.
+- Migration 0020 gives active ordinary/replay lookup the composite
+  `(player_id, attempt_kind, updated_at, created_at)` index used by the case-desk
+  bootstrap and transactional case assignment.
 - `terminal_careers` owns terminal-player career and resumable-case state. The
   terminal no longer reads or writes a repository JSON save file.
 
@@ -93,3 +96,9 @@ elapsed time, dossier evidence and hideout selection remain dynamic.
 Noncanonical saved routes use the original clue planner for compatibility.
 The content regression test compares independent loads and uncached calculations
 for all 1,000 missions, every stage and all 37 possible current states.
+
+Database hot-path transactions, query-plan evidence, metrics, and the decision
+not to add a session cache prematurely are documented in
+[`database-hot-paths.md`](database-hot-paths.md).
+
+Schema migration 21 adds `scheduled_jobs` for transaction-scoped weekly expiry ownership. The API checks the schema without migrating; see [process lifecycle and deployment](process-lifecycle.md) for the separate migration service and runtime grants.

@@ -10,7 +10,11 @@ use std::{
     env, fs,
     num::ParseIntError,
     path::{Path, PathBuf},
-    time::Duration,
+    sync::{
+        Arc,
+        atomic::{AtomicU64, Ordering},
+    },
+    time::{Duration, Instant},
 };
 use thiserror::Error;
 mod weekly;
@@ -39,6 +43,9 @@ const MIGRATION_16: &str = include_str!("../migrations/0016_player_date_of_birth
 const MIGRATION_17: &str = include_str!("../migrations/0017_weekly_transit_events.sql");
 const MIGRATION_18: &str = include_str!("../migrations/0018_email_outbox.sql");
 const MIGRATION_19: &str = include_str!("../migrations/0019_general_rate_limits.sql");
+pub const SCHEMA_VERSION: u32 = 21;
+const MIGRATION_21: &str = include_str!("../migrations/0021_scheduled_jobs.sql");
+const MIGRATION_20: &str = include_str!("../migrations/0020_hot_path_indexes.sql");
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct EmailMessage {
@@ -57,6 +64,15 @@ pub struct QueuedEmail {
     pub text: String,
     pub html: String,
     pub attempts: u32,
+}
+
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct EmailOutboxMetrics {
+    pub queued_messages: u64,
+    pub sending_messages: u64,
+    pub retry_messages: u64,
+    pub permanent_failures: u64,
+    pub oldest_pending_age_seconds: u64,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -99,6 +115,53 @@ pub struct PlayerAccount {
     pub uniform_id: Option<String>,
     pub avatar_setup_complete: bool,
     pub leaderboard_opt_in: bool,
+}
+
+type AccountRow = (
+    String,
+    String,
+    String,
+    String,
+    bool,
+    Option<String>,
+    Option<String>,
+    Option<String>,
+    Option<String>,
+    Option<String>,
+    bool,
+    bool,
+);
+
+fn account_from_row(
+    (
+        player_id,
+        email,
+        username,
+        home_base,
+        email_verified,
+        display_name,
+        pronouns,
+        sex,
+        avatar_id,
+        uniform_id,
+        avatar_setup_complete,
+        leaderboard_opt_in,
+    ): AccountRow,
+) -> PlayerAccount {
+    PlayerAccount {
+        player_id,
+        email,
+        username,
+        home_base,
+        email_verified,
+        display_name,
+        pronouns,
+        sex,
+        avatar_id,
+        uniform_id,
+        avatar_setup_complete,
+        leaderboard_opt_in,
+    }
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
@@ -167,6 +230,66 @@ pub struct ProgressionSummary {
     pub wrong_deductions: u64,
     pub achievements: Vec<Achievement>,
     pub rank_history: Vec<RankHistoryEntry>,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct OrdinaryCaseAssignment {
+    pub case_id: String,
+    pub version: u64,
+    pub state: GameState,
+    pub duplicate: bool,
+}
+
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub struct StorageMetricsSnapshot {
+    pub pool_acquisitions: u64,
+    pub pool_acquisition_failures: u64,
+    pub pool_wait_microseconds_total: u64,
+    pub pool_wait_microseconds_max: u64,
+    pub pool_waiters: u64,
+    pub pool_waiters_max: u64,
+    pub pool_min_connections: u64,
+    pub pool_max_connections: u64,
+    pub pool_connections_in_use: u64,
+    pub pool_connections_in_use_max: u64,
+}
+
+#[derive(Default)]
+struct StorageMetrics {
+    pool_acquisitions: AtomicU64,
+    pool_acquisition_failures: AtomicU64,
+    pool_wait_microseconds_total: AtomicU64,
+    pool_wait_microseconds_max: AtomicU64,
+    pool_waiters: AtomicU64,
+    pool_waiters_max: AtomicU64,
+    pool_connections_in_use: AtomicU64,
+    pool_connections_in_use_max: AtomicU64,
+}
+
+struct TrackedConnection {
+    connection: PooledConn,
+    metrics: Arc<StorageMetrics>,
+}
+
+impl std::ops::Deref for TrackedConnection {
+    type Target = PooledConn;
+    fn deref(&self) -> &Self::Target {
+        &self.connection
+    }
+}
+
+impl std::ops::DerefMut for TrackedConnection {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.connection
+    }
+}
+
+impl Drop for TrackedConnection {
+    fn drop(&mut self) {
+        self.metrics
+            .pool_connections_in_use
+            .fetch_sub(1, Ordering::Relaxed);
+    }
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
@@ -605,9 +728,8 @@ pub enum StorageError {
 
 pub fn repository_dotenv_path() -> Option<PathBuf> {
     if let Some(explicit) = env::var_os("NAIJACHASE_ENV_FILE").map(PathBuf::from) {
-        if explicit.is_file() {
-            return Some(explicit);
-        }
+        // An explicitly selected credential file must fail closed when missing.
+        return Some(explicit);
     }
     let repository = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../..");
     let repository_candidate = repository.join(".env");
@@ -638,6 +760,9 @@ pub fn load_repository_dotenv() -> Result<Option<PathBuf>, StorageError> {
 pub struct MysqlStore {
     pool: Pool,
     pool_wait_timeout: Duration,
+    metrics: Arc<StorageMetrics>,
+    pool_min_connections: u64,
+    pool_max_connections: u64,
 }
 
 impl MysqlStore {
@@ -645,16 +770,78 @@ impl MysqlStore {
         Ok(Self {
             pool: Pool::new(config.options())?,
             pool_wait_timeout: config.pool_wait_timeout,
+            metrics: Arc::new(StorageMetrics::default()),
+            pool_min_connections: config.pool_min as u64,
+            pool_max_connections: config.pool_max as u64,
         })
     }
 
-    pub(crate) fn connection(&self) -> Result<PooledConn, StorageError> {
-        self.pool
-            .try_get_conn(self.pool_wait_timeout)
-            .map_err(|error| match error {
-                mysql::Error::DriverError(DriverError::Timeout) => StorageError::PoolTimeout,
-                other => StorageError::Mysql(other),
-            })
+    fn connection(&self) -> Result<TrackedConnection, StorageError> {
+        let waiters = self.metrics.pool_waiters.fetch_add(1, Ordering::Relaxed) + 1;
+        self.metrics
+            .pool_waiters_max
+            .fetch_max(waiters, Ordering::Relaxed);
+        let started = Instant::now();
+        let result = self.pool.try_get_conn(self.pool_wait_timeout);
+        self.metrics.pool_waiters.fetch_sub(1, Ordering::Relaxed);
+        let elapsed = started.elapsed().as_micros().min(u128::from(u64::MAX)) as u64;
+        self.metrics
+            .pool_acquisitions
+            .fetch_add(1, Ordering::Relaxed);
+        self.metrics
+            .pool_wait_microseconds_total
+            .fetch_add(elapsed, Ordering::Relaxed);
+        self.metrics
+            .pool_wait_microseconds_max
+            .fetch_max(elapsed, Ordering::Relaxed);
+        if result.is_err() {
+            self.metrics
+                .pool_acquisition_failures
+                .fetch_add(1, Ordering::Relaxed);
+        }
+        let connection = result.map_err(|error| match error {
+            mysql::Error::DriverError(DriverError::Timeout) => StorageError::PoolTimeout,
+            other => StorageError::Mysql(other),
+        })?;
+        let in_use = self
+            .metrics
+            .pool_connections_in_use
+            .fetch_add(1, Ordering::Relaxed)
+            + 1;
+        self.metrics
+            .pool_connections_in_use_max
+            .fetch_max(in_use, Ordering::Relaxed);
+        Ok(TrackedConnection {
+            connection,
+            metrics: self.metrics.clone(),
+        })
+    }
+
+    pub fn metrics_snapshot(&self) -> StorageMetricsSnapshot {
+        StorageMetricsSnapshot {
+            pool_acquisitions: self.metrics.pool_acquisitions.load(Ordering::Relaxed),
+            pool_acquisition_failures: self
+                .metrics
+                .pool_acquisition_failures
+                .load(Ordering::Relaxed),
+            pool_wait_microseconds_total: self
+                .metrics
+                .pool_wait_microseconds_total
+                .load(Ordering::Relaxed),
+            pool_wait_microseconds_max: self
+                .metrics
+                .pool_wait_microseconds_max
+                .load(Ordering::Relaxed),
+            pool_waiters: self.metrics.pool_waiters.load(Ordering::Relaxed),
+            pool_waiters_max: self.metrics.pool_waiters_max.load(Ordering::Relaxed),
+            pool_min_connections: self.pool_min_connections,
+            pool_max_connections: self.pool_max_connections,
+            pool_connections_in_use: self.metrics.pool_connections_in_use.load(Ordering::Relaxed),
+            pool_connections_in_use_max: self
+                .metrics
+                .pool_connections_in_use_max
+                .load(Ordering::Relaxed),
+        }
     }
 
     pub fn connect_from_env() -> Result<Self, StorageError> {
@@ -789,6 +976,18 @@ impl MysqlStore {
                 )?;
             }
             apply_migration(&mut connection, MIGRATION_19)?;
+        }
+        let version: u32 = connection
+            .query_first("SELECT COALESCE(MAX(version),0) FROM schema_migrations")?
+            .unwrap_or(0);
+        if version < 20 {
+            apply_migration(&mut connection, MIGRATION_20)?;
+        }
+        let version: u32 = connection
+            .query_first("SELECT COALESCE(MAX(version),0) FROM schema_migrations")?
+            .unwrap_or(0);
+        if version < 21 {
+            apply_migration(&mut connection, MIGRATION_21)?;
         }
         Ok(())
     }
@@ -1044,20 +1243,6 @@ impl MysqlStore {
         &self,
         token_hash: &str,
     ) -> Result<Option<PlayerAccount>, StorageError> {
-        type AccountRow = (
-            String,
-            String,
-            String,
-            String,
-            bool,
-            Option<String>,
-            Option<String>,
-            Option<String>,
-            Option<String>,
-            Option<String>,
-            bool,
-            bool,
-        );
         let mut connection = self.connection()?;
         let row: Option<AccountRow> = connection.exec_first(
             "SELECT p.player_id,p.email,p.username,p.home_base,TRUE,p.display_name,
@@ -1069,39 +1254,64 @@ impl MysqlStore {
         )?;
         if row.is_some() {
             connection.exec_drop(
-                "UPDATE player_sessions SET last_seen_at=UTC_TIMESTAMP() WHERE token_hash=:token",
+                "UPDATE player_sessions SET last_seen_at=UTC_TIMESTAMP()
+                 WHERE token_hash=:token
+                   AND last_seen_at<DATE_SUB(UTC_TIMESTAMP(),INTERVAL 1 MINUTE)",
                 params! {"token"=>token_hash},
             )?;
         }
-        Ok(row.map(
-            |(
-                player_id,
-                email,
-                username,
-                home_base,
-                email_verified,
-                display_name,
-                pronouns,
-                sex,
-                avatar_id,
-                uniform_id,
-                avatar_setup_complete,
-                leaderboard_opt_in,
-            )| PlayerAccount {
-                player_id,
-                email,
-                username,
-                home_base,
-                email_verified,
-                display_name,
-                pronouns,
-                sex,
-                avatar_id,
-                uniform_id,
-                avatar_setup_complete,
-                leaderboard_opt_in,
-            },
-        ))
+        Ok(row.map(account_from_row))
+    }
+
+    /// Authenticates a session and consumes its shared general-rate-limit slot
+    /// using one connection and one transaction. Every protected request uses
+    /// this path, avoiding the former second remote checkout.
+    pub fn authorize_session(
+        &self,
+        token_hash: &str,
+        limit: u32,
+    ) -> Result<Option<(PlayerAccount, bool)>, StorageError> {
+        let mut connection = self.connection()?;
+        let mut transaction = connection.start_transaction(TxOpts::default())?;
+        let row: Option<AccountRow> = transaction.exec_first(
+            "SELECT p.player_id,p.email,p.username,p.home_base,TRUE,p.display_name,
+                    p.pronouns,p.sex,p.avatar_id,p.uniform_id,
+                    p.avatar_setup_completed_at IS NOT NULL,p.leaderboard_opt_in
+             FROM player_sessions s JOIN players p ON p.player_id=s.player_id
+             WHERE s.token_hash=:token AND s.revoked_at IS NULL
+               AND s.expires_at>UTC_TIMESTAMP() AND p.email_verified_at IS NOT NULL",
+            params! {"token"=>token_hash},
+        )?;
+        let Some(row) = row else {
+            transaction.commit()?;
+            return Ok(None);
+        };
+        let account = account_from_row(row);
+        transaction.exec_drop(
+            "UPDATE player_sessions SET last_seen_at=UTC_TIMESTAMP()
+             WHERE token_hash=:token
+               AND last_seen_at<DATE_SUB(UTC_TIMESTAMP(),INTERVAL 1 MINUTE)",
+            params! {"token"=>token_hash},
+        )?;
+        let ceiling = limit.saturating_add(1);
+        transaction.exec_drop(
+            "INSERT INTO general_rate_limits(player_id,attempts,window_started)
+             VALUES (:player,1,UTC_TIMESTAMP())
+             ON DUPLICATE KEY UPDATE
+               attempts=IF(window_started<DATE_SUB(UTC_TIMESTAMP(),INTERVAL 1 MINUTE),
+                           1,LEAST(attempts+1,:ceiling)),
+               window_started=IF(window_started<DATE_SUB(UTC_TIMESTAMP(),INTERVAL 1 MINUTE),
+                                 UTC_TIMESTAMP(),window_started)",
+            params! {"player"=>&account.player_id,"ceiling"=>ceiling},
+        )?;
+        let attempts: u32 = transaction
+            .exec_first(
+                "SELECT attempts FROM general_rate_limits WHERE player_id=:player FOR UPDATE",
+                params! {"player"=>&account.player_id},
+            )?
+            .unwrap_or(ceiling);
+        transaction.commit()?;
+        Ok(Some((account, attempts <= limit)))
     }
 
     pub fn rotate_session(&self, old_hash: &str, new_hash: &str) -> Result<bool, StorageError> {
@@ -1283,6 +1493,39 @@ impl MysqlStore {
         Ok(())
     }
 
+    /// Aggregate-only outbox health for Prometheus. No recipient, subject,
+    /// message body, token, or provider error is exposed.
+    pub fn email_outbox_metrics(&self) -> Result<EmailOutboxMetrics, StorageError> {
+        type Row = (u64, u64, u64, u64, i64);
+        let row: Option<Row> = self.connection()?.query_first(
+            "SELECT
+               COUNT(CASE WHEN status='queued' THEN 1 END),
+               COUNT(CASE WHEN status='sending' THEN 1 END),
+               COUNT(CASE WHEN status='queued' AND attempts>0 THEN 1 END),
+               COUNT(CASE WHEN status='dead' THEN 1 END),
+               COALESCE(TIMESTAMPDIFF(
+                 SECOND,
+                 MIN(CASE WHEN status IN ('queued','sending') THEN created_at END),
+                 UTC_TIMESTAMP()
+               ),0)
+             FROM email_outbox",
+        )?;
+        let (
+            queued_messages,
+            sending_messages,
+            retry_messages,
+            permanent_failures,
+            oldest_pending_age_seconds,
+        ) = row.unwrap_or_default();
+        Ok(EmailOutboxMetrics {
+            queued_messages,
+            sending_messages,
+            retry_messages,
+            permanent_failures,
+            oldest_pending_age_seconds: oldest_pending_age_seconds.max(0) as u64,
+        })
+    }
+
     pub fn complete_password_reset(
         &self,
         token_hash: &str,
@@ -1422,6 +1665,11 @@ impl MysqlStore {
                 params!{"case_id"=>case_id,"player"=>player_id},
             )?
             .ok_or(StorageError::CaseNotFound)?;
+        transaction.exec_drop(
+            "UPDATE active_cases SET state_json=:state
+             WHERE case_id=:case_id AND player_id=:player",
+            params! {"state"=>serde_json::to_vec(state)?,"case_id"=>case_id,"player"=>player_id},
+        )?;
         let (states, correct_travels, wrong_travels, correct_deductions, wrong_deductions) =
             case_metrics(state);
         let states_json = serde_json::to_string(&states)?;
@@ -1573,16 +1821,15 @@ impl MysqlStore {
             u32,
             u32,
             String,
-            Option<String>,
+            String,
             u32,
             u32,
             u32,
             u32,
         );
         let mut connection = self.connection()?;
-        let rows:Vec<Row>=connection.exec("SELECT case_id,mission_id,thief_id,outcome,score,elapsed_minutes,CAST(completed_at AS CHAR),CAST(states_visited_json AS CHAR),correct_travels,wrong_travels,correct_deductions,wrong_deductions FROM case_archive WHERE player_id=:player ORDER BY completed_at DESC",params!{"player"=>player_id})?;
-        Ok(rows
-            .into_iter()
+        let rows:Vec<Row>=connection.exec("SELECT case_id,mission_id,thief_id,outcome,score,elapsed_minutes,CAST(completed_at AS CHAR),CAST(JSON_OBJECT('states_visited',states_visited_json,'attempt_kind',attempt_kind,'first_completion',first_completion) AS CHAR),correct_travels,wrong_travels,correct_deductions,wrong_deductions FROM case_archive WHERE player_id=:player ORDER BY completed_at DESC",params!{"player"=>player_id})?;
+        rows.into_iter()
             .map(
                 |(
                     case_id,
@@ -1592,37 +1839,42 @@ impl MysqlStore {
                     score,
                     elapsed_minutes,
                     completed_at,
-                    states,
+                    metadata,
                     correct_travels,
                     wrong_travels,
                     correct_deductions,
                     wrong_deductions,
-                )| {
-                    let metadata: Option<(String,bool)> = connection.exec_first(
-                        "SELECT attempt_kind,first_completion FROM case_archive WHERE case_id=:case_id",
-                        params!{"case_id"=>&case_id},
-                    ).unwrap_or(None);
-                    let (attempt_kind, first_completion) = metadata.unwrap_or_else(|| ("ordinary".into(), false));
-                    CaseArchiveEntry {
-                    case_id,
-                    mission_id,
-                    thief_id,
-                    outcome,
-                    score,
-                    elapsed_minutes,
-                    completed_at,
-                    states_visited: states
-                        .and_then(|value| serde_json::from_str(&value).ok())
-                        .unwrap_or_default(),
-                    correct_travels,
-                    wrong_travels,
-                    correct_deductions,
-                    wrong_deductions,
-                    attempt_kind,
-                    first_completion,
-                }},
+                )|
+                 -> Result<CaseArchiveEntry, StorageError> {
+                    let metadata: serde_json::Value = serde_json::from_str(&metadata)?;
+                    Ok(CaseArchiveEntry {
+                        case_id,
+                        mission_id,
+                        thief_id,
+                        outcome,
+                        score,
+                        elapsed_minutes,
+                        completed_at,
+                        states_visited: metadata
+                            .get("states_visited")
+                            .cloned()
+                            .and_then(|value| serde_json::from_value(value).ok())
+                            .unwrap_or_default(),
+                        correct_travels,
+                        wrong_travels,
+                        correct_deductions,
+                        wrong_deductions,
+                        attempt_kind: metadata["attempt_kind"]
+                            .as_str()
+                            .unwrap_or("ordinary")
+                            .to_owned(),
+                        first_completion: metadata["first_completion"]
+                            .as_bool()
+                            .unwrap_or_else(|| metadata["first_completion"].as_u64() == Some(1)),
+                    })
+                },
             )
-            .collect())
+            .collect()
     }
 
     pub fn achievements(&self, player_id: &str) -> Result<Vec<Achievement>, StorageError> {
@@ -1631,8 +1883,7 @@ impl MysqlStore {
 
     pub fn career_points(&self, player_id: &str) -> Result<u64, StorageError> {
         Ok(self
-            .pool
-            .get_conn()?
+            .connection()?
             .exec_first(
                 "SELECT points FROM careers WHERE player_id=:player",
                 params! {"player"=>player_id},
@@ -1659,6 +1910,7 @@ impl MysqlStore {
         let (correct_travels, wrong_travels, correct_deductions, wrong_deductions) =
             totals.unwrap_or_default();
         let rank_history=connection.exec_map("SELECT old_rank,new_rank,points,CAST(earned_at AS CHAR) FROM rank_history WHERE player_id=:player ORDER BY earned_at",params!{"player"=>player_id},|(old_rank,new_rank,points,earned_at)|RankHistoryEntry{old_rank,new_rank,points,earned_at})?;
+        let achievements=connection.exec_map("SELECT achievement_id,CAST(earned_at AS CHAR) FROM player_achievements WHERE player_id=:player ORDER BY earned_at",params!{"player"=>player_id},|(achievement_id,earned_at)|Achievement{achievement_id,earned_at})?;
         Ok(ProgressionSummary {
             points,
             rank: rank_name(points).into(),
@@ -1668,7 +1920,7 @@ impl MysqlStore {
             wrong_travels,
             correct_deductions,
             wrong_deductions,
-            achievements: self.achievements(player_id)?,
+            achievements,
             rank_history,
         })
     }
@@ -1679,6 +1931,140 @@ impl MysqlStore {
             params! {"token"=>token_hash},
         )?;
         Ok(())
+    }
+
+    /// Selects an unseen published mission, reads the player's career points,
+    /// builds the initial state and persists the active ordinary case under one
+    /// player lock and one transaction. Concurrent requests return the already
+    /// active case instead of creating a second assignment.
+    pub fn assign_ordinary_case<F>(
+        &self,
+        case_id: &str,
+        player_id: &str,
+        selection_roll: u64,
+        game_seed: u64,
+        build: F,
+    ) -> Result<OrdinaryCaseAssignment, StorageError>
+    where
+        F: FnOnce(RuntimeMission, u64, u64) -> Result<GameState, StorageError>,
+    {
+        self.publish_due_missions()?;
+        let mut connection = self.connection()?;
+        let mut transaction = connection.start_transaction(TxOpts::default())?;
+        lock_case_player(&mut transaction, player_id)?;
+
+        let jailed: Option<u8> = transaction.exec_first(
+            "SELECT 1 FROM players WHERE player_id=:player AND jailed_until>UTC_TIMESTAMP()",
+            params! {"player"=>player_id},
+        )?;
+        if jailed.is_some() {
+            return Err(StorageError::Command(
+                "player is jailed and cannot start a mission".into(),
+            ));
+        }
+
+        let active: Vec<(String, u64, Vec<u8>)> = transaction.exec(
+            "SELECT case_id,version,state_json FROM active_cases
+             WHERE player_id=:player AND attempt_kind='ordinary'
+             ORDER BY updated_at DESC,created_at DESC FOR UPDATE",
+            params! {"player"=>player_id},
+        )?;
+        for (existing_case_id, version, data) in active {
+            let state: GameState = serde_json::from_slice(&data)?;
+            if state.outcome.is_none() {
+                transaction.commit()?;
+                return Ok(OrdinaryCaseAssignment {
+                    case_id: existing_case_id,
+                    version,
+                    state,
+                    duplicate: true,
+                });
+            }
+        }
+
+        let unseen: Vec<String> = transaction.exec_map(
+            "SELECT m.mission_id FROM missions m
+             LEFT JOIN player_mission_completions c
+               ON c.player_id=:player AND c.mission_id=m.mission_id
+             LEFT JOIN active_mission_assignments a
+               ON a.player_id=:player AND a.mission_id=m.mission_id
+             WHERE m.lifecycle_status='published'
+               AND c.mission_id IS NULL AND a.mission_id IS NULL
+             ORDER BY m.published_at DESC,m.mission_id",
+            params! {"player"=>player_id},
+            |mission_id: String| mission_id,
+        )?;
+        if unseen.is_empty() {
+            return Err(StorageError::CatalogueExhausted);
+        }
+        let newest_pool = (unseen.len() / 5).max(1);
+        let selection_pool = if selection_roll % 10 < 7 {
+            newest_pool
+        } else {
+            unseen.len()
+        };
+        let mission_id = unseen[(selection_roll.rotate_right(8) as usize) % selection_pool].clone();
+
+        type MissionRow = (String, u8, String, String, String, String, String, u32);
+        let row: Option<MissionRow> = transaction.exec_first(
+            "SELECT mission_id,difficulty,thief_id,start_location_id,
+                    stop_2_location_id,stop_3_location_id,capture_location_id,content_version
+             FROM missions WHERE mission_id=:mission AND lifecycle_status='published' FOR UPDATE",
+            params! {"mission"=>&mission_id},
+        )?;
+        let Some((
+            mission_id,
+            difficulty,
+            thief_id,
+            start_location_id,
+            stop_2_location_id,
+            stop_3_location_id,
+            capture_location_id,
+            content_version,
+        )) = row
+        else {
+            return Err(StorageError::CaseNotFound);
+        };
+        let career_points: u64 = transaction
+            .exec_first(
+                "SELECT points FROM careers WHERE player_id=:player",
+                params! {"player"=>player_id},
+            )?
+            .unwrap_or(0);
+        let runtime = RuntimeMission {
+            mission_id: mission_id.clone(),
+            difficulty,
+            thief_id,
+            start_location_id,
+            stop_2_location_id,
+            stop_3_location_id,
+            capture_location_id,
+            content_version,
+        };
+        let state = build(runtime, game_seed, career_points)?;
+        let data = serde_json::to_vec(&state)?;
+        transaction.exec_drop(
+            "INSERT INTO active_cases(case_id,player_id,mission_id,version,state_json,attempt_kind,content_version)
+             VALUES (:case_id,:player,:mission,1,:state,'ordinary',:content_version)",
+            params! {"case_id"=>case_id,"player"=>player_id,"mission"=>&mission_id,"state"=>data,"content_version"=>content_version},
+        )?;
+        transaction.exec_drop(
+            "INSERT INTO active_mission_assignments(player_id,mission_id,case_id)
+             VALUES (:player,:mission,:case_id)",
+            params! {"player"=>player_id,"mission"=>&mission_id,"case_id"=>case_id},
+        )?;
+        transaction.exec_drop(
+            "INSERT INTO service_audit(player_id,case_id,command_id,outcome)
+             VALUES (:player,:case_id,'case-created','created')",
+            params! {"player"=>player_id,"case_id"=>case_id},
+        )?;
+        transaction.commit()?;
+        Ok(OrdinaryCaseAssignment {
+            case_id: case_id.to_owned(),
+            version: 1,
+            state,
+            duplicate: false,
+        })
     }
 
     pub fn create_case(
@@ -1855,8 +2241,7 @@ impl MysqlStore {
     }
 
     pub fn content_role(&self, player_id: &str) -> Result<String, StorageError> {
-        self.pool
-            .get_conn()?
+        self.connection()?
             .exec_first(
                 "SELECT content_role FROM players WHERE player_id=:player",
                 params! {"player"=>player_id},
@@ -2203,6 +2588,33 @@ impl MysqlStore {
             .ongoing_cases_by_kind(player_id, "ordinary")?
             .into_iter()
             .next())
+    }
+
+    pub fn ongoing_cases(
+        &self,
+        player_id: &str,
+    ) -> Result<(Vec<(String, u64, GameState)>, Vec<(String, u64, GameState)>), StorageError> {
+        let rows: Vec<(String, String, u64, Vec<u8>)> = self.connection()?.exec(
+            "SELECT case_id,attempt_kind,version,state_json FROM active_cases
+             WHERE player_id=:player AND attempt_kind IN ('ordinary','replay')
+             ORDER BY updated_at DESC,created_at DESC",
+            params! {"player"=>player_id},
+        )?;
+        let mut ordinary = Vec::new();
+        let mut replays = Vec::new();
+        for (case_id, attempt_kind, version, data) in rows {
+            let state: GameState = serde_json::from_slice(&data)?;
+            if state.outcome.is_some() {
+                continue;
+            }
+            let value = (case_id, version, state);
+            if attempt_kind == "ordinary" {
+                ordinary.push(value);
+            } else {
+                replays.push(value);
+            }
+        }
+        Ok((ordinary, replays))
     }
 
     pub fn ongoing_cases_by_kind(
@@ -3019,8 +3431,7 @@ impl MysqlStore {
     }
 
     pub fn cooperation_reputation(&self, player: &str) -> Result<u64, StorageError> {
-        self.pool
-            .get_conn()?
+        self.connection()?
             .exec_first(
                 "SELECT cooperation_reputation FROM players WHERE player_id=:player",
                 params! {"player"=>player},
@@ -3420,9 +3831,24 @@ mod tests {
             .unwrap();
         assert_eq!(assignments, 0);
         let next_id = format!("lifecycle-{suffix}-new");
-        store
-            .create_case(&next_id, &player, &initial.mission_id, &initial)
+        let template = initial.clone();
+        let assigned = store
+            .assign_ordinary_case(&next_id, &player, 0, 7, move |runtime, _, points| {
+                let mut state = template;
+                state.mission_id = runtime.mission_id;
+                state.career_points = points as u32;
+                Ok(state)
+            })
             .unwrap();
+        assert!(!assigned.duplicate);
+        assert_eq!(assigned.case_id, next_id);
+        let duplicate = store
+            .assign_ordinary_case("must-not-be-created", &player, 1, 8, |_, _, _| {
+                panic!("an active ordinary case must be returned before building another")
+            })
+            .unwrap();
+        assert!(duplicate.duplicate);
+        assert_eq!(duplicate.case_id, next_id);
         let (next_version, next) = store.load_owned_case(&next_id, &player).unwrap();
         assert_eq!(next_version, 1);
         assert!(next.visited_venues.is_empty());
@@ -3731,7 +4157,7 @@ mod tests {
         let _guard = MYSQL_TEST_LOCK.lock().unwrap();
         let store = std::sync::Arc::new(MysqlStore::connect_from_env().unwrap());
         store.migrate().unwrap();
-        assert_eq!(store.schema_version().unwrap(), 19);
+        assert_eq!(store.schema_version().unwrap(), SCHEMA_VERSION);
         let id = "storage-integration-test";
         let next = store.state_version(id).unwrap().unwrap_or(0) + 1;
         store.save(id, next, b"test-state").unwrap();
@@ -4214,6 +4640,9 @@ mod tests {
             .unwrap()
             .unwrap_or(0);
         assert_eq!(queued, 1);
+        let outbox_metrics = store.email_outbox_metrics().unwrap();
+        assert!(outbox_metrics.queued_messages >= 1);
+        assert!(outbox_metrics.oldest_pending_age_seconds < 60);
         let birth_date: Option<String> = store
             .pool
             .get_conn()
@@ -4271,6 +4700,27 @@ mod tests {
                 .home_base,
             "Lagos"
         );
+        let (authorized, allowed) = store
+            .authorize_session(&token("session"), 1)
+            .unwrap()
+            .unwrap();
+        assert_eq!(authorized.player_id, player);
+        assert!(allowed);
+        assert!(
+            !store
+                .authorize_session(&token("session"), 1)
+                .unwrap()
+                .unwrap()
+                .1
+        );
+        store
+            .connection()
+            .unwrap()
+            .exec_drop(
+                "DELETE FROM general_rate_limits WHERE player_id=:player",
+                params! {"player"=>player},
+            )
+            .unwrap();
         store.revoke_session(&token("session")).unwrap();
         assert!(
             store
@@ -4651,6 +5101,54 @@ mod tests {
         );
         let details = store.weekly_challenge_details(&owner, &challenge).unwrap();
         assert_eq!(details["winner_attempt_id"], first);
+        assert_eq!(store.expire_weekly_challenges().unwrap(), 0);
+
+        // A separate unwon challenge exercises transactional single ownership.
+        let expiring_group = store
+            .create_group(&owner, &format!("Expiry {}", &suffix[..8]), 4)
+            .unwrap();
+        let expiring_invite = store
+            .invite_group_member(&owner, &expiring_group, &helper_name)
+            .unwrap();
+        store
+            .respond_group_invitation(&helper, &expiring_invite, true)
+            .unwrap();
+        let expiring = store
+            .schedule_weekly_challenge(
+                &expiring_group,
+                now - 60,
+                now + 3600,
+                &mission,
+                1,
+                8,
+                &state,
+            )
+            .unwrap();
+        let attempt = store.start_weekly_attempt(&owner, &expiring).unwrap();
+        let mut connection = store.connection().unwrap();
+        connection.exec_drop("UPDATE weekly_challenges SET ends_at=DATE_SUB(UTC_TIMESTAMP(),INTERVAL 1 SECOND) WHERE challenge_id=:id", params!{"id"=>&expiring}).unwrap();
+        let mut owner_tx = connection.start_transaction(TxOpts::default()).unwrap();
+        let locked: Option<String> = owner_tx
+            .query_first(
+                "SELECT job_name FROM scheduled_jobs WHERE job_name='weekly_expiry' FOR UPDATE",
+            )
+            .unwrap();
+        assert_eq!(locked.as_deref(), Some("weekly_expiry"));
+        assert_eq!(store.expire_weekly_challenges().unwrap(), 0);
+        let status: Option<String> = owner_tx
+            .exec_first(
+                "SELECT status FROM weekly_challenges WHERE challenge_id=:id",
+                params! {"id"=>&expiring},
+            )
+            .unwrap();
+        assert_eq!(status.as_deref(), Some("open"));
+        owner_tx.rollback().unwrap();
+        drop(connection);
+        assert_eq!(store.expire_weekly_challenges().unwrap(), 1);
+        assert_eq!(
+            store.weekly_attempt(&owner, &attempt).unwrap().status,
+            "expired"
+        );
         assert_eq!(store.expire_weekly_challenges().unwrap(), 0);
     }
 

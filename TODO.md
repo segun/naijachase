@@ -1500,3 +1500,5 @@ section of `README.md`.
 - [x] Remove resolved-level and device-capability hints beneath the Automatic/Full/Standard/Simple toggle.
 
 - [x] Precompute catalogue opening budgets by difficulty, mission routes and stage clue plans, local costs and venue availability; verify all 1,000 missions against uncached calculations and independent loads.
+
+- [x] Handle SIGTERM/Ctrl-C, drain requests and stop background workers within systemd limits; separate deployment migrations and runtime grants, and lock weekly expiry across instances (see `docs/process-lifecycle.md`).

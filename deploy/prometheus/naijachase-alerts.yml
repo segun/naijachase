@@ -1,0 +1,29 @@
+groups:
+  - name: naijachase-email
+    rules:
+      - alert: NaijaChaseEmailQueueStale
+        expr: naijachase_email_oldest_pending_age_seconds > 600
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: NaijaChase email queue has been pending for over ten minutes
+          description: Check Cloudflare Email Sending, API logs, and MySQL email_outbox health.
+
+      - alert: NaijaChaseEmailRetriesIncreasing
+        expr: increase(naijachase_email_retries_total[15m]) >= 3
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: NaijaChase email retries are increasing
+          description: At least three provider delivery attempts were rescheduled in fifteen minutes.
+
+      - alert: NaijaChaseEmailPermanentFailure
+        expr: naijachase_email_permanent_failure_messages > 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: NaijaChase has permanently failed email deliveries
+          description: Inspect dead email_outbox rows and provider delivery logs without exposing message bodies.

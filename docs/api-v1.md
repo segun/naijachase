@@ -1,5 +1,20 @@
 # Naija Chase service API v1
 
+## Request IDs and browser errors
+
+Every response includes `X-Request-ID`. JSON API errors repeat it as
+`request_id`; retain this value in support reports so operators can find the
+matching structured log entry. Nginx supplies the ID in production and the API
+generates one when called directly.
+
+The built-in web reporter sends unexpected runtime failures to
+`POST /v1/telemetry/browser-errors`. Its bounded payload contains the error,
+page path without query data, release, source and most recent API request ID.
+It returns `202`; do not include player-entered content or secrets.
+
+`GET /metrics` is available to Prometheus on the API's loopback listener and is
+deliberately unavailable through public `/api/metrics`.
+
 ## First-login avatar selection
 
 Authenticated clients read the ten procedural presets from
@@ -146,7 +161,10 @@ budget, and changes should follow production-shaped load tests.
 
 - `GET /health/live` reports process liveness.
 - `GET /health/ready` checks MySQL readiness.
-- `GET /metrics` exposes aggregate counters without private labels.
+- `GET /metrics` exposes aggregate counters without private labels, including
+  session-authorization database duration/failures and MySQL pool acquisition
+  wait/failures. See [`database-hot-paths.md`](database-hot-paths.md) for metric
+  names and interpretation.
 - `GET /v1/activity/current` is the canonical case-desk bootstrap. It returns
   the player's unfinished ordinary case, all unfinished replays, and all active
   or in-transit weekly attempts. Complete response shapes, field definitions,
@@ -163,7 +181,9 @@ budget, and changes should follow production-shaped load tests.
 - `POST /v1/cases` accepts `{}` and assigns a server-selected, published mission
   the player has never solved. When an unfinished ordinary case already exists,
   it returns that case instead of creating another. It returns
-  `catalogue_exhausted` when none remain.
+  `catalogue_exhausted` when none remain. Selection, career-point lookup,
+  duplicate-case detection, persistence, mission assignment, and audit insertion
+  share one player-locked storage transaction.
 - `POST /v1/cases/replay` accepts `mission_id` and starts a completed mission as
   an explicit replay. Replays are labelled and cannot repeat progression or
   first-completion rewards.

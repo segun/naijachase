@@ -113,49 +113,70 @@ cache key. This behavior is also covered by `web/tests/models.test.mjs`.
 
 ### Reduce remote database round trips
 
-- [ ] Combine case assignment, progression lookup and active-case creation into
+- [x] Combine case assignment, progression lookup and active-case creation into
   one storage operation/transaction.
-- [ ] Measure the session-authentication database round trip on every authorised
+- [x] Measure the session-authentication database round trip on every authorised
   request.
-- [ ] If needed, introduce a short, bounded session cache with an explicit
-  revocation and expiry strategy.
-- [ ] Review high-traffic endpoints for repeated sequential pool checkouts.
-- [ ] Capture and optimise slow queries using production-shaped data.
+- [x] Evaluate a short, bounded session cache and retain immediate database-backed
+  revocation until deployed measurements demonstrate that caching is needed.
+- [x] Review high-traffic endpoints for repeated sequential pool checkouts.
+- [x] Capture and optimise slow queries using production-shaped data.
+
+Completed in the October 2026 hot-path pass: ordinary assignment is one
+player-locked transaction; authorization and shared rate limiting use one
+connection/transaction; archive metadata no longer causes an N+1 query;
+ordinary and replay activity share one checkout; progression achievements reuse
+their connection; and every pool acquisition is bounded and measured. Migration
+0020 adds the active-case recency index. Authentication and pool duration/failure
+metrics are exposed at `/metrics`. `EXPLAIN ANALYZE` used the full 1,000-mission
+catalogue; remote-network and concurrency validation remains under **Prove
+production capacity**. Details are in `docs/database-hot-paths.md`.
 
 ### Improve process lifecycle and scheduled work
 
-- [ ] Handle Unix `SIGTERM` as well as Ctrl-C.
-- [ ] Stop the weekly background task during shutdown.
-- [ ] Allow in-flight requests to drain within systemd's stop timeout.
-- [ ] Remove automatic schema migration from normal API startup.
-- [ ] Run migrations as a controlled deployment step.
+- [x] Handle Unix `SIGTERM` as well as Ctrl-C.
+- [x] Stop the weekly background task during shutdown.
+- [x] Allow in-flight requests to drain within systemd's stop timeout.
+- [x] Remove automatic schema migration from normal API startup.
+- [x] Run migrations as a controlled deployment step.
 - [ ] Give the runtime API database account only gameplay privileges.
-- [ ] If multiple API instances run, give weekly expiry a single owner or database
+  Provisioning templates are ready in `deploy/mysql/`; applying the grants and
+  switching production credentials remain deployment steps.
+- [x] If multiple API instances run, give weekly expiry a single owner or database
   lock while keeping the operation idempotent.
+
+Implementation and deployment sequence: `docs/process-lifecycle.md`.
 
 ### Make email delivery production-safe
 
-- [ ] Reuse one configured `reqwest::Client` instead of creating one per email.
-- [ ] Configure short email-provider connection and request timeouts.
-- [ ] Move confirmation and recovery delivery through the durable outbox.
-- [ ] Add metrics and alerts for queue age, retry count and permanent failure.
+- [x] Reuse one configured `reqwest::Client` instead of creating one per email.
+- [x] Configure short email-provider connection and request timeouts.
+- [x] Move confirmation and recovery delivery through the durable outbox.
+- [x] Add metrics and alerts for queue age, retry count and permanent failure.
+
+The API owns one reusable email client with a five-second connection timeout
+and fifteen-second total request timeout. Confirmation and recovery enqueue in
+the same transaction as their tokens. `/metrics` exposes current queue depth,
+oldest pending age, queued retries, dead rows, and process counters for retries
+and permanent failures. Prometheus alert rules are checked in at
+`deploy/prometheus/naijachase-alerts.yml`.
 
 ## Observability and operations
 
-- [ ] Generate a request ID at Nginx/API entry.
-- [ ] Return the request ID to the browser.
-- [ ] Include the request ID in structured logs and error responses.
-- [ ] Add request duration and status metrics by route.
-- [ ] Add active/waiting request and blocking-work metrics.
-- [ ] Add MySQL pool usage, wait-time and failure metrics.
-- [ ] Add email queue and weekly-job metrics.
-- [ ] Add process CPU and memory monitoring.
-- [ ] Keep `/metrics` off the public proxy or protect it with monitoring-network
+- [x] Generate a request ID at Nginx/API entry.
+- [x] Return the request ID to the browser.
+- [x] Include the request ID in structured logs and error responses.
+- [x] Add request duration and status metrics by route.
+- [x] Add active/waiting request and blocking-work metrics.
+- [x] Add MySQL pool usage, wait-time and failure metrics.
+- [x] Add email queue and weekly-job metrics.
+- [x] Add process CPU and memory monitoring.
+- [x] Keep `/metrics` off the public proxy or protect it with monitoring-network
   access controls.
-- [ ] Add browser error reporting with private production source maps.
-- [ ] Add alerts for sustained `5xx`, high latency, database failure, email
+- [x] Add browser error reporting with private production source maps.
+- [x] Add alerts for sustained `5xx`, high latency, database failure, email
   backlog, weekly-expiry failure and repeated process restarts.
-- [ ] Create a production dashboard and a short incident runbook.
+- [x] Create a production dashboard and a short incident runbook.
 
 ## Web and 3D delivery
 

@@ -28,6 +28,8 @@ LANDING_ROOT ?= /var/www/naijachase.com
 LANDING_NGINX_SITE ?= /etc/nginx/sites-available/003-naijachase.com
 LANDING_NGINX_SITE_LINK ?= /etc/nginx/sites-enabled/003-naijachase.com
 WEB_ROOT ?= /var/www/naijachase.app
+SOURCE_MAP_ROOT ?= /opt/naijachase/source-maps
+RELEASE ?= $(shell git rev-parse --short HEAD 2>/dev/null || echo local)
 
 # --- Rust tools and content paths --------------------------------------------
 MANIFEST := rust/Cargo.toml
@@ -151,7 +153,7 @@ export: ## Export canonical content; override with EXPORT_DIR=path
 # =============================================================================
 
 # Apply schema migrations.
-db-migrate: ## Apply pending MySQL migrations using the repository .env
+db-migrate: ## Apply pending MySQL migrations using NAIJACHASE_ENV_FILE or repository .env
 	@$(TOOLS) migrate-mysql
 
 # Load the canonical CSV content into MySQL (after validation and simulation).
@@ -205,7 +207,7 @@ web-install: ## Install the exact locked web dependencies
 
 # Clean install followed by a build, for production.
 web-production-build: web-install ## Install dependencies and build the production web client
-	@cd web && $(PNPM) build
+	@cd web && NAIJACHASE_RELEASE=$(RELEASE) $(PNPM) build
 
 # Run the fake API on port 8081 so the UI works without MySQL.
 web-mock: ## Start the in-memory mock API on port 8081 (UI development without MySQL)
@@ -250,6 +252,13 @@ install-api-service: ## Install, enable, and start the production systemd API se
 	@sudo systemctl daemon-reload
 	@sudo systemctl enable --now naijachase-api.service
 
+# Run explicitly, once per release, before restart-api. Never an API ExecStartPre.
+.PHONY: deploy-migrate
+deploy-migrate: ## Apply release migrations with the isolated deployment credentials
+	@sudo install -m 0644 deploy/systemd/naijachase-migrate.service $(SYSTEMD_DIR)/naijachase-migrate.service
+	@sudo systemctl daemon-reload
+	@sudo systemctl start naijachase-migrate.service
+
 # Restart the service to pick up a new build.
 restart-api: ## Restart the production API after a successful build
 	@sudo systemctl restart naijachase-api.service
@@ -265,7 +274,9 @@ api-status: ## Show production API service status and recent logs
 install-web: ## Publish the built static web client into the Nginx document root
 	@test -f web/dist/index.html || { echo "web/dist is missing; run make production-build first"; exit 1; }
 	@sudo install -d -m 0755 $(WEB_ROOT)
-	@sudo $(RSYNC) -rlt --delete --chmod=D755,F644 web/dist/ $(WEB_ROOT)/
+	@sudo install -d -m 0750 $(SOURCE_MAP_ROOT)/$(RELEASE)
+	@sudo $(RSYNC) -rlt --delete --include='*/' --include='*.map' --exclude='*' --chmod=D750,F640 web/dist/ $(SOURCE_MAP_ROOT)/$(RELEASE)/
+	@sudo $(RSYNC) -rlt --delete --exclude='*.map' --chmod=D755,F644 web/dist/ $(WEB_ROOT)/
 
 # Install the app's Nginx site; roll back if the config test fails.
 install-nginx: ## Install, validate, and reload the NaijaChase Nginx site

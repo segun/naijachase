@@ -246,3 +246,5 @@ finishes with at least a two-day deadline buffer.
 
 Validate all content and engine behaviour with the Rust commands documented in
 the verification checklist in `TODO.md`.
+
+API shutdown, separate deployment migrations and restricted runtime database grants are documented in [process lifecycle and deployment](docs/process-lifecycle.md).

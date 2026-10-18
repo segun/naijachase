@@ -507,6 +507,12 @@ impl MysqlStore {
     pub fn expire_weekly_challenges(&self) -> Result<u64, StorageError> {
         let mut c = self.connection()?;
         let mut tx = c.start_transaction(TxOpts::default())?;
+        // Transaction-scoped ownership is released on commit, rollback, or crash.
+        // A concurrent instance skips this sweep instead of waiting for its owner.
+        let owner: Option<String> = tx.query_first("SELECT job_name FROM scheduled_jobs WHERE job_name='weekly_expiry' FOR UPDATE SKIP LOCKED")?;
+        if owner.is_none() {
+            return Ok(0);
+        }
         tx.exec_drop("UPDATE weekly_challenges SET status='expired' WHERE status IN('registration','open') AND ends_at<=UTC_TIMESTAMP() AND winner_attempt_id IS NULL",())?;
         let count = tx.affected_rows();
         tx.exec_drop("UPDATE weekly_attempts a JOIN weekly_challenges w ON w.challenge_id=a.challenge_id SET a.status='expired' WHERE w.status='expired' AND a.status IN('active','in_transit')",())?;

@@ -12,6 +12,8 @@ export class ApiError extends Error {
 }
 
 type Message = { message?: string };
+let lastRequestId = "";
+export const getLastRequestId = () => lastRequestId;
 
 // Session rotation replaces the cookie, and reusing a rotated token revokes the whole session family. So while a refresh is
 // in flight every other request waits for it, and a refresh itself waits for requests already on the wire.
@@ -45,6 +47,7 @@ async function request<T>(path: string, method: string, body?: unknown): Promise
   } catch {
     throw new ApiError(0, "network", "Cannot reach the service. Check your connection and try again.");
   }
+  lastRequestId = response.headers.get("x-request-id") ?? lastRequestId;
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
     throw new ApiError(response.status, data.error ?? "error", data.message ?? `Request failed (${response.status})`);

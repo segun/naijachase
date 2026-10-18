@@ -3,8 +3,9 @@ use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier, password_ha
 use axum::{
     BoxError, Json, Router,
     error_handling::HandleErrorLayer,
-    extract::{DefaultBodyLimit, Path, State},
+    extract::{DefaultBodyLimit, MatchedPath, Path, Request, State},
     http::{HeaderMap, HeaderValue, StatusCode, header},
+    middleware::{self, Next},
     response::{IntoResponse, Response},
     routing::{get, post},
 };
@@ -23,11 +24,23 @@ use std::{
     collections::{BTreeMap, BTreeSet},
     env,
     path::Path as FsPath,
-    sync::Arc,
-    time::Duration,
+    sync::{
+        Arc, Mutex,
+        atomic::{AtomicU64, Ordering},
+    },
+    time::{Duration, Instant, SystemTime, UNIX_EPOCH},
 };
 use tower::ServiceBuilder;
-use tower_http::{catch_panic::CatchPanicLayer, trace::TraceLayer};
+use tower_http::catch_panic::CatchPanicLayer;
+use tracing::Instrument;
+
+tokio::task_local! {
+    static REQUEST_ID: String;
+}
+
+const HTTP_BUCKETS_MS: [u64; 12] = [
+    5, 10, 25, 50, 100, 250, 500, 1_000, 2_500, 5_000, 10_000, 30_000,
+];
 
 pub const API_VERSION: &str = "v1";
 
@@ -648,6 +661,7 @@ fn public_weekly_attempt(
 struct ErrorBody {
     error: &'static str,
     message: String,
+    request_id: String,
 }
 
 #[derive(Debug)]
@@ -674,6 +688,9 @@ impl IntoResponse for ApiError {
             Json(ErrorBody {
                 error: self.code,
                 message: self.message,
+                request_id: REQUEST_ID
+                    .try_with(Clone::clone)
+                    .unwrap_or_else(|_| "unavailable".into()),
             }),
         )
             .into_response()
@@ -960,6 +977,20 @@ fn session_cookie(token: &str, config: &ServiceConfig) -> Result<HeaderValue, Ap
     .map_err(|_| bad_request("session could not be created"))
 }
 
+#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
+struct HttpMetricKey {
+    method: String,
+    route: String,
+    status: u16,
+}
+
+#[derive(Clone, Debug, Default)]
+struct HttpMetric {
+    count: u64,
+    duration_micros: u64,
+    buckets: [u64; HTTP_BUCKETS_MS.len()],
+}
+
 #[derive(Default)]
 pub struct Metrics {
     requests: std::sync::atomic::AtomicU64,
@@ -968,6 +999,22 @@ pub struct Metrics {
     duplicates: std::sync::atomic::AtomicU64,
     emails_sent: std::sync::atomic::AtomicU64,
     email_failures: std::sync::atomic::AtomicU64,
+    email_retries: std::sync::atomic::AtomicU64,
+    email_permanent_failures: std::sync::atomic::AtomicU64,
+    auth_db_round_trips: std::sync::atomic::AtomicU64,
+    auth_db_microseconds_total: std::sync::atomic::AtomicU64,
+    auth_db_microseconds_max: std::sync::atomic::AtomicU64,
+    auth_db_failures: std::sync::atomic::AtomicU64,
+    active_requests: AtomicU64,
+    active_requests_max: AtomicU64,
+    browser_errors: AtomicU64,
+    weekly_runs: AtomicU64,
+    weekly_failures: AtomicU64,
+    weekly_expired: AtomicU64,
+    weekly_duration_microseconds_total: AtomicU64,
+    weekly_duration_microseconds_max: AtomicU64,
+    weekly_last_success_unix_seconds: AtomicU64,
+    http: Mutex<BTreeMap<HttpMetricKey, HttpMetric>>,
 }
 
 pub struct AppState {
@@ -976,12 +1023,17 @@ pub struct AppState {
     pub config: ServiceConfig,
     metrics: Metrics,
     email_client: reqwest::Client,
+    started_at: Instant,
+    started_unix_seconds: u64,
 }
 
 /// Delivers durable outbox rows. Database claiming is safe across multiple API
 /// instances; failed messages are returned to the queue with bounded backoff.
-pub async fn email_delivery_loop(state: Arc<AppState>) {
-    loop {
+pub async fn email_delivery_loop(
+    state: Arc<AppState>,
+    mut stopping: tokio::sync::watch::Receiver<bool>,
+) {
+    while !*stopping.borrow() {
         let store = state.store.clone();
         let queued = match tokio::task::spawn_blocking(move || store.claim_email()).await {
             Ok(Ok(value)) => value,
@@ -995,7 +1047,10 @@ pub async fn email_delivery_loop(state: Arc<AppState>) {
             }
         };
         let Some(email) = queued else {
-            tokio::time::sleep(Duration::from_secs(1)).await;
+            tokio::select! {
+                _ = tokio::time::sleep(Duration::from_secs(1)) => {},
+                _ = stopping.changed() => {},
+            }
             continue;
         };
         let result = send_email(
@@ -1014,13 +1069,26 @@ pub async fn email_delivery_loop(state: Arc<AppState>) {
                 .email_failures
                 .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
             let detail = format!("{}: {}", error.code, error.message);
+            let permanent = email.attempts >= 8;
             tracing::error!(email_id=email.email_id, kind=%email.message_kind, attempts=email.attempts, "email delivery failed; retry scheduled");
             match tokio::task::spawn_blocking(move || {
                 store.retry_email(email.email_id, email.attempts, &detail)
             })
             .await
             {
-                Ok(Ok(())) => {}
+                Ok(Ok(())) => {
+                    if permanent {
+                        state
+                            .metrics
+                            .email_permanent_failures
+                            .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+                    } else {
+                        state
+                            .metrics
+                            .email_retries
+                            .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+                    }
+                }
                 Ok(Err(error)) => tracing::error!(%error, "could not return email to outbox"),
                 Err(error) => tracing::error!(%error, "email retry acknowledgement task failed"),
             }
@@ -1044,20 +1112,188 @@ pub async fn email_delivery_loop(state: Arc<AppState>) {
 
 /// Keeps persisted weekly status aligned with the authoritative wall clock even
 /// when nobody opens the weekly-challenge screens after a deadline.
-pub async fn weekly_expiration_loop(store: Arc<MysqlStore>) {
+pub async fn weekly_expiration_loop(
+    state: Arc<AppState>,
+    mut stopping: tokio::sync::watch::Receiver<bool>,
+) {
     let mut interval = tokio::time::interval(Duration::from_secs(60));
-    loop {
-        interval.tick().await;
-        let store = store.clone();
+    while !*stopping.borrow() {
+        tokio::select! {
+            biased;
+            _ = stopping.changed() => break,
+            _ = interval.tick() => {},
+        }
+        let store = state.store.clone();
+        let started = Instant::now();
+        state.metrics.weekly_runs.fetch_add(1, Ordering::Relaxed);
         match tokio::task::spawn_blocking(move || store.expire_weekly_challenges()).await {
             Ok(Ok(expired)) if expired > 0 => {
+                record_weekly_success(&state, started, expired);
                 tracing::info!(expired, "expired weekly challenges")
             }
-            Ok(Ok(_)) => {}
-            Ok(Err(error)) => tracing::error!(%error, "weekly challenge expiry failed"),
-            Err(error) => tracing::error!(%error, "weekly challenge expiry task failed"),
+            Ok(Ok(_)) => record_weekly_success(&state, started, 0),
+            Ok(Err(error)) => {
+                state
+                    .metrics
+                    .weekly_failures
+                    .fetch_add(1, Ordering::Relaxed);
+                tracing::error!(%error, "weekly challenge expiry failed")
+            }
+            Err(error) => {
+                state
+                    .metrics
+                    .weekly_failures
+                    .fetch_add(1, Ordering::Relaxed);
+                tracing::error!(%error, "weekly challenge expiry task failed")
+            }
         }
     }
+}
+
+fn unix_seconds() -> u64 {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_secs()
+}
+
+fn record_weekly_success(state: &AppState, started: Instant, expired: u64) {
+    let elapsed = started.elapsed().as_micros().min(u128::from(u64::MAX)) as u64;
+    state
+        .metrics
+        .weekly_expired
+        .fetch_add(expired, Ordering::Relaxed);
+    state
+        .metrics
+        .weekly_duration_microseconds_total
+        .fetch_add(elapsed, Ordering::Relaxed);
+    state
+        .metrics
+        .weekly_duration_microseconds_max
+        .fetch_max(elapsed, Ordering::Relaxed);
+    state
+        .metrics
+        .weekly_last_success_unix_seconds
+        .store(unix_seconds(), Ordering::Relaxed);
+}
+
+fn request_id(headers: &HeaderMap) -> String {
+    headers
+        .get("x-request-id")
+        .and_then(|value| value.to_str().ok())
+        .filter(|value| {
+            (16..=64).contains(&value.len())
+                && value
+                    .bytes()
+                    .all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'-' | b'_'))
+        })
+        .map(str::to_owned)
+        .unwrap_or_else(|| uuid::Uuid::new_v4().to_string())
+}
+
+async fn observe_request(
+    State(state): State<Arc<AppState>>,
+    mut request: Request,
+    next: Next,
+) -> Response {
+    let id = request_id(request.headers());
+    let method = request.method().to_string();
+    let route = request
+        .extensions()
+        .get::<MatchedPath>()
+        .map(MatchedPath::as_str)
+        .unwrap_or("unmatched")
+        .to_owned();
+    if let Ok(value) = HeaderValue::from_str(&id) {
+        request.headers_mut().insert("x-request-id", value);
+    }
+    let active = state
+        .metrics
+        .active_requests
+        .fetch_add(1, Ordering::Relaxed)
+        + 1;
+    state.metrics.requests.fetch_add(1, Ordering::Relaxed);
+    state
+        .metrics
+        .active_requests_max
+        .fetch_max(active, Ordering::Relaxed);
+    let started = Instant::now();
+    let span = tracing::info_span!("http_request", request_id=%id, method=%method, route=%route);
+    let mut response = REQUEST_ID
+        .scope(
+            id.clone(),
+            async move { next.run(request).await }.instrument(span.clone()),
+        )
+        .await;
+    state
+        .metrics
+        .active_requests
+        .fetch_sub(1, Ordering::Relaxed);
+    let status = response.status().as_u16();
+    let elapsed = started.elapsed();
+    let elapsed_micros = elapsed.as_micros().min(u128::from(u64::MAX)) as u64;
+    {
+        let mut all = state
+            .metrics
+            .http
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        let metric = all
+            .entry(HttpMetricKey {
+                method: method.clone(),
+                route: route.clone(),
+                status,
+            })
+            .or_default();
+        metric.count += 1;
+        metric.duration_micros = metric.duration_micros.saturating_add(elapsed_micros);
+        for (index, bound) in HTTP_BUCKETS_MS.iter().enumerate() {
+            if elapsed.as_millis() <= u128::from(*bound) {
+                metric.buckets[index] += 1;
+            }
+        }
+    }
+    tracing::info!(parent: &span, status, duration_ms=elapsed.as_secs_f64()*1000.0, "request completed");
+    if let Ok(value) = HeaderValue::from_str(&id) {
+        response.headers_mut().insert("x-request-id", value);
+    }
+    response
+}
+
+#[derive(Debug, Deserialize)]
+struct BrowserErrorReport {
+    message: String,
+    #[serde(default)]
+    stack: String,
+    #[serde(default)]
+    route: String,
+    #[serde(default)]
+    source: String,
+    #[serde(default)]
+    release: String,
+    #[serde(default)]
+    api_request_id: String,
+}
+
+async fn browser_error(
+    State(state): State<Arc<AppState>>,
+    headers: HeaderMap,
+    Json(report): Json<BrowserErrorReport>,
+) -> Result<StatusCode, ApiError> {
+    ensure_origin(&headers, &state.config)?;
+    if report.message.trim().is_empty()
+        || report.message.len() > 1_000
+        || report.stack.len() > 8_000
+        || report.route.len() > 512
+        || report.source.len() > 512
+        || report.release.len() > 128
+        || report.api_request_id.len() > 64
+    {
+        return Err(bad_request("invalid browser error report"));
+    }
+    state.metrics.browser_errors.fetch_add(1, Ordering::Relaxed);
+    tracing::error!(browser_message=%report.message, browser_stack=%report.stack, browser_route=%report.route, browser_source=%report.source, release=%report.release, api_request_id=%report.api_request_id, "browser error");
+    Ok(StatusCode::ACCEPTED)
 }
 
 pub fn router(state: Arc<AppState>) -> Router {
@@ -1067,6 +1303,7 @@ pub fn router(state: Arc<AppState>) -> Router {
         .concurrency_limit(state.config.max_concurrent_requests)
         .timeout(state.config.request_timeout);
     let application = Router::new()
+        .route("/v1/telemetry/browser-errors", post(browser_error))
         .route("/v1/auth/register", post(register))
         .route("/v1/auth/confirm", post(confirm_email))
         .route("/v1/auth/confirmation/resend", post(resend_confirmation))
@@ -1238,10 +1475,20 @@ pub fn router(state: Arc<AppState>) -> Router {
         .route("/health/live", get(live))
         .route("/health/ready", get(ready))
         .route("/metrics", get(metrics))
-        .with_state(state)
+        .with_state(state.clone())
         .merge(application)
-        .layer(CatchPanicLayer::new())
-        .layer(TraceLayer::new_for_http())
+        .layer(CatchPanicLayer::custom(|_| {
+            ApiError::new(
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "internal_error",
+                "the service could not complete the request",
+            )
+            .into_response()
+        }))
+        .layer(middleware::from_fn_with_state(
+            state.clone(),
+            observe_request,
+        ))
 }
 
 async fn handle_capacity_error(error: BoxError) -> Response {
@@ -1287,35 +1534,63 @@ fn session_token(headers: &HeaderMap) -> Result<String, ApiError> {
 async fn authenticate(headers: &HeaderMap, state: &AppState) -> Result<PlayerAccount, ApiError> {
     let token = session_token(headers)?;
     let store = state.store.clone();
-    tokio::task::spawn_blocking(move || store.authenticate_session(&hash_token(&token)))
-        .await
-        .map_err(task_error)??
-        .ok_or_else(|| {
-            ApiError::new(
-                StatusCode::UNAUTHORIZED,
-                "unauthorized",
-                "session expired or invalid",
-            )
-        })
+    let started = Instant::now();
+    let result =
+        tokio::task::spawn_blocking(move || store.authenticate_session(&hash_token(&token)))
+            .await
+            .map_err(task_error);
+    let failed = matches!(&result, Err(_) | Ok(Err(_)));
+    record_auth_db_metrics(&state.metrics, started.elapsed(), failed);
+    result??.ok_or_else(|| {
+        ApiError::new(
+            StatusCode::UNAUTHORIZED,
+            "unauthorized",
+            "session expired or invalid",
+        )
+    })
+}
+
+fn record_auth_db_metrics(metrics: &Metrics, duration: Duration, failed: bool) {
+    use std::sync::atomic::Ordering::Relaxed;
+    let micros = duration.as_micros().min(u128::from(u64::MAX)) as u64;
+    metrics.auth_db_round_trips.fetch_add(1, Relaxed);
+    metrics
+        .auth_db_microseconds_total
+        .fetch_add(micros, Relaxed);
+    metrics.auth_db_microseconds_max.fetch_max(micros, Relaxed);
+    if failed {
+        metrics.auth_db_failures.fetch_add(1, Relaxed);
+    }
+    if duration >= Duration::from_millis(100) {
+        tracing::warn!(
+            duration_ms = duration.as_millis(),
+            "slow session authorization database round trip"
+        );
+    }
 }
 
 async fn authorize(headers: &HeaderMap, state: &AppState) -> Result<PlayerAccount, ApiError> {
-    state
-        .metrics
-        .requests
-        .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-    let account = authenticate(headers, state).await.inspect_err(|_| {
+    let token = session_token(headers)?;
+    let store = state.store.clone();
+    let limit = state.config.rate_limit_per_minute as u32;
+    let started = Instant::now();
+    let result =
+        tokio::task::spawn_blocking(move || store.authorize_session(&hash_token(&token), limit))
+            .await
+            .map_err(task_error);
+    let failed = matches!(&result, Err(_) | Ok(Err(_)));
+    record_auth_db_metrics(&state.metrics, started.elapsed(), failed);
+    let Some((account, allowed)) = result?? else {
         state
             .metrics
             .rejected
             .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-    })?;
-    let player = account.player_id.clone();
-    let store = state.store.clone();
-    let limit = state.config.rate_limit_per_minute as u32;
-    let allowed = tokio::task::spawn_blocking(move || store.allow_general_request(&player, limit))
-        .await
-        .map_err(task_error)??;
+        return Err(ApiError::new(
+            StatusCode::UNAUTHORIZED,
+            "unauthorized",
+            "session expired or invalid",
+        ));
+    };
     if !allowed {
         state
             .metrics
@@ -1342,17 +1617,156 @@ async fn ready(State(state): State<Arc<AppState>>) -> Result<impl IntoResponse, 
     Ok((StatusCode::OK, Json(serde_json::json!({"status":"ready"}))))
 }
 
-async fn metrics(State(state): State<Arc<AppState>>) -> String {
+async fn metrics(State(state): State<Arc<AppState>>) -> Result<String, ApiError> {
     use std::sync::atomic::Ordering::Relaxed;
-    format!(
-        "naijachase_http_requests_total {}\nnaijachase_http_rejected_total {}\nnaijachase_commands_total {}\nnaijachase_duplicate_commands_total {}\nnaijachase_emails_sent_total {}\nnaijachase_email_failures_total {}\n",
+    let storage = state.store.metrics_snapshot();
+    let store = state.store.clone();
+    let email = match tokio::task::spawn_blocking(move || store.email_outbox_metrics()).await {
+        Ok(Ok(metrics)) => metrics,
+        Ok(Err(error)) => {
+            tracing::error!(%error, "could not collect email queue metrics");
+            naijachase_storage::EmailOutboxMetrics {
+                queued_messages: 0,
+                sending_messages: 0,
+                retry_messages: 0,
+                permanent_failures: 0,
+                oldest_pending_age_seconds: 0,
+            }
+        }
+        Err(error) => {
+            tracing::error!(%error, "email queue metrics task failed");
+            naijachase_storage::EmailOutboxMetrics {
+                queued_messages: 0,
+                sending_messages: 0,
+                retry_messages: 0,
+                permanent_failures: 0,
+                oldest_pending_age_seconds: 0,
+            }
+        }
+    };
+    let mut output = format!(
+        "naijachase_http_requests_total {}\nnaijachase_http_rejected_total {}\nnaijachase_http_active_requests {}\nnaijachase_http_active_requests_max {}\nnaijachase_commands_total {}\nnaijachase_duplicate_commands_total {}\nnaijachase_browser_errors_total {}\nnaijachase_emails_sent_total {}\nnaijachase_email_failures_total {}\nnaijachase_email_retries_total {}\nnaijachase_email_permanent_failures_total {}\nnaijachase_email_queue_messages {}\nnaijachase_email_sending_messages {}\nnaijachase_email_retry_messages {}\nnaijachase_email_permanent_failure_messages {}\nnaijachase_email_oldest_pending_age_seconds {}\nnaijachase_auth_db_round_trips_total {}\nnaijachase_auth_db_failures_total {}\nnaijachase_auth_db_duration_microseconds_total {}\nnaijachase_auth_db_duration_microseconds_max {}\nnaijachase_mysql_pool_acquisitions_total {}\nnaijachase_mysql_pool_acquisition_failures_total {}\nnaijachase_mysql_pool_wait_microseconds_total {}\nnaijachase_mysql_pool_wait_microseconds_max {}\nnaijachase_mysql_pool_waiters {}\nnaijachase_mysql_pool_waiters_max {}\nnaijachase_mysql_pool_min_connections {}\nnaijachase_mysql_pool_max_connections {}\nnaijachase_mysql_pool_connections_in_use {}\nnaijachase_mysql_pool_connections_in_use_max {}\nnaijachase_blocking_work_active {}\nnaijachase_weekly_jobs_total {}\nnaijachase_weekly_job_failures_total {}\nnaijachase_weekly_challenges_expired_total {}\nnaijachase_weekly_job_duration_microseconds_total {}\nnaijachase_weekly_job_duration_microseconds_max {}\nnaijachase_weekly_job_last_success_unix_seconds {}\n",
         state.metrics.requests.load(Relaxed),
         state.metrics.rejected.load(Relaxed),
+        state.metrics.active_requests.load(Relaxed),
+        state.metrics.active_requests_max.load(Relaxed),
         state.metrics.commands.load(Relaxed),
         state.metrics.duplicates.load(Relaxed),
+        state.metrics.browser_errors.load(Relaxed),
         state.metrics.emails_sent.load(Relaxed),
-        state.metrics.email_failures.load(Relaxed)
-    )
+        state.metrics.email_failures.load(Relaxed),
+        state.metrics.email_retries.load(Relaxed),
+        state.metrics.email_permanent_failures.load(Relaxed),
+        email.queued_messages,
+        email.sending_messages,
+        email.retry_messages,
+        email.permanent_failures,
+        email.oldest_pending_age_seconds,
+        state.metrics.auth_db_round_trips.load(Relaxed),
+        state.metrics.auth_db_failures.load(Relaxed),
+        state.metrics.auth_db_microseconds_total.load(Relaxed),
+        state.metrics.auth_db_microseconds_max.load(Relaxed),
+        storage.pool_acquisitions,
+        storage.pool_acquisition_failures,
+        storage.pool_wait_microseconds_total,
+        storage.pool_wait_microseconds_max,
+        storage.pool_waiters,
+        storage.pool_waiters_max,
+        storage.pool_min_connections,
+        storage.pool_max_connections,
+        storage.pool_connections_in_use,
+        storage.pool_connections_in_use_max,
+        storage.pool_connections_in_use,
+        state.metrics.weekly_runs.load(Relaxed),
+        state.metrics.weekly_failures.load(Relaxed),
+        state.metrics.weekly_expired.load(Relaxed),
+        state
+            .metrics
+            .weekly_duration_microseconds_total
+            .load(Relaxed),
+        state.metrics.weekly_duration_microseconds_max.load(Relaxed),
+        state.metrics.weekly_last_success_unix_seconds.load(Relaxed),
+    );
+    let runtime = tokio::runtime::Handle::current().metrics();
+    let (cpu_seconds, resident_bytes) = process_usage();
+    output.push_str(&format!(
+        "naijachase_runtime_alive_tasks {}\nnaijachase_runtime_waiting_tasks {}\nprocess_cpu_seconds_total {:.6}\nprocess_resident_memory_bytes {}\nprocess_start_time_seconds {}\nprocess_uptime_seconds {:.3}\n",
+        runtime.num_alive_tasks(), runtime.global_queue_depth(), cpu_seconds, resident_bytes,
+        state.started_unix_seconds, state.started_at.elapsed().as_secs_f64()
+    ));
+    let http = state
+        .metrics
+        .http
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner())
+        .clone();
+    for (key, metric) in http {
+        let labels = format!(
+            "method=\"{}\",route=\"{}\",status=\"{}\"",
+            prometheus_escape(&key.method),
+            prometheus_escape(&key.route),
+            key.status
+        );
+        output.push_str(&format!(
+            "naijachase_http_responses_total{{{labels}}} {}\n",
+            metric.count
+        ));
+        output.push_str(&format!(
+            "naijachase_http_request_duration_seconds_sum{{{labels}}} {:.6}\n",
+            metric.duration_micros as f64 / 1_000_000.0
+        ));
+        output.push_str(&format!(
+            "naijachase_http_request_duration_seconds_count{{{labels}}} {}\n",
+            metric.count
+        ));
+        for (index, bound) in HTTP_BUCKETS_MS.iter().enumerate() {
+            output.push_str(&format!(
+                "naijachase_http_request_duration_seconds_bucket{{{labels},le=\"{:.3}\"}} {}\n",
+                *bound as f64 / 1000.0,
+                metric.buckets[index]
+            ));
+        }
+        output.push_str(&format!(
+            "naijachase_http_request_duration_seconds_bucket{{{labels},le=\"+Inf\"}} {}\n",
+            metric.count
+        ));
+    }
+    Ok(output)
+}
+
+fn prometheus_escape(value: &str) -> String {
+    value
+        .replace('\\', "\\\\")
+        .replace('"', "\\\"")
+        .replace('\n', "\\n")
+}
+
+fn process_usage() -> (f64, u64) {
+    let mut usage = std::mem::MaybeUninit::<libc::rusage>::uninit();
+    // SAFETY: getrusage initializes the supplied rusage structure for this process.
+    let cpu = unsafe {
+        if libc::getrusage(libc::RUSAGE_SELF, usage.as_mut_ptr()) == 0 {
+            let usage = usage.assume_init();
+            usage.ru_utime.tv_sec as f64
+                + usage.ru_utime.tv_usec as f64 / 1_000_000.0
+                + usage.ru_stime.tv_sec as f64
+                + usage.ru_stime.tv_usec as f64 / 1_000_000.0
+        } else {
+            0.0
+        }
+    };
+    let resident = std::fs::read_to_string("/proc/self/status")
+        .ok()
+        .and_then(|status| {
+            status.lines().find_map(|line| {
+                line.strip_prefix("VmRSS:")
+                    .and_then(|value| value.split_whitespace().next())
+                    .and_then(|value| value.parse::<u64>().ok())
+            })
+        })
+        .unwrap_or(0)
+        .saturating_mul(1024);
+    (cpu, resident)
 }
 
 async fn register(
@@ -2654,94 +3068,41 @@ async fn assign_case(
 ) -> Result<(StatusCode, Json<CaseResponse>), ApiError> {
     ensure_origin(&headers, &state.config)?;
     let account = authorize(&headers, &state).await?;
-    let player = account.player_id.clone();
-    let store = state.store.clone();
-    let current_player = player.clone();
-    if let Some((case_id, version, game)) =
-        tokio::task::spawn_blocking(move || store.current_ordinary_case(&current_player))
-            .await
-            .map_err(task_error)??
-    {
-        return Ok((
-            StatusCode::OK,
-            Json(CaseResponse {
-                api_version: API_VERSION,
-                case_id,
-                state_version: version,
-                duplicate: true,
-                attempt_kind: "ordinary".into(),
-                state: public_game_state(&game, &state.catalogue)?,
-                events: vec![],
-            }),
-        ));
-    }
-    let store = state.store.clone();
-    let lookup_player = player.clone();
-    let unseen =
-        tokio::task::spawn_blocking(move || store.unseen_published_missions(&lookup_player))
-            .await
-            .map_err(task_error)??;
-    if unseen.is_empty() {
-        return Err(StorageError::CatalogueExhausted.into());
-    }
-    let (mission_id, seed) = {
+    let player = account.player_id;
+    let (selection_roll, seed) = {
         let mut entropy = rand::rng();
-        let newest_pool = (unseen.len() / 5).max(1);
-        let selection_pool = if entropy.next_u64() % 10 < 7 {
-            newest_pool
-        } else {
-            unseen.len()
-        };
-        (
-            unseen[(entropy.next_u64() as usize) % selection_pool].clone(),
-            entropy.next_u64(),
-        )
+        (entropy.next_u64(), entropy.next_u64())
     };
     let case_id = format!("case-{}", uuid::Uuid::new_v4());
     let store = state.store.clone();
-    let career_player = player.clone();
-    let career_points = tokio::task::spawn_blocking(move || store.career_points(&career_player))
-        .await
-        .map_err(task_error)??;
-    let store = state.store.clone();
-    let runtime_id = mission_id.clone();
-    let runtime = tokio::task::spawn_blocking(move || store.runtime_mission(&runtime_id))
-        .await
-        .map_err(task_error)??;
-    let game = build_runtime_game(&state.catalogue, runtime, seed, career_points)?;
-    let store = state.store.clone();
-    let saved_case_id = case_id.clone();
-    let saved = game.clone();
+    let catalogue = state.catalogue.clone();
     let assignment = tokio::task::spawn_blocking(move || {
-        store.create_case_with_kind(&saved_case_id, &player, &mission_id, &saved, "ordinary")
+        store.assign_ordinary_case(
+            &case_id,
+            &player,
+            selection_roll,
+            seed,
+            move |runtime, game_seed, career_points| {
+                build_runtime_game(&catalogue, runtime, game_seed, career_points)
+                    .map_err(|error| StorageError::InvalidContent(error.message))
+            },
+        )
     })
     .await
-    .map_err(task_error)?;
-    let (case_id, duplicate) = match assignment {
-        Ok(_) => (case_id, false),
-        Err(StorageError::OrdinaryCaseExists(existing)) => (existing, true),
-        Err(error) => return Err(error.into()),
-    };
-    let store = state.store.clone();
-    let player = authenticate(&headers, &state).await?.player_id;
-    let lookup_id = case_id.clone();
-    let (version, stored_game) =
-        tokio::task::spawn_blocking(move || store.load_owned_case(&lookup_id, &player))
-            .await
-            .map_err(task_error)??;
+    .map_err(task_error)??;
     Ok((
-        if duplicate {
+        if assignment.duplicate {
             StatusCode::OK
         } else {
             StatusCode::CREATED
         },
         Json(CaseResponse {
             api_version: API_VERSION,
-            case_id,
-            state_version: version,
-            duplicate,
+            case_id: assignment.case_id,
+            state_version: assignment.version,
+            duplicate: assignment.duplicate,
             attempt_kind: "ordinary".into(),
-            state: public_game_state(&stored_game, &state.catalogue)?,
+            state: public_game_state(&assignment.state, &state.catalogue)?,
             events: vec![],
         }),
     ))
@@ -2784,14 +3145,10 @@ async fn current_activity(
     let player = authorize(&headers, &state).await?.player_id;
     let store = state.store.clone();
     let lookup_player = player.clone();
-    let (ordinary_cases, replay_cases) = tokio::task::spawn_blocking(move || {
-        Ok::<_, StorageError>((
-            store.ongoing_cases_by_kind(&lookup_player, "ordinary")?,
-            store.ongoing_cases_by_kind(&lookup_player, "replay")?,
-        ))
-    })
-    .await
-    .map_err(task_error)??;
+    let (ordinary_cases, replay_cases) =
+        tokio::task::spawn_blocking(move || store.ongoing_cases(&lookup_player))
+            .await
+            .map_err(task_error)??;
 
     let store = state.store.clone();
     let weekly_attempts =
@@ -4185,12 +4542,20 @@ pub fn load_state() -> Result<Arc<AppState>, String> {
     let root = FsPath::new(env!("CARGO_MANIFEST_DIR")).join("../../..");
     let catalogue = Catalogue::load(&root).map_err(|e| e.to_string())?;
     let store = MysqlStore::connect_from_env().map_err(|e| e.to_string())?;
-    store.migrate().map_err(|e| e.to_string())?;
+    let schema = store.schema_version().map_err(|e| e.to_string())?;
+    if schema != naijachase_storage::SCHEMA_VERSION {
+        return Err(format!(
+            "database schema {schema} does not match required {}; run the controlled migration step before starting the API",
+            naijachase_storage::SCHEMA_VERSION
+        ));
+    }
     Ok(Arc::new(AppState {
         store: Arc::new(store),
         catalogue: Arc::new(catalogue),
         config,
         metrics: Metrics::default(),
+        started_at: Instant::now(),
+        started_unix_seconds: unix_seconds(),
         email_client: reqwest::Client::builder()
             .connect_timeout(Duration::from_secs(5))
             .timeout(Duration::from_secs(15))
@@ -4205,6 +4570,17 @@ mod tests {
     use axum::{body::Body, http::Request};
     use std::collections::BTreeMap;
     use tower::ServiceExt;
+
+    #[test]
+    fn request_ids_accept_safe_proxy_values_and_replace_untrusted_values() {
+        let mut headers = HeaderMap::new();
+        headers.insert("x-request-id", HeaderValue::from_static("0123456789abcdef"));
+        assert_eq!(request_id(&headers), "0123456789abcdef");
+        headers.insert("x-request-id", HeaderValue::from_static("bad/value"));
+        let generated = request_id(&headers);
+        assert_ne!(generated, "bad/value");
+        assert!(uuid::Uuid::parse_str(&generated).is_ok());
+    }
 
     #[test]
     fn service_limits_have_safe_defaults_and_reject_bad_values() {
@@ -4547,6 +4923,8 @@ mod tests {
             catalogue: Arc::new(Catalogue::load(&root).unwrap()),
             config: ServiceConfig::test(),
             metrics: Metrics::default(),
+            started_at: Instant::now(),
+            started_unix_seconds: unix_seconds(),
             email_client: reqwest::Client::new(),
         }));
         let id = uuid::Uuid::new_v4().simple().to_string();
@@ -5186,6 +5564,7 @@ mod tests {
             "/v1/auth/sessions",
             "/v1/auth/recovery/request",
             "/v1/auth/recovery/complete",
+            "/v1/telemetry/browser-errors",
             "/v1/profile",
             "/v1/avatar/options",
             "/v1/profile/avatar",

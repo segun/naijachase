@@ -77,7 +77,9 @@ pub fn key_witness_trait_index(state: &GameState) -> usize {
 }
 fn reject_repeat_search(state: &GameState, venue_id: &str) -> Result<(), Error> {
     if state.searched_hideouts.iter().any(|v| v == venue_id) {
-        return Err(Error::Invalid("this hideout has already been searched".into()));
+        return Err(Error::Invalid(
+            "this hideout has already been searched".into(),
+        ));
     }
     Ok(())
 }

@@ -149,8 +149,7 @@ impl MysqlStore {
 
     pub fn bribe_token_balance(&self, player_id: &str) -> Result<TokenBalance, StorageError> {
         let balance = self
-            .pool
-            .get_conn()?
+            .connection()?
             .exec_first(
                 "SELECT bribe_tokens FROM players WHERE player_id=:player",
                 params! {"player"=>player_id},
