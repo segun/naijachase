@@ -275,7 +275,6 @@
 .chase3d.ready { opacity: 1; }
 .stage-switch { position: absolute; right: .6rem; bottom: .6rem; z-index: 2; padding: .15rem; background: color-mix(in srgb, var(--bg) 80%, transparent); backdrop-filter: blur(6px); }
 .stage-switch button { min-height: 32px; padding: .2rem .7rem; font-size: .75rem; }
-.stage-switch .detail-now { max-width: 19rem; margin: .3rem; font-size: .7rem; }
 .stage-fallback { position: absolute; top: .5rem; left: .5rem; right: .5rem; padding: .5rem; background: var(--bg); font-size: .8rem; }
 .chase { width: 100%; max-height: 100%; border-radius: var(--radius); border: 1px solid var(--line-soft); box-shadow: var(--shadow); background: #03110d; }
 .chase .scroll { animation: city 9s linear infinite; }
@@ -487,7 +486,6 @@ textarea.input { resize: vertical; min-height: 5rem; }
 
 /* ---- Picture detail switch ---- */
 .detail-control { display: grid; gap: .6rem; }
-.detail-control .detail-now { margin: 0; color: var(--muted); font-size: .9rem; }
 .detail-help { margin: 0; padding-left: 1.1rem; color: var(--muted); font-size: .9rem; display: grid; gap: .2rem; }
 .detail-quick { position: fixed; left: .75rem; bottom: .75rem; z-index: 40; display: grid; gap: .4rem; justify-items: start; }
 .detail-toggle { min-height: 36px; padding: .3rem .8rem; border-radius: 999px; border: 1px solid var(--line); background: color-mix(in srgb, var(--bg) 85%, transparent); color: var(--ink); font-size: .85rem; font-weight: 700; backdrop-filter: blur(6px); }

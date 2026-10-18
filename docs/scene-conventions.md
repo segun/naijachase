@@ -2,6 +2,8 @@
 
 Read this before you add or change any animated scene in the web client (`web/src/scenes/`).
 
+The Automatic/Full/Standard/Simple control shows the selected button without a resolved-level or device-capability hint. Settings retains the option descriptions.
+
 ## The rule
 
 **Current policy (supersedes the legacy two-renderer guidance below):** login keeps its 2D chase. Non-login scenes should skip

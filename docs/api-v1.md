@@ -131,6 +131,13 @@ Clients may offer a manual retry. They must not create a new command ID when
 retrying a state-changing case command. Liveness remains available while the
 application is shedding load; readiness performs a bounded MySQL check.
 
+The general authenticated request limit is enforced through the shared MySQL
+`general_rate_limits` table, not process memory, so adding API instances does
+not multiply a player's allowance. The table has one row per player and is
+deleted with the account. Sensitive authentication routes retain independent,
+hashed-subject counters in `auth_rate_limits`; these are intentionally not
+combined with the general authenticated allowance.
+
 These are starting values, not permanent capacity claims. The combined
 `MYSQL_POOL_MAX` of every API process must fit the database server's connection
 budget, and changes should follow production-shaped load tests.

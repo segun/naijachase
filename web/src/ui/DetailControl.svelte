@@ -4,8 +4,6 @@
   import { CHOICES, DETAIL_TEXT } from "../scenes/shared/detail-level.ts";
 
   let { compact = false }: { compact?: boolean } = $props();
-  const level = $derived(detail.resolved);
-  const levelLabel = $derived(DETAIL_TEXT[level.level].label);
 </script>
 
 <div class="detail-control" class:compact>
@@ -14,7 +12,6 @@
       <button type="button" aria-pressed={detail.choice === choice} title={DETAIL_TEXT[choice].summary} onclick={() => detail.set(choice)}>{DETAIL_TEXT[choice].label}</button>
     {/each}
   </div>
-  <p class="detail-now" role="status">Showing <strong>{levelLabel}</strong>{detail.choice === "auto" ? " (automatic)" : ""}. {level.why}</p>
   {#if !compact}
     <ul class="detail-help">
       {#each CHOICES as choice}<li><strong>{DETAIL_TEXT[choice].label}</strong>: {DETAIL_TEXT[choice].summary}</li>{/each}

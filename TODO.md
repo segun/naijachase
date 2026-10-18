@@ -1496,3 +1496,7 @@ section of `README.md`.
 - [ ] Update the legal pages whenever data collection, analytics, checkout or advertising change.
 - [ ] Add an Open Graph PNG (1200×630) and `og:image` tags to `landing/index.html`.
 - [x] Link Privacy/Terms/Disclaimer from the registration screen in `web/` and require acceptance.
+
+- [x] Remove resolved-level and device-capability hints beneath the Automatic/Full/Standard/Simple toggle.
+
+- [x] Precompute catalogue opening budgets by difficulty, mission routes and stage clue plans, local costs and venue availability; verify all 1,000 missions against uncached calculations and independent loads.

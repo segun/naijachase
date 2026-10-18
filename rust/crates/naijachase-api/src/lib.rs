@@ -20,11 +20,11 @@ use rand::RngCore;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::{
-    collections::{BTreeMap, BTreeSet, HashMap, VecDeque},
+    collections::{BTreeMap, BTreeSet},
     env,
     path::Path as FsPath,
-    sync::{Arc, Mutex},
-    time::{Duration, Instant},
+    sync::Arc,
+    time::Duration,
 };
 use tower::ServiceBuilder;
 use tower_http::{catch_panic::CatchPanicLayer, trace::TraceLayer};
@@ -970,33 +970,11 @@ pub struct Metrics {
     email_failures: std::sync::atomic::AtomicU64,
 }
 
-#[derive(Default)]
-struct RateLimiter {
-    requests: Mutex<HashMap<String, VecDeque<Instant>>>,
-}
-
-impl RateLimiter {
-    fn allow(&self, subject: &str, limit: usize) -> bool {
-        let mut all = self.requests.lock().expect("rate limiter lock");
-        let queue = all.entry(subject.to_owned()).or_default();
-        let cutoff = Instant::now() - Duration::from_secs(60);
-        while queue.front().is_some_and(|time| *time < cutoff) {
-            queue.pop_front();
-        }
-        if queue.len() >= limit {
-            return false;
-        }
-        queue.push_back(Instant::now());
-        true
-    }
-}
-
 pub struct AppState {
     pub store: Arc<MysqlStore>,
     pub catalogue: Arc<Catalogue>,
     pub config: ServiceConfig,
     metrics: Metrics,
-    limiter: RateLimiter,
     email_client: reqwest::Client,
 }
 
@@ -1333,10 +1311,12 @@ async fn authorize(headers: &HeaderMap, state: &AppState) -> Result<PlayerAccoun
             .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
     })?;
     let player = account.player_id.clone();
-    if !state
-        .limiter
-        .allow(&player, state.config.rate_limit_per_minute)
-    {
+    let store = state.store.clone();
+    let limit = state.config.rate_limit_per_minute as u32;
+    let allowed = tokio::task::spawn_blocking(move || store.allow_general_request(&player, limit))
+        .await
+        .map_err(task_error)??;
+    if !allowed {
         state
             .metrics
             .rejected
@@ -4096,10 +4076,6 @@ fn dossier_witness_venue(catalogue: &Catalogue, state: &GameState) -> Option<Str
     })
 }
 
-fn candidate_states(atom: &naijachase_content::ClueAtom) -> BTreeSet<&str> {
-    atom.candidate_states.split('|').collect()
-}
-
 /// Builds one deliberately decisive clue and two multi-state clues. The
 /// decisive clue is always the curated landmark atom and can never carry the
 /// dossier evidence that marks the key witness.
@@ -4119,6 +4095,11 @@ fn witness_clue_plan<'a>(
     )
 }
 
+#[cfg(test)]
+fn candidate_states(atom: &naijachase_content::ClueAtom) -> BTreeSet<&str> {
+    atom.candidate_states.split('|').collect()
+}
+
 fn witness_clue_plan_for<'a>(
     catalogue: &'a Catalogue,
     route: &[String],
@@ -4126,77 +4107,7 @@ fn witness_clue_plan_for<'a>(
     stage: usize,
     actual_state: &str,
 ) -> Vec<&'a naijachase_content::ClueAtom> {
-    let Some(route_state) = route.get(stage) else {
-        return vec![];
-    };
-    if route_state != actual_state {
-        return vec![];
-    }
-    let target = route.get(stage + 1).unwrap_or(route_state);
-    let Some(atoms) = catalogue.atoms.get(target) else {
-        return vec![];
-    };
-    let start = (mission_id.bytes().map(usize::from).sum::<usize>() + stage * 7) % atoms.len();
-    let ordered = (0..atoms.len())
-        .map(|offset| &atoms[(start + offset) % atoms.len()])
-        .collect::<Vec<_>>();
-    let available = |atom: &&naijachase_content::ClueAtom| {
-        catalogue
-            .location_venues
-            .contains_key(&(actual_state.to_owned(), atom.venue_id.clone()))
-    };
-    let decisive = ordered
-        .iter()
-        .copied()
-        .filter(|atom| atom.dimension == "landmark")
-        .filter(available)
-        .next();
-    let Some(decisive) = decisive else {
-        return vec![];
-    };
-
-    let ambiguous = ordered
-        .iter()
-        .copied()
-        .filter(|atom| atom.venue_id != decisive.venue_id)
-        .filter(|atom| candidate_states(atom).len() > 1)
-        .filter(available)
-        .collect::<Vec<_>>();
-
-    let mut fallback = None;
-    let mut selected = None;
-    'pairs: for (left_index, left) in ambiguous.iter().enumerate() {
-        for right in ambiguous.iter().skip(left_index + 1) {
-            if left.venue_id == right.venue_id {
-                continue;
-            }
-            let left_candidates = candidate_states(left);
-            let right_candidates = candidate_states(right);
-            let intersection = left_candidates
-                .intersection(&right_candidates)
-                .copied()
-                .collect::<BTreeSet<_>>();
-            if !intersection.contains(target.as_str()) {
-                continue;
-            }
-            let reduces_options = intersection.len() < left_candidates.len()
-                || intersection.len() < right_candidates.len();
-            fallback.get_or_insert((*left, *right));
-            if reduces_options {
-                selected = Some((*left, *right));
-                break 'pairs;
-            }
-        }
-    }
-    let Some((left, right)) = selected.or(fallback) else {
-        return vec![];
-    };
-    let mut plan = vec![left, right, decisive];
-    plan.sort_by_key(|atom| {
-        Sha256::digest(format!("clue-position|{mission_id}|{stage}|{}", atom.atom_id).as_bytes())
-            .to_vec()
-    });
-    plan
+    catalogue.clue_plan(route, mission_id, stage, actual_state)
 }
 
 fn available_venue_ids_for(
@@ -4206,40 +4117,7 @@ fn available_venue_ids_for(
     stage: usize,
     actual_state: &str,
 ) -> Vec<String> {
-    let Some(route_state) = route.get(stage) else {
-        return vec![];
-    };
-    let on_trail = route_state == actual_state;
-    if on_trail {
-        return witness_clue_plan_for(catalogue, route, mission_id, stage, actual_state)
-            .into_iter()
-            .map(|atom| atom.venue_id.clone())
-            .collect();
-    }
-    let atom_state = if on_trail {
-        route.get(stage + 1).unwrap_or(route_state)
-    } else {
-        actual_state
-    };
-    let Some(atoms) = catalogue.atoms.get(atom_state) else {
-        return vec![];
-    };
-    let start = (mission_id.bytes().map(usize::from).sum::<usize>() + stage * 7) % atoms.len();
-    let mut ids = Vec::new();
-    for offset in 0..atoms.len() {
-        let venue = &atoms[(start + offset) % atoms.len()].venue_id;
-        if catalogue
-            .location_venues
-            .contains_key(&(actual_state.to_owned(), venue.clone()))
-            && !ids.contains(venue)
-        {
-            ids.push(venue.clone());
-            if ids.len() == 3 {
-                break;
-            }
-        }
-    }
-    ids
+    catalogue.available_venues(route, mission_id, stage, actual_state)
 }
 
 fn wait_until_open(elapsed: u32, opens: u32, closes: u32) -> u32 {
@@ -4268,72 +4146,15 @@ fn assistant_witness_minutes(minutes: u32, hired: bool) -> u32 {
     }
 }
 
-fn local_costs_for_state(catalogue: &Catalogue, state: &str) -> Vec<u32> {
-    let mut venues = catalogue
-        .location_venues
-        .keys()
-        .filter(|(candidate, _)| candidate == state)
-        .map(|(_, venue)| venue.clone())
-        .collect::<Vec<_>>();
-    venues.sort();
-    venues.dedup();
-    venues
-        .into_iter()
-        .filter_map(|venue| placement_minutes(catalogue, state, &venue, "budget", 0).ok())
-        .filter_map(|minutes| {
-            naijachase_core::local_quote(minutes, "drive")
-                .ok()
-                .map(|(_, cost)| cost)
-        })
-        .collect()
-}
-
+#[cfg(test)]
 fn mission_budget_baseline(catalogue: &Catalogue, mission: &Mission) -> Result<u32, ApiError> {
-    let route = catalogue
-        .route(mission)
-        .map_err(|_| bad_request("mission route unavailable"))?;
-    let mut total = 0u32;
-    for pair in route.windows(2) {
-        let edge = catalogue
-            .travel
-            .get(&(pair[0].clone(), pair[1].clone()))
-            .ok_or_else(|| bad_request("mission travel edge unavailable"))?;
-        total = total.saturating_add(
-            naijachase_core::interstate_quote(edge.travel_minutes, "fly")
-                .map_err(|e| bad_request(e.to_string()))?
-                .1,
-        )
-    }
-    for state in &route {
-        // Budget against the three most expensive local drives in the state.
-        // This is both faster and more conservative than coupling the money
-        // calculation to a particular randomized clue plan.
-        let mut costs = local_costs_for_state(catalogue, state);
-        costs.sort_unstable_by(|left, right| right.cmp(left));
-        total = total.saturating_add(costs.into_iter().take(3).sum::<u32>());
-    }
-    let mut final_costs = local_costs_for_state(
-        catalogue,
-        route
-            .last()
-            .ok_or_else(|| bad_request("mission route unavailable"))?,
-    );
-    final_costs.sort_unstable();
-    total = total.saturating_add(final_costs.last().copied().unwrap_or(0));
-    Ok(total)
+    catalogue.budget_baseline(mission).map_err(bad_request)
 }
 
 fn opening_budget_for(catalogue: &Catalogue, mission: &Mission) -> Result<u32, ApiError> {
-    let mut maximum = mission_budget_baseline(catalogue, mission)?;
-    for candidate in catalogue
-        .missions
-        .values()
-        .filter(|candidate| candidate.difficulty == mission.difficulty)
-    {
-        maximum = maximum.max(mission_budget_baseline(catalogue, candidate)?);
-    }
-    let reserved = maximum.saturating_add((maximum + 4) / 5);
-    Ok(reserved.saturating_add(4_999) / 5_000 * 5_000)
+    catalogue
+        .opening_budget(mission)
+        .ok_or_else(|| bad_request("mission budget unavailable"))
 }
 
 fn validate_id(value: &str, field: &str) -> Result<(), String> {
@@ -4370,7 +4191,6 @@ pub fn load_state() -> Result<Arc<AppState>, String> {
         catalogue: Arc::new(catalogue),
         config,
         metrics: Metrics::default(),
-        limiter: RateLimiter::default(),
         email_client: reqwest::Client::builder()
             .connect_timeout(Duration::from_secs(5))
             .timeout(Duration::from_secs(15))
@@ -4635,17 +4455,12 @@ mod tests {
         }
     }
     #[test]
-    fn authentication_uses_random_session_hashes_and_rate_limits() {
+    fn authentication_uses_random_session_hashes_and_secure_cookies() {
         let config = ServiceConfig::test();
         let first = random_token();
         let second = random_token();
         assert_ne!(first, second);
         assert_eq!(hash_token(&first).len(), 64);
-        let limiter = RateLimiter::default();
-        for _ in 0..4 {
-            assert!(limiter.allow("player-1", 4));
-        }
-        assert!(!limiter.allow("player-1", 4));
         let cookie = session_cookie(&first, &config)
             .unwrap()
             .to_str()
@@ -4732,7 +4547,6 @@ mod tests {
             catalogue: Arc::new(Catalogue::load(&root).unwrap()),
             config: ServiceConfig::test(),
             metrics: Metrics::default(),
-            limiter: RateLimiter::default(),
             email_client: reqwest::Client::new(),
         }));
         let id = uuid::Uuid::new_v4().simple().to_string();
@@ -5314,16 +5128,6 @@ mod tests {
             );
             assert!(!event.data["message"].contains("I also noticed"));
         }
-    }
-
-    #[test]
-    fn load_guard_handles_many_subjects_without_cross_tenant_throttling() {
-        let limiter = RateLimiter::default();
-        for player in 0..10_000 {
-            assert!(limiter.allow(&format!("player-{player}"), 1));
-        }
-        assert!(!limiter.allow("player-9999", 1));
-        assert!(limiter.allow("new-player", 1));
     }
 
     #[test]

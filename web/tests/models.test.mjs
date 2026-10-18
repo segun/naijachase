@@ -1,6 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { MODELS, ASSET_ROOT, ASSET_VERSION, avatarModelId, baseYaw, measureOf, modelSpec, modelUrl } from "../src/scenes/shared/model-manifest.ts";
 import { assetVersion } from "../dev/asset-version.mjs";
 
@@ -25,6 +27,31 @@ test("production model URLs use a stable content-derived cache version", () => {
   const vite = fs.readFileSync(new URL("../vite.config.ts", import.meta.url), "utf8");
   assert.match(vite, /__NAIJACHASE_3D_ASSET_VERSION__/);
   assert.match(vite, /assetVersion\(\)/);
+});
+
+test("replacing a deployed model produces a new immutable browser cache key", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "naijachase-3d-version-"));
+  try {
+    const folder = path.join(root, "vehicles");
+    const model = path.join(folder, "car.glb");
+    fs.mkdirSync(folder);
+    fs.writeFileSync(model, "first deployed model");
+    const first = assetVersion(root);
+    fs.writeFileSync(model, "replacement model bytes");
+    const replacement = assetVersion(root);
+    assert.notEqual(replacement, first);
+    assert.notEqual(`/assets/3d/vehicles/car.glb?v=${first}`, `/assets/3d/vehicles/car.glb?v=${replacement}`);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("Nginx makes only content-versioned 3D requests immutable", () => {
+  const nginx = fs.readFileSync(new URL("../../deploy/nginx/naijachase.app.conf", import.meta.url), "utf8");
+  assert.match(nginx, /location \/assets\/3d\//);
+  assert.match(nginx, /if \(\$arg_v ~ "\^\[a-f0-9\]\{20\}\$"\)/);
+  assert.match(nginx, /public, max-age=0, must-revalidate/);
+  assert.match(nginx, /public, max-age=31536000, immutable/);
 });
 
 test("the ten avatar picker ids map onto their model files", () => {

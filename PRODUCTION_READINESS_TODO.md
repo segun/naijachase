@@ -37,10 +37,18 @@ the same bounded database acquisition and I/O path.
 - [x] Add load shedding with a clear `503 Service Unavailable` response.
 - [x] Bound slow or unavailable MySQL work so it cannot wait indefinitely for a
   pool connection or socket I/O.
-- [ ] Replace the unbounded in-memory rate-limiter map or expire idle entries.
-- [ ] Make general rate limiting consistent across multiple API instances,
+- [x] Replace the unbounded in-memory rate-limiter map or expire idle entries.
+- [x] Make general rate limiting consistent across multiple API instances,
   preferably at the edge or in a shared store.
-- [ ] Preserve database-backed limits for sensitive authentication operations.
+- [x] Preserve database-backed limits for sensitive authentication operations.
+
+Implemented in migration 19: authenticated general traffic uses a shared
+MySQL fixed-window counter with one cascade-deleted row per player. This removes
+the process-local map and makes limits consistent across API instances.
+Registration, login, confirmation resend, and password recovery continue using
+their separate hashed-subject MySQL limits. Both limiters use atomic upserts and
+row locks so simultaneous first requests cannot bypass or break the counter.
+Expired authentication subjects are removed in indexed, bounded batches.
 
 Implemented defaults: a 25-second request deadline and 128 concurrent
 requests. Saturated, timed-out and database-busy requests return stable JSON
@@ -49,13 +57,20 @@ shedding so operators can still diagnose saturation.
 
 ### Make 3D caching safe across releases
 
-- [ ] Give every deployed GLB a content-hashed filename, or append a build/content
+- [x] Give every deployed GLB a content-hashed filename, or append a build/content
   version to every model URL.
-- [ ] Keep one-year `immutable` caching only for versioned assets.
-- [ ] Until model versioning exists, change `/assets/3d/` to revalidate instead of
+- [x] Keep one-year `immutable` caching only for versioned assets.
+- [x] Make direct or unversioned `/assets/3d/` requests revalidate instead of
   caching immutable content for one year.
-- [ ] Test a deployment that replaces a model and confirm returning browsers load
+- [x] Test a deployment that replaces a model and confirm returning browsers load
   the new version.
+
+Production builds inject a 20-character SHA-256 catalogue version into every GLB
+URL. Nginx grants the one-year immutable policy only to 3D requests carrying that
+version; unversioned model and texture requests revalidate. The existing build's
+embedded version matches the current catalogue (`70d65c243ccb3407b433`), and a
+replacement-byte test confirmed that changing a model produces a different URL
+cache key. This behavior is also covered by `web/tests/models.test.mjs`.
 
 ### Prove production capacity
 
@@ -90,11 +105,11 @@ shedding so operators can still diagnose saturation.
 
 ### Remove repeated catalogue computation
 
-- [ ] Precompute opening budgets for every difficulty when the catalogue loads.
-- [ ] Precompute immutable per-mission, per-stage clue plans.
-- [ ] Precompute venue availability and other immutable route-derived data.
+- [x] Precompute opening budgets for every difficulty when the catalogue loads.
+- [x] Precompute immutable per-mission, per-stage clue plans.
+- [x] Precompute venue availability and other immutable route-derived data.
 - [ ] Benchmark case creation and game-state rendering before and after caching.
-- [ ] Confirm precomputed data remains deterministic for all 1,000 missions.
+- [x] Confirm precomputed data remains deterministic for all 1,000 missions.
 
 ### Reduce remote database round trips
 

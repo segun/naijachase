@@ -38,6 +38,7 @@ const MIGRATION_15: &str = include_str!("../migrations/0015_avatar_selection.sql
 const MIGRATION_16: &str = include_str!("../migrations/0016_player_date_of_birth.sql");
 const MIGRATION_17: &str = include_str!("../migrations/0017_weekly_transit_events.sql");
 const MIGRATION_18: &str = include_str!("../migrations/0018_email_outbox.sql");
+const MIGRATION_19: &str = include_str!("../migrations/0019_general_rate_limits.sql");
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct EmailMessage {
@@ -769,6 +770,26 @@ impl MysqlStore {
         if version < 18 {
             apply_migration(&mut connection, MIGRATION_18)?;
         }
+        let version: u32 = connection
+            .query_first("SELECT COALESCE(MAX(version),0) FROM schema_migrations")?
+            .unwrap_or(0);
+        if version < 19 {
+            let has_auth_window_index: u64 = connection
+                .exec_first(
+                    "SELECT COUNT(*) FROM information_schema.statistics
+                     WHERE table_schema=DATABASE() AND table_name='auth_rate_limits'
+                       AND index_name='idx_auth_rate_limits_window'",
+                    (),
+                )?
+                .unwrap_or(0);
+            if has_auth_window_index == 0 {
+                connection.query_drop(
+                    "ALTER TABLE auth_rate_limits
+                     ADD KEY idx_auth_rate_limits_window (window_started)",
+                )?;
+            }
+            apply_migration(&mut connection, MIGRATION_19)?;
+        }
         Ok(())
     }
 
@@ -1304,24 +1325,59 @@ impl MysqlStore {
     ) -> Result<bool, StorageError> {
         let mut connection = self.connection()?;
         let mut transaction = connection.start_transaction(TxOpts::default())?;
-        let row:Option<(u32,bool)>=transaction.exec_first("SELECT attempts,window_started<DATE_SUB(UTC_TIMESTAMP(),INTERVAL 1 MINUTE) FROM auth_rate_limits WHERE subject_hash=:subject AND action=:action FOR UPDATE",params!{"subject"=>subject_hash,"action"=>action})?;
-        let allowed = match row {
-            None => {
-                transaction.exec_drop("INSERT INTO auth_rate_limits(subject_hash,action,attempts) VALUES (:subject,:action,1)",params!{"subject"=>subject_hash,"action"=>action})?;
-                true
-            }
-            Some((_, true)) => {
-                transaction.exec_drop("UPDATE auth_rate_limits SET attempts=1,window_started=UTC_TIMESTAMP() WHERE subject_hash=:subject AND action=:action",params!{"subject"=>subject_hash,"action"=>action})?;
-                true
-            }
-            Some((attempts, false)) if attempts < limit => {
-                transaction.exec_drop("UPDATE auth_rate_limits SET attempts=attempts+1 WHERE subject_hash=:subject AND action=:action",params!{"subject"=>subject_hash,"action"=>action})?;
-                true
-            }
-            Some(_) => false,
-        };
+        let ceiling = limit.saturating_add(1);
+        transaction.query_drop(
+            "DELETE FROM auth_rate_limits
+             WHERE window_started<DATE_SUB(UTC_TIMESTAMP(),INTERVAL 10 MINUTE)
+             ORDER BY window_started
+             LIMIT 100",
+        )?;
+        transaction.exec_drop(
+            "INSERT INTO auth_rate_limits(subject_hash,action,attempts,window_started)
+             VALUES (:subject,:action,1,UTC_TIMESTAMP())
+             ON DUPLICATE KEY UPDATE
+               attempts=IF(window_started<DATE_SUB(UTC_TIMESTAMP(),INTERVAL 1 MINUTE),
+                           1,LEAST(attempts+1,:ceiling)),
+               window_started=IF(window_started<DATE_SUB(UTC_TIMESTAMP(),INTERVAL 1 MINUTE),
+                                 UTC_TIMESTAMP(),window_started)",
+            params! {"subject"=>subject_hash,"action"=>action,"ceiling"=>ceiling},
+        )?;
+        let attempts: u32 = transaction
+            .exec_first(
+                "SELECT attempts FROM auth_rate_limits
+                 WHERE subject_hash=:subject AND action=:action FOR UPDATE",
+                params! {"subject"=>subject_hash,"action"=>action},
+            )?
+            .unwrap_or(ceiling);
         transaction.commit()?;
-        Ok(allowed)
+        Ok(attempts <= limit)
+    }
+
+    /// Shared fixed-window limiter for authenticated API traffic. There is one
+    /// row per player, so storage is bounded by the account table and all API
+    /// instances observe the same counter.
+    pub fn allow_general_request(&self, player_id: &str, limit: u32) -> Result<bool, StorageError> {
+        let mut connection = self.connection()?;
+        let mut transaction = connection.start_transaction(TxOpts::default())?;
+        let ceiling = limit.saturating_add(1);
+        transaction.exec_drop(
+            "INSERT INTO general_rate_limits(player_id,attempts,window_started)
+             VALUES (:player,1,UTC_TIMESTAMP())
+             ON DUPLICATE KEY UPDATE
+               attempts=IF(window_started<DATE_SUB(UTC_TIMESTAMP(),INTERVAL 1 MINUTE),
+                           1,LEAST(attempts+1,:ceiling)),
+               window_started=IF(window_started<DATE_SUB(UTC_TIMESTAMP(),INTERVAL 1 MINUTE),
+                                 UTC_TIMESTAMP(),window_started)",
+            params! {"player"=>player_id,"ceiling"=>ceiling},
+        )?;
+        let attempts: u32 = transaction
+            .exec_first(
+                "SELECT attempts FROM general_rate_limits WHERE player_id=:player FOR UPDATE",
+                params! {"player"=>player_id},
+            )?
+            .unwrap_or(ceiling);
+        transaction.commit()?;
+        Ok(attempts <= limit)
     }
 
     pub fn update_profile(
@@ -3675,7 +3731,7 @@ mod tests {
         let _guard = MYSQL_TEST_LOCK.lock().unwrap();
         let store = std::sync::Arc::new(MysqlStore::connect_from_env().unwrap());
         store.migrate().unwrap();
-        assert_eq!(store.schema_version().unwrap(), 16);
+        assert_eq!(store.schema_version().unwrap(), 19);
         let id = "storage-integration-test";
         let next = store.state_version(id).unwrap().unwrap_or(0) + 1;
         store.save(id, next, b"test-state").unwrap();
@@ -4394,6 +4450,9 @@ mod tests {
                 .allow_auth_attempt(&token("subject"), "login", 2)
                 .unwrap()
         );
+        assert!(store.allow_general_request(player, 2).unwrap());
+        assert!(store.allow_general_request(player, 2).unwrap());
+        assert!(!store.allow_general_request(player, 2).unwrap());
     }
 
     #[test]

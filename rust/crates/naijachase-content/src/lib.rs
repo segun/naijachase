@@ -1,3 +1,4 @@
+mod derived;
 use serde::Deserialize;
 use std::{
     collections::{HashMap, HashSet},
@@ -12,6 +13,8 @@ pub struct CatalogueSummary {
 }
 #[derive(Debug, Error)]
 pub enum Error {
+    #[error("catalogue precomputation failed: {0}")]
+    Derived(String),
     #[error("csv: {0}")]
     Csv(#[from] csv::Error),
     #[error("incomplete catalogue: {0:?}")]
@@ -357,6 +360,7 @@ pub struct DialogueVariant {
     pub dialogue: String,
 }
 pub struct Catalogue {
+    derived: derived::Derived,
     pub missions: HashMap<String, Mission>,
     pub profiles: HashMap<String, Profile>,
     pub hubs: HashMap<String, Hub>,
@@ -409,6 +413,12 @@ pub fn natural_trait_clause(subject: &str, field: &str, value: &str) -> String {
 }
 impl Catalogue {
     pub fn route(&self, m: &Mission) -> Result<Vec<String>, Error> {
+        if let Some(route) = self.derived.routes.get(&m.mission_id) {
+            return Ok(route.clone());
+        }
+        self.compute_route(m)
+    }
+    fn compute_route(&self, m: &Mission) -> Result<Vec<String>, Error> {
         let anchors = [
             &m.start_location_id,
             &m.stop_2_location_id,
@@ -523,7 +533,8 @@ impl Catalogue {
                 .or_default()
                 .push(variant);
         }
-        let value = Self {
+        let mut value = Self {
+            derived: derived::Derived::default(),
             missions,
             profiles,
             hubs,
@@ -558,6 +569,7 @@ impl Catalogue {
                 thieves: value.profiles.len(),
             }));
         }
+        value.precompute().map_err(Error::Derived)?;
         Ok(value)
     }
 }

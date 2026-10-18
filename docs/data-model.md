@@ -67,8 +67,29 @@ by checksum but are not required by the live game transaction path.
   Account/token creation and enqueueing share one transaction; workers claim
   due rows with row locking, retry transient failures, and erase recipient and
   message bodies after a terminal status.
+- `general_rate_limits` stores one fixed-window request counter per player. Its
+  player foreign key cascades on account deletion, bounding the table by the
+  account population while making enforcement consistent across API instances.
+- `auth_rate_limits` remains separate for sensitive unauthenticated operations;
+  it keys hashed subjects by action so registration, login, confirmation resend,
+  and recovery can use stricter limits without disclosing email addresses.
+  Entries older than ten minutes are removed in small indexed batches.
 - `terminal_careers` owns terminal-player career and resumable-case state. The
   terminal no longer reads or writes a repository JSON save file.
 
 Engine rules remain in `naijachase-core`; storage persists inputs and outputs
 without deciding whether a move, warrant, or arrest is valid.
+
+### Loaded catalogue gameplay caches
+
+`Catalogue::load` builds routes, per-mission/per-stage clue atom indices, local
+travel cost lists, venue availability and opening budgets before publishing the
+catalogue. Budgets aggregate each mission baseline once into a maximum for its
+difficulty, retaining the existing reserve and rounding. Off-trail venue lists
+are shared by state and clue rotation rather than duplicated per mission.
+These caches belong to one catalogue snapshot; treat its source tables as
+immutable and reload the catalogue to replace content. Player visits, funds,
+elapsed time, dossier evidence and hideout selection remain dynamic.
+Noncanonical saved routes use the original clue planner for compatibility.
+The content regression test compares independent loads and uncached calculations
+for all 1,000 missions, every stage and all 37 possible current states.
