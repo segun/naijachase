@@ -43,7 +43,7 @@ web/src/
   styles/                tokens, base, layout, screens, terminal (the rooms)
 web/tests/               unit tests; helpers.mjs finds a source file by name wherever it lives
 web/dev/mock-api.mjs     in-memory stand-in for the Rust API (development only)
-web/dev/check-budget.mjs advisory bundle-size report run after `vite build`
+web/dev/check-budget.mjs enforced gzip bundle budgets run after `vite build`
 ```
 
 Rules of the layout: Babylon.js may only be imported by TypeScript modules under `scenes/` and
@@ -252,9 +252,9 @@ status and error announcements, visible focus, a high-contrast mode,
 reduced-motion support (system and manual), and a text/list alternative for
 the map. At 390 x 844 pixels no screen has horizontal overflow. Offline
 transitions are announced without discarding the visible case. Initial payload
-size targets (gzip) are 50 KiB JavaScript and 10 KiB CSS (the lazily loaded music
-synthesiser is excluded). They are advisory: the build reports them but never
-fails, because the game will keep growing.
+release budgets (gzip) cover initial JavaScript and CSS, total lazy JavaScript,
+and the largest lazy chunk. Exceeding any limit fails `pnpm build`; current limits
+and the lazy-dependency review are in `docs/web-performance-budgets.md`.
 
 Run `make p36` for the Rust, TypeScript, accessibility, privacy, responsive,
 dependency-weight, and optimized-build gates. Moderated human usability and

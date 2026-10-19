@@ -4,6 +4,7 @@
   import { CHOICES, DETAIL_TEXT } from "../scenes/shared/detail-level.ts";
 
   let { compact = false }: { compact?: boolean } = $props();
+  const fullConnectionWarning = $derived(detail.choice === "full" && (detail.device.saveData || /^(slow-2g|2g|3g)$/.test(detail.device.connection ?? "")));
 </script>
 
 <div class="detail-control" class:compact>
@@ -12,6 +13,9 @@
       <button type="button" aria-pressed={detail.choice === choice} title={DETAIL_TEXT[choice].summary} onclick={() => detail.set(choice)}>{DETAIL_TEXT[choice].label}</button>
     {/each}
   </div>
+  {#if fullConnectionWarning}
+    <p class="detail-warning" role="alert">Full detail may load slowly and use substantially more data on this connection. Choose Automatic to let NaijaChase reduce downloads.</p>
+  {/if}
   {#if !compact}
     <ul class="detail-help">
       {#each CHOICES as choice}<li><strong>{DETAIL_TEXT[choice].label}</strong>: {DETAIL_TEXT[choice].summary}</li>{/each}

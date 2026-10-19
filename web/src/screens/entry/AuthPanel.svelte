@@ -1,4 +1,5 @@
 <script lang="ts">
+  import "../../styles/auth.css";
   import type { AppController } from "../../state/app.svelte";
   import { HOME_BASES } from "../../domain/model.ts";
   import Brand from "../../ui/Brand.svelte";

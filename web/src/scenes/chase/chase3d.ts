@@ -28,6 +28,7 @@ import { hex, material, paint, seeded } from "../shared/chase3d-kit.ts";
 import { makeFigure } from "./chase3d-actors.ts";
 import { buildWorld } from "./chase3d-world.ts";
 import { replaceActor } from "./chase3d-model-actor.ts";
+import { bindModelLoadSignal } from "../shared/chase3d-models.ts";
 
 export type ChaseHandle = { dispose(): void; now(): number; /** The Babylon scene, exposed for tests and tooling. */ scene: Scene };
 export type ChaseOptions = {
@@ -55,6 +56,7 @@ export async function createChaseScene(canvas: HTMLCanvasElement, options: Chase
   const light = options.quality === "light";
   engine.setHardwareScalingLevel(1 / Math.min(window.devicePixelRatio || 1, light ? 1 : 2));
   const scene = new Scene(engine);
+  bindModelLoadSignal(scene, options.signal);
   const abort = () => { scene.dispose(); engine.dispose(); };
   options.signal?.addEventListener("abort", abort, { once: true });
   if (options.signal?.aborted) { abort(); throw new DOMException("Chase setup cancelled", "AbortError"); }

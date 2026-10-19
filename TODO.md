@@ -1502,3 +1502,5 @@ section of `README.md`.
 - [x] Precompute catalogue opening budgets by difficulty, mission routes and stage clue plans, local costs and venue availability; verify all 1,000 missions against uncached calculations and independent loads.
 
 - [x] Handle SIGTERM/Ctrl-C, drain requests and stop background workers within systemd limits; separate deployment migrations and runtime grants, and lock weekly expiry across instances (see `docs/process-lifecycle.md`).
+
+- [x] Bound browser API requests and preserve uncertain command IDs; enforce game CSP, version-aware HTTP caching, asset-original deployment exclusion and Finder-file cleanup (see `docs/browser-resilience.md`). Service-worker caching remains deferred.

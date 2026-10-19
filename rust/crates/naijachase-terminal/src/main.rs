@@ -82,10 +82,10 @@ fn choose(prompt: &str, items: &[String]) -> usize {
         for (i, item) in items.iter().enumerate() {
             println!("  {}. {item}", i + 1);
         }
-        if let Ok(n) = ask(&format!("{prompt}: ")).parse::<usize>() {
-            if (1..=items.len()).contains(&n) {
-                return n - 1;
-            }
+        if let Ok(n) = ask(&format!("{prompt}: ")).parse::<usize>()
+            && (1..=items.len()).contains(&n)
+        {
+            return n - 1;
         }
         println!("Enter one of the listed numbers.");
     }
@@ -494,7 +494,7 @@ fn main() {
                     } else {
                         &experience.arrival_night
                     },
-                    &experience.investigation_event
+                    experience.investigation_event
                 );
                 let (next, _) = apply(
                     state,

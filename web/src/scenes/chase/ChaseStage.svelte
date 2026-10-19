@@ -5,6 +5,7 @@
   import { detailKey } from "../shared/detail-level.ts";
   import DetailControl from "../../ui/DetailControl.svelte";
   import type { ChaseHandle } from "./chase3d.ts";
+  import { reportSceneFallback } from "../../telemetry.ts";
 
   let status = $state<"idle" | "loading" | "ready">("idle");
   let failed = $state(false);
@@ -50,8 +51,8 @@
         .then(m => m.createChaseScene(target!, {
           quality,
           models, signal: controller.signal, seconds,
-          onSlow: () => { failed = true; },
-          onFault: () => { failed = true; }
+          onSlow: () => { reportSceneFallback("login_chase", "low frame rate"); failed = true; },
+          onFault: (why: unknown) => { reportSceneFallback("login_chase", why instanceof Error ? why.message : String(why)); failed = true; }
         }))
         .then(h => { if (cancelled) h.dispose(); else { handle = h; status = "ready"; } })
         .catch(error => { if (!cancelled) { console.error("The login chase could not start; using 2D.", error); failed = true; } });

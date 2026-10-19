@@ -1,7 +1,8 @@
 // The player's picture-detail choice (see detail-level.ts), shared by every scene and kept on this device. Reactive: a scene that reads
-// `detail.resolved` is told when the choice, the device's state (Data Saver, reduced motion, connection) or the screen changes.
+// `detail.resolved` is told when the choice or a relevant device preference (Data Saver, reduced motion, connection) changes.
 import { readDevice, type Device } from "./scene-capability.ts";
 import { parseChoice, resolveDetail, sameDetail, type Detail, type DetailChoice } from "./detail-level.ts";
+import { reportPerformanceEvent } from "../../telemetry.ts";
 
 const KEY = "nc-detail";
 /** The earlier two-way switch: "2d" meant 2D. */
@@ -27,13 +28,19 @@ class DetailState {
   set(choice: DetailChoice) {
     this.choice = choice;
     try { localStorage.setItem(KEY, choice); localStorage.removeItem(LEGACY_KEY); } catch { /* private mode: the choice lasts until the page closes */ }
+    this.report("player_choice");
   }
-  refresh() { this.device = readDevice(); }
+  refresh() { this.device = readDevice(); this.report("device_change"); }
+  report(trigger: string) {
+    const selected = resolveDetail(this.choice, this.device);
+    reportPerformanceEvent({ kind: "detail_selection", trigger, choice: selected.choice, level: selected.level, renderer: selected.renderer, models: selected.models, reason: selected.why });
+  }
 }
 
 export const detail = new DetailState();
+if (typeof window !== "undefined") queueMicrotask(() => detail.report("initial"));
 
-// Things that can change under a running game: the connection, the motion setting and the window.
+// Relevant inputs that can change while the game is running: the connection and motion setting.
 if (typeof window !== "undefined") {
   const refresh = () => detail.refresh();
   (navigator as Navigator & { connection?: EventTarget }).connection?.addEventListener("change", refresh);

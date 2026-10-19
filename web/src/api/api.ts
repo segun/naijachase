@@ -8,7 +8,10 @@ import type {
 import type { AchievementDef, GroupInvitation, PlayerGroup, Standing, TransitReply, WeeklyAttempt, WeeklyCurrent, WeeklyDetails, WeeklyEvent, WeeklyHistoryEntry, WeeklyNotification } from "../domain/model.ts";
 
 export class ApiError extends Error {
-  constructor(readonly status: number, readonly code: string, message: string) { super(message); }
+  get retryable() { return this.status === 0 || this.status === 408 || this.status === 429 || this.status >= 500; }
+  readonly status: number;
+  readonly code: string;
+  constructor(status: number, code: string, message: string) { super(message); this.status = status; this.code = code; }
 }
 
 type Message = { message?: string };
@@ -22,37 +25,96 @@ let inFlight = 0;
 let idle: (() => void) | null = null;
 const settled = () => (inFlight === 0 ? Promise.resolve() : new Promise<void>(resolve => { const prev = idle; idle = () => { prev?.(); resolve(); }; }));
 
-async function call<T>(path: string, method = "GET", body?: unknown): Promise<T> {
-  const rotating = path === "/v1/auth/refresh";
-  if (rotating) {
-    const run = rotation.then(settled).then(() => request<T>(path, method, body));
-    rotation = run.catch(() => undefined);
-    return run;
-  }
-  await rotation;
-  inFlight++;
-  try { return await request<T>(path, method, body); }
-  finally { if (--inFlight === 0) { const done = idle; idle = null; done?.(); } }
+export const API_DEADLINE_MS = 35_000;
+
+function withinDeadline<T>(work: Promise<T>, signal: AbortSignal): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const abort = () => reject(new ApiError(0, "timeout", "The request timed out. Please try again. If this was an action, retry the same action to check its result safely."));
+    if (signal.aborted) { abort(); return; }
+    signal.addEventListener("abort", abort, { once: true });
+    work.then(resolve, reject).finally(() => signal.removeEventListener("abort", abort));
+  });
 }
 
-async function request<T>(path: string, method: string, body?: unknown): Promise<T> {
-  let response: Response;
+// Retain an uncertain command's exact envelope, including its ID and original
+// version. Session storage preserves retries after a page reload, without tokens.
+const pendingCommands = new Map<string, Record<string, unknown>>();
+const pendingKey = (path: string) => `nc-pending-command:${path}`;
+function commandBody(path: string, body: unknown): unknown {
+  if (!body || typeof body !== "object" || !("command_id" in body)) return body;
+  const proposed = body as Record<string, unknown>;
+  let pending = pendingCommands.get(path);
+  try { pending ??= JSON.parse(sessionStorage.getItem(pendingKey(path)) ?? "null") ?? undefined; } catch { /* Storage may be unavailable. */ }
+  const intent = (value: Record<string, unknown>) => JSON.stringify(Object.fromEntries(Object.entries(value).filter(([key]) => key !== "command_id" && key !== "expected_version")));
+  if (pending && intent(pending) !== intent(proposed)) {
+    throw new ApiError(0, "pending_command", "Your previous action has an unconfirmed result. Retry that same action before starting a different one.");
+  }
+  const envelope = pending ?? proposed;
+  pendingCommands.set(path, envelope);
+  try { sessionStorage.setItem(pendingKey(path), JSON.stringify(envelope)); } catch { /* Retain the in-memory copy. */ }
+  return envelope;
+}
+function forgetCommand(path: string) {
+  pendingCommands.delete(path);
+  try { sessionStorage.removeItem(pendingKey(path)); } catch { /* Storage may be unavailable. */ }
+}
+
+async function call<T>(path: string, method = "GET", body?: unknown): Promise<T> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), API_DEADLINE_MS);
+  const signal = controller.signal;
   try {
-    response = await fetch(`/api${path}`, {
+    const rotating = path === "/v1/auth/refresh";
+    if (rotating) {
+      const run = rotation.then(settled).then(() => request<T>(path, method, body, signal));
+      rotation = withinDeadline(run, signal).catch(() => undefined);
+      return await withinDeadline(run, signal);
+    }
+    // Register admission synchronously, ahead of a subsequently queued refresh.
+    return await withinDeadline(rotation.then(async () => {
+      inFlight++;
+      try { return await request<T>(path, method, body, signal); }
+      finally { if (--inFlight === 0) { const done = idle; idle = null; done?.(); } }
+    }), signal);
+  } finally { clearTimeout(timer); }
+}
+
+async function request<T>(path: string, method: string, body: unknown, signal: AbortSignal): Promise<T> {
+  // A queued refresh may reach this callback after its own deadline expired.
+  if (signal.aborted) return withinDeadline(Promise.resolve(undefined as T), signal);
+  // Cooperation has a shared collection URL, so scope its pending envelope to
+  // the case as well; an unrelated case must not inherit that command.
+  const scope = body && typeof body === "object" && "case_id" in body ? `${path}:${body.case_id}` : path;
+  body = commandBody(scope, body);
+  const command = Boolean(body && typeof body === "object" && "command_id" in body);
+  try {
+    const response = await withinDeadline(fetch(`/api${path}`, {
       method,
+      signal,
       credentials: "include",
       headers: body === undefined ? undefined : { "Content-Type": "application/json" },
       body: body === undefined ? undefined : JSON.stringify(body)
-    });
-  } catch {
-    throw new ApiError(0, "network", "Cannot reach the service. Check your connection and try again.");
+    }), signal);
+    lastRequestId = response.headers.get("x-request-id") ?? lastRequestId;
+    let data;
+    try { data = await withinDeadline(response.json(), signal); }
+    catch (error) {
+      if (signal.aborted) throw error;
+      if (response.ok) throw new ApiError(0, "invalid_response", "The service returned an unreadable response. Please try the same action again.");
+      data = {};
+    }
+    if (!response.ok) {
+      const error = new ApiError(response.status, data?.error ?? "error", data?.message ?? `Request failed (${response.status}). Please try again.`);
+      if (command && !error.retryable) forgetCommand(scope);
+      throw error;
+    }
+    if (command) forgetCommand(scope);
+    return data as T;
+  } catch (error) {
+    if (error instanceof ApiError) throw error;
+    if (signal.aborted) return withinDeadline(Promise.resolve(undefined as T), signal);
+    throw new ApiError(0, "network", "Cannot reach the service. Check your connection and try the same action again.");
   }
-  lastRequestId = response.headers.get("x-request-id") ?? lastRequestId;
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok) {
-    throw new ApiError(response.status, data.error ?? "error", data.message ?? `Request failed (${response.status})`);
-  }
-  return data as T;
 }
 
 /** Restricted content operations. Only the lazily loaded content dashboard uses these; players never see them. */

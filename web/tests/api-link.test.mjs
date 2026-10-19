@@ -1,8 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import { spawn } from "node:child_process";
 import { component, components, allComponents } from "./helpers.mjs";
+import { startMockServer } from "./mock-server.mjs";
 
 const root = new URL("../", import.meta.url);
 const read = p => fs.readFileSync(new URL(p, root), "utf8");
@@ -66,9 +66,9 @@ test("credentials never reach browser storage", () => {
 
 test("the dev mock API honours the contract shapes the UI relies on", async () => {
   const port = 18000 + Math.floor(Math.random() * 1000);
-  const child = spawn(process.execPath, ["dev/mock-api.mjs"], { cwd: new URL(".", root).pathname, env: { ...process.env, PORT: String(port) } });
+  const { child, ready } = startMockServer(root, port);
   try {
-    await new Promise((resolve, reject) => { child.stdout.once("data", resolve); child.once("error", reject); });
+    await ready;
     const base = `http://127.0.0.1:${port}`;
     let cookie = "";
     const call = async (path, method = "GET", body) => {

@@ -9,6 +9,7 @@
   import { detail } from "../shared/detail.svelte.ts";
   import { detailKey } from "../shared/detail-level.ts";
   import type { JourneyHandle } from "./journey-driver.ts";
+  import { reportSceneFallback } from "../../telemetry.ts";
 
   type Mode = "3d" | "flat";
   const FALLBACK_KEY = "nc-journey-flat";
@@ -63,6 +64,7 @@
   function fallBack(at: number, why: string) {
     if (mode !== "3d" || finished) return;
     console.warn(`The 3D journey scene is opening functional content: ${why}`);
+    reportSceneFallback("journey", why);
     try { sessionStorage.setItem(FALLBACK_KEY, "1"); } catch { /* private mode: the next scene just tries 3D again */ }
     resumeAt = at; ready = false; failure = why; broken = true;
   }

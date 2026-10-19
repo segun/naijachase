@@ -141,7 +141,7 @@ test("how a model is measured and turned follows its kind", () => {
 test("model code reaches Babylon.js only from the scene modules", () => {
   const root = new URL("../src/", import.meta.url);
   const loader = fs.readFileSync(new URL("scenes/shared/chase3d-models.ts", root), "utf8");
-  assert.match(loader, /import\("@babylonjs\/loaders\/glTF\/2\.0"\)/, "the glTF loader is imported lazily");
+  assert.match(loader, /import\("@babylonjs\/loaders\/glTF\/2\.0\/glTFLoader\.js"\)/, "only the registering glTF 2 loader is imported lazily");
   assert.doesNotMatch(fs.readFileSync(new URL("scenes/shared/model-manifest.ts", root), "utf8"), /babylonjs/, "the manifest is pure data");
 });
 
@@ -175,7 +175,7 @@ test("scenes follow the picture-detail setting and can switch while playing", ()
     assert.match(view, /data-key=\{canvasKey\}/, `${f}: a new canvas for a new renderer or detail`);
   }
   assert.match(read("scenes/shared/Stage.svelte"), /detailKey\(applied\)/);
-  assert.match(read("App.svelte"), /<DetailQuick/, "the quick switch is available in the game");
+  assert.match(read("App.svelte"), /lazy\.detail\(\)[\s\S]*<Control/, "the lazy quick switch is available in the game");
   assert.match(read("screens/account/Settings.svelte"), /<DetailControl/, "and in Settings");
 });
 

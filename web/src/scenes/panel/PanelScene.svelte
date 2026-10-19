@@ -11,6 +11,7 @@
   import { detailKey } from "../shared/detail-level.ts";
   import PanelPresentation from "../../screens/case/PanelPresentation.svelte";
   import { announce, planPanel, resumeTime, type PanelHandle, type Vote } from "./panel-scene.ts";
+  import { reportSceneFallback } from "../../telemetry.ts";
 
   type Mode = "3d" | "2d";
   // The panel keeps its own switch: a failure here must not push the witness or journey scenes to 2D, nor the other way round.
@@ -58,6 +59,7 @@
   function fallBack(why: string, remember = false) {
     if (mode !== "3d") return;
     console.warn(`The 3D panel scene is switching to 2D: ${why}`);
+    reportSceneFallback("disciplinary_panel", why);
     if (remember) try { sessionStorage.setItem(FALLBACK_KEY, "1"); } catch { /* private mode: the next scene just tries 3D again */ }
     ready = false; broken = true;
   }

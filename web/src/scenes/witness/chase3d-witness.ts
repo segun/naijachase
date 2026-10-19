@@ -38,7 +38,7 @@ function softBox(stage: Stage): Stage["box"] {
 }
 
 export async function createWitnessScene(canvas: HTMLCanvasElement, options: WitnessOptions): Promise<WitnessHandle & { scene: Scene }> {
-  const stage = createStage(canvas, { hour: options.hour, quality: options.quality, models: options.models });
+  const stage = createStage(canvas, { hour: options.hour, quality: options.quality, models: options.models, signal: options.signal });
   let disposeDriver = () => {};
   const abort = () => stage.engine.dispose();
   options.signal?.addEventListener("abort", abort, { once: true });

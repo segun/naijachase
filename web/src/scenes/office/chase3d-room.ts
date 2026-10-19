@@ -20,7 +20,7 @@ export type RoomOptions = SceneOptions;
 
 export async function createRoomScene(canvas: HTMLCanvasElement, options: RoomOptions): Promise<RoomHandle> {
   options.signal?.throwIfAborted();
-  const stage = createStage(canvas, { hour: options.hour, quality: options.quality, models: options.models });
+  const stage = createStage(canvas, { hour: options.hour, quality: options.quality, models: options.models, signal: options.signal });
   const { scene, palette, mat, box, cyl, plane, textured, place, caster: casters, trim, wood, darkWood, centreX, light } = stage;
   const abort = () => { scene.dispose(); stage.engine.dispose(); };
   options.signal?.addEventListener("abort", abort, { once: true });

@@ -40,7 +40,7 @@ const SCENERY_MODELS: Partial<Record<Prop["kind"], string>> = {
 const TEXTURED_SIGNS = new Set<Prop["kind"]>(["garage", "busstop", "billboard", "terminal"]);
 
 export async function createJourneyScene3D(canvas: HTMLCanvasElement, options: JourneyOptions): Promise<JourneyHandle & { scene: Scene }> {
-  const stage = createStage(canvas, { hour: options.hour, quality: options.quality, models: options.models });
+  const stage = createStage(canvas, { hour: options.hour, quality: options.quality, models: options.models, signal: options.signal });
   const abort = () => stage.engine.dispose();
   options.signal?.addEventListener("abort", abort, { once: true });
   try {

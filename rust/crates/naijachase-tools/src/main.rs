@@ -156,20 +156,21 @@ fn simulate(root: &Path, out: &Path) {
                 m.mission_id.clone(),
                 m.difficulty.to_string(),
                 result.dossier.len().to_string(),
-                (result.dossier.len() == 8)
-                    .then_some("yes")
-                    .unwrap_or("no")
-                    .into(),
-                (result.outcome.as_deref() == Some("solved"))
-                    .then_some("yes")
-                    .unwrap_or("no")
-                    .into(),
+                if result.dossier.len() == 8 {
+                    "yes"
+                } else {
+                    "no"
+                }
+                .into(),
+                if result.outcome.as_deref() == Some("solved") {
+                    "yes"
+                } else {
+                    "no"
+                }
+                .into(),
                 result.elapsed.to_string(),
                 10080u32.saturating_sub(result.elapsed).to_string(),
-                (result.elapsed < 10080)
-                    .then_some("yes")
-                    .unwrap_or("no")
-                    .into(),
+                if result.elapsed < 10080 { "yes" } else { "no" }.into(),
                 award,
             ])
             .unwrap();
@@ -492,7 +493,7 @@ fn enrich_state_clues(root: &Path) {
     );
     places.sort();
     places.dedup_by(|left, right| left.0 == right.0);
-    places.sort_by(|left, right| right.0.len().cmp(&left.0.len()));
+    places.sort_by_key(|place| std::cmp::Reverse(place.0.len()));
     let mut rows = csv::Reader::from_path(&atom_path)
         .unwrap()
         .records()
@@ -591,14 +592,14 @@ fn enrich_state_clues(root: &Path) {
                     ],
                 ),
             ] {
-                for number in 0..3 {
+                for (number, prefix) in english_prefixes.iter().enumerate() {
                     variants.push(csv::StringRecord::from(vec![
                         format!("{id}-{}-E-{}", &difficulty[..1].to_uppercase(), number + 1),
                         id.clone(),
                         difficulty.into(),
                         "English".into(),
                         (number + 1).to_string(),
-                        format!("{}{}", english_prefixes[number], dialogue),
+                        format!("{prefix}{dialogue}"),
                     ]));
                 }
             }
@@ -643,14 +644,14 @@ fn enrich_state_clues(root: &Path) {
                 ],
             ),
         ] {
-            for number in 0..3 {
+            for (number, prefix) in english_prefixes.iter().enumerate() {
                 variants.push(csv::StringRecord::from(vec![
                     format!("{id}-{}-E-{}", &difficulty[..1].to_uppercase(), number + 1),
                     id.clone(),
                     difficulty.into(),
                     "English".into(),
                     (number + 1).to_string(),
-                    format!("{}{}", english_prefixes[number], values[6]),
+                    format!("{prefix}{}", values[6]),
                 ]));
             }
         }

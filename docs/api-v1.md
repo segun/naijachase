@@ -12,6 +12,16 @@ The built-in web reporter sends unexpected runtime failures to
 page path without query data, release, source and most recent API request ID.
 It returns `202`; do not include player-entered content or secrets.
 
+Adaptive graphics measurements are batched (at most 20 events) to
+`POST /v1/telemetry/performance`. Events cover resolved detail and fallback
+reason, model path/bytes/download/decode timings, sampled frame rate, WebGL
+context loss, and FCP/LCP/CLS/INP. The client adds only coarse device,
+connection and viewport classes. The endpoint rejects unknown event kinds,
+unknown properties, nested values and oversized strings; it does not accept
+account, case, location or free-form gameplay data. Accepted events are written
+to structured logs as `browser performance` entries and counted by
+`naijachase_browser_performance_events_total`.
+
 `GET /metrics` is available to Prometheus on the API's loopback listener and is
 deliberately unavailable through public `/api/metrics`.
 

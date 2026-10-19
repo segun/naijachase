@@ -21,7 +21,7 @@ const GAP = { unit: 0, row: 2, u: 1.35 / UNIT.w, half: 0.26 / UNIT.w };
 
 export async function createArchiveScene(canvas: HTMLCanvasElement, options: ArchiveOptions): Promise<ArchiveHandle> {
   options.signal?.throwIfAborted();
-  const stage = createStage(canvas, { hour: options.hour, quality: options.quality, models: options.models, minLamp: 0.85 });
+  const stage = createStage(canvas, { hour: options.hour, quality: options.quality, models: options.models, signal: options.signal, minLamp: 0.85 });
   const abort = () => { stage.scene.dispose(); stage.engine.dispose(); };
   options.signal?.addEventListener("abort", abort, { once: true });
   stage.scene.onDisposeObservable.addOnce(() => options.signal?.removeEventListener("abort", abort));

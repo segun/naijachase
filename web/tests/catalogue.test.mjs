@@ -75,7 +75,7 @@ test("every content and notification endpoint exists in the contract", () => {
 test("session rotation never races other requests", () => {
   const api = read("api/api.ts");
   assert.match(api, /let rotation: Promise<unknown>/);
-  assert.match(api, /await rotation;/);
+  assert.match(api, /withinDeadline\(rotation\.then/);
   assert.match(api, /rotation\.then\(settled\)/);
   assert.match(read("state/app.svelte.ts"), /await this\.api\.refresh\(\)\.catch\(\(\) => undefined\);\n\s+await this\.loadProgression\(\);/);
 });

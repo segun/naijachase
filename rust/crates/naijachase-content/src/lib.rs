@@ -437,7 +437,7 @@ impl Catalogue {
                         s.into()
                     }
                 })
-                .ok_or_else(|| {
+                .ok_or({
                     Error::Incomplete(CatalogueSummary {
                         missions: self.missions.len(),
                         states: self.hubs.len(),

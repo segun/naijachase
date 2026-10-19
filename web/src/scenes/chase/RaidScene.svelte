@@ -10,6 +10,7 @@
   import { detailKey } from "../shared/detail-level.ts";
   import { RAID_SECONDS, raidFrame, raidLineAt, raidLines, raidStart } from "./raid-scene.ts";
   import type { ChaseHandle } from "./chase3d.ts";
+  import { reportSceneFallback } from "../../telemetry.ts";
 
   const FIRST_FRAME_MS = 9000;
 
@@ -79,7 +80,7 @@
       return () => { cancelled = true; handle?.dispose(); };
     }
     const controller = new AbortController();
-    const fallBack = (why: unknown) => { if (cancelled) return; console.warn("The 3D raid is continuing in 2D:", why); broken = true; };
+    const fallBack = (why: unknown) => { if (cancelled) return; const reason = why instanceof Error ? why.message : String(why); console.warn("The 3D raid is continuing in 2D:", why); reportSceneFallback("raid", reason); broken = true; };
     const watchdog = setTimeout(() => { if (!ready) fallBack("no frames"); }, FIRST_FRAME_MS);
     import("./chase3d.ts")
       .then(m => m.createChaseScene(target, {

@@ -56,7 +56,10 @@ test("every case screen is a component wired into the app", () => {
 test("components submit intent only: no engine truth is computed or stored in the browser", () => {
   // Only the closed-case archive (public once a case is finished) and the restricted content dashboard may show a thief id.
   const code = sourceFiles.filter(f => !/[\\/]styles[\\/]|\.css$/.test(f) && !/Archive\.svelte$|ContentDashboard\.svelte$/.test(f)).map(f => fs.readFileSync(f, "utf8")).join("\n");
-  for (const hidden of ["thief_id", "hideout_venue", "observations", "route:"]) assert.doesNotMatch(code, new RegExp(hidden));
+  for (const hidden of ["thief_id", "hideout_venue", "observations"]) assert.doesNotMatch(code, new RegExp(hidden));
+  // Telemetry's route is the sanitized browser URL, not the hidden mission route.
+  const gameCode = sourceFiles.filter(f => !/[\\/]telemetry\.ts$/.test(f)).map(f => fs.readFileSync(f, "utf8")).join("\n");
+  assert.doesNotMatch(gameCode, /route:/);
   assert.doesNotMatch(code, /localStorage\.setItem\("nc-(case|name|notes)/);
   assert.doesNotMatch(code, /innerHTML|\{@html/);
 });

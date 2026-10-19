@@ -151,6 +151,13 @@ Preloading is deliberately narrow. After the API accepts a venue visit, journey 
 four explicitly named critical models for that next scene. It must not inspect or preload the complete model catalogue. New scenes must
 use the shared priority loader and preserve their procedural fallback until each replacement is fitted successfully.
 
+The shared loader owns a bounded application-level cache: immutable GLB bytes are reused across scene transitions, while parsed
+Babylon containers are reused by every instance within their owning scene. Both caches are LRU-bounded; a browser `memorypressure`
+event trims them aggressively. A scene must bind its `AbortSignal` through `createStage` or `bindModelLoadSignal`. Replacing that scene,
+switching away from Full detail, or hitting the twelve-second limit then aborts queued jobs and the underlying `fetch`, releases its
+containers, and prevents a late decode from attaching to a disposed scene. Keep model handles disposable: the cache will not destroy a
+shared container until its live instances have been released.
+
 The login chase uses `chase-frame.ts` for both its model/procedural 3D and Canvas 2D renderers. Detail changes and 3D faults use the
 same clock, keeping the city progression, camera and runners in step. Do not independently play a model's Run clip or allow exported
 hip translation to move a runner away from its timeline position. Its desktop-only login side panel is intentionally hidden below

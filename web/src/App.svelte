@@ -2,17 +2,14 @@
   import { onMount } from "svelte";
   import { AppController } from "./state/app.svelte";
   import { isCaseScreen } from "./domain/model.ts";
-  import AuthPanel from "./screens/entry/AuthPanel.svelte";
   import Brand from "./ui/Brand.svelte";
-  import ContentGate from "./screens/admin/ContentGate.svelte";
   import Landing from "./screens/entry/Landing.svelte";
-  import Results from "./screens/case/Results.svelte";
   import Shell from "./ui/Shell.svelte";
-  import DetailQuick from "./ui/DetailQuick.svelte";
   import { reportBrowserError } from "./telemetry.ts";
 
   // Secondary screens are separate chunks: nobody needs them on the sign-in path, so they load on first visit.
   const lazy = {
+    auth: () => import("./screens/entry/AuthPanel.svelte"),
     avatar: () => import("./avatar/AvatarPicker.svelte"),
     archive: () => import("./scenes/archive/ArchiveRoom.svelte"),
     groups: () => import("./screens/social/Groups.svelte"),
@@ -25,7 +22,10 @@
     settings: () => import("./screens/account/Settings.svelte"),
     tokens: () => import("./screens/account/Tokens.svelte"),
     panel: () => import("./scenes/panel/PanelScene.svelte"),
-    weekly: () => import("./screens/social/Weekly.svelte")
+    weekly: () => import("./screens/social/Weekly.svelte"),
+    content: () => import("./screens/admin/ContentGate.svelte"),
+    results: () => import("./screens/case/Results.svelte"),
+    detail: () => import("./ui/DetailQuick.svelte")
   } as const;
 
   const app = new AppController();
@@ -68,18 +68,18 @@
       {:else if app.screen === "welcome"}<Landing {app} />
       {:else if app.screen === "settings"}{#await lazy.settings() then { default: Screen }}<Screen {app} />{/await}
       {:else if app.screen === "tokens" && app.signedIn}{#await lazy.tokens() then { default: Screen }}<Screen {app} />{/await}
-      {:else if app.screen === "content" && app.signedIn}<ContentGate {app} />
+      {:else if app.screen === "content" && app.signedIn}{#await lazy.content() then { default: Screen }}<Screen {app} />{/await}
       {:else if app.screen === "groups" && app.signedIn}{#await lazy.groups() then { default: Screen }}<Screen {app} />{/await}
       {:else if app.screen === "weekly" && app.signedIn}{#await lazy.weekly() then { default: Screen }}<Screen {app} />{/await}
       {:else if app.screen === "helpers" && app.signedIn}{#await lazy.helpers() then { default: Screen }}<Screen {app} />{/await}
       {:else if app.screen === "archive" && app.signedIn}{#await lazy.archive() then { default: Screen }}<Screen {app} />{/await}
-      {:else if app.screen === "cases" && !app.signedIn}<AuthPanel {app} />
+      {:else if app.screen === "cases" && !app.signedIn}{#await lazy.auth() then { default: Screen }}<Screen {app} />{/await}
       {:else if app.screen === "cases" || (app.game && isCaseScreen(app.screen))}{@render room()}
       {:else if app.game && app.screen === "garage"}{#await lazy.garage() then { default: Screen }}<Screen {app} />{/await}
       {:else if app.game && app.screen === "witness" && app.witnessVisit}{#await lazy.witness() then { default: Screen }}<Screen {app} />{/await}
       {:else if app.game && app.screen === "journey" && app.journey}{#await lazy.journey() then { default: Screen }}<Screen {app} loop={app.journey.loop === true} onclose={() => app.leaveJourney()} />{/await}
       {:else if app.game && app.screen === "raid" && app.raidVisit}{#await lazy.raid() then { default: Screen }}<Screen {app} />{/await}
-      {:else if app.game && app.screen === "results"}<Results {app} />
+      {:else if app.game && app.screen === "results"}{#await lazy.results() then { default: Screen }}<Screen {app} />{/await}
       {:else}{@render room()}{/if}
 
       {#snippet failed(error, reset)}
@@ -94,5 +94,5 @@
     {#if app.signedIn && app.panel}{#await lazy.panel() then { default: Screen }}<Screen {app} />{/await}{/if}
   </Shell>
   <!-- Animated scenes can be made lighter or richer at any moment, without leaving the game. -->
-  {#if app.signedIn && !app.needsAvatar && (app.panel || isCaseScreen(app.screen) || ["garage", "witness", "journey", "raid", "cases", "archive"].includes(app.screen))}<DetailQuick />{/if}
+  {#if app.signedIn && !app.needsAvatar && (app.panel || isCaseScreen(app.screen) || ["garage", "witness", "journey", "raid", "cases", "archive"].includes(app.screen))}{#await lazy.detail() then { default: Control }}<Control />{/await}{/if}
 {/if}

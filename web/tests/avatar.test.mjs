@@ -1,8 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import { spawn } from "node:child_process";
 import * as av from "../src/avatar/avatar-model.ts";
+import { startMockServer } from "./mock-server.mjs";
 
 const root = new URL("../", import.meta.url);
 const read = p => fs.readFileSync(new URL(p, root), "utf8");
@@ -97,9 +97,9 @@ test("the picker follows the P3.7.4 handoff: no models, no appearance fields, se
 
 test("the mock API serves the avatar contract and gates the first login", async () => {
   const port = 19000 + Math.floor(Math.random() * 1000);
-  const child = spawn(process.execPath, ["dev/mock-api.mjs"], { cwd: new URL(".", root).pathname, env: { ...process.env, PORT: String(port) } });
+  const { child, ready } = startMockServer(root, port);
   try {
-    await new Promise((resolve, reject) => { child.stdout.once("data", resolve); child.once("error", reject); });
+    await ready;
     let cookie = "";
     const call = async (path, method = "GET", body) => {
       const res = await fetch(`http://127.0.0.1:${port}${path}`, { method, headers: { "Content-Type": "application/json", cookie }, body: body && JSON.stringify(body) });

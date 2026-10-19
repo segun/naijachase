@@ -1,0 +1,61 @@
+name: Quality gates
+
+on:
+  pull_request:
+  push:
+    branches: [master, main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  rust:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: rust
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy,rustfmt
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: rust
+      - name: Formatting
+        run: cargo fmt --all -- --check
+      - name: Strict lint
+        run: cargo clippy --workspace --all-targets -- -D warnings
+      - name: Tests
+        run: cargo test --workspace --locked
+      - name: Representative engine benchmark
+        run: cargo run --quiet --release --locked -p naijachase-core --example benchmark
+      - name: Install Rust dependency auditor
+        run: cargo install cargo-audit --locked
+      - name: Audit locked Rust dependencies
+        run: cargo audit --file Cargo.lock
+
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: web/pnpm-lock.yaml
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Tests
+        run: pnpm test
+      - name: Production build
+        run: pnpm build
+      - name: Audit production dependencies
+        run: pnpm audit --prod --audit-level high

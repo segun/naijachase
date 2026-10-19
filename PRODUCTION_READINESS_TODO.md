@@ -192,66 +192,88 @@ and permanent failures. Prometheus alert rules are checked in at
 
 ### Reuse and cancel model work
 
-- [ ] Add a bounded application-level parsed-model/container cache, or use a
+- [x] Add a bounded application-level parsed-model/container cache, or use a
   longer-lived Babylon asset scene.
-- [ ] Dispose least-recently-used resources under memory pressure.
-- [ ] Test repeated scene transitions for memory and WebGL resource leaks.
-- [ ] Replace the non-cancelling 12-second wrapper with an abortable loading path.
-- [ ] Cancel model work when a scene is replaced or detail is lowered.
+- [x] Dispose least-recently-used resources under memory pressure.
+- [x] Test repeated scene transitions for memory and WebGL resource leaks.
+- [x] Replace the non-cancelling 12-second wrapper with an abortable loading path.
+- [x] Cancel model work when a scene is replaced or detail is lowered.
+
+Implemented in the October 2026 model-lifecycle pass. The shared loader keeps a
+bounded LRU of parsed per-scene containers and reusable immutable GLB bytes,
+trims both on browser memory pressure, and binds queued/download/decode work to
+the scene's abort signal. `web/tests/model-lifecycle.test.mjs` exercises repeated
+scene teardown, cache reuse, LRU pressure and an aborted in-flight request.
 
 ### Improve Automatic mode with real measurements
 
-- [ ] Capture selected detail level and fallback reason.
-- [ ] Capture model URL, bytes, download time and decode time.
-- [ ] Capture frame rate, WebGL context loss and Core Web Vitals.
-- [ ] Analyse results by device class and connection type without collecting
+- [x] Capture selected detail level and fallback reason.
+- [x] Capture model URL, bytes, download time and decode time.
+- [x] Capture frame rate, WebGL context loss and Core Web Vitals.
+- [ ] Analyse production results by device class and connection type without collecting
   unnecessary personal data.
 - [ ] Tune Automatic thresholds using production evidence.
-- [ ] Confirm explicit Full mode presents an understandable warning on a slow or
+- [x] Confirm explicit Full mode presents an understandable warning on a slow or
   data-saving connection.
+
+Instrumentation implemented in the October 2026 adaptive-detail telemetry pass. The browser
+batches bounded anonymous events to `POST /v1/telemetry/performance`; the API
+validates a fixed allow-list and writes structured events for aggregation. See
+`docs/automatic-detail-telemetry.md`. Production analysis and threshold tuning
+remain open by design: both require a representative live sample rather than
+development-device guesses.
 
 ### Enforce web performance budgets
 
-- [ ] Reduce initial JavaScript below the current 60 KiB compressed target.
-  Current result: 64.9 KiB.
-- [ ] Reduce initial CSS below the current 10 KiB compressed target.
-  Current result: 10.4 KiB.
-- [ ] Review approximately 1.1 MiB of compressed lazy JavaScript.
-- [ ] Reduce the approximately 330 KiB compressed `chase3d-models` chunk using
+- [x] Reduce initial JavaScript below the current 60 KiB compressed target.
+  Current result: 57.6 KiB gzip.
+- [x] Reduce initial CSS below the current 10 KiB compressed target.
+  Current result: 9.8 KiB gzip.
+- [x] Review approximately 1.1 MiB of compressed lazy JavaScript. It is now
+  approximately 885.5 KiB gzip; Babylon remains the dominant, deliberately lazy
+  dependency. See `docs/web-performance-budgets.md`.
+- [x] Reduce the approximately 330 KiB compressed `chase3d-models` chunk using
   narrower Babylon imports or better chunk boundaries.
-- [ ] Convert agreed initial and route-level budgets from advisory warnings into
-  release failures.
-- [ ] Reconsider Vite's raised 1.5 MB chunk warning threshold.
+  It is now approximately 3.2 KiB gzip, with reusable Babylon code in separately
+  cacheable lazy chunks; the largest is approximately 165.8 KiB gzip.
+- [x] Convert agreed initial and route-level budgets from advisory warnings into
+  release failures. `pnpm build` now fails initial JS/CSS, total lazy JS, and
+  largest-lazy-chunk regressions.
+- [x] Reconsider Vite's raised 1.5 MB chunk warning threshold. It is now 500 KiB
+  uncompressed, alongside the stricter gzip release gate.
 
 ### Improve browser/API resilience and deployment hygiene
 
-- [ ] Add `AbortController` deadlines to browser API calls.
-- [ ] Show a clear retryable error instead of loading forever.
-- [ ] Never retry a non-idempotent command with a new command ID.
-- [ ] Add a Content Security Policy to the game application's Nginx configuration.
-- [ ] Exclude `web/asset-originals/` from `make copy-code`; it is about 330 MiB and
+- [x] Add `AbortController` deadlines to browser API calls.
+- [x] Show a clear retryable error instead of loading forever.
+- [x] Never retry a non-idempotent command with a new command ID.
+- [x] Add a Content Security Policy to the game application's Nginx configuration.
+- [x] Exclude `web/asset-originals/` from `make copy-code`; it is about 330 MiB and
   is not required in production.
-- [ ] Remove `.DS_Store` files from served assets.
-- [ ] Prefer correct HTTP/CDN caching before adding a service worker.
-- [ ] If a service worker is later added, cache only a small shell and bounded
+- [x] Remove `.DS_Store` files from served assets.
+- [x] Prefer correct HTTP/CDN caching before adding a service worker.
+- [x] If a service worker is later added, cache only a small shell and bounded
   player-used asset packs, with a tested upgrade strategy.
+
+Policy and verification: `docs/browser-resilience.md`. No service worker is added;
+the final item defines the requirements for any future implementation.
 
 ## Bugs and broken release checks
 
-- [ ] Fix `make benchmark`: its sample travels before questioning the key witness,
+- [x] Fix `make benchmark`: its sample travels before questioning the key witness,
   so it currently panics and measures nothing.
-- [ ] Replace the benchmark's stale flow with a valid representative workload.
-- [ ] Add the repaired benchmark to CI as a regression gate.
-- [ ] Fix the strict Clippy warning in `naijachase-content/src/lib.rs`:
+- [x] Replace the benchmark's stale flow with a valid representative workload.
+- [x] Add the repaired benchmark to CI as a regression gate.
+- [x] Fix the strict Clippy warning in `naijachase-content/src/lib.rs`:
   `unnecessary_lazy_evaluations`.
-- [ ] Run `cargo clippy --workspace --all-targets -- -D warnings` in CI.
-- [ ] Fix the two web mock-server tests that can wait forever when startup fails.
-- [ ] Make those tests reject on early child-process exit.
-- [ ] Include mock-server stderr in test failures.
-- [ ] Add a short mock-server startup deadline.
-- [ ] Reconcile the detail-state comment/contract with its missing window-resize
+- [x] Run `cargo clippy --workspace --all-targets -- -D warnings` in CI.
+- [x] Fix the two web mock-server tests that can wait forever when startup fails.
+- [x] Make those tests reject on early child-process exit.
+- [x] Include mock-server stderr in test failures.
+- [x] Add a short mock-server startup deadline.
+- [x] Reconcile the detail-state comment/contract with its missing window-resize
   listener, either by registering the listener or correcting the contract.
-- [ ] Add locked Rust and pnpm dependency-vulnerability checks to CI.
+- [x] Add locked Rust and pnpm dependency-vulnerability checks to CI.
 
 ## Verification completed during the review
 
@@ -265,12 +287,17 @@ and permanent failures. Prometheus alert rules are checked in at
 - [x] Svelte reported zero errors and zero warnings.
 - [x] Vite built 1,336 modules successfully.
 - [x] 298 web tests passed in the restricted review environment.
-- [ ] Rerun the three local-server web integration tests in an environment that
-  permits binding loopback ports.
-- [ ] Strict Clippy passes. It currently fails on one warning.
-- [ ] The engine benchmark passes. It currently panics on an invalid sample flow.
-- [ ] Rust and pnpm vulnerability audits pass. They were not completed during the
-  local review.
+- [x] The local-server web integration tests passed, including API-link and avatar
+  tests using the bounded mock-server harness.
+- [x] Strict Clippy passed across the workspace and all targets with warnings
+  treated as errors.
+- [x] The repaired release benchmark completed 1,000,000 representative commands
+  at approximately 415,893 commands per second on the review machine.
+- [x] The production pnpm dependency audit reported no known vulnerabilities.
+- [x] The Rust dependency audit passes after locking `rustls` 0.23.46; no known
+  vulnerabilities remain. The audit still reports allowed transitive maintenance
+  warnings from `mysql` 26 (`lru` 0.12.5 and `rustls-pemfile` 2.2.0), which should
+  be removed during a separately tested MySQL-client major-version upgrade.
 
 ## Launch sequence
 

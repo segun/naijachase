@@ -72,7 +72,7 @@ impl Catalogue {
             *maximum = (*maximum).max(baseline);
         }
         for maximum in self.derived.budgets.values_mut() {
-            let reserved = maximum.saturating_add((*maximum + 4) / 5);
+            let reserved = maximum.saturating_add((*maximum).div_ceil(5));
             *maximum = reserved.saturating_add(4_999) / 5_000 * 5_000;
         }
         Ok(())
@@ -177,8 +177,7 @@ fn witness_clue_plan_for<'a>(
         .iter()
         .copied()
         .filter(|atom| atom.dimension == "landmark")
-        .filter(available)
-        .next();
+        .find(available);
     let Some(decisive) = decisive else {
         return vec![];
     };
@@ -444,7 +443,7 @@ mod tests {
         }
         for mission in catalogue.missions.values() {
             let maximum = maxima[&mission.difficulty];
-            let reserved = maximum.saturating_add((maximum + 4) / 5);
+            let reserved = maximum.saturating_add(maximum.div_ceil(5));
             let expected = reserved.saturating_add(4_999) / 5_000 * 5_000;
             assert_eq!(catalogue.opening_budget(mission), Some(expected));
             assert_eq!(reloaded.opening_budget(mission), Some(expected));

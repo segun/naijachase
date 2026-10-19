@@ -15,7 +15,7 @@ const TONEMAPPING_ACES = 1;
 
 export async function createPanelScene3D(canvas: HTMLCanvasElement, options: PanelOptions): Promise<PanelHandle> {
   options.signal?.throwIfAborted();
-  const stage = createStage(canvas, { hour: options.hour, quality: options.quality, models: options.models, minLamp: 0.8 });
+  const stage = createStage(canvas, { hour: options.hour, quality: options.quality, models: options.models, signal: options.signal, minLamp: 0.8 });
   const abort = () => { stage.scene.dispose(); stage.engine.dispose(); };
   options.signal?.addEventListener("abort", abort, { once: true });
   stage.scene.onDisposeObservable.addOnce(() => options.signal?.removeEventListener("abort", abort));

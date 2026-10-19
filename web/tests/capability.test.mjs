@@ -41,7 +41,8 @@ test("the stage gates the download, waits for idle, and falls back one way to 2D
   const stage = fs.readFileSync(new URL("../src/scenes/chase/ChaseStage.svelte", import.meta.url), "utf8");
   assert.match(stage, /detail\.resolved/, "the stage follows the player's picture-detail setting");
   assert.match(stage, /requestIdleCallback/);
-  assert.match(stage, /onSlow: \(\) => \{ failed = true; \}/);
+  assert.match(stage, /onSlow: \(\) => \{ reportSceneFallback\("login_chase", "low frame rate"\); failed = true; \}/);
+  assert.match(stage, /onFault: .*reportSceneFallback\("login_chase"/);
   // the import() is only reachable from inside the effect guarded by `want`
   assert.match(stage, /if \(!want \|\| !target \|\| target\.dataset\.key !== key\) return;/);
   const scene = fs.readFileSync(new URL("../src/scenes/chase/chase3d.ts", import.meta.url), "utf8");

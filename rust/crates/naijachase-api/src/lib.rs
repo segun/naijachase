@@ -1008,6 +1008,7 @@ pub struct Metrics {
     active_requests: AtomicU64,
     active_requests_max: AtomicU64,
     browser_errors: AtomicU64,
+    browser_performance_events: AtomicU64,
     weekly_runs: AtomicU64,
     weekly_failures: AtomicU64,
     weekly_expired: AtomicU64,
@@ -1275,6 +1276,66 @@ struct BrowserErrorReport {
     api_request_id: String,
 }
 
+#[derive(Debug, Deserialize)]
+struct BrowserPerformanceReport {
+    #[serde(default)]
+    release: String,
+    #[serde(default)]
+    route: String,
+    events: Vec<BTreeMap<String, serde_json::Value>>,
+}
+
+const PERFORMANCE_EVENT_KEYS: &[&str] = &[
+    "kind",
+    "device_class",
+    "connection_type",
+    "save_data",
+    "viewport_class",
+    "trigger",
+    "choice",
+    "level",
+    "renderer",
+    "models",
+    "reason",
+    "scene",
+    "model_url",
+    "bytes",
+    "download_ms",
+    "decode_ms",
+    "priority",
+    "fps",
+    "metric",
+    "value_ms",
+    "value",
+];
+const PERFORMANCE_EVENT_KINDS: &[&str] = &[
+    "detail_selection",
+    "model_load",
+    "frame_rate",
+    "webgl_context_lost",
+    "scene_fallback",
+    "web_vital",
+];
+
+fn valid_performance_event(event: &BTreeMap<String, serde_json::Value>) -> bool {
+    if event.is_empty() || event.len() > PERFORMANCE_EVENT_KEYS.len() {
+        return false;
+    }
+    let kind = event.get("kind").and_then(serde_json::Value::as_str);
+    if !kind.is_some_and(|kind| PERFORMANCE_EVENT_KINDS.contains(&kind)) {
+        return false;
+    }
+    event.iter().all(|(key, value)| {
+        PERFORMANCE_EVENT_KEYS.contains(&key.as_str())
+            && match value {
+                serde_json::Value::String(value) => value.len() <= 512,
+                serde_json::Value::Number(value) => value.as_f64().is_some_and(f64::is_finite),
+                serde_json::Value::Bool(_) => true,
+                _ => false,
+            }
+    })
+}
+
 async fn browser_error(
     State(state): State<Arc<AppState>>,
     headers: HeaderMap,
@@ -1296,6 +1357,30 @@ async fn browser_error(
     Ok(StatusCode::ACCEPTED)
 }
 
+async fn browser_performance(
+    State(state): State<Arc<AppState>>,
+    headers: HeaderMap,
+    Json(report): Json<BrowserPerformanceReport>,
+) -> Result<StatusCode, ApiError> {
+    ensure_origin(&headers, &state.config)?;
+    if report.release.len() > 128
+        || report.route.len() > 512
+        || report.events.is_empty()
+        || report.events.len() > 20
+        || !report.events.iter().all(valid_performance_event)
+    {
+        return Err(bad_request("invalid browser performance report"));
+    }
+    state
+        .metrics
+        .browser_performance_events
+        .fetch_add(report.events.len() as u64, Ordering::Relaxed);
+    for event in report.events {
+        tracing::info!(browser_route=%report.route, release=%report.release, performance_event=%serde_json::to_string(&event).unwrap_or_default(), "browser performance");
+    }
+    Ok(StatusCode::ACCEPTED)
+}
+
 pub fn router(state: Arc<AppState>) -> Router {
     let limits = ServiceBuilder::new()
         .layer(HandleErrorLayer::new(handle_capacity_error))
@@ -1304,6 +1389,7 @@ pub fn router(state: Arc<AppState>) -> Router {
         .timeout(state.config.request_timeout);
     let application = Router::new()
         .route("/v1/telemetry/browser-errors", post(browser_error))
+        .route("/v1/telemetry/performance", post(browser_performance))
         .route("/v1/auth/register", post(register))
         .route("/v1/auth/confirm", post(confirm_email))
         .route("/v1/auth/confirmation/resend", post(resend_confirmation))
@@ -1645,7 +1731,7 @@ async fn metrics(State(state): State<Arc<AppState>>) -> Result<String, ApiError>
         }
     };
     let mut output = format!(
-        "naijachase_http_requests_total {}\nnaijachase_http_rejected_total {}\nnaijachase_http_active_requests {}\nnaijachase_http_active_requests_max {}\nnaijachase_commands_total {}\nnaijachase_duplicate_commands_total {}\nnaijachase_browser_errors_total {}\nnaijachase_emails_sent_total {}\nnaijachase_email_failures_total {}\nnaijachase_email_retries_total {}\nnaijachase_email_permanent_failures_total {}\nnaijachase_email_queue_messages {}\nnaijachase_email_sending_messages {}\nnaijachase_email_retry_messages {}\nnaijachase_email_permanent_failure_messages {}\nnaijachase_email_oldest_pending_age_seconds {}\nnaijachase_auth_db_round_trips_total {}\nnaijachase_auth_db_failures_total {}\nnaijachase_auth_db_duration_microseconds_total {}\nnaijachase_auth_db_duration_microseconds_max {}\nnaijachase_mysql_pool_acquisitions_total {}\nnaijachase_mysql_pool_acquisition_failures_total {}\nnaijachase_mysql_pool_wait_microseconds_total {}\nnaijachase_mysql_pool_wait_microseconds_max {}\nnaijachase_mysql_pool_waiters {}\nnaijachase_mysql_pool_waiters_max {}\nnaijachase_mysql_pool_min_connections {}\nnaijachase_mysql_pool_max_connections {}\nnaijachase_mysql_pool_connections_in_use {}\nnaijachase_mysql_pool_connections_in_use_max {}\nnaijachase_blocking_work_active {}\nnaijachase_weekly_jobs_total {}\nnaijachase_weekly_job_failures_total {}\nnaijachase_weekly_challenges_expired_total {}\nnaijachase_weekly_job_duration_microseconds_total {}\nnaijachase_weekly_job_duration_microseconds_max {}\nnaijachase_weekly_job_last_success_unix_seconds {}\n",
+        "naijachase_http_requests_total {}\nnaijachase_http_rejected_total {}\nnaijachase_http_active_requests {}\nnaijachase_http_active_requests_max {}\nnaijachase_commands_total {}\nnaijachase_duplicate_commands_total {}\nnaijachase_browser_errors_total {}\nnaijachase_browser_performance_events_total {}\nnaijachase_emails_sent_total {}\nnaijachase_email_failures_total {}\nnaijachase_email_retries_total {}\nnaijachase_email_permanent_failures_total {}\nnaijachase_email_queue_messages {}\nnaijachase_email_sending_messages {}\nnaijachase_email_retry_messages {}\nnaijachase_email_permanent_failure_messages {}\nnaijachase_email_oldest_pending_age_seconds {}\nnaijachase_auth_db_round_trips_total {}\nnaijachase_auth_db_failures_total {}\nnaijachase_auth_db_duration_microseconds_total {}\nnaijachase_auth_db_duration_microseconds_max {}\nnaijachase_mysql_pool_acquisitions_total {}\nnaijachase_mysql_pool_acquisition_failures_total {}\nnaijachase_mysql_pool_wait_microseconds_total {}\nnaijachase_mysql_pool_wait_microseconds_max {}\nnaijachase_mysql_pool_waiters {}\nnaijachase_mysql_pool_waiters_max {}\nnaijachase_mysql_pool_min_connections {}\nnaijachase_mysql_pool_max_connections {}\nnaijachase_mysql_pool_connections_in_use {}\nnaijachase_mysql_pool_connections_in_use_max {}\nnaijachase_blocking_work_active {}\nnaijachase_weekly_jobs_total {}\nnaijachase_weekly_job_failures_total {}\nnaijachase_weekly_challenges_expired_total {}\nnaijachase_weekly_job_duration_microseconds_total {}\nnaijachase_weekly_job_duration_microseconds_max {}\nnaijachase_weekly_job_last_success_unix_seconds {}\n",
         state.metrics.requests.load(Relaxed),
         state.metrics.rejected.load(Relaxed),
         state.metrics.active_requests.load(Relaxed),
@@ -1653,6 +1739,7 @@ async fn metrics(State(state): State<Arc<AppState>>) -> Result<String, ApiError>
         state.metrics.commands.load(Relaxed),
         state.metrics.duplicates.load(Relaxed),
         state.metrics.browser_errors.load(Relaxed),
+        state.metrics.browser_performance_events.load(Relaxed),
         state.metrics.emails_sent.load(Relaxed),
         state.metrics.email_failures.load(Relaxed),
         state.metrics.email_retries.load(Relaxed),
@@ -3697,7 +3784,7 @@ fn build_transport_quotes(
             })
         }
     }
-    for venue_id in unquestioned_venue_ids(&state.catalogue, &game) {
+    for venue_id in unquestioned_venue_ids(&state.catalogue, game) {
         let venue = &state.catalogue.venues[&venue_id];
         let base = placement_minutes(
             &state.catalogue,
@@ -3734,7 +3821,7 @@ fn build_transport_quotes(
         }
     }
     if game.stage as usize == game.route.len().saturating_sub(1) {
-        let ids = hideout_options(&state.catalogue, &game);
+        let ids = hideout_options(&state.catalogue, game);
         for venue_id in ids {
             let venue = &state.catalogue.venues[&venue_id];
             let base = placement_minutes(
@@ -3955,13 +4042,13 @@ async fn execute_command(
                 translate_command(&catalogue, &game, client_command, &account.home_base)?;
             let (next, mut events) =
                 naijachase_core::apply(game, command).map_err(|error| error.to_string())?;
-            if next.outcome.as_deref() == Some("escaped") {
-                if let Some(thief) = catalogue.thieves.get(&next.thief_id) {
-                    for event in &mut events {
-                        if event.event_type == "wrong_warrant" {
-                            event.data.insert("thief_name".into(), thief.name.clone());
-                            event.data.insert("thief_alias".into(), thief.alias.clone());
-                        }
+            if next.outcome.as_deref() == Some("escaped")
+                && let Some(thief) = catalogue.thieves.get(&next.thief_id)
+            {
+                for event in &mut events {
+                    if event.event_type == "wrong_warrant" {
+                        event.data.insert("thief_name".into(), thief.name.clone());
+                        event.data.insert("thief_alias".into(), thief.alias.clone());
                     }
                 }
             }
@@ -4777,10 +4864,7 @@ mod tests {
     #[test]
     fn validates_untrusted_identifiers_and_wait_bounds() {
         assert!(validate_id("../secret", "case_id").is_err());
-        assert!(matches!(
-            translate_command_stub(ClientCommand::Wait { minutes: 0 }),
-            Err(_)
-        ));
+        assert!(translate_command_stub(ClientCommand::Wait { minutes: 0 }).is_err());
     }
 
     #[test]
@@ -5076,8 +5160,7 @@ mod tests {
             let mut mission_has_complete_itinerary = false;
             for order in witness_orders {
                 let mut game = build_game_from_mission(&catalogue, mission, 0, 0).unwrap();
-                for stage in 0..game.route.len() {
-                    let venues = &stage_venues[stage];
+                for (stage, venues) in stage_venues.iter().enumerate().take(game.route.len()) {
                     assert_eq!(venues.len(), 3, "{} stage {stage}", mission.mission_id);
                     let profile = &catalogue.profiles[&mission.thief_id];
                     let (field, value) = profile.traits()[dossier_trait_index(&game, stage)];
@@ -5565,6 +5648,7 @@ mod tests {
             "/v1/auth/recovery/request",
             "/v1/auth/recovery/complete",
             "/v1/telemetry/browser-errors",
+            "/v1/telemetry/performance",
             "/v1/profile",
             "/v1/avatar/options",
             "/v1/profile/avatar",
@@ -5655,5 +5739,28 @@ mod tests {
                 "generated TypeScript missing {type_name}"
             );
         }
+    }
+
+    #[test]
+    fn performance_telemetry_accepts_only_bounded_anonymous_primitive_events() {
+        let valid = BTreeMap::from([
+            ("kind".into(), serde_json::json!("model_load")),
+            ("model_url".into(), serde_json::json!("/assets/3d/car.glb")),
+            ("bytes".into(), serde_json::json!(1234)),
+            ("device_class".into(), serde_json::json!("mid")),
+        ]);
+        assert!(valid_performance_event(&valid));
+
+        let mut unknown = valid.clone();
+        unknown.insert("player_id".into(), serde_json::json!("private"));
+        assert!(!valid_performance_event(&unknown));
+
+        let mut nested = valid.clone();
+        nested.insert("value".into(), serde_json::json!({"exact_hardware": "no"}));
+        assert!(!valid_performance_event(&nested));
+
+        let mut unknown_kind = valid;
+        unknown_kind.insert("kind".into(), serde_json::json!("arbitrary"));
+        assert!(!valid_performance_event(&unknown_kind));
     }
 }

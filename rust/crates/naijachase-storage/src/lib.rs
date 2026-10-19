@@ -1,3 +1,8 @@
+// Database row snapshots and transactional service methods intentionally mirror
+// wide SQL records. Refactoring them only to satisfy shape/arity style lints
+// would obscure the schema without improving correctness.
+#![allow(clippy::too_many_arguments, clippy::type_complexity)]
+
 use mysql::{
     DriverError, OptsBuilder, Pool, PoolConstraints, PoolOpts, PooledConn, SslOpts, TxOpts, params,
     prelude::Queryable,
@@ -3109,7 +3114,7 @@ impl MysqlStore {
 
     pub fn restore_operational(&self, path: &Path) -> Result<(), StorageError> {
         let backup: OperationalBackup = serde_json::from_slice(&fs::read(path)?)?;
-        if !matches!(backup.format_version, 1 | 2 | 3 | 4 | 5 | 6 | 7) {
+        if !matches!(backup.format_version, 1..=7) {
             return Err(StorageError::InvalidContent(
                 "unsupported backup version".into(),
             ));
@@ -5080,7 +5085,7 @@ mod tests {
                 None,
             )
             .unwrap();
-        assert!(store.execute_weekly(&owner, &first, 2, |s| Ok(s)).is_err());
+        assert!(store.execute_weekly(&owner, &first, 2, Ok).is_err());
         store.pool.get_conn().unwrap().exec_drop("UPDATE weekly_transits SET arrives_at=DATE_SUB(UTC_TIMESTAMP(),INTERVAL 1 SECOND) WHERE transit_id=:id",params!{"id"=>transit}).unwrap();
         assert!(store.complete_weekly_arrival(&owner, &first).unwrap());
         assert_eq!(
@@ -5094,11 +5099,7 @@ mod tests {
             })
             .unwrap();
         assert!(won.winner);
-        assert!(
-            store
-                .execute_weekly(&helper, &second, 1, |s| Ok(s))
-                .is_err()
-        );
+        assert!(store.execute_weekly(&helper, &second, 1, Ok).is_err());
         let details = store.weekly_challenge_details(&owner, &challenge).unwrap();
         assert_eq!(details["winner_attempt_id"], first);
         assert_eq!(store.expire_weekly_challenges().unwrap(), 0);

@@ -1,0 +1,21 @@
+.phases { display: grid; grid-template-columns: repeat(3, 1fr); gap: .6rem; list-style: none; margin: 0; padding: 0; }
+.phases li { display: flex; align-items: center; gap: .6rem; padding: .7rem .9rem; border-radius: 12px; background: var(--bg); border: 1px solid var(--line-soft); color: var(--muted); font-weight: 700; font-size: .9rem; }
+.phases li span { width: 1.7rem; height: 1.7rem; flex: none; display: grid; place-items: center; border-radius: 50%; border: 1px solid var(--line); font-size: .8rem; }
+.phases li.current { color: var(--ink); border-color: var(--gold); }
+.phases li.current span { background: var(--gold); color: #1b1505; border-color: var(--gold); }
+.phases li.done span { background: var(--green); color: #04100c; border-color: var(--green); }
+.notice { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; border-color: color-mix(in srgb, var(--gold) 40%, var(--line)); }
+.notice > .icon { font-size: 1.8rem; color: var(--gold); }
+.notice > div { flex: 1; min-width: 12rem; }
+.suspects { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+.suspect { display: grid; justify-items: center; gap: .35rem; padding: 1.3rem 1rem; border-radius: var(--radius); background: var(--paper); color: var(--paper-ink); border: 3px solid transparent; box-shadow: var(--shadow); transition: transform .2s, border-color .2s; }
+.suspect:hover:not(:disabled) { transform: rotate(-1deg) translateY(-3px); }
+.suspect:disabled { opacity: .45; cursor: not-allowed; }
+.suspect.picked { border-color: var(--green); box-shadow: 0 0 0 4px rgb(43 217 133 / .3), var(--shadow); }
+.suspect .muted { color: #6a5d40; }
+.suspect-photo { width: 4.5rem; height: 4.5rem; display: grid; place-items: center; border-radius: 10px; background: #cfc3a0; color: #6a5d40; font-size: 2.4rem; }
+.file-no { font-size: .68rem; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; color: #8d2f26; }
+.compare { display: grid; gap: 1rem; }
+.confirm { display: grid; gap: .6rem; padding: 1rem; border-radius: 12px; border: 1px solid var(--gold); background: var(--bg); }
+.issued { display: grid; gap: .6rem; justify-items: start; }
+.stamp-mark { display: inline-block; padding: .45rem 1rem; border: 4px double var(--gold); border-radius: 6px; color: var(--gold); font-family: var(--display); font-weight: 900; letter-spacing: .12em; text-transform: uppercase; animation: stamp .55s .15s cubic-bezier(.3, 1.4, .5, 1) both; transform: rotate(-6deg); }

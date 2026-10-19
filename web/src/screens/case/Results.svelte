@@ -1,4 +1,5 @@
 <script lang="ts">
+  import "../../styles/warrant.css";
   import { onMount } from "svelte";
   import type { AppController } from "../../state/app.svelte";
   import { clockParts } from "../../domain/model.ts";

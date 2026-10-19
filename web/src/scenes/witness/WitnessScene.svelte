@@ -12,6 +12,7 @@
   import { recipeFor } from "./venue-recipes.ts";
   import type { WitnessFrame, WitnessHandle } from "./witness-driver.ts";
   import type { Page } from "./witness-scene.ts";
+  import { reportSceneFallback } from "../../telemetry.ts";
 
   type Mode = "3d" | "flat";
   const FALLBACK_KEY = "nc-witness-flat";
@@ -66,6 +67,7 @@
   function fallBack(at: number, why: string) {
     if (mode !== "3d" || finished) return;
     console.warn(`The 3D witness scene is opening the witness account: ${why}`);
+    reportSceneFallback("witness", why);
     try { sessionStorage.setItem(FALLBACK_KEY, "1"); } catch { /* private mode: the next scene just tries 3D again */ }
     resumeAt = at; ready = false; failure = why; broken = true;
   }

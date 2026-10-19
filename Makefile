@@ -241,6 +241,7 @@ copy-code: ## Synchronize source code to the production application server
 		--exclude='rust/target/' \
 		--exclude='web/node_modules/' \
 		--exclude='web/dist/' \
+		--exclude='web/asset-originals/' \
 		--exclude='.DS_Store' \
 		./ "$(DEPLOY_HOST):$(DEPLOY_PATH)"
 
@@ -276,7 +277,7 @@ install-web: ## Publish the built static web client into the Nginx document root
 	@sudo install -d -m 0755 $(WEB_ROOT)
 	@sudo install -d -m 0750 $(SOURCE_MAP_ROOT)/$(RELEASE)
 	@sudo $(RSYNC) -rlt --delete --include='*/' --include='*.map' --exclude='*' --chmod=D750,F640 web/dist/ $(SOURCE_MAP_ROOT)/$(RELEASE)/
-	@sudo $(RSYNC) -rlt --delete --exclude='*.map' --chmod=D755,F644 web/dist/ $(WEB_ROOT)/
+	@sudo $(RSYNC) -rlt --delete --exclude='*.map' --exclude='.DS_Store' --delete-excluded --chmod=D755,F644 web/dist/ $(WEB_ROOT)/
 
 # Install the app's Nginx site; roll back if the config test fails.
 install-nginx: ## Install, validate, and reload the NaijaChase Nginx site

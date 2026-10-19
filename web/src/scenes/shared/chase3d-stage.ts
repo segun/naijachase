@@ -30,11 +30,12 @@ import type { ICanvasRenderingContext } from "@babylonjs/core/Engines/ICanvas";
 import { hex, material, paint } from "./chase3d-kit.ts";
 import { buildAvatar } from "../../avatar/avatar3d.ts";
 import { avatarModelId } from "./model-manifest.ts";
-import { loadModel } from "./chase3d-models.ts";
+import { bindModelLoadSignal, loadModel } from "./chase3d-models.ts";
 import { modelFigure } from "./chase3d-model-figure.ts";
 import type { AvatarPreset } from "../../avatar/avatar-model.ts";
 import { tooSlow } from "./scene-capability.ts";
 import { type CameraShot, FOV, PALETTES, ROOM, lightAt } from "./scene-core.ts";
+import { reportPerformanceEvent, reportSceneFallback } from "../../telemetry.ts";
 
 export type Ctx = ICanvasRenderingContext;
 export const WALL_HEIGHT = 3.1;
@@ -45,6 +46,8 @@ export type StageOptions = {
   quality?: "high" | "light";
   /** Whether the generated GLB models may be downloaded (the Full detail level). Without it the scene uses only the shapes built in code. */
   models?: boolean;
+  /** Cancels queued, downloading and not-yet-instantiated models when this stage is replaced. */
+  signal?: AbortSignal;
   /** Keeps the lamps at least this bright (a windowless room is lit all day). */
   minLamp?: number;
 };
@@ -85,10 +88,13 @@ export type SceneOptions = {
 
 export function createStage(canvas: HTMLCanvasElement, options: StageOptions) {
   if (!Engine.isSupported()) throw new Error("WebGL is not available");
+  const contextLost = () => reportPerformanceEvent({ kind: "webgl_context_lost", scene: "shared_stage" });
+  canvas.addEventListener("webglcontextlost", contextLost);
   const engine = new Engine(canvas, true, { stencil: false, powerPreference: "high-performance", antialias: true }, false);
   const light = options.quality === "light";
   engine.setHardwareScalingLevel(1 / Math.min(window.devicePixelRatio || 1, light ? 1 : 2));
   const scene = new Scene(engine);
+  bindModelLoadSignal(scene, options.signal);
   const palette = { ...PALETTES[lightAt(options.hour)] };
   palette.lamp = Math.max(palette.lamp, options.minLamp ?? 0);
   scene.clearColor = new Color4(0.02, 0.04, 0.035, 1);
@@ -217,8 +223,10 @@ export function createStage(canvas: HTMLCanvasElement, options: StageOptions) {
     const samples: number[] = [];
     let guard: number | undefined = window.setInterval(() => {
       if (finished || document.hidden) return;
-      samples.push(engine.getFps());
-      if (tooSlow(samples)) { clearInterval(guard); guard = undefined; o.onSlow?.(); }
+      const fps = Math.round(engine.getFps());
+      samples.push(fps);
+      reportPerformanceEvent({ kind: "frame_rate", scene: "shared_stage", fps });
+      if (tooSlow(samples)) { clearInterval(guard); guard = undefined; reportSceneFallback("shared_stage", "low frame rate"); o.onSlow?.(); }
     }, 1200);
     const frame = () => {
       if (document.hidden) return;
@@ -241,7 +249,7 @@ export function createStage(canvas: HTMLCanvasElement, options: StageOptions) {
           engine.runRenderLoop(frame);
         });
       },
-      dispose() { clearInterval(guard); done?.(); resize.disconnect(); engine.stopRenderLoop(); scene.dispose(); engine.dispose(); }
+      dispose() { clearInterval(guard); done?.(); resize.disconnect(); canvas.removeEventListener("webglcontextlost", contextLost); engine.stopRenderLoop(); scene.dispose(); engine.dispose(); }
     };
   };
 

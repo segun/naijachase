@@ -16,7 +16,7 @@ import { CreateSphere } from "@babylonjs/core/Meshes/Builders/sphereBuilder";
 import { CreateCapsule } from "@babylonjs/core/Meshes/Builders/capsuleBuilder";
 import { CreateCylinder } from "@babylonjs/core/Meshes/Builders/cylinderBuilder";
 import { material } from "../scenes/shared/chase3d-kit.ts";
-import { loadModel } from "../scenes/shared/chase3d-models.ts";
+import { bindModelLoadSignal, loadModel } from "../scenes/shared/chase3d-models.ts";
 import { avatarModelId } from "../scenes/shared/model-manifest.ts";
 import { build, hairParts, tintColor, type AvatarPreset, type Part, type Tint } from "./avatar-model.ts";
 
@@ -29,6 +29,7 @@ export type SnapshotOptions = {
   /** Called as each preview finishes so cards can fill in progressively. */
   onSnapshot: (avatarId: string, dataUrl: string) => void;
   isCancelled?: () => boolean;
+  signal?: AbortSignal;
   /** Use the generated GLB models (the Full detail level). Without it nothing is downloaded and the shapes built in code are drawn. */
   models?: boolean;
 };
@@ -135,6 +136,7 @@ export async function renderAvatarSnapshots(presets: readonly AvatarPreset[], op
   canvas.height = options.height ?? 350;
   const engine = new Engine(canvas, true, { preserveDrawingBuffer: true, stencil: false, alpha: true, antialias: true }, false);
   const scene = new Scene(engine);
+  bindModelLoadSignal(scene, options.signal);
   try {
     scene.clearColor = new Color4(0, 0, 0, 0);
     const camera = new ArcRotateCamera("camera", -Math.PI / 2, Math.PI / 2, 2.9, new Vector3(0, 1.0, 0), scene);

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import "../../styles/warrant.css";
   import { untrack } from "svelte";
   import type { AppController } from "../../state/app.svelte";
   import { HOME_BASES, STATES } from "../../domain/model.ts";

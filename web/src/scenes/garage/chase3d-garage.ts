@@ -19,7 +19,7 @@ export type GarageHandle = SceneHandle;
 export type GarageOptions = SceneOptions;
 
 export async function createGarageScene(canvas: HTMLCanvasElement, options: GarageOptions): Promise<GarageHandle> {
-  const stage = createStage(canvas, { hour: options.hour, quality: options.quality, models: options.models, minLamp: 0.6 });
+  const stage = createStage(canvas, { hour: options.hour, quality: options.quality, models: options.models, signal: options.signal, minLamp: 0.6 });
   const { scene, mat, box, cyl, plane, textured, place, caster, trim, centreX } = stage;
   const shell = mat("#5d6770", { specular: 0 });
   void shell;

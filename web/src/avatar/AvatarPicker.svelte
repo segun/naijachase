@@ -56,16 +56,18 @@
     const models = level.models;
     images = {};
     let cancelled = false;
-    const timer = setTimeout(() => { cancelled = true; }, PREVIEW_TIMEOUT_MS);
+    const controller = new AbortController();
+    const timer = setTimeout(() => { cancelled = true; controller.abort(); }, PREVIEW_TIMEOUT_MS);
     import("./avatar3d.ts")
       .then(m => m.renderAvatarSnapshots(current.options, {
         isCancelled: () => cancelled,
+        signal: controller.signal,
         models,
         onSnapshot: (id, url) => { if (!cancelled) images[id] = url; }
       }))
       .catch(() => { /* the silhouettes already on screen are the fallback */ })
       .finally(() => clearTimeout(timer));
-    return () => { cancelled = true; clearTimeout(timer); };
+    return () => { cancelled = true; controller.abort(); clearTimeout(timer); };
   });
 </script>
 
