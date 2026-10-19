@@ -25,7 +25,7 @@ completed.
 - [x] 100 thief-specific calling cards
 - [x] Balance simulation report for all 1,000 missions
 - [x] Coordinate-backed local travel for 416 matched locations
-- [x] 707 destination clue atoms: at least 19 for every state and 18 for the FCT
+- [x] 957 destination clue atoms: at least 25 for every state and 26 for the FCT
 - [x] Add a motto, city-identity, landmark, and economic-driver witness clue for
   every state and the FCT, with deliberately confusable candidate states.
 - [x] Remove all state and capital names from base witness clues and dialogue
@@ -200,7 +200,9 @@ completed.
 - [x] South South batch: Akwa Ibom, Bayelsa, Cross River, Delta, Edo, and
   Rivers.
 - [x] South East batch: Abia, Anambra, Ebonyi, Enugu, and Imo.
-- [x] Target 500–750 curated clue atoms nationally. Current total: 707.
+- [x] Exceeded the original 500–750 curated clue target nationally. Current total: 957.
+- [x] Add six state-creation and early-governance clue dimensions across all 36 states and the FCT.
+- [x] Add source-linked former-president and major Nigerian sports-event clue atoms.
 - [x] Cover history, kingdoms, independence, civil-war history, languages,
   traditions, food, festivals, literature, music, architecture, geography,
   ecology, agriculture, industry, institutions, monuments, and heritage.
@@ -1240,6 +1242,14 @@ scores, rank, detection odds, panel votes, punishment, or jail time.
 
 #### P3.10 — Adaptive visual client and scene production
 
+- [x] Fix portrait disciplinary-panel framing: keep the camera inside the courtroom,
+  retain all five judges, centre the verdict independently of its entrance animation,
+  and bound/scroll long verdicts so Accept stays reachable in both orientations.
+- [x] Give mobile players the best browser-supported full-screen experience in
+  portrait and landscape: a gesture-driven Fullscreen API control, an installable
+  fullscreen/standalone web manifest, Android's native install prompt, iPhone
+  Safari Add-to-Home-Screen guidance, safe-area-aware `100dvh` layout, install
+  icons, tests and operator notes in `docs/mobile-fullscreen-and-install.md`.
 - [ ] Generated GLB models (`docs/3d-models.md`, progress in `docs/3d-asset-progress.md`).
   - [x] Prompts, naming and folders (`docs/3d-generator-prompts.md`), asset checker page (`web/dev-assets.html`), optimiser (`pnpm assets:optimize`).
   - [x] Manifest, lazy loader with fallback to the procedural shapes, model-driven figure poses.

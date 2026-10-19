@@ -1,0 +1,29 @@
+{
+  "id": "/",
+  "name": "Naija Chase",
+  "short_name": "Naija Chase",
+  "description": "Follow clues across Nigeria, build the suspect dossier and catch the thief.",
+  "lang": "en-NG",
+  "start_url": "/",
+  "scope": "/",
+  "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#071c17",
+  "theme_color": "#071c17",
+  "categories": ["games", "education", "entertainment"],
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

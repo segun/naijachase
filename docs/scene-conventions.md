@@ -109,6 +109,20 @@ A venue is a recipe plus a 3D scenery set; the choreography is shared and does n
   Esc (or Back) calls `onclose` instead of skipping; it never affects the real wait. Reduced motion shows one still frame.
 - The flight's two airports are named from the case: `"<from> Airport"` and `"Welcome to <to> Airport"`. Avoid a green and white livery (it reads as a flag).
 
+## Disciplinary panel on phones
+
+The courtroom keeps its camera positions inside the room in both orientations.
+`panelFov` preserves the horizontal view by widening the vertical field of view
+on portrait screens. Do not apply the shared camera-backoff helper here: it moves
+the bench shot through the front wall and the verdict shot into the judges.
+The verdict card uses symmetric insets and auto margins for centring because
+the shared `rise` animation owns `transform`. Its height is bounded by the screen
+and safe areas, and long verdicts scroll to keep Accept reachable in landscape.
+Verified the actual Svelte panel in Chromium at 320×568, 393×852, 852×393,
+932×430 and 1280×720: the verdict stayed inside the viewport with no horizontal
+overflow, and Accept remained clickable after the entrance animation and rotation.
+These are browser viewport checks; physical iPhone/PWA confirmation is still needed.
+
 ## The raid scene
 
 `web/src/scenes/chase/` also plays the end-game raid after the player picks a hideout on the warrant screen (`app.raid` then `app.playRaid`,

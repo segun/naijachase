@@ -177,8 +177,8 @@ tests are Rust-only. WebAssembly is not required for the server engine.
 The ambiguity-aware Nigerian witness catalogue covers all 36 states and the FCT in six confusable
 regional groups, with a validated three-clue solution for every jurisdiction.
 The P0 depth pass and state-identity enrichment give every state and the FCT
-at least 18 distinct atoms. The catalogue currently contains 707 atoms and covers the complete P0 thematic
-checklist. The dialogue layer contains 6,363 English formulations: three
+at least 25 distinct atoms. The catalogue currently contains 957 atoms and covers the complete P0 thematic
+checklist. The dialogue layer contains 8,613 English formulations: three
 variants for each clue and difficulty level. Career saves retain the 60 most recent
 clue atoms and 120 most recent dialogue variants so later cases prefer unused
 material when alternatives exist.

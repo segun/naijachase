@@ -44,6 +44,7 @@ ARGS ?=
 .PHONY: help \
 	play test test-storage fmt fmt-check build release benchmark api api-test \
 	validate editorial enrichment enrich-state-clues standardize-witness-english \
+	enrich-civic-history repair-witness-dialogues \
 	export-witness-scenes simulate export \
 	db-migrate db-import db-rebuild db-verify db-publish-initial db-export \
 	db-backup db-restore db-test \
@@ -131,9 +132,17 @@ enrichment: ## Report semantic knowledge coverage
 enrich-state-clues: ## Rebuild state motto, city, landmark, and economy witness clues
 	@$(TOOLS) enrich-state-clues
 
+# Regenerate state-creation, early-governance, presidential, and sports-history clues.
+enrich-civic-history: ## Rebuild civic and national-history witness clues
+	@$(TOOLS) enrich-civic-history
+
 # Clean up witness clue language and metadata.
 standardize-witness-english: ## Remove non-English witness variants and standardize editorial metadata
 	@$(TOOLS) standardize-witness-english
+
+# Repair malformed place-name substitutions and keep atom/variant wording aligned.
+repair-witness-dialogues: ## Repair witness grammar after place-name anonymisation
+	@$(TOOLS) repair-witness-dialogues
 
 # Write the witness scene descriptions consumed by the web client.
 export-witness-scenes: ## Export Babylon.js witness venue and location scene descriptions

@@ -20,7 +20,11 @@
 .witness-error { position: absolute; inset: 0; z-index: 4; display: grid; place-content: center; justify-items: center; gap: .75rem; padding: 1.5rem; text-align: center; color: #fff; background: rgb(0 0 0 / .85); }
 .witness-error .mono { max-width: 60ch; margin: 0; font-size: .85rem; opacity: .75; overflow-wrap: anywhere; }
 
-.panel-card { position: absolute; left: 50%; bottom: 2rem; transform: translateX(-50%); z-index: 3; width: min(34rem, calc(100% - 2rem)); display: grid; gap: .6rem; padding: 1.1rem 1.3rem; border-radius: 14px; border: 1px solid var(--gold); background: rgb(6 20 14 / .92); color: var(--ink); animation: rise .5s ease both; }
+/* Centre with insets/margins: the shared rise animation owns transform. */
+.panel-card { position: absolute; left: max(1rem, env(safe-area-inset-left)); right: max(1rem, env(safe-area-inset-right)); bottom: max(1rem, env(safe-area-inset-bottom)); margin-inline: auto; z-index: 3; width: auto; max-width: 34rem; max-height: calc(100% - max(5rem, env(safe-area-inset-top)) - max(1rem, env(safe-area-inset-bottom))); overflow-y: auto; overscroll-behavior: contain; overflow-wrap: anywhere; display: grid; gap: .6rem; padding: 1.1rem 1.3rem; border-radius: 14px; border: 1px solid var(--gold); background: rgb(6 20 14 / .92); color: var(--ink); animation: rise .5s ease both; }
+.panel-card > * { min-width: 0; }
+.panel-card .btn { white-space: normal; }
+.panel-scene .room-skip { top: calc(max(.55rem, env(safe-area-inset-top)) + 3.5rem); left: max(1rem, env(safe-area-inset-left)); }
 .panel-card h2 { margin: 0; font-size: 1.3rem; }
 .panel-card ul { margin: 0; padding-left: 1.2rem; display: grid; gap: .3rem; }
 .panel-card:focus { outline: none; }

@@ -403,6 +403,449 @@ fn remove_place_names(text: &str, places: &[(String, &'static str)]) -> String {
         })
 }
 
+fn lowercase_first(text: &str) -> String {
+    let mut characters = text.chars();
+    let Some(first) = characters.next() else {
+        return String::new();
+    };
+    first.to_lowercase().collect::<String>() + characters.as_str()
+}
+
+fn traveller_voice(text: &str) -> String {
+    text.strip_prefix("He ")
+        .map(|rest| format!("The traveller {rest}"))
+        .unwrap_or_else(|| text.to_owned())
+}
+
+fn replace_variant_core(dialogue: &str, old: &str, new: &str) -> String {
+    let candidates = [
+        (old.to_owned(), new.to_owned()),
+        (lowercase_first(old), lowercase_first(new)),
+        (traveller_voice(old), traveller_voice(new)),
+    ];
+    for (old_form, new_form) in candidates {
+        if dialogue.contains(&old_form) {
+            return dialogue.replacen(&old_form, &new_form, 1);
+        }
+    }
+    panic!("dialogue variant no longer contains its clue atom: {dialogue}");
+}
+
+fn repair_witness_dialogues(root: &Path) {
+    let atom_path = root.join("data/gameplay/state-clue-atoms.csv");
+    let variant_path = root.join("data/gameplay/clue-dialogue-variants.csv");
+    let repairs = BTreeMap::from([
+        (
+            "SCA-P0-NORTH-WEST-KADUNA-10",
+            "He compared the planned avenues of the state capital with the walls and gates of an older emirate city.",
+        ),
+        (
+            "SCA-0016",
+            "He wanted a vehicle heading far northwest, beyond the usual routes through two larger northern hubs.",
+        ),
+        (
+            "SCA-P0-NORTH-EAST-BAUCHI-02",
+            "He studied an emirate founded during the nineteenth-century jihad that reshaped the northern emirates.",
+        ),
+        (
+            "SCA-P0-NORTH-EAST-BAUCHI-08",
+            "He wanted a state capital lying between a highland city to the west and a savannah city to the east.",
+        ),
+        (
+            "SCA-0024",
+            "He requested music and stories from riverine communities in the eastern wetlands.",
+        ),
+        (
+            "SCA-P0-SOUTH-SOUTH-RIVERS-01",
+            "He asked about refinery complexes and petroleum services around a major riverine city.",
+        ),
+        (
+            "SCA-P0-SOUTH-SOUTH-RIVERS-08",
+            "He studied mangroves, tidal creeks and pollution pressures in the eastern wetlands.",
+        ),
+        (
+            "SCA-P0-SOUTH-SOUTH-RIVERS-09",
+            "He studied the capture of a major port city and the struggle over the eastern wetlands during the civil war.",
+        ),
+        (
+            "SCA-P0-SOUTH-SOUTH-RIVERS-10",
+            "He requested environmental writing and fiction rooted in Ogoni and the wider riverine experience.",
+        ),
+        (
+            "SCA-0027",
+            "He bought smoked fish and asked about Ijaw communities in the central wetlands.",
+        ),
+        (
+            "SCA-P0-SOUTH-SOUTH-BAYELSA-04",
+            "He bought smoked fish, plantain and ingredients common in riverine cooking.",
+        ),
+        (
+            "SCA-P0-SOUTH-SOUTH-BAYELSA-05",
+            "He studied mangroves, floodplains and habitats of the central wetlands.",
+        ),
+        (
+            "SCA-P0-SOUTH-SOUTH-BAYELSA-09",
+            "He asked for poetry and environmental writing rooted in Ijaw life and the riverine region.",
+        ),
+        (
+            "SCA-0031",
+            "He wanted the western side of the riverine region rather than the major eastern port axis.",
+        ),
+        (
+            "SCA-0032",
+            "He asked for material about a historic coastal kingdom and its Olu.",
+        ),
+        (
+            "SCA-P0-SOUTH-SOUTH-DELTA-01",
+            "He followed petroleum refining and shipping around a major western riverine city.",
+        ),
+        (
+            "SCA-P0-SOUTH-SOUTH-DELTA-03",
+            "He researched the Olu and a historic coastal kingdom.",
+        ),
+        (
+            "SCA-P0-SOUTH-SOUTH-DELTA-04",
+            "He wanted the western side of the riverine region rather than the major eastern port axis.",
+        ),
+        (
+            "SCA-P0-SOUTH-SOUTH-DELTA-05",
+            "He traced trade and diplomacy between a coastal kingdom and Atlantic visitors.",
+        ),
+        (
+            "SCA-P0-SOUTH-SOUTH-DELTA-08",
+            "He asked for a state containing both a riverbank capital and a commercial city nearer the coast.",
+        ),
+        (
+            "SCA-P0-SOUTH-SOUTH-DELTA-10",
+            "He requested highlife and riverine music associated with a western trading city in the wetlands.",
+        ),
+        (
+            "SCA-P0-SOUTH-SOUTH-AKWA-IBOM-04",
+            "He asked about Ekpe institutions shared with communities across a neighbouring coastal border.",
+        ),
+        (
+            "SCA-0040",
+            "He was looking for an old port city near the mouth of a major southeastern river.",
+        ),
+        (
+            "SCA-P0-SOUTH-WEST-OSUN-06",
+            "He looked for artists and workshops associated with a celebrated post-independence art movement.",
+        ),
+        (
+            "SCA-0061",
+            "He asked for the sprawling commercial market on the eastern bank of a major river.",
+        ),
+        (
+            "SCA-0064",
+            "He wanted the southeastern commercial state linked across a major river by a famous bridge.",
+        ),
+        (
+            "SCA-P0-SOUTH-EAST-ANAMBRA-01",
+            "He asked for an enormous market city on the eastern bank of a major river.",
+        ),
+        (
+            "SCA-P0-SOUTH-EAST-ANAMBRA-06",
+            "He watched traffic cross a major river between the southeast and a neighbouring riverbank capital.",
+        ),
+        (
+            "SCA-P0-SOUTH-EAST-ABIA-09",
+            "He asked about a city that became a wartime capital after an earlier regional capital fell.",
+        ),
+        (
+            "SCA-P0-SOUTH-EAST-IMO-04",
+            "He asked about the rolling countryside and waterways around the state capital.",
+        ),
+        (
+            "SCA-0078",
+            "He wanted the state whose northern edge reaches a neighbouring republic around a busy frontier market.",
+        ),
+        (
+            "SCA-P0-NORTH-WEST-JIGAWA-06",
+            "He asked for a market route near the northern frontier with a neighbouring republic.",
+        ),
+        (
+            "SCA-0082",
+            "He asked for the far northwestern state bordering two neighbouring countries.",
+        ),
+        (
+            "SCA-0087",
+            "He asked for a state capital on the road between two larger northwestern cities.",
+        ),
+        (
+            "SCA-P0-NORTH-WEST-ZAMFARA-02",
+            "He described a state touching a neighbouring republic to the north and a major northern state to the south.",
+        ),
+        (
+            "SCA-P0-NORTH-WEST-ZAMFARA-03",
+            "He asked for a capital on the corridor between two larger northwestern cities.",
+        ),
+        (
+            "SCA-P0-NORTH-WEST-ZAMFARA-07",
+            "He was following the artisanal gold trade rather than the tin fields of the central highlands.",
+        ),
+        (
+            "SCA-0089",
+            "He asked about a state stretching from an upper river valley toward the Cameroon border.",
+        ),
+        (
+            "SCA-0092",
+            "He wanted a vehicle to a state capital beside a major upper river.",
+        ),
+        (
+            "SCA-P0-NORTH-EAST-ADAMAWA-01",
+            "He asked about the former capital of an old emirate before a newer riverbank city became the main centre.",
+        ),
+        (
+            "SCA-P0-NORTH-EAST-ADAMAWA-04",
+            "He followed a major upper river through a capital built beside its banks.",
+        ),
+        (
+            "SCA-P0-NORTH-EAST-ADAMAWA-09",
+            "He compared Fulfulde with Bachama, Batta and other languages spoken along a major upper river.",
+        ),
+        (
+            "SCA-P0-NORTH-EAST-ADAMAWA-10",
+            "He asked for a federal university overlooking a major river valley in the state capital.",
+        ),
+        (
+            "SCA-0093",
+            "He asked about a long-lived Sahelian empire and the seat of its shehus.",
+        ),
+        (
+            "SCA-P0-NORTH-EAST-BORNO-01",
+            "He traced a long-lived Sahelian state across centuries of trade, scholarship and warfare.",
+        ),
+        (
+            "SCA-P0-NORTH-EAST-BORNO-02",
+            "He asked for the seat of the Shehu rather than a Fulani emirate established by a nineteenth-century jihad.",
+        ),
+        (
+            "SCA-P0-NORTH-EAST-BORNO-07",
+            "He wanted the Nigerian state touching three neighbouring countries near the Lake Chad basin.",
+        ),
+        (
+            "SCA-P0-NORTH-EAST-BORNO-10",
+            "He requested chronicles and scholarship concerning an old Sahelian empire and the Lake Chad world.",
+        ),
+        (
+            "SCA-P0-NORTH-EAST-GOMBE-02",
+            "He researched emirates and chiefdoms created where highland foothills meet the northeast.",
+        ),
+        (
+            "SCA-P0-NORTH-EAST-GOMBE-05",
+            "He described a small inland state enclosed by five neighbouring states.",
+        ),
+        (
+            "SCA-0101",
+            "He wanted high country with cool grassland, tea fields and winding mountain roads.",
+        ),
+        (
+            "SCA-P0-NORTH-EAST-TARABA-01",
+            "He wanted cool grasslands and tea fields on elevated tablelands.",
+        ),
+        (
+            "SCA-P0-NORTH-EAST-TARABA-04",
+            "He followed tributaries of a major river through a state named after one of those waterways.",
+        ),
+        (
+            "SCA-P0-NORTH-EAST-TARABA-09",
+            "He compared Mumuye, Jukun, Kuteb, Fulfulde and languages spoken from a major river valley to the highlands.",
+        ),
+        (
+            "SCA-P0-NORTH-CENTRAL-BENUE-02",
+            "He followed a major east-west river through the state capital on its way to a famous confluence.",
+        ),
+        (
+            "SCA-P0-NORTH-CENTRAL-FEDERAL-CAPITAL-TERRITORY-06",
+            "He wanted the federal territory enclosed by four neighbouring states.",
+        ),
+        (
+            "SCA-0117",
+            "He asked where Nigeria's two greatest waterways meet in a clearly visible confluence.",
+        ),
+        (
+            "SCA-0120",
+            "He asked about Igala traditions and communities east of a major river.",
+        ),
+        (
+            "SCA-P0-NORTH-CENTRAL-KOGI-01",
+            "He asked where two major waterways meet below a prominent hill.",
+        ),
+        (
+            "SCA-P0-NORTH-CENTRAL-KOGI-09",
+            "He compared Igala, Ebira and Okun Yoruba speech from different sides of a major river.",
+        ),
+        (
+            "SCA-P0-NORTH-CENTRAL-KWARA-01",
+            "He studied an emirate city with Yoruba foundations and strong links to a historic caliphate.",
+        ),
+        (
+            "SCA-P0-NORTH-CENTRAL-KWARA-06",
+            "He asked about sugarcane, rice and large farms around a major river valley.",
+        ),
+        (
+            "SCA-P0-NORTH-CENTRAL-KWARA-08",
+            "He followed a major river along the state's northern boundary near a historic crossing town.",
+        ),
+        (
+            "SCA-P0-NORTH-CENTRAL-NASARAWA-06",
+            "He researched an old emirate and trade routes toward a major river valley.",
+        ),
+        (
+            "SCA-P0-NORTH-CENTRAL-NIGER-06",
+            "He followed a major river past reservoirs, islands and fishing settlements.",
+        ),
+        (
+            "SCA-0126",
+            "He wanted a state capital east of the federal capital and north of a major river valley.",
+        ),
+        (
+            "SCA-P0-NORTH-CENTRAL-NASARAWA-02",
+            "He wanted a state capital east of the federal capital and north of a major river valley.",
+        ),
+        (
+            "SCA-0136",
+            "He wanted a highland state capital south of a tourism state and north of a mineral-rich state.",
+        ),
+        (
+            "SCA-P0-NORTH-CENTRAL-PLATEAU-02",
+            "He wanted cool weather, granite formations and views from broad tablelands.",
+        ),
+        (
+            "SCA-P0-NORTH-CENTRAL-PLATEAU-08",
+            "He wanted a highland state capital south of a tourism state and north of a mineral-rich state.",
+        ),
+        (
+            "SCA-0140",
+            "He wanted an ancient royal capital north of the oil-producing coast and west of a major river.",
+        ),
+        (
+            "SCA-P0-SOUTH-SOUTH-EDO-08",
+            "He wanted the state north of the oil-producing coast and west of a major river.",
+        ),
+        (
+            "SCA-P0-SOUTH-EAST-EBONYI-07",
+            "He researched old communities along a southeastern river hinterland.",
+        ),
+        (
+            "SCA-P0-SOUTH-EAST-EBONYI-10",
+            "He listened for speech varieties used around the state capital, an old cultural town and the southeastern borderlands.",
+        ),
+        (
+            "SCA-ENRICH-008-3",
+            "The traveller was researching a royal palace associated with Kanuri history and traditional architecture.",
+        ),
+        (
+            "SCA-ENRICH-010-2",
+            "The traveller asked about a city nicknamed ‘the Big Heart on the river’.",
+        ),
+        (
+            "SCA-ENRICH-010-3",
+            "The traveller was researching a colonial-era museum connected with exploration along a major river.",
+        ),
+        (
+            "SCA-ENRICH-011-3",
+            "The traveller was researching natural salt lakes central to the state's identity.",
+        ),
+        (
+            "SCA-ENRICH-019-3",
+            "The traveller was researching ancient city walls and gates around a historic Hausa city.",
+        ),
+        (
+            "SCA-ENRICH-022-3",
+            "The traveller was researching a confluence point where Nigeria's two greatest waterways meet.",
+        ),
+        (
+            "SCA-ENRICH-026-2",
+            "The traveller asked about a city promoted as both a power centre and a digital city.",
+        ),
+        (
+            "SCA-ENRICH-029-3",
+            "The traveller was researching a sacred grove of shrines and sculptures beside a river.",
+        ),
+        (
+            "SCA-ENRICH-030-3",
+            "The traveller was researching the administrative tower of Nigeria's oldest degree-awarding university.",
+        ),
+        (
+            "SCA-ENRICH-031-2",
+            "The traveller asked about a city known by a single-letter nickname and a playful entertainment-industry moniker.",
+        ),
+        (
+            "SCA-ENRICH-033-3",
+            "The traveller was researching the architectural seat of Nigeria's foremost Islamic traditional ruler.",
+        ),
+    ]);
+
+    let mut atom_reader = csv::Reader::from_path(&atom_path).unwrap();
+    let atom_headers = atom_reader.headers().unwrap().clone();
+    let mut atoms = atom_reader
+        .records()
+        .map(|row| row.unwrap())
+        .collect::<Vec<_>>();
+    let mut old_by_atom = BTreeMap::new();
+    for row in &mut atoms {
+        let atom_id = row[0].to_owned();
+        let old = row[8].to_owned();
+        let mut new = repairs
+            .get(atom_id.as_str())
+            .map(|value| (*value).to_owned())
+            .unwrap_or_else(|| old.clone());
+        new = new.replace("another state", "a neighbouring state");
+        if new != old {
+            old_by_atom.insert(atom_id, (old, new.clone()));
+            let mut fields = row.iter().map(str::to_owned).collect::<Vec<_>>();
+            fields[8] = new;
+            *row = csv::StringRecord::from(fields);
+        }
+    }
+    assert_eq!(
+        repairs.len(),
+        repairs
+            .keys()
+            .filter(|id| atoms.iter().any(|row| row.get(0) == Some(id)))
+            .count(),
+        "repair table contains an unknown clue atom"
+    );
+
+    let mut variant_reader = csv::Reader::from_path(&variant_path).unwrap();
+    let variant_headers = variant_reader.headers().unwrap().clone();
+    let mut variants = variant_reader
+        .records()
+        .map(|row| row.unwrap())
+        .collect::<Vec<_>>();
+    for row in &mut variants {
+        let Some((old, new)) = old_by_atom.get(&row[1]) else {
+            continue;
+        };
+        let mut fields = row.iter().map(str::to_owned).collect::<Vec<_>>();
+        fields[5] = replace_variant_core(&fields[5], old, new);
+        *row = csv::StringRecord::from(fields);
+    }
+
+    let atom_temporary = atom_path.with_extension("csv.tmp");
+    let mut atom_writer = csv::Writer::from_path(&atom_temporary).unwrap();
+    atom_writer.write_record(&atom_headers).unwrap();
+    for row in atoms {
+        atom_writer.write_record(&row).unwrap();
+    }
+    atom_writer.flush().unwrap();
+    fs::rename(atom_temporary, atom_path).unwrap();
+
+    let variant_temporary = variant_path.with_extension("csv.tmp");
+    let mut variant_writer = csv::Writer::from_path(&variant_temporary).unwrap();
+    variant_writer.write_record(&variant_headers).unwrap();
+    for row in variants {
+        variant_writer.write_record(&row).unwrap();
+    }
+    variant_writer.flush().unwrap();
+    fs::rename(variant_temporary, variant_path).unwrap();
+    println!(
+        "Repaired {} clue atoms and their dialogue variants.",
+        old_by_atom.len()
+    );
+}
+
 fn standardize_witness_english(root: &Path) {
     let variant_path = root.join("data/gameplay/clue-dialogue-variants.csv");
     let mut reader = csv::Reader::from_path(&variant_path).unwrap();
@@ -699,6 +1142,327 @@ fn enrich_state_clues(root: &Path) {
     variant_writer.flush().unwrap();
     fs::rename(variant_temporary, variant_path).unwrap();
     println!("Added 189 state clue atoms and 1,701 English dialogue variants.");
+    repair_witness_dialogues(root);
+}
+
+fn append_english_variants(variants: &mut Vec<csv::StringRecord>, atom_id: &str, dialogue: &str) {
+    for (difficulty, prefixes) in [
+        (
+            "easy",
+            ["", "The clearest detail was this: ", "I wrote this down: "],
+        ),
+        (
+            "medium",
+            [
+                "The destination was not named. ",
+                "What stayed with me was this: ",
+                "One useful detail remains: ",
+            ],
+        ),
+        (
+            "hard",
+            [
+                "No place name was used; the useful fragment was this: ",
+                "The indirect reference was this: ",
+                "The only trace I could confirm was this: ",
+            ],
+        ),
+    ] {
+        for (number, prefix) in prefixes.iter().enumerate() {
+            variants.push(csv::StringRecord::from(vec![
+                format!(
+                    "{atom_id}-{}-E-{}",
+                    &difficulty[..1].to_uppercase(),
+                    number + 1
+                ),
+                atom_id.to_owned(),
+                difficulty.into(),
+                "English".into(),
+                (number + 1).to_string(),
+                format!("{prefix}{dialogue}"),
+            ]));
+        }
+    }
+}
+
+fn enrich_civic_history(root: &Path) {
+    let civic_seed_path = root.join("data/gameplay/civic-history-seeds.psv");
+    let event_seed_path = root.join("data/gameplay/national-event-clue-seeds.psv");
+    let atom_path = root.join("data/gameplay/state-clue-atoms.csv");
+    let variant_path = root.join("data/gameplay/clue-dialogue-variants.csv");
+
+    let candidate_sets = fs::read_to_string(root.join("data/gameplay/state-enrichment-seeds.psv"))
+        .unwrap()
+        .lines()
+        .skip(1)
+        .map(|line| {
+            let values = line.split('|').collect::<Vec<_>>();
+            (
+                values[0].to_owned(),
+                [
+                    values[1].to_owned(),
+                    values[2].to_owned(),
+                    values[3].to_owned(),
+                ],
+            )
+        })
+        .collect::<BTreeMap<_, _>>();
+
+    let civic_lines = fs::read_to_string(&civic_seed_path).unwrap();
+    let civic_seeds = civic_lines
+        .lines()
+        .skip(1)
+        .map(|line| {
+            let values = line.split('|').map(str::to_owned).collect::<Vec<_>>();
+            assert_eq!(values.len(), 10, "invalid civic history row: {line}");
+            values
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(
+        civic_seeds.len(),
+        37,
+        "every jurisdiction needs civic-history seeds"
+    );
+
+    let mut creation_cohorts = BTreeMap::<String, Vec<String>>::new();
+    for seed in &civic_seeds {
+        creation_cohorts
+            .entry(seed[2].clone())
+            .or_default()
+            .push(seed[0].clone());
+    }
+
+    let atom_headers = csv::Reader::from_path(&atom_path)
+        .unwrap()
+        .headers()
+        .unwrap()
+        .clone();
+    let variant_headers = csv::Reader::from_path(&variant_path)
+        .unwrap()
+        .headers()
+        .unwrap()
+        .clone();
+    let mut atoms = csv::Reader::from_path(&atom_path)
+        .unwrap()
+        .records()
+        .map(|row| row.unwrap())
+        .filter(|row| !row[0].starts_with("SCA-CIVIC-") && !row[0].starts_with("SCA-EVENT-"))
+        .collect::<Vec<_>>();
+    let mut variants = csv::Reader::from_path(&variant_path)
+        .unwrap()
+        .records()
+        .map(|row| row.unwrap())
+        .filter(|row| !row[0].starts_with("SCA-CIVIC-") && !row[0].starts_with("SCA-EVENT-"))
+        .collect::<Vec<_>>();
+
+    for (index, values) in civic_seeds.iter().enumerate() {
+        let state = &values[0];
+        let cohort = &creation_cohorts[&values[2]];
+        let mut candidates = vec![state.clone()];
+        candidates.extend(
+            cohort
+                .iter()
+                .filter(|candidate| *candidate != state)
+                .take(2)
+                .cloned(),
+        );
+        if candidates.len() < 3 {
+            let needed = 3 - candidates.len();
+            let extras = candidate_sets[state]
+                .iter()
+                .filter(|candidate| !candidates.contains(candidate))
+                .take(needed)
+                .cloned()
+                .collect::<Vec<_>>();
+            candidates.extend(extras);
+        }
+        let cohort_candidates = candidates.join("|");
+        let general_candidates = candidate_sets[state].join("|");
+        let first_governor_dialogue = if values[5].is_empty() {
+            "The traveller noted that this jurisdiction has no elected state governor and is administered by an appointed minister."
+                .to_owned()
+        } else {
+            format!(
+                "The traveller asked about the jurisdiction where {} became the first elected civilian governor in {}.",
+                values[5], values[6]
+            )
+        };
+        let records = [
+            (
+                "creation_year",
+                "hotel",
+                "Hotel",
+                "receptionist|concierge",
+                format!(
+                    "The traveller compared a jurisdiction established in {} with others created during the same nationwide reorganisation.",
+                    values[2]
+                ),
+                "1",
+                cohort_candidates.as_str(),
+            ),
+            (
+                "creation_date",
+                "airport",
+                "Airport",
+                "traveller|check-in agent",
+                format!(
+                    "The traveller copied a founding date of {} but left the jurisdiction unnamed.",
+                    values[1]
+                ),
+                "2",
+                cohort_candidates.as_str(),
+            ),
+            (
+                "state_formation",
+                "police_station",
+                "Police station",
+                "detective|desk officer",
+                format!(
+                    "The traveller traced a jurisdiction that was {}.",
+                    values[4]
+                ),
+                "2",
+                general_candidates.as_str(),
+            ),
+            (
+                "state_creation_regime",
+                "hospital",
+                "Hospital",
+                "records clerk|security guard",
+                format!(
+                    "The traveller researched a jurisdiction created during {}'s national administration.",
+                    values[3]
+                ),
+                "2",
+                cohort_candidates.as_str(),
+            ),
+            (
+                "first_civilian_governor",
+                "hotel",
+                "Hotel",
+                "receptionist|concierge",
+                first_governor_dialogue,
+                "3",
+                general_candidates.as_str(),
+            ),
+            (
+                "constitutional_history",
+                "airport",
+                "Airport",
+                "traveller|security officer",
+                format!(
+                    "The traveller linked the jurisdiction's political history to the fact that {}.",
+                    values[7]
+                ),
+                "2",
+                general_candidates.as_str(),
+            ),
+        ];
+        for (offset, (dimension, venue_id, venue_name, roles, dialogue, difficulty, candidates)) in
+            records.into_iter().enumerate()
+        {
+            let atom_id = format!("SCA-CIVIC-{:03}-{}", index + 1, offset + 1);
+            atoms.push(csv::StringRecord::from(vec![
+                atom_id.clone(),
+                state.clone(),
+                "civic_history".into(),
+                dimension.into(),
+                candidates.into(),
+                venue_id.into(),
+                venue_name.into(),
+                roles.into(),
+                dialogue.clone(),
+                difficulty.into(),
+                "Nigerian state creation and early-governance research".into(),
+                "Civic history seed catalogue".into(),
+                String::new(),
+                if dimension == "first_civilian_governor" {
+                    values[9].clone()
+                } else {
+                    values[8].clone()
+                },
+                "official_state_and_reference_sources".into(),
+                "source_attached_line_check_required".into(),
+                "2".into(),
+                "historical".into(),
+                "politics".into(),
+                "automated_pass".into(),
+                "not_applicable_english_only".into(),
+                "Verify the precise historical claim against the attached source before publication.".into(),
+            ]));
+            append_english_variants(&mut variants, &atom_id, &dialogue);
+        }
+    }
+
+    let event_lines = fs::read_to_string(&event_seed_path).unwrap();
+    let event_seeds = event_lines.lines().skip(1).collect::<Vec<_>>();
+    assert_eq!(
+        event_seeds.len(),
+        28,
+        "expected fourteen presidential and fourteen sports clues"
+    );
+    for (index, line) in event_seeds.into_iter().enumerate() {
+        let values = line.split('|').collect::<Vec<_>>();
+        assert_eq!(values.len(), 10, "invalid national event row: {line}");
+        let state = values[0];
+        let atom_id = format!("SCA-EVENT-{:03}", index + 1);
+        let (venue_id, venue_name, roles) = if values[2] == "stadium" {
+            (
+                "radio_station",
+                "Radio station",
+                "sports archivist|archive producer".to_owned(),
+            )
+        } else {
+            (values[2], values[3], values[4].replace(';', "|"))
+        };
+        let dialogue = values[5].to_owned();
+        atoms.push(csv::StringRecord::from(vec![
+            atom_id.clone(),
+            state.into(),
+            "national_history".into(),
+            values[1].into(),
+            candidate_sets[state].join("|"),
+            venue_id.into(),
+            venue_name.into(),
+            roles,
+            dialogue.clone(),
+            values[6].into(),
+            "Source-linked Nigerian national and sports history".into(),
+            "National event clue seed catalogue".into(),
+            String::new(),
+            values[7].into(),
+            values[8].into(),
+            "source_attached_line_check_required".into(),
+            "2".into(),
+            "historical".into(),
+            "politics_or_sport".into(),
+            "automated_pass".into(),
+            "not_applicable_english_only".into(),
+            values[9].into(),
+        ]));
+        append_english_variants(&mut variants, &atom_id, &dialogue);
+    }
+
+    let atom_temporary = atom_path.with_extension("csv.tmp");
+    let mut atom_writer = csv::Writer::from_path(&atom_temporary).unwrap();
+    atom_writer.write_record(&atom_headers).unwrap();
+    for atom in atoms {
+        atom_writer.write_record(&atom).unwrap();
+    }
+    atom_writer.flush().unwrap();
+    fs::rename(atom_temporary, atom_path).unwrap();
+
+    let variant_temporary = variant_path.with_extension("csv.tmp");
+    let mut variant_writer = csv::Writer::from_path(&variant_temporary).unwrap();
+    variant_writer.write_record(&variant_headers).unwrap();
+    for variant in variants {
+        variant_writer.write_record(&variant).unwrap();
+    }
+    variant_writer.flush().unwrap();
+    fs::rename(variant_temporary, variant_path).unwrap();
+    println!(
+        "Added 250 civic, presidential, and sports-history clue atoms and 2,250 English dialogue variants."
+    );
 }
 fn mysql() -> MysqlStore {
     let store = MysqlStore::connect_from_env().unwrap_or_else(|error| {
@@ -862,6 +1626,8 @@ fn main() {
         "editorial" => editorial(&root),
         "enrichment" => enrichment(&root),
         "enrich-state-clues" => enrich_state_clues(&root),
+        "enrich-civic-history" => enrich_civic_history(&root),
+        "repair-witness-dialogues" => repair_witness_dialogues(&root),
         "standardize-witness-english" => standardize_witness_english(&root),
         "export-witness-scenes" => export_witness_scenes(
             &root,
@@ -948,7 +1714,7 @@ fn main() {
         }
         other => {
             eprintln!(
-                "Unknown command {other}. Use validate, simulate, editorial, enrichment, standardize-witness-english, enrich-state-clues, export-witness-scenes, migrate-mysql, import-mysql, rebuild-mysql, verify-mysql, publish-initial-mysql, export-mysql, backup-mysql, restore-mysql, or export."
+                "Unknown command {other}. Use validate, simulate, editorial, enrichment, standardize-witness-english, enrich-state-clues, enrich-civic-history, repair-witness-dialogues, export-witness-scenes, migrate-mysql, import-mysql, rebuild-mysql, verify-mysql, publish-initial-mysql, export-mysql, backup-mysql, restore-mysql, or export."
             );
             std::process::exit(2)
         }

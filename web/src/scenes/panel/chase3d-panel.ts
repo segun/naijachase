@@ -7,8 +7,8 @@ import { createStage } from "../shared/chase3d-stage.ts";
 import { contactShadow } from "../shared/chase3d-shapes.ts";
 import { afterBrowserIdle, loadModel } from "../shared/chase3d-models.ts";
 import type { ModelFigure } from "../shared/chase3d-model-figure.ts";
-import { FOV, fitShotToAspect } from "../shared/scene-core.ts";
-import { LAYOUT, SEAT_X, frameAt, planPanel, type PanelHandle, type PanelOptions, type Vote } from "./panel-scene.ts";
+import { FOV } from "../shared/scene-core.ts";
+import { LAYOUT, SEAT_X, frameAt, panelFov, planPanel, type PanelHandle, type PanelOptions, type Vote } from "./panel-scene.ts";
 
 const SKIN = ["#8a5a3c", "#6b4226", "#a56c47", "#5a3720", "#7c4f33"];
 const TONEMAPPING_ACES = 1;
@@ -120,9 +120,9 @@ export async function createPanelScene3D(canvas: HTMLCanvasElement, options: Pan
 
   const aim = (shot: ReturnType<typeof frameAt>["camera"]) => {
     const aspect = stage.engine.getRenderWidth() / Math.max(1, stage.engine.getRenderHeight());
-    const fitted = fitShotToAspect(shot, aspect);
-    camera.position.set(...fitted.position);
-    camera.setTarget(new Vector3(...fitted.target));
+    camera.fov = panelFov(aspect);
+    camera.position.set(...shot.position);
+    camera.setTarget(new Vector3(...shot.target));
   };
 
   let lastT = 0, lastFade = -1, lastRevealed = "", lastVerdict = false;

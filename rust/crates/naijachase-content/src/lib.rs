@@ -56,6 +56,12 @@ fn has_non_english_witness_pattern(text: &str) -> bool {
         " the person say ",
         " the person price ",
         " the person carry ",
+        " another state ",
+        " another state. ",
+        " the the ",
+        " old a city ",
+        " the a city ",
+        " a city city ",
     ]
     .iter()
     .any(|pattern| lower.contains(pattern))
@@ -76,11 +82,11 @@ pub fn validate_repository(root: &Path) -> Result<(), Vec<String>> {
         ("thieves", "data/thieves/thieves.csv", 100),
         ("state hubs", "data/gameplay/state-hubs.csv", 37),
         ("travel edges", "data/gameplay/state-travel.csv", 1332),
-        ("clue atoms", "data/gameplay/state-clue-atoms.csv", 707),
+        ("clue atoms", "data/gameplay/state-clue-atoms.csv", 957),
         (
             "dialogue variants",
             "data/gameplay/clue-dialogue-variants.csv",
-            6363,
+            8613,
         ),
         (
             "mission narratives",
@@ -561,7 +567,7 @@ impl Catalogue {
                 .values()
                 .map(Vec::len)
                 .sum::<usize>()
-                != 6363
+                != 8613
         {
             return Err(Error::Incomplete(CatalogueSummary {
                 missions: value.missions.len(),
@@ -590,7 +596,7 @@ mod tests {
             ),
             (1000, 100, 37, 1332, 500)
         );
-        assert_eq!(c.atoms.values().map(Vec::len).sum::<usize>(), 707);
+        assert_eq!(c.atoms.values().map(Vec::len).sum::<usize>(), 957);
         assert!(c.dialogue_variants.values().all(|variants| {
             variants.len() == 9
                 && variants
@@ -599,15 +605,28 @@ mod tests {
         }));
         for (state, atoms) in &c.atoms {
             let spotlight = ["Lagos", "Kano", "Niger", "Oyo", "Rivers"].contains(&state.as_str());
+            let event_count = atoms
+                .iter()
+                .filter(|atom| atom.atom_id.starts_with("SCA-EVENT-"))
+                .count();
             assert_eq!(
                 atoms.len(),
-                if state == "Federal Capital Territory" {
-                    18
-                } else if spotlight {
-                    20
-                } else {
-                    19
-                },
+                6 + event_count
+                    + if state == "Federal Capital Territory" {
+                        18
+                    } else if spotlight {
+                        20
+                    } else {
+                        19
+                    },
+                "{state}"
+            );
+            assert_eq!(
+                atoms
+                    .iter()
+                    .filter(|atom| atom.atom_id.starts_with("SCA-CIVIC-"))
+                    .count(),
+                6,
                 "{state}"
             );
             assert_eq!(
@@ -633,6 +652,14 @@ mod tests {
                 "{state}"
             );
         }
+        assert_eq!(
+            c.atoms
+                .values()
+                .flatten()
+                .filter(|atom| atom.atom_id.starts_with("SCA-EVENT-"))
+                .count(),
+            28
+        );
     }
     #[test]
     fn malformed_or_missing_content_is_rejected() {

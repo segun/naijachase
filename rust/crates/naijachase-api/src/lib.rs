@@ -5234,6 +5234,10 @@ mod tests {
                         .0;
                     }
                 }
+                if game.outcome.is_some() {
+                    deadline_exhausted_orders += 1;
+                    continue;
+                }
                 game = naijachase_core::apply(
                     game,
                     Command::RequestWarrant {
@@ -5251,7 +5255,18 @@ mod tests {
                     &game.mission_id,
                     game.stage,
                 )
-                .unwrap();
+                .unwrap_or_else(|error| {
+                    panic!(
+                        "{} selected unavailable hideout {} in {} at stage {} with outcome {:?} and elapsed {} on route {:?}: {error}",
+                        mission.mission_id,
+                        hideout,
+                        game.state,
+                        game.stage,
+                        game.outcome,
+                        game.elapsed,
+                        game.route
+                    )
+                });
                 let (travel_minutes, cost) =
                     naijachase_core::local_quote(base_travel, "drive").unwrap();
                 game = naijachase_core::apply(

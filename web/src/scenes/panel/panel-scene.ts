@@ -2,7 +2,7 @@
 // raises a paper on a stick carrying their vote. When the last paper is up the scene cuts to the player accepting judgement.
 // Pure (no graphics library) so it is unit-tested and shared by the 3D renderer; the 2D fallback is PanelPresentation.svelte.
 // Every vote and the decision come from the server; nothing here chooses, reorders or changes one.
-import { type Vec, clamp01, mix, smooth } from "../shared/scene-core.ts";
+import { type Vec, FOV, clamp01, mix, smooth } from "../shared/scene-core.ts";
 
 export type Vote = "punish" | "warning";
 export type CameraShot = { position: Vec; target: Vec };
@@ -46,6 +46,12 @@ export type PanelFrame = {
 const BENCH_WIDE: CameraShot = { position: [0, 3.1, -5.6], target: [0, 1.15, 3.8] };
 const BENCH_CLOSE: CameraShot = { position: [0, 2.8, -4.4], target: [0, 1.2, 3.9] };
 const ACCEPT: CameraShot = { position: [0.55, 1.55, 1.7], target: [0, 1.5, -0.2] };
+
+/** Retain the horizontal cast on phones without backing through the courtroom walls or judges. */
+export function panelFov(aspect: number): number {
+  if (!Number.isFinite(aspect) || aspect <= 0 || aspect >= 1.3) return FOV;
+  return 2 * Math.atan(Math.tan(FOV / 2) * 1.3 / aspect);
+}
 
 export function frameAt(plan: PanelPlan, time: number): PanelFrame {
   const t = Math.min(Math.max(time, 0), plan.end);

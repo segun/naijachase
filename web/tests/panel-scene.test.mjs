@@ -1,7 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import { frameAt, planPanel, resumeTime, SEATS } from "../src/scenes/panel/panel-scene.ts";
+import { frameAt, panelFov, planPanel, resumeTime, SEATS, SEAT_X, LAYOUT } from "../src/scenes/panel/panel-scene.ts";
+import { FOV } from "../src/scenes/shared/scene-core.ts";
 
 const votes = ["warning", "punish", "punish", "warning", "punish"];
 const plan = planPanel(votes);
@@ -52,5 +53,29 @@ test("Full detail uses seated judge and player models while retaining procedural
   assert.match(scene, /plane\(`paper\$\{i\}`/);
   assert.match(scene, /RightArm/);
   assert.match(scene, /options\.signal\?\.addEventListener/);
-  assert.match(scene, /fitShotToAspect\(shot, aspect\)/, "the five-judge shot is fitted for portrait screens");
+});
+
+test("portrait framing keeps all five judges and papers in view without moving through the walls", () => {
+  for (const [w, h] of [[320, 568], [393, 852], [430, 932], [852, 393], [1280, 720]]) {
+    const aspect = w / h, fov = panelFov(aspect);
+    assert.ok(fov >= FOV && fov < Math.PI);
+    for (let t = 0; t < plan.cutAt; t += 0.1) {
+      const shot = frameAt(plan, t).camera;
+      // The old portrait dolly moved this camera behind the front wall at z=-7.6.
+      assert.ok(shot.position[2] > -7.45 && shot.position[2] < LAYOUT.benchZ);
+      const dy = shot.target[1] - shot.position[1], dz = shot.target[2] - shot.position[2];
+      const length = Math.hypot(dy, dz);
+      for (const x of SEAT_X) {
+        for (const point of [[x, 1.95, LAYOUT.judgeZ], [x + 0.8, LAYOUT.paperRaised + 0.23, LAYOUT.judgeZ - 0.4]]) {
+          const depth = ((point[1] - shot.position[1]) * dy + (point[2] - shot.position[2]) * dz) / length;
+          const halfWidth = depth * Math.tan(fov / 2) * aspect;
+          assert.ok(Math.abs(point[0]) < halfWidth, `${w}x${h} at ${t}: edge judge/paper is cropped`);
+        }
+      }
+    }
+    const end = frameAt(plan, plan.end).camera;
+    assert.ok(end.position[2] < LAYOUT.benchZ, "verdict camera stays in front of the bench and judge models");
+  }
+  assert.equal(panelFov(NaN), FOV);
+  assert.equal(panelFov(0), FOV);
 });
