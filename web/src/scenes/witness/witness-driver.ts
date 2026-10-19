@@ -2,7 +2,7 @@
 // handle they are given and return, the subtitles, the sound and the per-frame bookkeeping. A renderer only draws a frame for `t`
 // seconds and calls `step(t)`; the rules (timing, poses, words) live in witness-scene.ts, so the two never disagree about what happens.
 import type { AvatarPreset } from "../../avatar/avatar-model.ts";
-import type { CameraShot, Pose } from "../shared/scene-core.ts";
+import { fitShotToAspect, type CameraShot, type Pose } from "../shared/scene-core.ts";
 import { createWitnessAudio } from "./witness-audio.ts";
 import { hashOf, type VenueRecipe } from "./venue-recipes.ts";
 import {
@@ -95,7 +95,5 @@ export type Driver = ReturnType<typeof createDriver>;
 
 /** A portrait window shows less to the sides, so stand further back to keep the people in the picture. */
 export function fitShot(shot: CameraShot, aspect: number): CameraShot {
-  const back = aspect < 1.3 ? Math.min(2, 1.3 / Math.max(0.5, aspect)) : 1;
-  const [tx, ty, tz] = shot.target;
-  return { position: [tx + (shot.position[0] - tx) * back, ty + (shot.position[1] - ty) * back + (back - 1) * 0.4, tz + (shot.position[2] - tz) * back], target: shot.target };
+  return fitShotToAspect(shot, aspect, 2);
 }

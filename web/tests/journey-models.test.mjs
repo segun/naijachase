@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { MODELS, avatarModelId } from "../src/scenes/shared/model-manifest.ts";
-import { AIR, FOV, MODEL_AIR, modelBoardingPosition, frameAt, groundCameraX, planJourney } from "../src/scenes/journey/journey-scene.ts";
+import { AIR, FOV, MODEL_AIR, modelBoardingPosition, frameAt, groundCameraX, journeyCamera, planJourney } from "../src/scenes/journey/journey-scene.ts";
 
 const read = file => fs.readFileSync(new URL(`../src/scenes/journey/${file}`, import.meta.url), "utf8");
 const asset = id => {
@@ -112,6 +112,21 @@ test("portrait cameras keep the walker and seated driver inside the horizontal f
         const target = f.player?.visible ? f.player.x : f.vehicle.x;
         assert.ok(Math.abs(target - x) < halfWidth, `${mode} at ${t}: subject is visible on ${width}x${height}`);
       }
+    }
+  }
+});
+
+test("portrait flight cameras fit the complete procedural and Full-detail airliner", () => {
+  const plan = planJourney({ mode: "fly", from: "Lagos", to: "Kano", seed: 9 });
+  for (let t = 0; t < plan.end; t += 0.1) {
+    const f = frameAt(plan, t);
+    assert.deepEqual(journeyCamera(f, 1.8), f.cam, "desktop framing remains unchanged");
+    for (const [width, height] of [[320, 568], [360, 640], [393, 852]]) {
+      const aspect = width / height, cam = journeyCamera(f, aspect);
+      const halfWidth = cam.d * Math.tan(FOV / 2) * aspect;
+      const fullModelHalfLength = MODEL_AIR.length / 2;
+      assert.ok(Math.abs(f.vehicle.x - cam.x) + fullModelHalfLength <= halfWidth + 2.7,
+        `airliner is framed at ${t.toFixed(1)} on ${width}x${height}`);
     }
   }
 });

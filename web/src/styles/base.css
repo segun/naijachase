@@ -1,7 +1,7 @@
 *, *::before, *::after { box-sizing: border-box; }
-html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+html { max-width: 100%; overflow-x: hidden; scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
 body {
-  margin: 0; min-height: 100vh; color: var(--ink); background: var(--bg);
+  margin: 0; min-height: 100vh; max-width: 100%; overflow-x: hidden; color: var(--ink); background: var(--bg);
   background-image:
     radial-gradient(900px 500px at 85% -5%, rgb(43 217 133 / .14), transparent 60%),
     radial-gradient(700px 500px at -10% 110%, rgb(242 193 78 / .08), transparent 60%);

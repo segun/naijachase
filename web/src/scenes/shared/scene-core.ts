@@ -43,6 +43,21 @@ export type Vec = readonly [number, number, number];
 export type CameraShot = { position: Vec; target: Vec };
 export const isPortrait = (vw: number, vh: number) => vw <= vh || vw < 640;
 export const lerp3 = (a: Vec, b: Vec, k: number): Vec => [mix(a[0], b[0], k), mix(a[1], b[1], k), mix(a[2], b[2], k)];
+/** How much farther a wide cinematic camera must stand in a narrow viewport. */
+export function portraitCameraScale(aspect: number, reference = 1.3, maximum = 3): number {
+  if (!Number.isFinite(aspect) || aspect <= 0 || aspect >= reference) return 1;
+  return Math.min(maximum, reference / Math.max(0.4, aspect));
+}
+/** Preserve a shot's aim while backing it away enough to retain its horizontal cast and scenery. */
+export function fitShotToAspect(shot: CameraShot, aspect: number, maximum = 3): CameraShot {
+  const scale = portraitCameraScale(aspect, 1.3, maximum);
+  if (scale === 1) return shot;
+  const [tx, ty, tz] = shot.target;
+  return {
+    position: [tx + (shot.position[0] - tx) * scale, ty + (shot.position[1] - ty) * scale, tz + (shot.position[2] - tz) * scale],
+    target: shot.target
+  };
+}
 export function legAngles(pose: Pose) {
   const swing = Math.sin(pose.gait) * 0.62 * pose.stride;
   const bend = (phase: number) => Math.max(0, Math.sin(pose.gait + phase)) * 0.7 * pose.stride;

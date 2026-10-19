@@ -2,7 +2,7 @@
 // the parked cars while the transport options are shown, then either climbs into the open-top car and drives off or sets off on foot
 // to the roadside with a thumb out to hitch a ride. No Babylon.js here, so it is unit-tested; chase3d-garage.ts turns these numbers into pixels. Every animation is five
 // seconds or less.
-import { type CameraShot, type Pose, ROOM, clamp01, headingOf, lerp3, mix, smooth, turnTo } from "../shared/scene-core.ts";
+import { type CameraShot, type Pose, ROOM, clamp01, fitShotToAspect, headingOf, lerp3, mix, portraitCameraScale, smooth, turnTo } from "../shared/scene-core.ts";
 
 /** Longest any single animation may run, seconds. */
 export const MAX_SECONDS = 5;
@@ -44,6 +44,19 @@ export function introShotAt(t: number): CameraShot {
   return { position: lerp3(pan.position, wide.position, k), target: lerp3(pan.target, wide.target, k) };
 }
 export const wideShot = (): CameraShot => wide;
+
+/** Keep the player and their chosen car in a portrait garage instead of filling the screen with parked cars. */
+export function portraitGarageShot(shot: CameraShot, aspect: number, playerX: number = STAND.x): CameraShot {
+  const scale = portraitCameraScale(aspect);
+  if (scale === 1) return shot;
+  const k = clamp01((scale - 1) / 1.8);
+  const focusX = mix(playerX, CAR.x, 0.42);
+  const dx = mix(0, focusX - shot.target[0], k);
+  return fitShotToAspect({
+    position: [shot.position[0] + dx, shot.position[1], shot.position[2]],
+    target: [shot.target[0] + dx, shot.target[1], shot.target[2]]
+  }, aspect);
+}
 
 export type GaragePose = Pose & { alpha: number; /** 0 arm down, 1 right arm up with a thumb out. */ thumb: number };
 const base = (over: Partial<GaragePose>): GaragePose => ({ x: STAND.x, y: 0, z: STAND.z, heading: 0, sit: 0, gait: 0, stride: 0, type: 0, visible: true, alpha: 1, thumb: 0, ...over });

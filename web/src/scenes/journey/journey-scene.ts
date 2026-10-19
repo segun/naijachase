@@ -9,7 +9,7 @@
 //  * Hitch: into a minibus at the bus park, the same landscapes, the same billboard.
 //  * Fly:   into "<source state> Airport", up the air stairs showing a boarding pass to the cabin crew, taxi, take-off, landing,
 //           down the stairs and "Welcome to <state> Airport".
-import { clamp01, lightAt, mix, smooth, type Light } from "../shared/scene-core.ts";
+import { clamp01, lightAt, mix, portraitCameraScale, smooth, type Light } from "../shared/scene-core.ts";
 import type { AvatarPreset } from "../../avatar/avatar-model.ts";
 
 export type JourneyMode = "drive" | "hitch" | "fly";
@@ -162,7 +162,7 @@ const A1 = 3.6, A2 = 7.0, A3 = 3.4, A4 = 5.0, A5 = 5.5, A6 = 3.6, A7 = 2.8;
 const T_BOARD = A1, T_TAXI = T_BOARD + A2, T_TAKEOFF = T_TAXI + A3, T_LANDING = T_TAKEOFF + A4, T_DEPLANE = T_LANDING + A5, T_WELCOME = T_DEPLANE + A6, T_END = T_WELCOME + A7;
 export const AIR = { terminalX: 0, apronX: 100, landingStop: 560, stairBottom: 0.8, stairTop: 4.4, sill: 1.5, doorX: 4.9 };
 // The supplied airliner has a higher sill and wider wings than the procedural plane.
-export const MODEL_AIR = { stairBottom: 4.8, stairTop: 7.8, sill: 3.55, doorX: 8.22, bottomZ: -6.7, topZ: -2.9 };
+export const MODEL_AIR = { length: 27, stairBottom: 4.8, stairTop: 7.8, sill: 3.55, doorX: 8.22, bottomZ: -6.7, topZ: -2.9 };
 export function modelBoardingPosition(x: number, y: number, origin: number) {
   const height = clamp01(y / AIR.sill);
   return {
@@ -347,6 +347,20 @@ export function groundCameraX(frame: JourneyFrame, aspect: number) {
   const portrait = clamp01((1 - aspect) / 0.4);
   if (portrait > 0) return mix(frame.cam.x, focus, portrait);
   return frame.cam.x;
+}
+
+/** Camera used by both renderers. Portrait keeps the traveller centred and the whole airliner in view. */
+export function journeyCamera(frame: JourneyFrame, aspect: number) {
+  if (frame.vehicle.kind !== "plane") return { ...frame.cam, x: groundCameraX(frame, aspect) };
+  // Airliners are much wider than cars or people; retain a 1.6:1 horizontal composition.
+  const scale = portraitCameraScale(aspect, 1.6, 4);
+  if (scale === 1) return frame.cam;
+  let left = frame.vehicle.x - MODEL_AIR.length / 2, right = frame.vehicle.x + MODEL_AIR.length / 2;
+  if (frame.player?.visible) { left = Math.min(left, frame.player.x); right = Math.max(right, frame.player.x); }
+  if (frame.hostess) { left = Math.min(left, frame.hostess.x); right = Math.max(right, frame.hostess.x); }
+  const focus = (left + right) / 2;
+  const required = ((right - left) / 2 + 0.8) / (Math.tan(FOV / 2) * Math.max(0.4, aspect));
+  return { ...frame.cam, x: focus, d: Math.max(frame.cam.d * scale, required) };
 }
 
 /** The weekly "show travel route" view: already under way, nothing to board and nowhere to arrive. */

@@ -23,7 +23,7 @@ import { CreateSphere } from "@babylonjs/core/Meshes/Builders/sphereBuilder";
 import { sirenLevels } from "./chase-motion.ts";
 import { tooSlow } from "../shared/scene-capability.ts";
 import { type Rgb } from "./chase-biomes.ts";
-import { chaseFrame, OFFICERS, type ChaseFrame } from "./chase-frame.ts";
+import { chaseFrame, fitChaseFrame, OFFICERS, type ChaseFrame } from "./chase-frame.ts";
 import { hex, material, paint, seeded } from "../shared/chase3d-kit.ts";
 import { makeFigure } from "./chase3d-actors.ts";
 import { buildWorld } from "./chase3d-world.ts";
@@ -149,7 +149,8 @@ export async function createChaseScene(canvas: HTMLCanvasElement, options: Chase
     const t = now();
     // The world eases down while a city's sign passes. Running cadence follows half of that change, so the chase
     // reads as a slightly slower pace rather than slow motion.
-    const frameState = (options.frame ?? chaseFrame)(t);
+    const aspect = engine.getRenderWidth() / Math.max(1, engine.getRenderHeight());
+    const frameState = fitChaseFrame((options.frame ?? chaseFrame)(t), aspect);
     const { gait, weights, palette } = frameState;
 
     scene.clearColor = new Color4(...palette.fog, 1);

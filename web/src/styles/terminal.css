@@ -136,9 +136,22 @@
 /* A narrow or portrait glass: one column, menu on top. */
 @container (max-width: 720px) {
   .t-content { padding: 1.1em 1.1em .9em; gap: .6em; }
-  .t-body { grid-template-columns: 1fr; grid-template-rows: auto minmax(0, 1fr); gap: .8em; }
+  /* On compact screens the menu and selected panel must form one scroll area.
+     A nested, almost-zero-height .t-main prevented iOS from reaching the panel. */
+  .t-body {
+    display: block;
+    min-width: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+    scrollbar-width: thin;
+    scrollbar-color: var(--p-dim) transparent;
+  }
   .t-card, .t-map { display: none; }
-  .t-side { overflow: visible; }
+  .t-side { overflow: visible; margin-bottom: .8em; }
+  .t-main { min-height: auto; overflow: visible; padding-right: 0; }
   .t-list { grid-template-columns: 1fr 1fr; }
   .t-greet { font-size: 1.7em; }
   .t-rank { grid-template-columns: auto minmax(0, 1fr); }
@@ -148,7 +161,16 @@
   .t-title small, .t-status[aria-hidden] span:not(.t-blink) { display: none; }
   .t-status[aria-hidden] { justify-content: flex-end; }
 }
-@media (max-width: 639px) { .t-body { overflow-y: auto; } .t-main { overflow: visible; } }
+@media (max-width: 639px) {
+  .crt-screen { width: 100%; max-width: 100vw; overflow: hidden; }
+  .t-content { width: 100%; max-width: 100%; padding-top: 4.7rem; padding-inline: .8rem; }
+  .t-bar { min-width: 0; gap: .5em; }
+  .t-title, .t-clock { min-width: 0; }
+  .t-body { min-width: 0; overflow-y: auto; overflow-x: hidden; }
+  .t-main, .t-side { min-width: 0; overflow-x: hidden; }
+  .t-main { overflow-y: visible; padding-right: 0; }
+  .t-opt { min-width: 0; }
+}
 
 /* ---- The archive file: a manila sheet. It re-themes the ordinary screen styles through their custom properties. ---- */
 .glass.paper { background: #e6cf9a; }

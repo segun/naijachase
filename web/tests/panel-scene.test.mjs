@@ -52,4 +52,5 @@ test("Full detail uses seated judge and player models while retaining procedural
   assert.match(scene, /plane\(`paper\$\{i\}`/);
   assert.match(scene, /RightArm/);
   assert.match(scene, /options\.signal\?\.addEventListener/);
+  assert.match(scene, /fitShotToAspect\(shot, aspect\)/, "the five-judge shot is fitted for portrait screens");
 });

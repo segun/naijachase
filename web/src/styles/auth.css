@@ -18,3 +18,20 @@
 .strength { display: grid; grid-template-columns: repeat(4, 1fr); gap: .3rem; }
 .strength i { height: .3rem; border-radius: 99px; background: var(--line-soft); }
 .strength i.on { background: var(--green); }
+
+/* This file is loaded after the shared stylesheet, so its portrait rule must
+   live here too; otherwise the desktop split-screen declaration wins on phones. */
+@media (max-width: 960px) {
+  .auth { grid-template-columns: minmax(0, 1fr); min-height: 100dvh; }
+  .auth-side { display: none; }
+  .auth-main { min-width: 0; padding: 4.5rem 1rem max(1.25rem, env(safe-area-inset-bottom)); align-items: start; }
+  .auth-card { width: min(100%, 32rem); margin-inline: auto; }
+}
+
+@media (max-width: 480px) {
+  .auth-card { padding: 1.1rem; }
+  .auth-card .segmented button { padding-inline: .65rem; }
+  .form-grid { grid-template-columns: minmax(0, 1fr); }
+  .form-grid > * { grid-column: 1; }
+  .home-inputs { align-items: stretch; flex-direction: column; }
+}

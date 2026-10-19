@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import * as motion from "../src/scenes/chase/chase-motion.ts";
-import { chaseFrame, OFFICERS } from "../src/scenes/chase/chase-frame.ts";
+import { chaseFrame, fitChaseFrame, OFFICERS } from "../src/scenes/chase/chase-frame.ts";
 import { createChase2d } from "../src/scenes/chase/chase-2d.ts";
 
 const read = p => fs.readFileSync(new URL(`../src/${p}`, import.meta.url), "utf8");
@@ -87,6 +87,19 @@ test("both chase renderers share deterministic city, camera and running progress
   for (const f of ["chase3d.ts", "chase-2d.ts"]) assert.match(read(`scenes/chase/${f}`), /chaseFrame\)?\(|= chaseFrame\)/);
   assert.match(read("scenes/chase/ChaseStage.svelte"), /models, signal: controller\.signal, seconds/);
   assert.match(read("scenes/chase/chase3d.ts"), /webglcontextlost/);
+});
+
+test("portrait chase and raid cameras retain the thief and all officers", () => {
+  for (const t of [0, 5, 15, 31]) {
+    const original = chaseFrame(t);
+    assert.deepEqual(fitChaseFrame(original, 1.8), original, "desktop shot is unchanged");
+    for (const aspect of [320 / 568, 360 / 640, 393 / 852]) {
+      const frame = fitChaseFrame(original, aspect);
+      const distance = Math.hypot(...frame.camera.map((v, i) => v - frame.target[i]));
+      const halfWidth = distance * Math.tan(0.85 / 2) * aspect;
+      for (const runner of frame.runners) assert.ok(Math.abs(runner.x - frame.target[0]) < halfWidth, `${runner.name} remains visible`);
+    }
+  }
 });
 
 test("chase models are gated and failed loads retain their procedural counterparts", () => {

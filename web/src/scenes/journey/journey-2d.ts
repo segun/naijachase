@@ -2,7 +2,7 @@
 // WebGL cannot. It draws exactly what `frameAt` (journey-scene.ts) describes, using the same pinhole camera: a thing z metres behind the
 // road is drawn at 1 / (z + cam.d) of its size and the horizon is the middle of the screen.
 import { armAngles, legAngles, mix, type Pose } from "../shared/scene-core.ts";
-import { mixColour, AIR, FOV, HOSTESS, coloursAt, frameAt, propColours, propX, tone, weightAt, type JourneyFrame, type Prop } from "./journey-scene.ts";
+import { mixColour, AIR, FOV, HOSTESS, coloursAt, frameAt, journeyCamera, propColours, propX, tone, weightAt, type JourneyFrame, type Prop } from "./journey-scene.ts";
 import { createJourneyDriver, type JourneyHandle, type JourneyOptions } from "./journey-driver.ts";
 import { type Ctx, type Proj, box, disc, figure, fromPreset, px, py, stroke } from "../witness/witness-2d-kit.ts";
 import { drawBus, drawCar } from "../witness/witness-2d.ts";
@@ -135,7 +135,7 @@ export async function createJourneyScene2D(canvas: HTMLCanvasElement, options: J
     const f = frameAt(plan, t);
     g.setTransform(dpr, 0, 0, dpr, 0, 0);
     const focal = H / 2 / Math.tan(FOV / 2);
-    const { cam } = f;
+    const cam = journeyCamera(f, W / H);
     const at = (x: number, z: number, y = 0): Proj => { const k = focal / (z + cam.d); return { x: W / 2 + (x - cam.x) * k, y: H / 2 + (cam.y - y) * k, k, z }; };
     const col = coloursAt(plan, cam.x);
     sky(g, W, H, col.skyTop, col.skyBottom);

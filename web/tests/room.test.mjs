@@ -341,6 +341,18 @@ test("the garage intro: the player comes through the office door and stops besid
   b.position.forEach((v, i) => assert.ok(Math.abs(v - garage.wideShot().position[i]) < 1e-9, "settles on the wide shot"));
 });
 
+test("portrait garage framing keeps the player and chosen car visible", () => {
+  const desktop = garage.wideShot();
+  assert.deepEqual(garage.portraitGarageShot(desktop, 1.8), desktop, "desktop shot is unchanged");
+  for (const [width, height] of [[320, 568], [360, 640], [393, 852]]) {
+    const aspect = width / height;
+    const shot = garage.portraitGarageShot(desktop, aspect, garage.STAND.x);
+    const distance = Math.hypot(shot.position[0] - shot.target[0], shot.position[1] - shot.target[1], shot.position[2] - shot.target[2]);
+    const halfWidth = distance * Math.tan(core.FOV / 2) * aspect;
+    for (const x of [garage.STAND.x, garage.CAR.x]) assert.ok(Math.abs(x - shot.target[0]) < halfWidth, `${x} is visible on ${width}x${height}`);
+  }
+});
+
 test("driving: the player walks to the car, climbs in, and the car accelerates away with him in it", () => {
   const seat = { x: garage.CAR.x + garage.SEAT.x, z: garage.CAR.z + garage.SEAT.z };
   const seated = garage.drivePoseAt(garage.T_DRIVE_START);

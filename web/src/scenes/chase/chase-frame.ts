@@ -1,5 +1,6 @@
 import { biomeWeights, blendPalette, distanceAt, progressAt, SPEED, type Palette } from "./chase-biomes.ts";
 import { cycleAt, gapOffset, runPose, type Pose } from "./chase-motion.ts";
+import { fitShotToAspect } from "../shared/scene-core.ts";
 
 export const OFFICERS = [
   { name: "cop-a", x: -0.2, z: -0.9, phase: 0.4, period: 4.2, drift: 0.9, baton: true },
@@ -36,4 +37,10 @@ export function chaseFrame(seconds: number): ChaseFrame {
         baton: o.baton, pose: runPose(gait, o.phase, 0.72), cycle: cycleAt(gait, o.phase, 0.72) }))
     ]
   };
+}
+
+/** Keep the thief and all three officers inside narrow raid and opening-chase frames. */
+export function fitChaseFrame(frame: ChaseFrame, aspect: number): ChaseFrame {
+  const shot = fitShotToAspect({ position: frame.camera, target: frame.target }, aspect);
+  return { ...frame, camera: shot.position, target: shot.target };
 }

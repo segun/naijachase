@@ -279,13 +279,12 @@ install-web: ## Publish the built static web client into the Nginx document root
 	@sudo $(RSYNC) -rlt --delete --include='*/' --include='*.map' --exclude='*' --chmod=D750,F640 web/dist/ $(SOURCE_MAP_ROOT)/$(RELEASE)/
 	@sudo $(RSYNC) -rlt --delete --exclude='*.map' --exclude='.DS_Store' --delete-excluded --chmod=D755,F644 web/dist/ $(WEB_ROOT)/
 
-# Install the app's Nginx site; roll back if the config test fails.
-install-nginx: ## Install, validate, and reload the NaijaChase Nginx site
-	@if [ -f $(NGINX_SITE) ]; then sudo cp -a $(NGINX_SITE) $(NGINX_SITE).previous; fi
-	@sudo install -m 0644 deploy/nginx/naijachase.app.conf $(NGINX_SITE)
-	@sudo ln -sfn $(NGINX_SITE) $(NGINX_SITE_LINK)
-	@sudo nginx -t || { sudo cp -a $(NGINX_SITE).previous $(NGINX_SITE); sudo nginx -t; exit 1; }
-	@sudo systemctl reload nginx
+# Reconcile only the two owned sites; back up, reject duplicate warnings and reload.
+.PHONY: repair-nginx
+repair-nginx: install-nginx ## Repair duplicate NaijaChase virtual hosts and reload safely
+
+install-nginx: ## Install both NaijaChase sites, disable the legacy duplicate, validate and reload
+	@sudo sh deploy/nginx/install-sites.sh "$(NGINX_SITE)" "$(NGINX_SITE_LINK)" "$(LANDING_NGINX_SITE)" "$(LANDING_NGINX_SITE_LINK)"
 
 # Publish the web client and its Nginx config together.
 publish-web: install-web install-nginx ## Publish the web build and activate its Nginx configuration
@@ -294,11 +293,7 @@ publish-web: install-web install-nginx ## Publish the web build and activate its
 publish-landing: ## Publish the static landing site (naijachase.com) and its Nginx site
 	@sudo install -d -m 0755 $(LANDING_ROOT)
 	@sudo $(RSYNC) -rlt --delete --chmod=D755,F644 landing/ $(LANDING_ROOT)/
-	@if [ -f $(LANDING_NGINX_SITE) ]; then sudo cp -a $(LANDING_NGINX_SITE) $(LANDING_NGINX_SITE).previous; fi
-	@sudo install -m 0644 deploy/nginx/naijachase.com.conf $(LANDING_NGINX_SITE)
-	@sudo ln -sfn $(LANDING_NGINX_SITE) $(LANDING_NGINX_SITE_LINK)
-	@sudo nginx -t || { sudo cp -a $(LANDING_NGINX_SITE).previous $(LANDING_NGINX_SITE); sudo nginx -t; exit 1; }
-	@sudo systemctl reload nginx
+	@$(MAKE) install-nginx
 
 # =============================================================================
 # Quality gates

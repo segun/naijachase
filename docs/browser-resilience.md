@@ -57,3 +57,15 @@ Verification: the web suite exercises stalled fetches/bodies, refresh ordering a
 deadlines, command identity across reloads, ambiguous server failures, and actual
 Nginx cache/CSP headers. The Nginx integration test skips only when the executable
 is absent and uses a temporary local configuration without production TLS files.
+
+## Repairing duplicate virtual hosts
+
+`make repair-nginx`, `make install-nginx` and both publishing targets reconcile
+the owned game and landing configurations together. They retain
+`004-naijachase.app` and `003-naijachase.com`, and disable the legacy enabled
+`004-naijachase.com` entry. Other sites are untouched. Files and symlinks are
+backed up outside `sites-enabled`; validation errors, duplicate-name warnings
+and reload failures restore the previous files. Successful runs print the backup
+path. Never keep `.previous` or backup files inside `sites-enabled`, because
+Ubuntu's wildcard include loads them as additional configurations. The available
+legacy file can remain disabled for recovery.

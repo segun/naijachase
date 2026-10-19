@@ -1504,3 +1504,5 @@ section of `README.md`.
 - [x] Handle SIGTERM/Ctrl-C, drain requests and stop background workers within systemd limits; separate deployment migrations and runtime grants, and lock weekly expiry across instances (see `docs/process-lifecycle.md`).
 
 - [x] Bound browser API requests and preserve uncertain command IDs; enforce game CSP, version-aware HTTP caching, asset-original deployment exclusion and Finder-file cleanup (see `docs/browser-resilience.md`). Service-worker caching remains deferred.
+
+- [x] Reconcile the two NaijaChase Nginx sites together, disable the legacy duplicate landing entry, reject duplicate-name warnings and restore files/symlinks on deployment failure.

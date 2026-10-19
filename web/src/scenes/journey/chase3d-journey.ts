@@ -14,7 +14,7 @@ import {
   AIR, FOV, HOSTESS, MODEL_AIR, SEAT_Z,
   BUS_DRIVER,
   BUS_DRIVER_X, BUS_DRIVER_Y, BUS_DRIVER_Z,
-  coloursAt, frameAt, groundCameraX, mixColour, modelBoardingPosition, propColours, propX, tone, weightAt, type JourneyPlan, type Prop
+  coloursAt, frameAt, journeyCamera, mixColour, modelBoardingPosition, propColours, propX, tone, weightAt, type JourneyPlan, type Prop
 } from "./journey-scene.ts";
 import { createJourneyDriver, type JourneyHandle, type JourneyOptions } from "./journey-driver.ts";
 import { afterBrowserIdle, loadModel, type ModelHandle, type ModelPriority } from "../shared/chase3d-models.ts";
@@ -315,9 +315,10 @@ export async function createJourneyScene3D(canvas: HTMLCanvasElement, options: J
     const boarding = planeModel && (f.stage === "boarding" || f.stage === "deplane" || f.stage === "welcome");
     const modelInView = planeModel && f.stage !== "airport";
     const aspect = stage.engine.getRenderWidth() / stage.engine.getRenderHeight();
-    const cameraX = ground ? groundCameraX(f, aspect) : cam.x + (boarding ? 4 : 0);
-    const cameraY = cam.y + (modelInView ? 1.5 : 0);
-    const cameraDistance = cam.d + (modelInView ? boarding ? 5 : 12 : 0);
+    const fitted = journeyCamera(f, aspect);
+    const cameraX = fitted.x + (!ground && boarding && aspect >= 1.3 ? 4 : 0);
+    const cameraY = fitted.y + (modelInView ? 1.5 : 0);
+    const cameraDistance = fitted.d + (modelInView ? boarding ? 5 : 12 : 0);
     stage.aim({ position: [cameraX, cameraY, -cameraDistance], target: [cameraX, cameraY, 100] });
     const col = coloursAt(plan, cam.x);
     scene.clearColor.set(...(hex(col.skyTop).asArray() as [number, number, number]), 1);

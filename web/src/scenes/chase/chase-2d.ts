@@ -1,4 +1,4 @@
-import { chaseFrame, type ChaseFrame } from "./chase-frame.ts";
+import { chaseFrame, fitChaseFrame, type ChaseFrame } from "./chase-frame.ts";
 import { BIOMES, RING, SPEED, smoothstep, type Rgb } from "./chase-biomes.ts";
 import { sirenLevels, treadmillX } from "./chase-motion.ts";
 
@@ -16,7 +16,7 @@ export function createChase2d(canvas: HTMLCanvasElement, seconds: () => number, 
       canvas.width = Math.round(w * ratio); canvas.height = Math.round(h * ratio);
     }
     g.setTransform(ratio, 0, 0, ratio, 0, 0);
-    const frame = timeline(reducedMotion ? 0 : seconds()), p = frame.palette;
+    const frame = fitChaseFrame(timeline(reducedMotion ? 0 : seconds()), w / h), p = frame.palette;
     const sky = g.createLinearGradient(0, 0, 0, h);
     sky.addColorStop(0, css(p.skyTop)); sky.addColorStop(1, css(p.skyHorizon));
     g.fillStyle = sky; g.fillRect(0, 0, w, h);

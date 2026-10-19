@@ -12,7 +12,7 @@ import { loadModel } from "../shared/chase3d-models.ts";
 import { ROOM, armAngles, legAngles } from "../shared/scene-core.ts";
 import {
   CAR, DOOR, T_DRIVE_END, T_END, T_HITCH_END, carPitchAt, carZAt, doorAt, drivePoseAt, glassAt, introAlphaAt, introPoseAt, introShotAt, outroGlassAt, outroShotAt,
-  hitchPoseAt, wheelAngleAt, wideShot, type GaragePose
+  hitchPoseAt, portraitGarageShot, wheelAngleAt, wideShot, type GaragePose
 } from "./garage-scene.ts";
 
 export type GarageHandle = SceneHandle;
@@ -111,14 +111,17 @@ export async function createGarageScene(canvas: HTMLCanvasElement, options: Gara
     figure.setAlpha(p.visible ? p.alpha : 0);
   };
   const park = () => { hero.root.position.z = CAR.z; hero.root.rotation.x = 0; };
-  const aim = (shot: ReturnType<typeof wideShot>) => stage.aim(shot);
+  const aim = (shot: ReturnType<typeof wideShot>, playerX: number = -3.5) => {
+    const aspect = stage.engine.getRenderWidth() / Math.max(1, stage.engine.getRenderHeight());
+    stage.aim(portraitGarageShot(shot, aspect, playerX));
+  };
 
   // Intro: pan across the garage while the player comes through the door.
   const intro = (t: number) => {
     pose(introPoseAt(t), t);
     door.rotation.y = doorAt(t) * 1.75;
     park();
-    aim(introShotAt(t));
+    aim(introShotAt(t), introPoseAt(t).x);
     options.onGlass(glassAt(t));
   };
   void introAlphaAt;
@@ -130,7 +133,7 @@ export async function createGarageScene(canvas: HTMLCanvasElement, options: Gara
     hero.root.position.z = carZAt(t);
     hero.root.rotation.x = carPitchAt(t);
     hero.wheels.forEach(w => { w.rotation.x = wheelAngleAt(t); });
-    aim(outroShotAt("drive", t));
+    aim(outroShotAt("drive", t), drivePoseAt(t).x);
     options.onGlass(outroGlassAt(t));
   };
 
@@ -139,7 +142,7 @@ export async function createGarageScene(canvas: HTMLCanvasElement, options: Gara
     pose(hitchPoseAt(t), t);
     door.rotation.y = 1.75;
     park();
-    aim(outroShotAt("hitch", t));
+    aim(outroShotAt("hitch", t), hitchPoseAt(t).x);
     options.onGlass(outroGlassAt(t));
   };
 

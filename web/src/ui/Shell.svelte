@@ -81,5 +81,5 @@
     <button type="button" aria-current={app.screen === "settings" ? "page" : undefined} onclick={() => app.go("settings")}><Icon name="sliders" />Settings</button>
   </nav>
 {/if}
-{#if app.signedIn}<div class="music-dock" class:with-rail={rail}><MusicToggle music={app.music} /></div>{/if}
+{#if app.signedIn}<div class="music-dock" class:with-rail={rail} class:in-room={inRoom}><MusicToggle music={app.music} /></div>{/if}
 <Toasts {app} />
