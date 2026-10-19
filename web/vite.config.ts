@@ -4,24 +4,6 @@ import { assetList } from "./dev/asset-list-plugin.mjs";
 import { assetHygiene } from "./dev/asset-hygiene.mjs";
 import { assetVersion } from "./dev/asset-version.mjs";
 
-function babylonChunk(id: string) {
-  if (!id.includes("@babylonjs/")) return;
-  if (id.includes("@babylonjs/loaders/")) return "babylon-gltf";
-  if (id.includes("/Shaders/")) return "babylon-shaders";
-  if (id.includes("/Materials/")) return "babylon-materials";
-  if (id.includes("/Engines/")) return "babylon-engines";
-  if (id.includes("/Maths/")) return "babylon-maths";
-  if (id.includes("/Lights/")) return "babylon-lights";
-  if (id.includes("/Cameras/")) return "babylon-cameras";
-  if (id.includes("/Loading/")) return "babylon-loading";
-  if (id.includes("/Misc/")) return "babylon-misc";
-  if (id.includes("/Meshes/") || id.includes("/Buffers/") || id.includes("/Culling/")) {
-    return "babylon-meshes";
-  }
-  if (id.includes("/Animations/") || id.includes("/Bones/")) return "babylon-animation";
-  return "babylon-core";
-}
-
 export default defineConfig(({ mode }) => {
   const environment = loadEnv(mode, ".", "");
   // API_TARGET lets the dev server use another API (for example `pnpm mock`) without touching the default.
@@ -38,15 +20,7 @@ export default defineConfig(({ mode }) => {
     },
     build: {
       chunkSizeWarningLimit: 500,
-      sourcemap: "hidden",
-      rollupOptions: {
-        output: {
-          manualChunks: babylonChunk,
-          // Do not pull shared application dependencies into the explicitly
-          // lazy Babylon chunks (Rollup otherwise module-preloads them at boot).
-          onlyExplicitManualChunks: true
-        }
-      }
+      sourcemap: "hidden"
     },
     server: {
       host: "127.0.0.1",

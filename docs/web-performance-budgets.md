@@ -25,13 +25,19 @@ The application router now loads authentication, administration, results and
 detail controls only when used. Route-specific authentication and warrant CSS is
 also loaded with those routes. The model loader registers only Babylon's glTF 2
 loader rather than the barrel containing every optional glTF extension. Babylon
-code is emitted into named, lazy vendor boundaries so `chase3d-models` itself is
-small and the reusable 3D runtime can be cached across scenes.
+remains behind the scene-level dynamic imports. We deliberately let Rollup group
+Babylon's mutually dependent internals instead of forcing package directories
+into circular chunks.
 
 Most remaining lazy weight is the Babylon rendering runtime, materials and
 shaders. It is intentionally absent from the initial page and is only requested
 after the device/detail checks allow a 3D scene. The smaller application-route
 chunks, music engine and 2D fallbacks remain independently cacheable.
+
+The verified production result is 57.3 KiB initial JavaScript, 9.8 KiB initial
+CSS, 926.9 KiB total lazy JavaScript and a 318.5 KiB largest lazy chunk, all gzip.
+Vite still prints its intentional 500 KiB uncompressed warning for that Babylon
+chunk; the gzip release gate is the authoritative pass/fail check.
 
 The resulting shared CSS is 10.02 KiB gzip. Its budget is 10.5 KiB rather than a
 rounded 10 KiB so a successful release build has a small, explicit margin without

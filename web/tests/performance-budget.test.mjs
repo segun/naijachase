@@ -14,11 +14,10 @@ test("production bundle budgets fail the build when exceeded", () => {
   assert.doesNotMatch(budget, /advisory size target/);
 });
 
-test("Babylon is isolated behind reviewed lazy chunk boundaries", () => {
+test("Babylon stays lazy without forced package-internal chunk cycles", () => {
   const vite = read("../vite.config.ts");
   assert.match(vite, /chunkSizeWarningLimit:\s*500/);
-  assert.match(vite, /manualChunks:\s*babylonChunk/);
-  assert.match(vite, /onlyExplicitManualChunks:\s*true/);
+  assert.doesNotMatch(vite, /manualChunks/);
   const models = read("../src/scenes/shared/chase3d-models.ts");
   assert.match(models, /@babylonjs\/loaders\/glTF\/2\.0\/glTFLoader\.js/);
   assert.doesNotMatch(models, /import\("@babylonjs\/loaders\/glTF\/2\.0"\)/);

@@ -226,16 +226,17 @@ development-device guesses.
 ### Enforce web performance budgets
 
 - [x] Reduce initial JavaScript below the current 60 KiB compressed target.
-  Current result: 57.6 KiB gzip.
+  Current result: 57.3 KiB gzip.
 - [x] Reduce initial CSS below the current 10 KiB compressed target.
   Current result: 9.8 KiB gzip.
 - [x] Review approximately 1.1 MiB of compressed lazy JavaScript. It is now
-  approximately 885.5 KiB gzip; Babylon remains the dominant, deliberately lazy
+  approximately 926.9 KiB gzip; Babylon remains the dominant, deliberately lazy
   dependency. See `docs/web-performance-budgets.md`.
 - [x] Reduce the approximately 330 KiB compressed `chase3d-models` chunk using
-  narrower Babylon imports or better chunk boundaries.
-  It is now approximately 3.2 KiB gzip, with reusable Babylon code in separately
-  cacheable lazy chunks; the largest is approximately 165.8 KiB gzip.
+  narrower Babylon imports. It is now approximately 318.5 KiB gzip. The glTF
+  loader uses its narrow registration module and optional loader extensions are
+  separate. Forced package-directory chunks were rejected because they introduced
+  circular production chunks merely to move bytes between output files.
 - [x] Convert agreed initial and route-level budgets from advisory warnings into
   release failures. `pnpm build` now fails initial JS/CSS, total lazy JS, and
   largest-lazy-chunk regressions.
