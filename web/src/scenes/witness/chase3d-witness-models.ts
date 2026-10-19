@@ -2,15 +2,17 @@ import type { AbstractMesh } from "@babylonjs/core/Meshes/abstractMesh";
 import { TransformNode } from "@babylonjs/core/Meshes/transformNode";
 import { Matrix, Vector3 } from "@babylonjs/core/Maths/math.vector";
 import type { Stage } from "../shared/chase3d-stage.ts";
-import { loadModel } from "../shared/chase3d-models.ts";
+import { afterBrowserIdle, loadModel, type ModelPriority } from "../shared/chase3d-models.ts";
 import { aimJoint, modelFigure, type ModelFigure } from "../shared/chase3d-model-figure.ts";
 import { contactShadow } from "../shared/chase3d-shapes.ts";
 import { sceneryFit, type ModelGroup } from "./witness-models.ts";
 
 /** Fit scenery uniformly to its footprint or explicit height; retain procedural objects on load failure. */
-export async function replaceScenery(stage: Stage, group: ModelGroup, meshes: AbstractMesh[], front = -Infinity) {
+export async function replaceScenery(stage: Stage, group: ModelGroup, meshes: AbstractMesh[], front = -Infinity, priority: ModelPriority = "nearby") {
   if (!meshes.length || stage.scene.isDisposed) return;
-  const model = await loadModel(stage.scene, group.id);
+  const model = priority === "critical"
+    ? await loadModel(stage.scene, group.id, { priority })
+    : await afterBrowserIdle(() => loadModel(stage.scene, group.id, { priority }));
   if (!model) return;
   const min = new Vector3(Infinity, Infinity, Infinity), max = new Vector3(-Infinity, -Infinity, -Infinity);
   for (const mesh of meshes) {
@@ -29,8 +31,10 @@ export async function replaceScenery(stage: Stage, group: ModelGroup, meshes: Ab
   return model;
 }
 
-export async function replacePerson(stage: Stage, root: TransformNode, id: string): Promise<ModelFigure | null> {
-  const model = await loadModel(stage.scene, id);
+export async function replacePerson(stage: Stage, root: TransformNode, id: string, priority: ModelPriority = "decorative"): Promise<ModelFigure | null> {
+  const model = priority === "decorative"
+    ? await afterBrowserIdle(() => loadModel(stage.scene, id, { priority }))
+    : await loadModel(stage.scene, id, { priority });
   if (!model) return null;
   if (!model.clips.has("walk")) {
     console.warn(`Witness character "${id}" has no Walk clip; retaining the procedural character.`);

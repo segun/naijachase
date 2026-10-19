@@ -71,7 +71,7 @@ export async function createGarageScene(canvas: HTMLCanvasElement, options: Gara
   for (const x of [-2.95, -1.0, 0.925, 2.85]) box("bayLine", 0.07, 0.01, 3.8, line, x, 0.012, 2.1);
 
   // ---- The parked cars and the player's runabout ----
-  const heroModel = options.models ? await loadModel(scene, "car_player_runabout") : null;
+  const heroModel = options.models ? await loadModel(scene, "car_player_runabout", { priority: "critical" }) : null;
   heroModel?.meshes.forEach(m => stage.caster(m));
   const hero = heroModel ? { root: heroModel.root, wheels: [] as TransformNode[] } : runabout(stage);
   hero.root.position.set(CAR.x, 0, CAR.z);

@@ -142,6 +142,15 @@ The procedural 3D fallback is built in code. What keeps it from looking like bui
 
 Scenes may use GLB models from `web/public/assets/3d/` (see [3d-models.md](./3d-models.md)). The rule above still holds: if a model fails to load the scene keeps the shapes it builds in code, and the 2D renderer is unchanged.
 
+Full-detail model work has three priorities. The selected player, active witness and active vehicle are `critical`; a scene may await
+those before starting. Nearby scenery is `nearby`, while crowds, furniture and other dressing are `decorative` and start during browser
+idle time after the procedural scene has produced a usable first frame. The shared loader runs no more than four fetch/decode jobs at
+once and reserves background capacity so decorative work cannot crowd out critical models.
+
+Preloading is deliberately narrow. After the API accepts a venue visit, journey or raid command, application state may preload at most
+four explicitly named critical models for that next scene. It must not inspect or preload the complete model catalogue. New scenes must
+use the shared priority loader and preserve their procedural fallback until each replacement is fitted successfully.
+
 The login chase uses `chase-frame.ts` for both its model/procedural 3D and Canvas 2D renderers. Detail changes and 3D faults use the
 same clock, keeping the city progression, camera and runners in step. Do not independently play a model's Run clip or allow exported
 hip translation to move a runner away from its timeline position. Its desktop-only login side panel is intentionally hidden below

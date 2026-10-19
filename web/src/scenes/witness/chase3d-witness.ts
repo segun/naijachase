@@ -140,13 +140,11 @@ export async function createWitnessScene(canvas: HTMLCanvasElement, options: Wit
   let playerModel: ModelFigure | null = null, riderModel: ModelFigure | null = null, witnessModel: ModelFigure | null = null;
   if (options.models) {
     await Promise.all([
-      dressing.ready,
-      player && options.preset && avatarModelId(options.preset.avatar_id) ? replacePerson(stage, player.root, avatarModelId(options.preset.avatar_id)!).then(m => {
+      player && options.preset && avatarModelId(options.preset.avatar_id) ? replacePerson(stage, player.root, avatarModelId(options.preset.avatar_id)!, "critical").then(m => {
         playerModel = m;
       }) : undefined,
-      replacePerson(stage, witness.root, witnessModelId(witnessLook)).then(m => { witnessModel = m; }),
-      busRider && options.preset && avatarModelId(options.preset.avatar_id) ? replacePerson(stage, busRider.root, avatarModelId(options.preset.avatar_id)!).then(m => { riderModel = m; }) : undefined,
-      loadModel(scene, car ? "car_player_runabout" : "bus_danfo").then(m => {
+      replacePerson(stage, witness.root, witnessModelId(witnessLook), "critical").then(m => { witnessModel = m; }),
+      loadModel(scene, car ? "car_player_runabout" : "bus_danfo", { priority: "critical" }).then(m => {
         if (!m) return;
         const bounds = m.root.getHierarchyBoundingVectors(true), size = bounds.max.subtract(bounds.min);
         if (size.x > size.z) m.root.rotation.y = Math.PI / 2;
@@ -155,6 +153,12 @@ export async function createWitnessScene(canvas: HTMLCanvasElement, options: Wit
         m.meshes.forEach(mesh => caster(mesh));
       })
     ]);
+    // The procedural set is already usable. Nearby scenery and background crowds
+    // continue replacing it without delaying the first rendered frame.
+    void dressing.ready?.catch(error => console.warn("Witness background models could not be completed.", error));
+    if (busRider && options.preset && avatarModelId(options.preset.avatar_id)) {
+      void replacePerson(stage, busRider.root, avatarModelId(options.preset.avatar_id)!, "decorative").then(m => { riderModel = m; });
+    }
   }
   if (options.signal?.aborted) throw new DOMException("Witness setup cancelled", "AbortError");
 

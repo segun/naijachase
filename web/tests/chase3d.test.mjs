@@ -97,7 +97,7 @@ test("chase models are gated and failed loads retain their procedural counterpar
   assert.match(actors, /if \(!model\) return/);
   assert.match(actors, /if \(!clip\)/);
   assert.match(actors, /hips\.position\.x = origin\.x; hips\.position\.z = origin\.z/);
-  assert.match(read("scenes/chase/chase3d-world.ts"), /ready: models \? setup\(\) : Promise\.resolve\(\)/);
+  assert.match(read("scenes/chase/chase3d-world.ts"), /ready: models \? afterBrowserIdle\(setup\) : Promise\.resolve\(\)/);
 });
 
 test("the Canvas 2D chase draws a full loop without invalid projection or ellipse radii", t => {

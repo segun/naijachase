@@ -150,18 +150,18 @@ test("generated models are only requested at the Full detail level", () => {
   const read = p => fs.readFileSync(new URL(p, src), "utf8");
   assert.match(read("scenes/shared/chase3d-stage.ts"), /options\.models && preset \? avatarModelId/, "stage avatars");
   assert.match(read("scenes/garage/chase3d-garage.ts"), /options\.models \? await loadModel/, "the garage car");
-  assert.match(read("scenes/office/chase3d-room.ts"), /options\.models \? await loadModel/, "office furniture");
+  assert.match(read("scenes/office/chase3d-room.ts"), /if \(options\.models\) void afterBrowserIdle/, "office furniture follows the usable first frame");
   assert.match(read("avatar/avatar3d.ts"), /options\.models \? avatarModelId/, "picker previews");
   // loadModel may only be called from these guarded places
   const callers = [];
   const walk = d => fs.readdirSync(d, { withFileTypes: true }).forEach(e => { const f = new URL(e.name + (e.isDirectory() ? "/" : ""), d); if (e.isDirectory()) walk(f); else if (/\.(ts|svelte)$/.test(e.name) && /\bloadModel\(/.test(fs.readFileSync(f, "utf8"))) callers.push(e.name); });
   walk(src);
   assert.match(read("scenes/chase/chase3d.ts"), /if \(options\.models\) await Promise\.all/);
-  assert.match(read("scenes/chase/chase3d-world.ts"), /ready: models \? setup\(\) : Promise\.resolve\(\)/);
-  assert.match(read("scenes/witness/chase3d-witness.ts"), /if \(options\.models\) \{\s*await Promise\.all/);
+  assert.match(read("scenes/chase/chase3d-world.ts"), /ready: models \? afterBrowserIdle\(setup\) : Promise\.resolve\(\)/);
+  assert.match(read("scenes/witness/chase3d-witness.ts"), /priority: "critical"/);
   assert.match(read("scenes/witness/chase3d-open-air-kit.ts"), /if \(options\.models && group\)/);
   assert.match(read("scenes/witness/chase3d-buildings-kit.ts"), /if \(options\.models && current/);
-  assert.match(read("scenes/journey/chase3d-journey.ts"), /if \(options\.models\) \{\s*await Promise\.all/);
+  assert.match(read("scenes/journey/chase3d-journey.ts"), /,\s*"critical"\)/, "the active traveller and vehicle are critical");
   assert.deepEqual(callers.sort(), ["avatar3d.ts", "chase3d-garage.ts", "chase3d-journey.ts", "chase3d-model-actor.ts", "chase3d-models.ts", "chase3d-panel.ts", "chase3d-room.ts", "chase3d-stage.ts", "chase3d-witness-models.ts", "chase3d-witness.ts", "chase3d-world.ts"], "add the models guard when a new scene loads a model");
 });
 

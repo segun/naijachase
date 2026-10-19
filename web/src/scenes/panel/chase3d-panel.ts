@@ -5,7 +5,7 @@ import { Quaternion, Vector3 } from "@babylonjs/core/Maths/math.vector";
 import { TransformNode } from "@babylonjs/core/Meshes/transformNode";
 import { createStage } from "../shared/chase3d-stage.ts";
 import { contactShadow } from "../shared/chase3d-shapes.ts";
-import { loadModel, type ModelHandle } from "../shared/chase3d-models.ts";
+import { afterBrowserIdle, loadModel } from "../shared/chase3d-models.ts";
 import type { ModelFigure } from "../shared/chase3d-model-figure.ts";
 import { FOV } from "../shared/scene-core.ts";
 import { LAYOUT, SEAT_X, frameAt, planPanel, type PanelHandle, type PanelOptions, type Vote } from "./panel-scene.ts";
@@ -100,23 +100,23 @@ export async function createPanelScene3D(canvas: HTMLCanvasElement, options: Pan
     if (!stage.light) contactShadow(scene, player.root, 0.9, 0.7);
   }
   const playerModel: ModelFigure | null = await stage.addModelFigure(options.preset);
-  const judgeModels: (ModelHandle | null)[] = options.models
-    ? await Promise.all(SEAT_X.map((_, i) => loadModel(scene, `judge_${i + 1}`)))
-    : SEAT_X.map(() => null);
   if (options.signal?.aborted) throw options.signal.reason;
   if (playerModel && player) player.root.setEnabled(false);
-  const judgeArms: ({ joint: TransformNode; base: Quaternion } | null)[] = [];
-  const unriggedJudges: string[] = [];
-  judgeModels.forEach((model, i) => {
-    if (!model) { judgeArms.push(null); return; }
+  const judgeArms: ({ joint: TransformNode; base: Quaternion } | null)[] = SEAT_X.map(() => null);
+  const attachJudge = (model: Awaited<ReturnType<typeof loadModel>>, i: number) => {
+    if (!model || scene.isDisposed) { model?.dispose(); return; }
     model.root.parent = judgeRoots[i]!;
     model.meshes.forEach(m => caster(m));
     judgeBodies[i]!.setEnabled(false);
     const joint = model.root.getDescendants().filter((n): n is TransformNode => n instanceof TransformNode).find(n => n.name.endsWith(":RightArm"));
-    if (joint?.rotationQuaternion) judgeArms.push({ joint, base: joint.rotationQuaternion.clone() });
-    else { judgeArms.push(null); unriggedJudges.push(model.id); }
+    if (joint?.rotationQuaternion) judgeArms[i] = { joint, base: joint.rotationQuaternion.clone() };
+    else console.warn(`Panel judge model ${model.id} has no rigged right arm; its vote paper remains animated.`);
+  };
+  // Procedural judges make the first frame usable; detailed judges arrive while idle.
+  if (options.models) void afterBrowserIdle(async () => {
+    const models = await Promise.all(SEAT_X.map((_, i) => loadModel(scene, `judge_${i + 1}`, { priority: "decorative" })));
+    models.forEach(attachJudge);
   });
-  if (unriggedJudges.length) console.warn(`Panel judge models have no rigged right arm (${unriggedJudges.join(", ")}); vote papers remain animated.`);
 
   const aim = (shot: ReturnType<typeof frameAt>["camera"]) => {
     camera.position.set(...shot.position);

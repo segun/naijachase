@@ -55,8 +55,8 @@ test("journey models preserve the timeline and cancel abandoned setup", () => {
   assert.match(renderer, /pinHorizontalTravel: true, neutralStanding: true/);
   assert.match(renderer, /playerModel\.apply\(pose, t, hands\)/);
   assert.match(renderer, /card\.parent = hand/);
-  assert.match(renderer, /replaceVehicle\(bus\.root, "bus_danfo", Math\.PI \/ 2\)/, "the danfo model replaces the procedural minibus, turned to face right");
-  assert.match(renderer, /replaceVehicle\(root, "bus_coach", Math\.PI\)/);
+  assert.match(renderer, /replaceVehicle\(bus\.root, "bus_danfo", Math\.PI \/ 2, \[\], "critical"\)/, "the critical danfo model replaces the procedural minibus, turned to face right");
+  assert.match(renderer, /replaceVehicle\(root, "bus_coach", Math\.PI, \[\], "decorative"\)/);
   assert.match(renderer, /signal\?\.addEventListener\("abort", abort/);
   assert.match(renderer, /removeEventListener\("webglcontextlost", contextLost\)/);
   assert.match(renderer, /stage\.engine\.dispose\(\);\s*throw error/);

@@ -21,7 +21,7 @@ import { BIOMES, RING, SEGMENT, SPEED, smoothstep, type Palette } from "./chase-
 import { hex, material, merge, paint, seeded } from "../shared/chase3d-kit.ts";
 import { ankara, makeFigure, type FigureSpec } from "./chase3d-actors.ts";
 import { buildSign, type SignKind } from "./chase3d-signs.ts";
-import { loadModel } from "../shared/chase3d-models.ts";
+import { afterBrowserIdle, loadModel } from "../shared/chase3d-models.ts";
 import { replaceActor } from "./chase3d-model-actor.ts";
 
 type Node = TransformNode | Mesh | ReturnType<Mesh["createInstance"]>;
@@ -459,7 +459,7 @@ export function buildWorld(scene: Scene, shadows: ShadowGenerator | null, models
   const setup = async () => {
     await Promise.all([
       ...shops.filter(shop => !shop.parts[0]!.off).map(async shop => {
-        const model = await loadModel(scene, shop.id);
+        const model = await loadModel(scene, shop.id, { priority: "nearby" });
         if (!model) return;
         const { min, max } = model.root.getHierarchyBoundingVectors(true);
         const k = shop.height / (max.y - min.y);
@@ -476,7 +476,7 @@ export function buildWorld(scene: Scene, shadows: ShadowGenerator | null, models
       ...items.filter(item => !item.off && item.node instanceof InstancedMesh && replacements[item.node.sourceMesh.name]).map(async item => {
         const old = item.node;
         if (!(old instanceof InstancedMesh)) return;
-        const model = await loadModel(scene, replacements[old.sourceMesh.name]!);
+        const model = await loadModel(scene, replacements[old.sourceMesh.name]!, { priority: "decorative" });
         if (!model) return;
         const bounds = old.getBoundingInfo().boundingBox;
         const size = bounds.maximum.subtract(bounds.minimum).multiply(old.scaling);
@@ -497,11 +497,11 @@ export function buildWorld(scene: Scene, shadows: ShadowGenerator | null, models
         model.meshes.forEach(m => { m.receiveShadows = true; shadows?.addShadowCaster(m); });
         if (old.sourceMesh.name === "danfo") seatDriver(holder);
       }),
-      ...walkers.map(w => replaceActor(scene, w.figure, w.modelId, w.mode, shadows))
+      ...walkers.map(w => replaceActor(scene, w.figure, w.modelId, w.mode, shadows, "decorative"))
     ]);
   };
   return {
-    ready: models ? setup() : Promise.resolve(),
+    ready: models ? afterBrowserIdle(setup) : Promise.resolve(),
     sea,
     update(t, palette, weights, gait) {
       const presence = weights.map(w => smoothstep(0.02, 0.4, w));

@@ -122,10 +122,10 @@ export async function createChaseScene(canvas: HTMLCanvasElement, options: Chase
 
   try {
     if (options.models) await Promise.all([
-      world.ready,
       replaceActor(scene, thief, "masked_thief", "run", shadows),
       ...officers.map(o => replaceActor(scene, o.figure, "crowd_police", "run", shadows))
     ]);
+    if (options.models) void world.ready.catch(error => console.warn("Chase background models could not be completed.", error));
   } catch (error) {
     options.signal?.removeEventListener("abort", abort); abort(); throw error;
   }

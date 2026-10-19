@@ -182,13 +182,13 @@ and permanent failures. Prometheus alert rules are checked in at
 
 ### Prioritise Full-detail loading
 
-- [ ] Load the player, active witness and vehicle first.
-- [ ] Render a usable first frame before loading decorative content.
-- [ ] Load nearby scenery next and background crowds during idle time.
-- [ ] Limit concurrent model fetch/decode work; begin testing with four at a time.
-- [ ] Preload only the next likely scene's critical asset set after the API confirms
+- [x] Load the player, active witness and vehicle first.
+- [x] Render a usable first frame before loading decorative content.
+- [x] Load nearby scenery next and background crowds during idle time.
+- [x] Limit concurrent model fetch/decode work; begin testing with four at a time.
+- [x] Preload only the next likely scene's critical asset set after the API confirms
   the action.
-- [ ] Never preload the complete model catalogue.
+- [x] Never preload the complete model catalogue.
 
 ### Reuse and cancel model work
 

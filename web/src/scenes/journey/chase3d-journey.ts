@@ -17,7 +17,7 @@ import {
   coloursAt, frameAt, groundCameraX, mixColour, modelBoardingPosition, propColours, propX, tone, weightAt, type JourneyPlan, type Prop
 } from "./journey-scene.ts";
 import { createJourneyDriver, type JourneyHandle, type JourneyOptions } from "./journey-driver.ts";
-import { loadModel, type ModelHandle } from "../shared/chase3d-models.ts";
+import { afterBrowserIdle, loadModel, type ModelHandle, type ModelPriority } from "../shared/chase3d-models.ts";
 import { aimJoint, modelFigure, type ModelFigure } from "../shared/chase3d-model-figure.ts";
 import { avatarModelId } from "../shared/model-manifest.ts";
 
@@ -181,7 +181,7 @@ export async function createJourneyScene3D(canvas: HTMLCanvasElement, options: J
     const modelId = !air && options.models ? SCENERY_MODELS[p.kind] : undefined;
     if (modelId) {
       const fallbackMeshes = root.getChildMeshes();
-      void loadModel(scene, modelId).then(model => {
+      void loadModel(scene, modelId, { priority: "nearby" }).then(model => {
         if (!model) return;
         if (scene.isDisposed) { model.dispose(); return; }
         model.root.parent = root;
@@ -237,8 +237,8 @@ export async function createJourneyScene3D(canvas: HTMLCanvasElement, options: J
   if (player && !light) contactShadow(scene, player.root, 0.9, 0.7);
   const wheelR = car ? 0.31 : bus ? 0.38 : 0.45;
   let playerModel: ModelFigure | null = null, crewModel: ModelFigure | null = null;
-  const replacePerson = async (fallback: NonNullable<typeof player>, id: string, seated: boolean) => {
-    const model = await loadModel(scene, id);
+  const replacePerson = async (fallback: NonNullable<typeof player>, id: string, seated: boolean, priority: ModelPriority) => {
+    const model = await loadModel(scene, id, { priority });
     if (!model) return null;
     if (!model.clips.has("walk") || (seated && !model.clips.has("sit"))) {
       console.warn(`Journey character "${id}" lacks required Walk${seated ? "/Sit" : ""} clips; retaining the built-in figure.`);
@@ -252,8 +252,8 @@ export async function createJourneyScene3D(canvas: HTMLCanvasElement, options: J
     contactShadow(scene, model.root, 0.9, 0.7);
     return figure;
   };
-  const replaceVehicle = async (root: TransformNode, id: string, yaw: number, keep: TransformNode[] = []) => {
-    const model = await loadModel(scene, id);
+  const replaceVehicle = async (root: TransformNode, id: string, yaw: number, keep: TransformNode[] = [], priority: ModelPriority = "nearby") => {
+    const model = await loadModel(scene, id, { priority });
     if (!model) return null;
     const meshes = root.getChildMeshes();
     model.root.parent = root; model.root.rotation.y = yaw;
@@ -265,16 +265,18 @@ export async function createJourneyScene3D(canvas: HTMLCanvasElement, options: J
   if (options.models) {
     await Promise.all([
       player && options.preset && avatarModelId(options.preset.avatar_id)
-        ? replacePerson(player, avatarModelId(options.preset.avatar_id)!, !!(car || bus)).then(m => { playerModel = m; }) : undefined,
-      crew ? replacePerson(crew, "witness_woman_uniform", false).then(m => { crewModel = m; }) : undefined,
-      ground && car ? replaceVehicle(ground.root, "car_player_runabout", 0) : undefined,
-      bus ? replaceVehicle(bus.root, "bus_danfo", Math.PI / 2).then(m => { if (m) bus.door.setEnabled(false); }) : undefined,
-      planeRig ? replaceVehicle(planeRig.body, "plane_airliner", 0, [planeRig.stairs, planeRig.doorOpen]).then(m => { planeModel = m; }) : undefined,
-      ...plan.props.filter(p => p.kind === "parkedbus").map(async p => {
-        const root = ensure(p);
-        await replaceVehicle(root, "bus_coach", Math.PI);
-      })
+        ? replacePerson(player, avatarModelId(options.preset.avatar_id)!, !!(car || bus), "critical").then(m => { playerModel = m; }) : undefined,
+      ground && car ? replaceVehicle(ground.root, "car_player_runabout", 0, [], "critical") : undefined,
+      bus ? replaceVehicle(bus.root, "bus_danfo", Math.PI / 2, [], "critical").then(m => { if (m) bus.door.setEnabled(false); }) : undefined,
+      planeRig ? replaceVehicle(planeRig.body, "plane_airliner", 0, [planeRig.stairs, planeRig.doorOpen], "critical").then(m => { planeModel = m; }) : undefined
     ]);
+    void afterBrowserIdle(async () => {
+      if (crew) crewModel = await replacePerson(crew, "witness_woman_uniform", false, "decorative");
+      await Promise.all(plan.props.filter(p => p.kind === "parkedbus").map(async p => {
+        const root = ensure(p);
+        await replaceVehicle(root, "bus_coach", Math.PI, [], "decorative");
+      }));
+    });
   }
   if (options.signal?.aborted) throw new DOMException("Journey setup cancelled", "AbortError");
   if (planeModel && planeRig) {

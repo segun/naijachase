@@ -2,13 +2,13 @@ import type { Scene } from "@babylonjs/core/scene";
 import type { ShadowGenerator } from "@babylonjs/core/Lights/Shadows/shadowGenerator";
 import { Matrix, Vector3 } from "@babylonjs/core/Maths/math.vector";
 import { TransformNode } from "@babylonjs/core/Meshes/transformNode";
-import { loadModel } from "../shared/chase3d-models.ts";
+import { loadModel, type ModelPriority } from "../shared/chase3d-models.ts";
 import { aimJoint } from "../shared/chase3d-model-figure.ts";
 import type { Figure } from "./chase3d-actors.ts";
 
 /** Keep the procedural figure until its replacement and the required in-place clip are ready. */
-export async function replaceActor(scene: Scene, fallback: Figure, id: string, movement: "walk" | "run" | "idle", shadows: ShadowGenerator | null): Promise<void> {
-  const model = await loadModel(scene, id);
+export async function replaceActor(scene: Scene, fallback: Figure, id: string, movement: "walk" | "run" | "idle", shadows: ShadowGenerator | null, priority: ModelPriority = "critical"): Promise<void> {
+  const model = await loadModel(scene, id, { priority });
   if (!model) return;
   const clip = model.clips.get(movement === "idle" ? "walk" : movement);
   if (!clip) {

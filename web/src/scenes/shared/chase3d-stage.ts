@@ -195,7 +195,7 @@ export function createStage(canvas: HTMLCanvasElement, options: StageOptions) {
   /** The player's avatar from its GLB model, or null when there is no model or it cannot be loaded (use `addFigure` then). */
   const addModelFigure = async (preset: AvatarPreset | null | undefined) => {
     const id = options.models && preset ? avatarModelId(preset.avatar_id) : null;
-    const model = id ? await loadModel(scene, id) : null;
+    const model = id ? await loadModel(scene, id, { priority: "critical" }) : null;
     if (!model) return null;
     model.meshes.forEach(m => caster(m));
     return modelFigure(model);

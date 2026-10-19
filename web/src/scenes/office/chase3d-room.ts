@@ -7,7 +7,7 @@ import { CreateGround } from "@babylonjs/core/Meshes/Builders/groundBuilder";
 import { hex, seeded } from "../shared/chase3d-kit.ts";
 import { createStage, type SceneHandle, type SceneOptions } from "../shared/chase3d-stage.ts";
 import { TransformNode } from "@babylonjs/core/Meshes/transformNode";
-import { loadModel, type ModelHandle } from "../shared/chase3d-models.ts";
+import { afterBrowserIdle, loadModel, type ModelHandle } from "../shared/chase3d-models.ts";
 import { CreateSphere } from "@babylonjs/core/Meshes/Builders/sphereBuilder";
 import { MAP_H, MAP_W, outlinePath, statePoint } from "../../domain/map.ts";
 import { ROOM, armAngles, legAngles, type Pose } from "../shared/scene-core.ts";
@@ -227,16 +227,18 @@ export async function createRoomScene(canvas: HTMLCanvasElement, options: RoomOp
   replace("office_chair", chairStart, [0, -0.04, 0], [0.62, 0.94, 0.62], chair);
 
   // ---- The player ----
-  const [glb] = await wait(Promise.all([
-    stage.addModelFigure(options.preset),
-    ...replacements.map(async replacement => {
-      const model = options.models ? await loadModel(scene, replacement.id) : null;
+  const glb = await wait(stage.addModelFigure(options.preset));
+  // The procedural room is the usable first frame. Furniture swaps happen
+  // nearby-first during idle time and never gate the desk.
+  if (options.models) void afterBrowserIdle(async () => {
+    await Promise.all(replacements.map(async replacement => {
+      const model = await loadModel(scene, replacement.id, { priority: "nearby" });
       if (model) {
         try { replacement.apply(model); replacement.hide(); }
         catch (error) { model.dispose(); console.warn(`Office model "${replacement.id}" could not be fitted; keeping its built-in shape.`, error); }
       }
-    })
-  ]));
+    }));
+  });
   const figure = glb ? null : stage.addFigure(options.preset);
   const hands = [new Vector3(DESK.x - 0.13, DESK.top + 0.06, 2.96), new Vector3(DESK.x + 0.13, DESK.top + 0.06, 2.96)] as const;
 

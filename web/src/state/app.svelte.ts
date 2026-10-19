@@ -669,6 +669,19 @@ export class AppController {
     if (this.game && this.trail.length === 0) this.trail = [this.game.state.current_state];
   }
 
+  /** Warm only the next server-confirmed scene's critical files; never the catalogue. */
+  private preloadSceneCritical(ids: string[]) {
+    void Promise.all([
+      import("../scenes/shared/detail.svelte.ts"),
+      import("../scenes/shared/model-manifest.ts"),
+      import("../scenes/shared/model-preload.ts")
+    ]).then(([{ detail }, manifest, preload]) => {
+      if (!detail.resolved.models) return;
+      const avatar = this.avatar ? manifest.avatarModelId(this.avatar.avatar_id) : null;
+      preload.preloadCriticalModels(avatar ? [avatar, ...ids] : ids);
+    }).catch(() => { /* Preloading is optional; the scene retains procedural fallbacks. */ });
+  }
+
   private begin(created: CaseResponse) {
     this.clearCase();
     this.caseId = created.case_id; this.game = created;
@@ -956,6 +969,13 @@ export class AppController {
       return true;
     }
     this.game = next;
+    if (payload.type === "visit_venue") {
+      this.preloadSceneCritical([payload.mode === "hitch_ride" ? "bus_danfo" : "car_player_runabout"]);
+    } else if (payload.type === "travel") {
+      this.preloadSceneCritical([payload.mode === "fly" ? "plane_airliner" : payload.mode === "hitch_ride" ? "bus_danfo" : "car_player_runabout"]);
+    } else if (payload.type === "search_hideout") {
+      this.preloadSceneCritical(["masked_thief", "crowd_police", payload.mode === "hitch_ride" ? "bus_danfo" : "car_player_runabout"]);
+    }
     const account = next.events.find(e => e.event_type === "witness_account")?.data;
     if (account?.message && !next.duplicate) {
       if (payload.type === "visit_venue") {

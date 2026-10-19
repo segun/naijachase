@@ -32,24 +32,62 @@ type Cache = Map<string, Promise<AssetContainer | null>>;
 const caches = new WeakMap<Scene, Cache>();
 let loaderReady: Promise<unknown> | null = null;
 const warned = new Set<string>();
+export type ModelPriority = "critical" | "nearby" | "decorative";
+type LoadJob<T> = { priority: number; run: () => Promise<T>; resolve: (value: T) => void; reject: (reason: unknown) => void };
+const MAX_MODEL_WORK = 4;
+const MAX_BACKGROUND_WORK = 2;
+let activeModelWork = 0;
+let activeBackgroundWork = 0;
+const modelQueue: LoadJob<unknown>[] = [];
+
+const priorityNumber = (priority: ModelPriority) => priority === "critical" ? 0 : priority === "nearby" ? 1 : 2;
+function pumpModelQueue() {
+  while (activeModelWork < MAX_MODEL_WORK) {
+    modelQueue.sort((a, b) => a.priority - b.priority);
+    const index = modelQueue.findIndex(job => job.priority === 0 || activeBackgroundWork < MAX_BACKGROUND_WORK);
+    if (index < 0) return;
+    const [job] = modelQueue.splice(index, 1);
+    if (!job) return;
+    activeModelWork++;
+    if (job.priority > 0) activeBackgroundWork++;
+    void job.run().then(job.resolve, job.reject).finally(() => {
+      activeModelWork--;
+      if (job.priority > 0) activeBackgroundWork--;
+      pumpModelQueue();
+    });
+  }
+}
+
+function scheduled<T>(priority: ModelPriority, run: () => Promise<T>): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    modelQueue.push({ priority: priorityNumber(priority), run, resolve: resolve as (value: unknown) => void, reject });
+    pumpModelQueue();
+  });
+}
+
+export const afterBrowserIdle = <T,>(work: () => Promise<T>): Promise<T> => new Promise((resolve, reject) => {
+  const start = () => work().then(resolve, reject);
+  const idle = (window as unknown as { requestIdleCallback?: (callback: () => void, options: { timeout: number }) => number }).requestIdleCallback;
+  if (idle) idle(start, { timeout: 1500 }); else window.setTimeout(start, 100);
+});
 
 const ready = () => (loaderReady ??= import("@babylonjs/loaders/glTF/2.0"));
 const withTimeout = <T,>(p: Promise<T>, ms: number): Promise<T> =>
   new Promise((resolve, reject) => { const t = setTimeout(() => reject(new Error("timed out")), ms); p.then(v => { clearTimeout(t); resolve(v); }, e => { clearTimeout(t); reject(e); }); });
 
-function container(scene: Scene, id: string, spec: ModelSpec, timeoutMs: number): Promise<AssetContainer | null> {
+function container(scene: Scene, id: string, spec: ModelSpec, timeoutMs: number, priority: ModelPriority): Promise<AssetContainer | null> {
   let cache = caches.get(scene);
   if (!cache) { cache = new Map(); caches.set(scene, cache); }
   let hit = cache.get(id);
   if (!hit) {
     let expired = false;
-    hit = withTimeout((async () => {
+    hit = scheduled(priority, () => withTimeout((async () => {
       await ready();
       if (scene.isDisposed) return null;
       const loaded = await LoadAssetContainerAsync(modelUrl(spec), scene);
       if (expired || scene.isDisposed) { loaded.dispose(); return null; }
       return loaded;
-    })(), timeoutMs).catch(e => {
+    })(), timeoutMs)).catch(e => {
       expired = true;
       if (scene.isDisposed) return null;
       if (!warned.has(id)) { warned.add(id); console.warn(`3D model "${id}" could not be loaded; using the built-in shape instead.`, e); }
@@ -61,10 +99,10 @@ function container(scene: Scene, id: string, spec: ModelSpec, timeoutMs: number)
 }
 
 /** Loads (once per scene) and instantiates a model. Returns null when the id is unknown or the file cannot be loaded. */
-export async function loadModel(scene: Scene, id: string, options: { timeoutMs?: number } = {}): Promise<ModelHandle | null> {
+export async function loadModel(scene: Scene, id: string, options: { timeoutMs?: number; priority?: ModelPriority } = {}): Promise<ModelHandle | null> {
   const spec = modelSpec(id);
   if (!spec) return null;
-  const source = await container(scene, id, spec, options.timeoutMs ?? 12000);
+  const source = await container(scene, id, spec, options.timeoutMs ?? 12000, options.priority ?? "nearby");
   if (!source || scene.isDisposed) return null;
   try {
     const entries = source.instantiateModelsToScene(name => `${id}:${name}`, false);

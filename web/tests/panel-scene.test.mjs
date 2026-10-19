@@ -45,7 +45,8 @@ test("the 3D scene is lazy and the 2D panel is the fallback", () => {
 
 test("Full detail uses seated judge and player models while retaining procedural vote papers", () => {
   const scene = read("scenes/panel/chase3d-panel.ts");
-  assert.match(scene, /options\.models\s*\?\s*await Promise\.all\(SEAT_X\.map\(\(_, i\) => loadModel\(scene, `judge_\$\{i \+ 1\}`\)\)\)/);
+  assert.match(scene, /if \(options\.models\) void afterBrowserIdle\(async \(\) =>/);
+  assert.match(scene, /loadModel\(scene, `judge_\$\{i \+ 1\}`, \{ priority: "decorative" \}\)/);
   assert.match(scene, /stage\.addModelFigure\(options\.preset\)/);
   assert.match(scene, /judgeBodies\[i\]!\.setEnabled\(false\)/, "the procedural judge remains the per-model fallback");
   assert.match(scene, /plane\(`paper\$\{i\}`/);
