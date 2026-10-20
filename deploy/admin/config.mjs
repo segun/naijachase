@@ -9,12 +9,6 @@ export function readEnv(file) {
   if (!fs.existsSync(file)) throw Error(`Configuration file is missing: ${file}`);
   return parseEnv(fs.readFileSync(file, "utf8"));
 }
-export function setupDirectory(requested) {
-  const directory = path.resolve(requested);
-  if (fs.existsSync(path.join(directory, "admin.env"))) return directory;
-  const legacy = path.join(directory, "first-install");
-  return fs.existsSync(path.join(legacy, "admin.env")) ? legacy : directory;
-}
 export function identifier(value, label) {
   if (!/^[A-Za-z_][A-Za-z0-9_]{0,63}$/.test(value ?? "")) throw Error(`${label} must contain only letters, digits and underscores.`);
   return value;
@@ -61,7 +55,7 @@ export function writePrivateEnv(file, values, exclusive = false) {
 }
 export function prepare(requested, source, hash) {
   const game = gameSettings(source);
-  const directory = privateDirectory(setupDirectory(requested));
+  const directory = privateDirectory(path.resolve(requested));
   const file = path.join(directory, "admin.env");
   const existing = fs.existsSync(file);
   const values = existing ? Object.fromEntries(Object.entries(readEnv(file)).filter(([key]) => key.startsWith("ADMIN_") || key === "RUST_LOG")) : {
@@ -95,12 +89,12 @@ export function prepare(requested, source, hash) {
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   try {
     const [mode, directory, source] = process.argv.slice(2);
-    if (mode === "resolve") console.log(path.join(setupDirectory(directory), "admin.env"));
+    if (mode === "resolve") console.log(path.join(path.resolve(directory), "admin.env"));
     else if (mode === "check") {
       gameSettings(source);
-      process.exitCode = fs.existsSync(path.join(setupDirectory(directory), "admin.env")) ? 0 : 10;
+      process.exitCode = fs.existsSync(path.join(path.resolve(directory), "admin.env")) ? 0 : 10;
     } else if (mode === "prepare") {
-      const existing = fs.existsSync(path.join(setupDirectory(directory), "admin.env"));
+      const existing = fs.existsSync(path.join(path.resolve(directory), "admin.env"));
       prepare(directory, source, existing ? undefined : fs.readFileSync(0, "utf8").trim());
     } else throw Error("Unknown admin config command.");
   } catch (error) { console.error(error.message); process.exitCode = 1; }

@@ -9,3 +9,4 @@ web/dist
 .vscode
 
 web/asset-originals
+/build/witness-coverage.csv

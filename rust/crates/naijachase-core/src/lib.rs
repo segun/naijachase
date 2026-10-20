@@ -486,6 +486,7 @@ mod tests {
             career_points: 0,
             dossier: BTreeMap::new(),
             observations: BTreeMap::new(),
+            witness_plan: vec![],
             visited_venues: vec![
                 "0|Lagos|one".into(),
                 "0|Lagos|two".into(),

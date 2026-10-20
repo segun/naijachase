@@ -23,6 +23,7 @@ fn all_missions_complete_in_rust() {
             dossier: BTreeMap::new(),
             observations: BTreeMap::new(),
             visited_venues: vec![],
+            witness_plan: vec![],
             warrant_suspect: None,
             hideout_venue: "market".into(),
             searched_hideouts: vec![],

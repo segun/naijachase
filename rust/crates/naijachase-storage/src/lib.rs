@@ -29,6 +29,7 @@ pub use pressure::*;
 mod birth_date;
 pub use birth_date::BirthDate;
 mod product_analytics;
+mod witness;
 
 const MIGRATION_1: &str = include_str!("../migrations/0001_initial.sql");
 const MIGRATION_2: &str = include_str!("../migrations/0002_content_and_terminal.sql");
@@ -2001,7 +2002,12 @@ impl MysqlStore {
         build: F,
     ) -> Result<OrdinaryCaseAssignment, StorageError>
     where
-        F: FnOnce(RuntimeMission, u64, u64) -> Result<GameState, StorageError>,
+        F: FnOnce(
+            RuntimeMission,
+            u64,
+            u64,
+            naijachase_contracts::WitnessHistory,
+        ) -> Result<GameState, StorageError>,
     {
         self.publish_due_missions()?;
         let mut connection = self.connection()?;
@@ -2096,7 +2102,8 @@ impl MysqlStore {
             capture_location_id,
             content_version,
         };
-        let state = build(runtime, game_seed, career_points)?;
+        let history = witness::load_witness_history(&mut transaction, player_id)?;
+        let state = build(runtime, game_seed, career_points, history)?;
         let data = serde_json::to_vec(&state)?;
         transaction.exec_drop(
             "INSERT INTO active_cases(case_id,player_id,mission_id,version,state_json,attempt_kind,content_version)
@@ -3829,6 +3836,7 @@ mod tests {
             dossier: Default::default(),
             observations: Default::default(),
             visited_venues: vec![],
+            witness_plan: vec![],
             warrant_suspect: None,
             hideout_venue: "market".into(),
             searched_hideouts: vec![],
@@ -3954,17 +3962,23 @@ mod tests {
         let next_id = format!("lifecycle-{suffix}-new");
         let template = initial.clone();
         let assigned = store
-            .assign_ordinary_case(&next_id, &player, 0, 7, move |runtime, _, points| {
-                let mut state = template;
-                state.mission_id = runtime.mission_id;
-                state.career_points = points as u32;
-                Ok(state)
-            })
+            .assign_ordinary_case(
+                &next_id,
+                &player,
+                0,
+                7,
+                move |runtime, _, points, _history| {
+                    let mut state = template;
+                    state.mission_id = runtime.mission_id;
+                    state.career_points = points as u32;
+                    Ok(state)
+                },
+            )
             .unwrap();
         assert!(!assigned.duplicate);
         assert_eq!(assigned.case_id, next_id);
         let duplicate = store
-            .assign_ordinary_case("must-not-be-created", &player, 1, 8, |_, _, _| {
+            .assign_ordinary_case("must-not-be-created", &player, 1, 8, |_, _, _, _| {
                 panic!("an active ordinary case must be returned before building another")
             })
             .unwrap();
@@ -4155,6 +4169,7 @@ mod tests {
             dossier: Default::default(),
             observations: Default::default(),
             visited_venues: vec![],
+            witness_plan: vec![],
             warrant_suspect: None,
             hideout_venue: "market".into(),
             searched_hideouts: vec![],
@@ -4355,6 +4370,7 @@ mod tests {
             dossier: BTreeMap::new(),
             observations: BTreeMap::new(),
             visited_venues: vec![],
+            witness_plan: vec![],
             warrant_suspect: None,
             hideout_venue: "market".into(),
             searched_hideouts: vec![],
@@ -4520,6 +4536,7 @@ mod tests {
             dossier: Default::default(),
             observations: Default::default(),
             visited_venues: vec!["0|LOC-001|VEN-MARKET".into()],
+            witness_plan: vec![],
             warrant_suspect: None,
             hideout_venue: "VEN-MARKET".into(),
             searched_hideouts: vec![],
@@ -4642,6 +4659,7 @@ mod tests {
             dossier: BTreeMap::new(),
             observations: BTreeMap::new(),
             visited_venues: vec![],
+            witness_plan: vec![],
             warrant_suspect: None,
             hideout_venue: "market".into(),
             searched_hideouts: vec![],
@@ -5024,6 +5042,7 @@ mod tests {
             dossier: Default::default(),
             observations: Default::default(),
             visited_venues: vec![],
+            witness_plan: vec![],
             warrant_suspect: Some("NG-T001".into()),
             hideout_venue: "market".into(),
             searched_hideouts: vec![],
@@ -5211,6 +5230,7 @@ mod tests {
             dossier: Default::default(),
             observations: [("sex".into(), "male".into())].into(),
             visited_venues: vec![],
+            witness_plan: vec![],
             warrant_suspect: None,
             hideout_venue: "market".into(),
             searched_hideouts: vec![],

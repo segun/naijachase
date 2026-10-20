@@ -5,10 +5,8 @@ existing game's database host, port, database name and TLS mode from `.env`.
 You do not need to enter those values again or manage the generated database
 passwords yourself.
 
-If you already ran the older setup helper, keep its files. Setup automatically
-finds `~/.config/naijachase-admin/first-install/admin.env`, preserves its two
-service passwords and bootstrap hash, and resumes. No special `first-install`
-directory is needed for a new setup.
+Prepared settings live in `~/.config/naijachase-admin/admin.env`. Re-running
+setup preserves the service passwords and existing bootstrap configuration.
 
 ## Database and service setup
 
@@ -68,8 +66,7 @@ connection. No connection values or passwords are printed. Existing custom
 control connections on a different host/port/TLS policy need DBA provisioning;
 the automatic helper stops before changing the database in that case.
 
-The new private directory defaults to `~/.config/naijachase-admin`; an existing
-legacy `first-install` directory is detected automatically. You can still use
+The private directory defaults to `~/.config/naijachase-admin`. You can use
 `ADMIN_SETUP_DIR=/absolute/private/directory` if your prepared settings live
 elsewhere. Files are mode 0600 and their directory is 0700. The installed
 service file is `/opt/naijachase-admin/shared/admin.env`, mode 0640 for root and
@@ -185,26 +182,15 @@ The login page is reachable normally over HTTPS. Staff usernames, passwords
 and permissions protect the API; no IP allowlist is required. The generated
 origin matches `https://admin.naijachase.app`.
 
-If Certbot already added admin server blocks to `/etc/nginx/sites-available/default`,
-move them into the dedicated site with this command instead of reissuing a
-certificate:
-
-```sh
-make admin-nginx-move-from-default
-```
-
-It preserves the stock default server and any other hosts, removes only
-server blocks dedicated to `admin.naijachase.app`, and installs
-`005-admin.naijachase.app`. It snapshots both files and the admin symlink,
-checks for concurrent edits, validates Nginx and rejects duplicate hostname
-warnings before reloading. Validation/reload failure restores the originals.
-Blocks shared with another hostname require a manual split.
-
-Otherwise, install the dedicated site normally:
+The dedicated site is `005-admin.naijachase.app`. Install it with:
 
 ```sh
 make admin-nginx-https
 ```
+
+Use Certbot's webroot issuance above so it does not add admin blocks to the
+default site. If reusing an existing certificate, its files remain at the same
+paths; ensure no other enabled site declares the admin hostname.
 
 Then install the renewal hook and check renewal:
 

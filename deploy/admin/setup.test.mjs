@@ -4,7 +4,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
-import { prepare, readEnv, setupDirectory } from "./config.mjs";
+import { prepare, readEnv } from "./config.mjs";
 
 const hash = "$argon2id$v=19$m=19456,t=2,p=1$YWJjZGVmZ2hpamtsbW5vcA$fXVb6z8id8LbrB8yKL+f5Bv9ZnBTtOCxb7CYp9bWQcs";
 function fixture() {
@@ -13,15 +13,13 @@ function fixture() {
   fs.writeFileSync(game, "MYSQL_HOST=127.0.0.1\nMYSQL_PORT=23306\nMYSQL_USER=setup_owner\nMYSQL_PASSWORD='literal$()back`tick`'\nMYSQL_DATABASE=game_test\nMYSQL_SSL_MODE=required\n", { mode: 0o600 });
   return { root, game, directory, cleanup: () => fs.rmSync(root, { recursive: true, force: true }) };
 }
-test("dotenv import is data; legacy prepared secrets and retired bootstrap omission survive resume", () => {
+test("dotenv import is data; prepared secrets and retired bootstrap omission survive resume", () => {
   const f = fixture();
   try {
-    const legacy = path.join(f.directory, "first-install");
-    const original = prepare(legacy, f.game, hash);
+    const original = prepare(f.directory, f.game, hash);
     assert.equal(readEnv(f.game).MYSQL_PASSWORD, "literal$()back`tick`");
     assert.equal(original.values.ADMIN_MYSQL_PORT, "23306");
     assert.equal(original.values.ADMIN_MYSQL_SSL_MODE, "required");
-    assert.equal(setupDirectory(f.directory), legacy);
     const saved = original.values;
     delete saved.ADMIN_BOOTSTRAP_PASSWORD_HASH;
     fs.writeFileSync(original.file, Object.entries(saved).map(([key, value]) => `${key}='${value}'`).join("\n") + "\nMYSQL_PASSWORD='must-not-enter-runtime'\n");

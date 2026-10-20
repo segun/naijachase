@@ -6,6 +6,17 @@ This file is the source of truth for completed work, current limitations, and
 next development priorities. Update it whenever a feature or content pass is
 completed.
 
+## Witness variety — 20 October 2026
+
+- [x] Choose fresh witness combinations per ordinary/replay attempt, preferring unheard clues and then older material.
+- [x] Save complete private witness plans and wordings; preserve legacy attempts and shared weekly lineups.
+- [x] Derive owned player history from delivered interview receipts, excluding cold replies, unvisited clues and unfinished weekly journeys.
+- [x] Add `make witness-coverage` with exhaustive eligibility, sampled exposure and exclusion reasons; allow content growth beyond baseline counts.
+- [x] Audit all 250 recent additions: 246 are eligible; four share their destination's mandatory landmark venue.
+- [x] Verify 4,000 generated attempt itineraries, content-growth loading, the Rust suite, 29 live database tests, and all 356 web tests; changed game crates pass strict linting.
+- [ ] Review suitable alternative venues for SCA-EVENT-003, SCA-EVENT-006, SCA-EVENT-009 and SCA-EVENT-011; preserve the three-distinct-venues puzzle rule.
+- [ ] Deploy the API and updated content, restart the API, and verify a new attempt plus resume. Existing attempts retain their legacy selector.
+
 ## Mobile UI corrections — 20 October 2026
 
 - [x] Keep the first-login avatar Continue action floating above the mobile home indicator.
@@ -1569,10 +1580,13 @@ section of `README.md`.
 - [x] Reuse existing game connection settings during admin setup, manage service
   passwords automatically, resume earlier setup files, and explain missing
   migration-service prerequisites before invoking systemd.
-- [x] Support normal HTTPS staff login and move existing Certbot admin blocks
-  from the default Nginx site into 005 with validation and rollback.
+- [x] Support normal HTTPS staff login and keep the admin site in its own
+  005 Nginx configuration with validation and rollback.
 - [x] Publish the admin frontend under `/var/www/naijachase-admin` to match
   the other NaijaChase web deployments.
+- [x] Retire completed deployment repair helpers and legacy config aliases;
+  keep prepared settings at `~/.config/naijachase-admin/admin.env` and remove
+  spent provisioning files without deleting credentials or database backups.
 - [ ] Run the documented production rollout with actual DNS/server/database
   values, restricted grants, certificate and named-owner handover.
 - [ ] Integrate provider-confirmed delivery/bounces, external alert delivery,

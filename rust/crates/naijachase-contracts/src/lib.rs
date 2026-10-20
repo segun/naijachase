@@ -90,6 +90,29 @@ pub struct CaseEconomy {
     #[serde(default)]
     pub assistant_cost: u32,
 }
+/// Private server snapshot. Never include future clues in public case responses.
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+pub struct WitnessClue {
+    pub atom_id: String,
+    pub state: String,
+    pub dimension: String,
+    pub candidate_states: String,
+    pub venue_id: String,
+    pub venue_name: String,
+    pub witness_roles: String,
+    pub dialogue: String,
+    pub dialogue_variant_id: Option<String>,
+    pub supplemental_dialogue: Option<String>,
+}
+
+/// Last actual exposure to each clue/wording, in Unix seconds. Offered but
+/// unvisited witnesses are deliberately absent. Repeated wording is one clue.
+#[derive(Clone, Debug, Default)]
+pub struct WitnessHistory {
+    pub atoms: BTreeMap<String, u64>,
+    pub dialogues: BTreeMap<String, u64>,
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub struct GameState {
     pub version: u16,
@@ -106,6 +129,8 @@ pub struct GameState {
     pub observations: BTreeMap<String, String>,
     #[serde(default)]
     pub visited_venues: Vec<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub witness_plan: Vec<Vec<WitnessClue>>,
     #[serde(default)]
     pub warrant_suspect: Option<String>,
     #[serde(default)]
@@ -156,6 +181,7 @@ pub fn migrate_legacy_state(
         dossier: map("evidence"),
         observations: map("observed_traits"),
         visited_venues: vec![],
+        witness_plan: vec![],
         warrant_suspect: None,
         hideout_venue: String::new(),
         searched_hideouts: vec![],

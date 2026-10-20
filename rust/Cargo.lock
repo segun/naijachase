@@ -1032,6 +1032,7 @@ name = "naijachase-content"
 version = "0.1.0"
 dependencies = [
  "csv",
+ "naijachase-contracts",
  "naijachase-core",
  "serde",
  "sha2",

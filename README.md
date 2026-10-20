@@ -203,9 +203,11 @@ regional groups, with a validated three-clue solution for every jurisdiction.
 The P0 depth pass and state-identity enrichment give every state and the FCT
 at least 25 distinct atoms. The catalogue currently contains 957 atoms and covers the complete P0 thematic
 checklist. The dialogue layer contains 8,613 English formulations: three
-variants for each clue and difficulty level. Career saves retain the 60 most recent
-clue atoms and 120 most recent dialogue variants so later cases prefer unused
-material when alternatives exist.
+variants for each clue and difficulty level. New ordinary/replay attempts prefer
+unheard clues and wordings using actual saved interview receipts, then older
+material, and save their complete witness plan for consistent resumes. Weekly
+entrants share one saved plan. See [witness selection and coverage](docs/witness-selection.md)
+for legacy-history limits, rollout and the `make witness-coverage` report.
 
 The editorial catalogue preserves every clue ID and adds an internal knowledge link,
 source URL, source authority, reference-alignment status, temporal scope,

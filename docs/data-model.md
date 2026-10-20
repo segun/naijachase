@@ -94,6 +94,12 @@ These caches belong to one catalogue snapshot; treat its source tables as
 immutable and reload the catalogue to replace content. Player visits, funds,
 elapsed time, dossier evidence and hideout selection remain dynamic.
 Noncanonical saved routes use the original clue planner for compatibility.
+New ordinary/replay attempts persist a private, attempt-specific `witness_plan`
+in their existing state JSON. Actual saved interviews supply player history;
+unvisited planned clues never become exposures. Weekly templates share a plan
+across entrants. No SQL migration is needed. The cached mission plans above
+remain the compatibility path for older attempts without snapshots. See
+[`witness-selection.md`](witness-selection.md) for selection and coverage.
 The content regression test compares independent loads and uncached calculations
 for all 1,000 missions, every stage and all 37 possible current states.
 

@@ -354,6 +354,7 @@ fn main() {
         dossier: BTreeMap::new(),
         observations: BTreeMap::new(),
         visited_venues: vec![],
+        witness_plan: vec![],
         warrant_suspect: None,
         hideout_venue: String::new(),
         searched_hideouts: vec![],

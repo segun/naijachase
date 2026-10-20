@@ -12,7 +12,7 @@ use axum::{
 };
 use base64::{Engine, engine::general_purpose::URL_SAFE_NO_PAD};
 use naijachase_content::{Catalogue, Mission};
-use naijachase_contracts::{Command, Event, GameState};
+use naijachase_contracts::{Command, Event, GameState, WitnessHistory};
 use naijachase_storage::{
     Achievement, BirthDate, CaseArchiveEntry, CaseCommandResult, CatalogueHealth,
     CatalogueProgress, EmailMessage, MissionValidation, MysqlStore, PlayerAccount, PlayerSession,
@@ -2806,7 +2806,7 @@ async fn current_weekly_challenge(
         .bytes()
         .fold(start, |a, b| a.wrapping_mul(31).wrapping_add(b as u64));
     let mission = missions[(hash as usize) % missions.len()];
-    let game = build_game_from_mission(&s.catalogue, mission, hash, 0)?;
+    let game = build_game_from_mission(&s.catalogue, mission, hash, 0, &WitnessHistory::default())?;
     let store = s.store.clone();
     let mission_id = mission.mission_id.clone();
     let id = tokio::task::spawn_blocking(move || {
@@ -3190,8 +3190,8 @@ async fn assign_case(
             &player,
             selection_roll,
             seed,
-            move |runtime, game_seed, career_points| {
-                build_runtime_game(&catalogue, runtime, game_seed, career_points)
+            move |runtime, game_seed, career_points, history| {
+                build_runtime_game(&catalogue, runtime, game_seed, career_points, &history)
                     .map_err(|error| StorageError::InvalidContent(error.message))
             },
         )
@@ -3313,15 +3313,20 @@ async fn replay_case(
     let case_id = format!("replay-{}", uuid::Uuid::new_v4());
     let store = state.store.clone();
     let career_player = player.clone();
-    let career_points = tokio::task::spawn_blocking(move || store.career_points(&career_player))
-        .await
-        .map_err(task_error)??;
+    let (career_points, history) = tokio::task::spawn_blocking(move || {
+        Ok::<_, StorageError>((
+            store.career_points(&career_player)?,
+            store.witness_history(&career_player)?,
+        ))
+    })
+    .await
+    .map_err(task_error)??;
     let store = state.store.clone();
     let runtime_id = request.mission_id.clone();
     let runtime = tokio::task::spawn_blocking(move || store.runtime_mission(&runtime_id))
         .await
         .map_err(task_error)??;
-    let game = build_runtime_game(&state.catalogue, runtime, seed, career_points)?;
+    let game = build_runtime_game(&state.catalogue, runtime, seed, career_points, &history)?;
     let store = state.store.clone();
     let saved_case_id = case_id.clone();
     let mission_id = request.mission_id.clone();
@@ -3504,6 +3509,7 @@ fn build_runtime_game(
     runtime: naijachase_storage::RuntimeMission,
     seed: u64,
     career_points: u64,
+    history: &WitnessHistory,
 ) -> Result<GameState, ApiError> {
     let mission = Mission {
         mission_id: runtime.mission_id,
@@ -3514,7 +3520,7 @@ fn build_runtime_game(
         stop_3_location_id: runtime.stop_3_location_id,
         capture_location_id: runtime.capture_location_id,
     };
-    build_game_from_mission(catalogue, &mission, seed, career_points)
+    build_game_from_mission(catalogue, &mission, seed, career_points, history)
 }
 
 fn build_game_from_mission(
@@ -3522,6 +3528,7 @@ fn build_game_from_mission(
     mission: &Mission,
     seed: u64,
     career_points: u64,
+    history: &WitnessHistory,
 ) -> Result<GameState, ApiError> {
     let route = catalogue
         .route(mission)
@@ -3531,6 +3538,9 @@ fn build_game_from_mission(
         .last()
         .cloned()
         .ok_or_else(|| bad_request("mission route unavailable"))?;
+    let witness_plan = catalogue
+        .plan_witnesses(&route, mission.difficulty, seed, history)
+        .map_err(bad_request)?;
     Ok(GameState {
         version: 1,
         mission_id: mission.mission_id.clone(),
@@ -3545,6 +3555,7 @@ fn build_game_from_mission(
         dossier: BTreeMap::new(),
         observations: BTreeMap::new(),
         visited_venues: vec![],
+        witness_plan,
         warrant_suspect: None,
         hideout_venue: choose_hideout(&mission.mission_id, seed, &capture_state, catalogue),
         searched_hideouts: vec![],
@@ -3902,6 +3913,15 @@ fn pressure_assignment(case_id: &str, game: &GameState, venues: &[String]) -> Op
 }
 
 fn supplemental_clue(catalogue: &Catalogue, game: &GameState, venue_id: &str) -> Option<String> {
+    if !game.witness_plan.is_empty() {
+        return game
+            .witness_plan
+            .get(game.stage as usize)?
+            .iter()
+            .find(|clue| clue.venue_id == venue_id)?
+            .supplemental_dialogue
+            .clone();
+    }
     let destination = game.route.get(game.stage as usize + 1)?;
     let atoms = catalogue.atoms.get(destination)?;
     let mut candidates = atoms
@@ -4224,11 +4244,17 @@ fn translate_command(
                         variant.difficulty == difficulty && variant.speech_register == "English"
                     })
                     .collect::<Vec<_>>();
-                let dialogue = variants
-                    .get(clue_key % variants.len().max(1))
-                    .map(|variant| variant.dialogue.as_str())
-                    .unwrap_or(&atom.dialogue);
-                (dialogue.to_owned(), atom.witness_roles.as_str())
+                let frozen = state
+                    .witness_plan
+                    .get(state.stage as usize)
+                    .and_then(|plan| plan.iter().find(|clue| clue.venue_id == venue_id));
+                let variant = variants.get(clue_key % variants.len().max(1));
+                let dialogue = if let Some(frozen) = frozen {
+                    frozen.dialogue.clone()
+                } else {
+                    variant.map(|v| v.dialogue.clone()).unwrap_or(atom.dialogue)
+                };
+                (dialogue, atom.witness_roles)
             } else {
                 const COLD_RESPONSES: [&str; 8] = [
                     "I am sorry, but I have not seen anyone matching that description.",
@@ -4242,7 +4268,7 @@ fn translate_command(
                 ];
                 (
                     COLD_RESPONSES[clue_key % COLD_RESPONSES.len()].to_owned(),
-                    venue.witness_roles.as_str(),
+                    venue.witness_roles.clone(),
                 )
             };
             let roles = atom_roles.split('|').collect::<Vec<_>>();
@@ -4495,6 +4521,12 @@ fn placement_minutes(
 }
 
 fn available_venue_ids(catalogue: &Catalogue, state: &GameState) -> Vec<String> {
+    if is_on_trail(state) && !state.witness_plan.is_empty() {
+        return witness_clue_plan(catalogue, state)
+            .into_iter()
+            .map(|clue| clue.venue_id)
+            .collect();
+    }
     available_venue_ids_for(
         catalogue,
         &state.route,
@@ -4559,12 +4591,30 @@ fn dossier_witness_venue(catalogue: &Catalogue, state: &GameState) -> Option<Str
 /// Builds one deliberately decisive clue and two multi-state clues. The
 /// decisive clue is always the curated landmark atom and can never carry the
 /// dossier evidence that marks the key witness.
-fn witness_clue_plan<'a>(
-    catalogue: &'a Catalogue,
+fn witness_clue_plan(
+    catalogue: &Catalogue,
     state: &GameState,
-) -> Vec<&'a naijachase_content::ClueAtom> {
+) -> Vec<naijachase_content::ClueAtom> {
     if !is_on_trail(state) {
         return vec![];
+    }
+    if !state.witness_plan.is_empty() {
+        return state
+            .witness_plan
+            .get(state.stage as usize)
+            .into_iter()
+            .flatten()
+            .map(|clue| naijachase_content::ClueAtom {
+                atom_id: clue.atom_id.clone(),
+                state: clue.state.clone(),
+                dimension: clue.dimension.clone(),
+                candidate_states: clue.candidate_states.clone(),
+                venue_id: clue.venue_id.clone(),
+                venue_name: clue.venue_name.clone(),
+                witness_roles: clue.witness_roles.clone(),
+                dialogue: clue.dialogue.clone(),
+            })
+            .collect();
     }
     witness_clue_plan_for(
         catalogue,
@@ -4573,6 +4623,9 @@ fn witness_clue_plan<'a>(
         state.stage as usize,
         &state.state,
     )
+    .into_iter()
+    .cloned()
+    .collect()
 }
 
 #[cfg(test)]
@@ -4776,6 +4829,7 @@ mod tests {
             dossier: BTreeMap::new(),
             observations: BTreeMap::new(),
             visited_venues: vec![],
+            witness_plan: vec![],
             warrant_suspect: None,
             hideout_venue: "market".into(),
             searched_hideouts: vec![],
@@ -4783,6 +4837,153 @@ mod tests {
             outcome: None,
             economy: Default::default(),
         }
+    }
+
+    #[test]
+    fn varied_attempts_have_a_complete_three_witness_itinerary_within_time_and_budget() {
+        let root = FsPath::new(env!("CARGO_MANIFEST_DIR")).join("../../..");
+        let catalogue = Catalogue::load(&root).unwrap();
+        let orders = [
+            [0, 1, 2],
+            [0, 2, 1],
+            [1, 0, 2],
+            [1, 2, 0],
+            [2, 0, 1],
+            [2, 1, 0],
+        ];
+        for mission in catalogue.missions.values() {
+            for seed in [0, 1, 7, 42] {
+                let game = build_game_from_mission(
+                    &catalogue,
+                    mission,
+                    seed,
+                    0,
+                    &WitnessHistory::default(),
+                )
+                .unwrap();
+                let mut elapsed = 0;
+                let mut spent = 0;
+                for (stage, plan) in game.witness_plan.iter().enumerate() {
+                    let mut visits = vec![];
+                    for clue in plan {
+                        let venue = &catalogue.venues[&clue.venue_id];
+                        let base = placement_minutes(
+                            &catalogue,
+                            &game.route[stage],
+                            &clue.venue_id,
+                            &game.mission_id,
+                            stage as u8,
+                        )
+                        .unwrap();
+                        let (minutes, cost) = naijachase_core::local_quote(base, "drive").unwrap();
+                        spent += cost;
+                        visits.push((minutes, venue));
+                    }
+                    elapsed = orders
+                        .iter()
+                        .map(|order| {
+                            order.iter().fold(elapsed, |at, index| {
+                                let (minutes, venue) = visits[*index];
+                                let arrival = at + minutes;
+                                arrival
+                                    + wait_until_open(arrival, venue.opens_hour, venue.closes_hour)
+                                    + venue.interview_minutes
+                            })
+                        })
+                        .min()
+                        .unwrap();
+                    elapsed += 3 + u32::from(game.difficulty);
+                    if let Some(next) = game.route.get(stage + 1) {
+                        let base = catalogue.travel[&(game.route[stage].clone(), next.clone())]
+                            .travel_minutes;
+                        let (minutes, cost) =
+                            naijachase_core::interstate_quote(base, "fly").unwrap();
+                        elapsed += minutes;
+                        spent += cost;
+                    }
+                }
+                let base = placement_minutes(
+                    &catalogue,
+                    game.route.last().unwrap(),
+                    &game.hideout_venue,
+                    &game.mission_id,
+                    (game.route.len() - 1) as u8,
+                )
+                .unwrap();
+                let (minutes, cost) = naijachase_core::local_quote(base, "drive").unwrap();
+                elapsed += minutes + catalogue.venues[&game.hideout_venue].interview_minutes;
+                spent += cost;
+                assert!(
+                    elapsed < naijachase_core::CASE_DEADLINE_MINUTES,
+                    "{} seed {seed}: {elapsed} minutes",
+                    game.mission_id
+                );
+                assert!(
+                    spent < game.economy.opening_budget,
+                    "{} seed {seed}: {spent} spent",
+                    game.mission_id
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn saved_witnesses_survive_catalogue_changes_without_disclosing_future_clues() {
+        let root = FsPath::new(env!("CARGO_MANIFEST_DIR")).join("../../..");
+        let mut catalogue = Catalogue::load(&root).unwrap();
+        let mission = &catalogue.missions["NG-M0001"];
+        let game = build_game_from_mission(&catalogue, mission, 42, 0, &WitnessHistory::default())
+            .unwrap();
+        let saved = serde_json::to_vec(&game).unwrap();
+        let resumed: GameState = serde_json::from_slice(&saved).unwrap();
+        assert_eq!(resumed.witness_plan, game.witness_plan);
+        let venues = available_venue_ids(&catalogue, &game);
+        let command = || ClientCommand::VisitVenue {
+            venue_id: venues[0].clone(),
+            mode: "drive".into(),
+        };
+        let (before, account) = translate_command(&catalogue, &game, command(), "Lagos").unwrap();
+        let supplemental = supplemental_clue(&catalogue, &game, &venues[0]);
+        catalogue.atoms.clear();
+        catalogue.dialogue_variants.clear();
+        assert_eq!(venues, available_venue_ids(&catalogue, &resumed));
+        assert_eq!(
+            (before, account.clone()),
+            translate_command(&catalogue, &resumed, command(), "Lagos").unwrap()
+        );
+        assert_eq!(
+            supplemental,
+            supplemental_clue(&catalogue, &resumed, &venues[0])
+        );
+        let public = serde_json::to_value(public_game_state(&game, &catalogue).unwrap()).unwrap();
+        assert!(public.get("witness_plan").is_none());
+        let account = account.unwrap();
+        assert!(!account.data.contains_key("atom_id"));
+        assert!(!account.data.contains_key("dialogue_variant_id"));
+        assert!(
+            game.witness_plan[0]
+                .iter()
+                .any(|c| account.data["message"].starts_with(&c.dialogue))
+        );
+        // Existing attempts retain exactly the legacy venue selector.
+        let mut legacy = game.clone();
+        legacy.witness_plan.clear();
+        let catalogue = Catalogue::load(&root).unwrap();
+        assert_eq!(
+            available_venue_ids(&catalogue, &legacy),
+            available_venue_ids_for(
+                &catalogue,
+                &legacy.route,
+                &legacy.mission_id,
+                0,
+                &legacy.state
+            )
+        );
+        // A weekly template is copied for every entrant; individual history
+        // never changes its saved plan, even after a content reload.
+        let entrant_a: GameState = serde_json::from_slice(&saved).unwrap();
+        let entrant_b: GameState = serde_json::from_slice(&saved).unwrap();
+        assert_eq!(entrant_a.witness_plan, entrant_b.witness_plan);
     }
 
     #[test]
@@ -5196,11 +5397,16 @@ mod tests {
             }
             assert!(mixed_cost <= budget);
 
-            let stage_venues = route
+            let template =
+                build_game_from_mission(&catalogue, mission, 0, 0, &WitnessHistory::default())
+                    .unwrap();
+            let stage_venues = template
+                .witness_plan
                 .iter()
-                .enumerate()
-                .map(|(stage, state)| {
-                    available_venue_ids_for(&catalogue, &route, &mission.mission_id, stage, state)
+                .map(|plan| {
+                    plan.iter()
+                        .map(|clue| clue.venue_id.clone())
+                        .collect::<Vec<_>>()
                 })
                 .collect::<Vec<_>>();
 
@@ -5213,8 +5419,13 @@ mod tests {
             // choices remain a deliberate way for a player to lose on time.
             let mut mission_has_complete_itinerary = false;
             for order in witness_orders {
-                let mut game = build_game_from_mission(&catalogue, mission, 0, 0).unwrap();
-                for (stage, venues) in stage_venues.iter().enumerate().take(game.route.len()) {
+                let mut game = template.clone();
+                'stages: for (stage, venues) in
+                    stage_venues.iter().enumerate().take(game.route.len())
+                {
+                    if game.outcome.is_some() {
+                        break;
+                    }
                     assert_eq!(venues.len(), 3, "{} stage {stage}", mission.mission_id);
                     let profile = &catalogue.profiles[&mission.thief_id];
                     let (field, value) = profile.traits()[dossier_trait_index(&game, stage)];
@@ -5259,6 +5470,9 @@ mod tests {
                         )
                         .unwrap()
                         .0;
+                        if game.outcome.is_some() {
+                            break 'stages;
+                        }
                     }
                     game = naijachase_core::apply(
                         game,
@@ -5395,6 +5609,7 @@ mod tests {
                 dossier: Default::default(),
                 observations: Default::default(),
                 visited_venues: vec![],
+                witness_plan: vec![],
                 warrant_suspect: None,
                 hideout_venue: String::new(),
                 searched_hideouts: vec![],
@@ -5441,6 +5656,7 @@ mod tests {
                 dossier: Default::default(),
                 observations: Default::default(),
                 visited_venues: vec![],
+                witness_plan: vec![],
                 warrant_suspect: None,
                 hideout_venue: format!("hideout-{}", mission.mission_id),
                 searched_hideouts: vec![],
@@ -5498,6 +5714,7 @@ mod tests {
                     dossier: Default::default(),
                     observations: Default::default(),
                     visited_venues: vec![],
+                    witness_plan: vec![],
                     warrant_suspect: None,
                     hideout_venue: format!("hideout-{}", mission.mission_id),
                     searched_hideouts: vec![],
@@ -5612,6 +5829,7 @@ mod tests {
             dossier: Default::default(),
             observations: Default::default(),
             visited_venues: vec![],
+            witness_plan: vec![],
             warrant_suspect: None,
             hideout_venue: "hideout".into(),
             searched_hideouts: vec![],

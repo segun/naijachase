@@ -310,9 +310,9 @@ explicit deployment step; existing player/landing publication targets do not
 activate it.
 
 The HTTPS login page is public, with staff authentication and permission
-checks enforced by the API. Existing Certbot admin blocks in Nginx's default
-site can be moved using `make admin-nginx-move-from-default`; validation and
-reload failures restore both the default and dedicated admin configuration.
+checks enforced by the API. The dedicated Nginx site is
+`005-admin.naijachase.app`; validation and reload failures restore its previous
+configuration. Completed one-time deployment repair tools are retired.
 
 Setup reuses the existing game's database host, port and encryption setting.
 `ADMIN_MYSQL_SSL_MODE=required` has the same meaning as the game's `required`:

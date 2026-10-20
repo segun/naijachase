@@ -60,15 +60,11 @@ impl Config {
         if production && parsed.scheme() != "https" {
             return Err("production ADMIN_PUBLIC_ORIGIN must use HTTPS".into());
         }
-        let username = get("ADMIN_BOOTSTRAP_USERNAME")
-            .or_else(|| get("ADMIN_USERNAME"))
-            .unwrap_or_else(|| "admin".into());
+        let username = get("ADMIN_BOOTSTRAP_USERNAME").unwrap_or_else(|| "admin".into());
         if !crate::control::valid_username(&username) {
             return Err("ADMIN_BOOTSTRAP_USERNAME must be 3..64 lowercase ASCII letters, digits, dot, dash or underscore".into());
         }
-        let password_hash = get("ADMIN_BOOTSTRAP_PASSWORD_HASH")
-            .or_else(|| get("ADMIN_PASSWORD_HASH"))
-            .unwrap_or_default();
+        let password_hash = get("ADMIN_BOOTSTRAP_PASSWORD_HASH").unwrap_or_default();
         if !password_hash.is_empty() {
             let hash = PasswordHash::new(&password_hash)
                 .map_err(|_| "ADMIN_BOOTSTRAP_PASSWORD_HASH must be an Argon2id PHC hash")?;
@@ -215,9 +211,9 @@ pub(crate) mod tests {
     use super::*;
     fn with_overrides(overrides: &[(&str, &str)]) -> Result<Config, String> {
         let vars = [
-            ("ADMIN_USERNAME", "operator"),
+            ("ADMIN_BOOTSTRAP_USERNAME", "operator"),
             (
-                "ADMIN_PASSWORD_HASH",
+                "ADMIN_BOOTSTRAP_PASSWORD_HASH",
                 "$argon2id$v=19$m=19456,t=2,p=1$YWJjZGVmZ2hpamtsbW5vcA$fXVb6z8id8LbrB8yKL+f5Bv9ZnBTtOCxb7CYp9bWQcs",
             ),
             ("ADMIN_MYSQL_HOST", "127.0.0.1"),

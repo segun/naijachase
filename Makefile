@@ -52,7 +52,7 @@ ARGS ?=
 
 .PHONY: help \
 	play test test-storage fmt fmt-check build release benchmark api api-test \
-	validate editorial enrichment enrich-state-clues standardize-witness-english \
+	validate editorial enrichment witness-coverage enrich-state-clues standardize-witness-english \
 	enrich-civic-history repair-witness-dialogues \
 	export-witness-scenes simulate export \
 	db-migrate db-import db-rebuild db-verify db-publish-initial db-export \
@@ -60,7 +60,7 @@ ARGS ?=
 	web web-build web-install web-production-build web-mock web-mock-ui web-test \
 	admin-api admin-web admin-install admin-check admin-build \
 	admin-prepare-config admin-provision admin-install-config admin-setup admin-install-bundle admin-install-service admin-start admin-restart admin-status \
-	admin-nginx-http admin-nginx-https admin-nginx-move-from-default admin-install-renew-hook \
+	admin-nginx-http admin-nginx-https admin-install-renew-hook \
 	production-build copy-code install-api-service restart-api api-status \
 	install-web install-nginx publish-web publish-landing \
 	check audit p34 p35 p36 p39 p391
@@ -139,6 +139,9 @@ editorial: ## Run automated clue editorial checks
 # Report how much of the semantic knowledge base is covered.
 enrichment: ## Report semantic knowledge coverage
 	@$(TOOLS) enrichment
+
+witness-coverage: ## Report clue eligibility and sampled exposure across all missions
+	@$(TOOLS) witness-coverage
 
 # Regenerate witness clues for each state.
 enrich-state-clues: ## Rebuild state motto, city, landmark, and economy witness clues
@@ -310,9 +313,6 @@ admin-nginx-https: ## Install the admin HTTPS site after certificate issuance
 	@sudo test -f /etc/letsencrypt/live/admin.naijachase.app/fullchain.pem
 	@sudo test -f /etc/letsencrypt/live/admin.naijachase.app/privkey.pem
 	@sudo sh deploy/nginx/install-admin-site.sh deploy/nginx/admin.naijachase.app.conf "$(ADMIN_NGINX_SITE)" "$(ADMIN_NGINX_SITE_LINK)"
-
-admin-nginx-move-from-default: ## Move Certbot admin blocks from default into 005, validate and reload with rollback
-	@ADMIN_NODE_BIN="$(ADMIN_NODE)" bash deploy/nginx/move-admin-from-default.sh "$(ADMIN_NGINX_SITE)" "$(ADMIN_NGINX_SITE_LINK)"
 
 admin-install-renew-hook: ## Install Nginx validation/reload hook for successful certificate renewal
 	@sudo install -d -m 0755 /etc/letsencrypt/renewal-hooks/deploy

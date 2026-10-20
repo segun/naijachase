@@ -80,6 +80,7 @@ fn simulate(root: &Path, out: &Path) {
             dossier: BTreeMap::new(),
             observations: BTreeMap::new(),
             visited_venues: vec![],
+            witness_plan: vec![],
             warrant_suspect: None,
             hideout_venue: "market".into(),
             searched_hideouts: vec![],
@@ -1530,6 +1531,7 @@ fn solved_outcomes(data: &Catalogue) -> usize {
             dossier: BTreeMap::new(),
             observations: BTreeMap::new(),
             visited_venues: vec![],
+            witness_plan: vec![],
             warrant_suspect: None,
             hideout_venue: "market".into(),
             searched_hideouts: vec![],
@@ -1615,6 +1617,34 @@ fn main() {
     match args.first().map(String::as_str).unwrap_or("validate") {
         "validate" => {
             validate(&root);
+        }
+        "witness-coverage" => {
+            let catalogue = Catalogue::load(&root).unwrap();
+            let samples = args
+                .get(2)
+                .map(|s| s.parse::<u64>().expect("sample count must be an integer"))
+                .unwrap_or(8);
+            assert!(samples > 0, "sample count must be positive");
+            let rows = catalogue.witness_coverage(samples).unwrap();
+            let path = args
+                .get(1)
+                .map(PathBuf::from)
+                .unwrap_or_else(|| root.join("build/witness-coverage.csv"));
+            if let Some(parent) = path.parent().filter(|p| !p.as_os_str().is_empty()) {
+                fs::create_dir_all(parent).unwrap();
+            }
+            let mut writer = csv::Writer::from_path(&path).unwrap();
+            for row in &rows {
+                writer.serialize(row).unwrap();
+            }
+            writer.flush().unwrap();
+            println!(
+                "Witness coverage: {} clues; {} structurally eligible; {} sampled; {samples} attempts per mission; {}",
+                rows.len(),
+                rows.iter().filter(|r| r.eligible_stops > 0).count(),
+                rows.iter().filter(|r| r.sampled_uses > 0).count(),
+                path.display()
+            );
         }
         "simulate" => simulate(
             &root,
