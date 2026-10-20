@@ -5,6 +5,12 @@ catalogue. The 1,000 mission stories and routes do not need rebuilding when
 clues are added. Content files must be deployed and the API restarted: the API
 loads the CSV catalogue once at startup, independently of the database import.
 
+The [20 October submitted-fact review](reviews/witness-facts-2026-10-20.md)
+adds 37 source-checked clues and 333 English variants after comparing all 150
+submissions with the live content database. The catalogue now has 994 atoms and
+8,946 variants. The subsequent venue repair makes the older museum-based
+alternatives available without changing their facts or dialogue.
+
 ## Selection and consistency
 
 For each stop, enumerate combinations with three distinct, locally available
@@ -61,23 +67,47 @@ routes. Sampling uses eight fresh attempts per mission with empty player
 history; zero sampled uses alone does not mean a clue is unreachable. These are
 catalogue diagnostics, not measurements of live players' interviews.
 
-The 20 October 2026 audit found 880 of 957 clues structurally eligible, compared
-with 835 chosen by the legacy selector. Eight sampled attempts per mission used
-879 clues. Of the 250 clues added on 19 October, 246 are eligible and all 246
-appeared in the sample. The remaining four are:
+The first 20 October 2026 audit found 880 of 957 clues structurally eligible.
+After adding 37 reviewed facts, 917 of 994 were eligible. The 77 exclusions all
+shared their destination's mandatory landmark venue: the museum.
 
-| Atom | Destination | Venue |
-| --- | --- | --- |
-| SCA-EVENT-003 | Abia | Museum |
-| SCA-EVENT-006 | Ogun | Museum |
-| SCA-EVENT-009 | Niger | Museum |
-| SCA-EVENT-011 | Kano | Museum |
+## Venue repair
 
-All 77 structural exclusions share the mandatory landmark witness's venue.
-These need an editorial decision about a suitable alternative venue or a future
-change to the three-distinct-venues puzzle rule; the selector does not force
-them into an invalid combination. New clues and formulations may grow beyond
-the current baseline counts without changing the loader's numeric limits.
+After the repair, all **994 clues are structurally eligible** on the authored
+case routes, with **zero exclusions**. Eight fresh attempts per mission (8,000
+attempts) selected 993 distinct clues, including all 77 repaired accounts.
+The remaining unsampled clue is eligible; sampling is not a guarantee that
+every clue appears in a finite run.
+
+All 77 affected non-landmark accounts have been reassigned to suitable existing
+venues. Archaeology, architecture, rock-art and geology researchers speak at
+universities; librarians and archivists discuss historical records; community
+elders discuss local heritage; artisans discuss casting and metalwork.
+
+| New venue | Reassigned clues |
+| --- | ---: |
+| Library | 37 |
+| University | 24 |
+| Community hall | 13 |
+| Craft market | 3 |
+
+The [per-clue repair record](reviews/witness-venue-repairs-2026-10-20.csv) lists
+every old/new venue and role, with the reason for the move. IDs, facts,
+candidate sets, difficulty, source metadata and all 8,946 dialogue wordings are
+unchanged by this repair. The four affected presidential-history seeds and four
+deep-fact seeds are updated as well, so regenerating them preserves the fix.
+
+The rule still requires three distinct venues and exactly one landmark witness.
+No museum landmark was moved. A regression check requires every authored clue
+to have a valid combination somewhere on the case routes; separate synthetic
+fixtures verify that missing venues and landmark-venue collisions remain
+excluded. Sampling is a separate diagnostic, not the definition of eligibility.
+
+Deploy the updated content and restart the API for new attempts to use these
+placements. Persisted witness plans keep their saved venues and wording.
+Legacy attempts without a saved plan continue using the legacy selector.
+New clues and formulations may grow beyond the baseline counts without
+changing the loader's numeric limits.
 
 Validation covers attempt variation, unheard/oldest preference, difficulty,
 venue and puzzle validity, private snapshot recovery after content changes,

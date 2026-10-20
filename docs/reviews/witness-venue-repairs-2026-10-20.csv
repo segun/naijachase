@@ -1,0 +1,78 @@
+atom_id,state,old_venue_id,old_witness_roles,new_venue_id,new_venue_name,new_witness_roles,reason
+SCA-P0-NORTH-WEST-KANO-02,Kano,museum,archaeologist|museum guide,university,University,lecturer|researcher,"Researchers can discuss archaeological, architectural or geological evidence."
+SCA-P0-NORTH-WEST-KATSINA-03,Katsina,museum,archaeologist|museum guide,university,University,lecturer|researcher,"Researchers can discuss archaeological, architectural or geological evidence."
+SCA-0009,Kaduna,museum,museum guide|archaeology student,university,University,lecturer|researcher,"Researchers can discuss archaeological, architectural or geological evidence."
+SCA-P0-NORTH-WEST-KADUNA-01,Kaduna,museum,archaeologist|museum guide,university,University,lecturer|researcher,"Researchers can discuss archaeological, architectural or geological evidence."
+SCA-P0-NORTH-WEST-KADUNA-03,Kaduna,museum,archivist|researcher,library,Library,librarian|archivist|researcher,Librarians and archivists can discuss the historical records or research request.
+SCA-P0-NORTH-WEST-KADUNA-09,Kaduna,museum,museum guide|historian|archaeologist,library,Library,librarian|archivist|researcher,Librarians and archivists can discuss the historical records or research request.
+SCA-P0-NORTH-WEST-SOKOTO-03,Sokoto,museum,museum guide|historian,library,Library,librarian|archivist|researcher,Librarians and archivists can discuss the historical records or research request.
+SCA-P0-NORTH-WEST-SOKOTO-10,Sokoto,museum,museum guide|historian|archaeologist,university,University,lecturer|researcher,"Researchers can discuss archaeological, architectural or geological evidence."
+SCA-P0-NORTH-EAST-BAUCHI-03,Bauchi,museum,museum guide|historian|archaeologist,university,University,lecturer|researcher,"Researchers can discuss archaeological, architectural or geological evidence."
+SCA-P0-NORTH-EAST-BAUCHI-07,Bauchi,museum,museum guide|historian|archaeologist,library,Library,librarian|archivist|researcher,Librarians and archivists can discuss the historical records or research request.
+SCA-P0-NORTH-EAST-BAUCHI-09,Bauchi,museum,museum guide|historian|archaeologist,library,Library,librarian|archivist|researcher,Librarians and archivists can discuss the historical records or research request.
+SCA-P0-SOUTH-SOUTH-RIVERS-06,Rivers,museum,museum guide|historian|archaeologist,community_hall,Community hall,community leader|elder,"Community elders can discuss local heritage, settlement and trading traditions."
+SCA-P0-SOUTH-SOUTH-RIVERS-09,Rivers,museum,museum guide|historian|archaeologist,library,Library,librarian|archivist|researcher,Librarians and archivists can discuss the historical records or research request.
+SCA-P0-SOUTH-SOUTH-BAYELSA-06,Bayelsa,museum,museum guide|historian|archaeologist,community_hall,Community hall,community leader|elder,"Community elders can discuss local heritage, settlement and trading traditions."
+SCA-P0-SOUTH-SOUTH-DELTA-05,Delta,museum,museum guide|historian|archaeologist,library,Library,librarian|archivist|researcher,Librarians and archivists can discuss the historical records or research request.
+SCA-P0-SOUTH-SOUTH-AKWA-IBOM-10,Akwa Ibom,museum,museum guide|historian|archaeologist,university,University,lecturer|researcher,"Researchers can discuss archaeological, architectural or geological evidence."
+SCA-P0-SOUTH-SOUTH-CROSS-RIVER-03,Cross River,museum,museum guide|historian|archaeologist,community_hall,Community hall,community leader|elder,"Community elders can discuss local heritage, settlement and trading traditions."
+SCA-P0-SOUTH-SOUTH-CROSS-RIVER-05,Cross River,museum,museum guide|historian|archaeologist,university,University,lecturer|researcher,"Researchers can discuss archaeological, architectural or geological evidence."
+SCA-P0-SOUTH-SOUTH-CROSS-RIVER-10,Cross River,museum,museum guide|historian|archaeologist,library,Library,librarian|archivist|researcher,Librarians and archivists can discuss the historical records or research request.
+SCA-P0-SOUTH-WEST-OGUN-06,Ogun,museum,museum guide|historian|archaeologist,library,Library,librarian|archivist|researcher,Librarians and archivists can discuss the historical records or research request.
+SCA-P0-SOUTH-WEST-OGUN-09,Ogun,museum,museum guide|historian|archaeologist,library,Library,librarian|archivist|researcher,Librarians and archivists can discuss the historical records or research request.
+SCA-0050,Osun,museum,museum guide|art historian,university,University,lecturer|researcher,"Researchers can discuss archaeological, architectural or geological evidence."
+SCA-P0-SOUTH-WEST-OSUN-03,Osun,museum,museum guide|historian|archaeologist,library,Library,librarian|archivist|researcher,Librarians and archivists can discuss the historical records or research request.
+SCA-P0-SOUTH-WEST-OSUN-10,Osun,museum,museum guide|historian|archaeologist,university,University,lecturer|researcher,"Researchers can discuss archaeological, architectural or geological evidence."
+SCA-P0-SOUTH-WEST-OYO-01,Oyo,museum,museum guide|historian|archaeologist,library,Library,librarian|archivist|researcher,Librarians and archivists can discuss the historical records or research request.
+SCA-P0-SOUTH-WEST-OYO-09,Oyo,museum,museum guide|historian|archaeologist,library,Library,librarian|archivist|researcher,Librarians and archivists can discuss the historical records or research request.
+SCA-P0-SOUTH-EAST-ANAMBRA-02,Anambra,museum,museum guide|historian|archaeologist,community_hall,Community hall,community leader|elder,"Community elders can discuss local heritage, settlement and trading traditions."
+SCA-P0-SOUTH-EAST-ANAMBRA-08,Anambra,museum,museum guide|historian|archaeologist,university,University,lecturer|researcher,"Researchers can discuss archaeological, architectural or geological evidence."
+SCA-P0-SOUTH-EAST-ABIA-03,Abia,museum,museum guide|historian|archaeologist,community_hall,Community hall,community leader|elder,"Community elders can discuss local heritage, settlement and trading traditions."
+SCA-P0-SOUTH-EAST-ABIA-09,Abia,museum,museum guide|historian|archaeologist,library,Library,librarian|archivist|researcher,Librarians and archivists can discuss the historical records or research request.
+SCA-0069,Enugu,museum,museum guide|retired miner,library,Library,librarian|archivist|researcher,Librarians and archivists can discuss the historical records or research request.
+SCA-P0-SOUTH-EAST-ENUGU-01,Enugu,museum,museum guide|historian|archaeologist,library,Library,librarian|archivist|researcher,Librarians and archivists can discuss the historical records or research request.
+SCA-P0-SOUTH-EAST-ENUGU-05,Enugu,museum,museum guide|historian|archaeologist,library,Library,librarian|archivist|researcher,Librarians and archivists can discuss the historical records or research request.
+SCA-P0-SOUTH-EAST-ENUGU-09,Enugu,museum,museum guide|historian|archaeologist,library,Library,librarian|archivist|researcher,Librarians and archivists can discuss the historical records or research request.
+SCA-P0-SOUTH-EAST-IMO-09,Imo,museum,museum guide|historian|archaeologist,library,Library,librarian|archivist|researcher,Librarians and archivists can discuss the historical records or research request.
+SCA-0077,Jigawa,museum,museum guide|history teacher,community_hall,Community hall,community leader|elder,"Community elders can discuss local heritage, settlement and trading traditions."
+SCA-P0-NORTH-WEST-JIGAWA-02,Jigawa,museum,museum guide|archaeologist,university,University,lecturer|researcher,"Researchers can discuss archaeological, architectural or geological evidence."
+SCA-P0-NORTH-WEST-JIGAWA-09,Jigawa,museum,museum guide|historian|archaeologist,university,University,lecturer|researcher,"Researchers can discuss archaeological, architectural or geological evidence."
+SCA-P0-NORTH-WEST-KEBBI-01,Kebbi,museum,museum guide|historian,library,Library,librarian|archivist|researcher,Librarians and archivists can discuss the historical records or research request.
+SCA-P0-NORTH-WEST-KEBBI-09,Kebbi,museum,museum guide|historian|archaeologist,university,University,lecturer|researcher,"Researchers can discuss archaeological, architectural or geological evidence."
+SCA-P0-NORTH-WEST-ZAMFARA-08,Zamfara,museum,historian|museum guide,community_hall,Community hall,community leader|elder,"Community elders can discuss local heritage, settlement and trading traditions."
+SCA-P0-NORTH-EAST-ADAMAWA-01,Adamawa,museum,museum guide|historian|archaeologist,library,Library,librarian|archivist|researcher,Librarians and archivists can discuss the historical records or research request.
+SCA-P0-NORTH-EAST-ADAMAWA-08,Adamawa,museum,museum guide|historian|archaeologist,university,University,lecturer|researcher,"Researchers can discuss archaeological, architectural or geological evidence."
+SCA-0093,Borno,museum,museum guide|historian,library,Library,librarian|archivist|researcher,Librarians and archivists can discuss the historical records or research request.
+SCA-P0-NORTH-EAST-BORNO-01,Borno,museum,museum guide|historian|archaeologist,library,Library,librarian|archivist|researcher,Librarians and archivists can discuss the historical records or research request.
+SCA-P0-NORTH-EAST-BORNO-08,Borno,museum,museum guide|historian|archaeologist,university,University,lecturer|researcher,"Researchers can discuss archaeological, architectural or geological evidence."
+SCA-P0-NORTH-EAST-BORNO-09,Borno,museum,museum guide|historian|archaeologist,university,University,lecturer|researcher,"Researchers can discuss archaeological, architectural or geological evidence."
+SCA-P0-NORTH-EAST-TARABA-07,Taraba,museum,museum guide|historian|archaeologist,community_hall,Community hall,community leader|elder,"Community elders can discuss local heritage, settlement and trading traditions."
+SCA-P0-NORTH-EAST-YOBE-09,Yobe,museum,museum guide|historian|archaeologist,university,University,lecturer|researcher,"Researchers can discuss archaeological, architectural or geological evidence."
+SCA-P0-NORTH-CENTRAL-BENUE-05,Benue,museum,museum guide|historian|archaeologist,community_hall,Community hall,community leader|elder,"Community elders can discuss local heritage, settlement and trading traditions."
+SCA-P0-NORTH-CENTRAL-FEDERAL-CAPITAL-TERRITORY-09,Federal Capital Territory,museum,museum guide|historian|archaeologist,library,Library,librarian|archivist|researcher,Librarians and archivists can discuss the historical records or research request.
+SCA-0118,Kogi,museum,museum guide|historian,library,Library,librarian|archivist|researcher,Librarians and archivists can discuss the historical records or research request.
+SCA-P0-NORTH-CENTRAL-KOGI-02,Kogi,museum,museum guide|historian|archaeologist,library,Library,librarian|archivist|researcher,Librarians and archivists can discuss the historical records or research request.
+SCA-P0-NORTH-CENTRAL-KOGI-10,Kogi,museum,museum guide|historian|archaeologist,library,Library,librarian|archivist|researcher,Librarians and archivists can discuss the historical records or research request.
+SCA-P0-NORTH-CENTRAL-NASARAWA-06,Nasarawa,museum,museum guide|historian|archaeologist,community_hall,Community hall,community leader|elder,"Community elders can discuss local heritage, settlement and trading traditions."
+SCA-0131,Niger,museum,museum guide|historian,craft_market,Craft market,carver|bronze caster,Craft practitioners can discuss the metalwork and artistic tradition.
+SCA-P0-NORTH-CENTRAL-NIGER-02,Niger,museum,museum guide|historian|archaeologist,community_hall,Community hall,community leader|elder,"Community elders can discuss local heritage, settlement and trading traditions."
+SCA-P0-NORTH-CENTRAL-NIGER-09,Niger,museum,museum guide|historian|archaeologist,university,University,lecturer|researcher,"Researchers can discuss archaeological, architectural or geological evidence."
+SCA-P0-NORTH-CENTRAL-PLATEAU-03,Plateau,museum,museum guide|historian|archaeologist,university,University,lecturer|researcher,"Researchers can discuss archaeological, architectural or geological evidence."
+SCA-P0-NORTH-CENTRAL-PLATEAU-07,Plateau,museum,museum guide|historian|archaeologist,library,Library,librarian|archivist|researcher,Librarians and archivists can discuss the historical records or research request.
+SCA-P0-NORTH-CENTRAL-PLATEAU-10,Plateau,museum,museum guide|historian|archaeologist,university,University,lecturer|researcher,"Researchers can discuss archaeological, architectural or geological evidence."
+SCA-0137,Edo,museum,bronze caster|museum guide,craft_market,Craft market,carver|bronze caster,Craft practitioners can discuss the metalwork and artistic tradition.
+SCA-P0-SOUTH-SOUTH-EDO-01,Edo,museum,museum guide|historian|archaeologist,craft_market,Craft market,carver|bronze caster,Craft practitioners can discuss the metalwork and artistic tradition.
+SCA-P0-SOUTH-SOUTH-EDO-09,Edo,museum,museum guide|historian|archaeologist,university,University,lecturer|researcher,"Researchers can discuss archaeological, architectural or geological evidence."
+SCA-0144,Lagos,museum,museum guide|historian,library,Library,librarian|archivist|researcher,Librarians and archivists can discuss the historical records or research request.
+SCA-P0-SOUTH-WEST-LAGOS-03,Lagos,museum,museum guide|historian|archaeologist,library,Library,librarian|archivist|researcher,Librarians and archivists can discuss the historical records or research request.
+SCA-P0-SOUTH-WEST-LAGOS-07,Lagos,museum,museum guide|historian|archaeologist,community_hall,Community hall,community leader|elder,"Community elders can discuss local heritage, settlement and trading traditions."
+SCA-P0-SOUTH-WEST-LAGOS-09,Lagos,museum,museum guide|historian|archaeologist,library,Library,librarian|archivist|researcher,Librarians and archivists can discuss the historical records or research request.
+SCA-P0-SOUTH-EAST-EBONYI-07,Ebonyi,museum,museum guide|historian|archaeologist,community_hall,Community hall,community leader|elder,"Community elders can discuss local heritage, settlement and trading traditions."
+SCA-DEEP-001,Abia,museum,museum guide|historian,library,Library,librarian|archivist|researcher,Librarians and archivists can discuss the historical records or research request.
+SCA-DEEP-005,Bauchi,museum,museum guide|historian,library,Library,librarian|archivist|researcher,Librarians and archivists can discuss the historical records or research request.
+SCA-DEEP-028,Ondo,museum,art historian|museum guide,university,University,lecturer|researcher,"Researchers can discuss archaeological, architectural or geological evidence."
+SCA-DEEP-029,Osun,museum,archaeologist|art historian,university,University,lecturer|researcher,"Researchers can discuss archaeological, architectural or geological evidence."
+SCA-EVENT-003,Abia,museum,historian|museum guide,library,Library,librarian|archivist|researcher,Librarians and archivists can discuss the historical records or research request.
+SCA-EVENT-006,Ogun,museum,historian|museum guide,library,Library,librarian|archivist|researcher,Librarians and archivists can discuss the historical records or research request.
+SCA-EVENT-009,Niger,museum,historian|museum guide,library,Library,librarian|archivist|researcher,Librarians and archivists can discuss the historical records or research request.
+SCA-EVENT-011,Kano,museum,historian|museum guide,library,Library,librarian|archivist|researcher,Librarians and archivists can discuss the historical records or research request.

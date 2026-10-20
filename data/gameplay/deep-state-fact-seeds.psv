@@ -1,9 +1,9 @@
 state|candidate_1|candidate_2|candidate_3|venue|roles|english
-Abia|Abia|Imo|Anambra|museum|museum guide;historian|The traveller asked about a war museum displaying the original hand-carved coffin of Nigeria's first military head of state and an industrial cluster nicknamed “Japan of Africa”.
+Abia|Abia|Imo|Anambra|library|librarian;archivist;researcher|The traveller asked about a war museum displaying the original hand-carved coffin of Nigeria's first military head of state and an industrial cluster nicknamed “Japan of Africa”.
 Adamawa|Adamawa|Taraba|Borno|conservation_office|ranger;heritage guide|The traveller described three neighbouring mountain peaks beside the Cameroon border and an ancient terraced cultural landscape.
 Akwa Ibom|Akwa Ibom|Cross River|Rivers|craft_market|raffia weaver;cane seller|The traveller wanted the “Raffia City”, known for cane furniture and intricate weaving.
 Anambra|Anambra|Abia|Lagos|factory_gate|factory guard;parts dealer|The traveller asked about Nigeria's first indigenous vehicle assembly plant in a major southeastern manufacturing hub.
-Bauchi|Bauchi|Gombe|Plateau|museum|museum guide;historian|The traveller wanted the preserved home of Nigeria's first Prime Minister, now maintained as a national museum.
+Bauchi|Bauchi|Gombe|Plateau|library|librarian;archivist;researcher|The traveller wanted the preserved home of Nigeria's first Prime Minister, now maintained as a national museum.
 Bayelsa|Bayelsa|Rivers|Delta|waterfront|boat operator;historian|The traveller mentioned an island whose colonial-era name came from brass trade goods exchanged during the palm-oil era.
 Benue|Benue|Nasarawa|Kogi|traditional_council|palace aide;community elder|The traveller sought the traditional headquarters and palace grounds of the supreme leader of the Tiv people.
 Borno|Borno|Yobe|Adamawa|library|historian;librarian|The traveller researched a settlement that became the nineteenth-century capital of a restored Kanem–Bornu empire under El-Kanemi.
@@ -26,8 +26,8 @@ Lagos|Lagos|Ogun|Cross River|church|church historian;heritage guide|The travelle
 Nasarawa|Nasarawa|Kaduna|Plateau|university|school archivist;historian|The traveller examined a historic government college that trained generations of northern political and military leaders.
 Niger|Niger|Kwara|Kebbi|craft_market|glassmaker;brass smith|The traveller sought generations-old cottage workshops known for traditional glassmaking and brass smithing.
 Ogun|Ogun|Oyo|Osun|festival_ground|festival steward;horse groom|The traveller asked about a huge annual homage festival featuring age-grade societies and horse-riding warlord families.
-Ondo|Ondo|Edo|Osun|museum|art historian;museum guide|The traveller studied terracotta and bronze works that blend the styles of two ancient southern artistic traditions.
-Osun|Osun|Oyo|Ondo|museum|archaeologist;art historian|The traveller followed the Yoruba creation tradition to the place where famous naturalistic bronze heads came to scholarly attention in 1910.
+Ondo|Ondo|Edo|Osun|university|lecturer;researcher|The traveller studied terracotta and bronze works that blend the styles of two ancient southern artistic traditions.
+Osun|Osun|Oyo|Ondo|university|lecturer;researcher|The traveller followed the Yoruba creation tradition to the place where famous naturalistic bronze heads came to scholarly attention in 1910.
 Oyo|Oyo|Osun|Kwara|palace|palace historian;court official|The traveller sought the historic seat of the Alaafin, supreme traditional monarch of a powerful old empire.
 Plateau|Plateau|Taraba|Kaduna|community_hall|cultural researcher;community elder|The traveller asked about the cultural heartland of the Tarok people, noted for producing prominent military figures.
 Rivers|Rivers|Bayelsa|Delta|waterfront|boat operator;oral historian|The traveller traced a nineteenth-century trading kingdom founded by King Jaja after a political split in an older coastal kingdom.

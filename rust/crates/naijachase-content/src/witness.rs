@@ -482,12 +482,21 @@ mod tests {
     }
 
     #[test]
-    fn coverage_distinguishes_structural_exclusions_from_unsampled_clues() {
+    fn authored_clues_are_reachable_and_coverage_reports_invalid_venues() {
         let mut c = catalogue();
         let mut unreachable = c.atoms["Kano"][0].clone();
         unreachable.atom_id = "unavailable-venue".into();
         unreachable.venue_id = "unavailable-venue".into();
         c.atoms.get_mut("Kano").unwrap().push(unreachable);
+        let mut collision = c.atoms["Kano"][0].clone();
+        collision.atom_id = "landmark-venue-collision".into();
+        collision.venue_id = c.atoms["Kano"]
+            .iter()
+            .find(|atom| atom.dimension == "landmark")
+            .unwrap()
+            .venue_id
+            .clone();
+        c.atoms.get_mut("Kano").unwrap().push(collision);
         let rows = c.witness_coverage(0).unwrap();
         let excluded = rows
             .iter()
@@ -495,6 +504,28 @@ mod tests {
             .unwrap();
         assert_eq!(excluded.eligible_stops, 0);
         assert!(!excluded.exclusion_reason.is_empty());
+        let collision = rows
+            .iter()
+            .find(|r| r.atom_id == "landmark-venue-collision")
+            .unwrap();
+        assert_eq!(collision.eligible_stops, 0);
+        assert!(
+            collision
+                .exclusion_reason
+                .contains("landmark witness's venue")
+        );
+        let authored_exclusions = rows
+            .iter()
+            .filter(|r| {
+                r.eligible_stops == 0
+                    && r.atom_id != "unavailable-venue"
+                    && r.atom_id != "landmark-venue-collision"
+            })
+            .collect::<Vec<_>>();
+        assert!(
+            authored_exclusions.is_empty(),
+            "authored witness clues must have a valid combination on a case route: {authored_exclusions:?}"
+        );
         assert!(
             rows.iter().any(|r| r.eligible_stops > 0
                 && r.sampled_uses == 0

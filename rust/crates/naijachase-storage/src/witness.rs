@@ -3,7 +3,8 @@ use naijachase_contracts::WitnessHistory;
 
 impl MysqlStore {
     pub fn witness_history(&self, player: &str) -> Result<WitnessHistory, StorageError> {
-        load_witness_history(&mut *self.connection()?, player)
+        let mut connection = self.connection()?;
+        load_witness_history(&mut connection.connection, player)
     }
 }
 

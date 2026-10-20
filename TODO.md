@@ -6,6 +6,22 @@ This file is the source of truth for completed work, current limitations, and
 next development priorities. Update it whenever a feature or content pass is
 completed.
 
+## Witness venue repair — 20 October 2026
+
+- [x] Reassign all 77 non-landmark museum clues to appropriate libraries, universities, community halls and craft markets, including matching witness roles.
+- [x] Preserve clue IDs, facts, candidate sets and every dialogue wording; update the eight affected authoring seeds so regeneration keeps the repair.
+- [x] Add a regression guard requiring every authored clue to have a valid combination on the case routes, while still excluding synthetic missing-venue and museum-collision fixtures.
+- [x] Confirm all 994 clues are structurally eligible with zero exclusions; pass the 11 content tests, catalogue validation, Svelte diagnostics and all 358 web tests.
+- [x] Verify all 77 repaired accounts appear across 8,000 sampled attempts (993 of 994 eligible clues sampled overall).
+
+## Reviewed witness facts — 20 October 2026
+
+- [x] Review all 150 supplied facts against the live content database and canonical files; record duplicates, retained cores and unsupported details in `docs/reviews/witness-facts-2026-10-20.csv`.
+- [x] Add 37 source-checked witness clues and 333 English variants; reuse the existing Akwete knowledge entry and correct the Dufuna destination to Yobe.
+- [x] Merge overlapping beach, crater-lake and reservoir facts; omit unverified rankings, measurements, dates and cultural generalisations.
+- [x] Validate the catalogue and confirm all 37 additions are eligible and selected across 8,000 sampled attempts; preserve existing rows and pass all 358 web tests.
+- [ ] Deploy the reviewed content and restart the API through the normal release process; production was only read during this review.
+
 ## Combined scene controls — 20 October 2026
 
 - [x] Replace the separate floating detail, music and tune buttons with one top-right hamburger menu.
@@ -17,9 +33,9 @@ completed.
 - [x] Save complete private witness plans and wordings; preserve legacy attempts and shared weekly lineups.
 - [x] Derive owned player history from delivered interview receipts, excluding cold replies, unvisited clues and unfinished weekly journeys.
 - [x] Add `make witness-coverage` with exhaustive eligibility, sampled exposure and exclusion reasons; allow content growth beyond baseline counts.
-- [x] Audit all 250 recent additions: 246 are eligible; four share their destination's mandatory landmark venue.
+- [x] Audit all 250 recent additions: all 250 are eligible after repairing the four museum-venue conflicts.
 - [x] Verify 4,000 generated attempt itineraries, content-growth loading, the Rust suite, 29 live database tests, and all 356 web tests; changed game crates pass strict linting.
-- [ ] Review suitable alternative venues for SCA-EVENT-003, SCA-EVENT-006, SCA-EVENT-009 and SCA-EVENT-011; preserve the three-distinct-venues puzzle rule.
+- [x] Move SCA-EVENT-003, SCA-EVENT-006, SCA-EVENT-009 and SCA-EVENT-011 to the library, along with suitable venues for the other 73 blocked accounts; preserve the three-distinct-venues puzzle rule.
 - [ ] Deploy the API and updated content, restart the API, and verify a new attempt plus resume. Existing attempts retain their legacy selector.
 
 ## Mobile UI corrections — 20 October 2026
