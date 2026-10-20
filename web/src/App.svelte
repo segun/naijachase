@@ -26,10 +26,11 @@
     content: () => import("./screens/admin/ContentGate.svelte"),
     results: () => import("./screens/case/Results.svelte"),
     achievementShare: () => import("./ui/AchievementShareDialog.svelte"),
-    detail: () => import("./ui/DetailQuick.svelte")
+    detail: () => import("./ui/SceneOptions.svelte")
   } as const;
 
   const app = new AppController();
+  const sceneOptions = $derived(app.signedIn && !app.needsAvatar && Boolean(app.panel || isCaseScreen(app.screen) || ["garage", "witness", "journey", "raid", "cases", "archive"].includes(app.screen)));
   function reportRenderError(error: unknown) {
     console.error("[NaijaChase] Unhandled screen render error", error);
     reportBrowserError(error, "svelte.boundary");
@@ -63,7 +64,7 @@
 {#if app.booting}
   <div class="boot" role="status"><Brand /><p>Opening the case files…</p></div>
 {:else}
-  <Shell {app}>
+  <Shell {app} {sceneOptions}>
     <svelte:boundary onerror={reportRenderError}>
       {#if app.signedIn && app.needsAvatar}{#await lazy.avatar() then { default: Screen }}<div class="page"><Screen {app} first /></div>{/await}
       {:else if app.screen === "welcome"}<Landing {app} />
@@ -96,5 +97,5 @@
     {#if app.signedIn && app.achievementShare && !app.panel}{#await lazy.achievementShare() then { default: Dialog }}<Dialog {app} />{/await}{/if}
   </Shell>
   <!-- Animated scenes can be made lighter or richer at any moment, without leaving the game. -->
-  {#if app.signedIn && !app.needsAvatar && (app.panel || isCaseScreen(app.screen) || ["garage", "witness", "journey", "raid", "cases", "archive"].includes(app.screen))}{#await lazy.detail() then { default: Control }}<Control />{/await}{/if}
+  {#if sceneOptions}{#await lazy.detail() then { default: Control }}{#key app.screen}<Control music={app.music} />{/key}{/await}{/if}
 {/if}

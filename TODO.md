@@ -6,6 +6,11 @@ This file is the source of truth for completed work, current limitations, and
 next development priorities. Update it whenever a feature or content pass is
 completed.
 
+## Combined scene controls — 20 October 2026
+
+- [x] Replace the separate floating detail, music and tune buttons with one top-right hamburger menu.
+- [x] Keep the three options, existing preferences, outside dismissal, Escape focus return and safe-area layout.
+
 ## Witness variety — 20 October 2026
 
 - [x] Choose fresh witness combinations per ordinary/replay attempt, preferring unheard clues and then older material.
@@ -25,6 +30,7 @@ completed.
 - [x] Label and validate `username` as Investigator Name with a precise 3–32-character format explanation in both web and API validation.
 - [x] Remove the premature “witness statement added” notification; the witness scene now appears before any notebook confirmation.
 - [x] Keep the mobile corrections within release budgets by lazy-loading the privacy control, account styles and dossier-list styles; startup is 59.8 KiB JS and 9.9 KiB CSS gzip.
+- [x] Hide the first-time usage-consent prompt after either choice and keep later allow/deny controls in Settings instead of a permanent floating button.
 - [ ] Verify these corrections on an installed iPhone PWA in portrait and landscape after the next deployment.
 
 ## Witness notebook recovery — 19 October 2026

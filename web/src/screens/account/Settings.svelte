@@ -7,6 +7,7 @@
   import AvatarPicker from "../../avatar/AvatarPicker.svelte";
   import Icon from "../../ui/Icon.svelte";
   import DetailControl from "../../ui/DetailControl.svelte";
+  import { getUsageChoice, usage, type UsageChoice } from "../../usage";
 
   let { app }: { app: AppController } = $props();
   const p = untrack(() => app.player);
@@ -14,9 +15,15 @@
   let homeBase = $state(p?.home_base ?? "Lagos");
   let loadedPlayer = $state(p?.player_id ?? "");
   let confirmAll = $state(false);
+  let usageChoice = $state<UsageChoice>(getUsageChoice());
   const homeOptions = $derived(HOME_BASES.includes(homeBase as never) ? HOME_BASES : STATES);
   const when = (iso: string) => new Date(iso).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
   const blank = (v: string) => (v.trim() === "" ? null : v.trim());
+
+  async function chooseUsage(value: "yes" | "no") {
+    usageChoice = value;
+    await usage.setChoice(value);
+  }
 
   $effect(() => { if (app.signedIn) untrack(() => { void app.loadSessions(); }); });
   $effect(() => {
@@ -73,6 +80,19 @@
         <button type="button" aria-pressed={app.settings.motion === "system"} onclick={() => app.updateSettings({ motion: "system" })}>Follow device</button>
         <button type="button" aria-pressed={app.settings.motion === "reduced"} onclick={() => app.updateSettings({ motion: "reduced" })}>Reduce motion</button>
       </div>
+    </fieldset>
+  </section>
+
+  <section class="card settings rise" aria-labelledby="privacy-title">
+    <h2 id="privacy-title">Privacy</h2>
+    <fieldset>
+      <legend>Optional usage measurement</legend>
+      <p class="muted">Allow anonymous visits and signup progress to help improve Naija Chase. This never enables marketing email.</p>
+      <div class="segmented" role="group" aria-label="Optional usage measurement">
+        <button type="button" aria-pressed={usageChoice === "yes"} onclick={() => chooseUsage("yes")}>Allow measurement</button>
+        <button type="button" aria-pressed={usageChoice === "no"} onclick={() => chooseUsage("no")}>Do not allow</button>
+      </div>
+      <small class="muted" role="status">{usageChoice === "yes" ? "Usage measurement is allowed." : usageChoice === "no" ? "Usage measurement is disabled." : "No choice has been saved yet."}</small>
     </fieldset>
   </section>
 

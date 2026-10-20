@@ -31,7 +31,7 @@
 .t-embed {
   --bg: #04100c;
   font: clamp(13px, 1.3cqw, 17px) / 1.55 var(--body); letter-spacing: 0; text-shadow: none; text-transform: none; color: var(--ink);
-  min-width: 0; padding-bottom: 1em;
+  width: 100%; min-width: 0; max-width: 100%; overflow-x: clip; padding-bottom: 1em;
 }
 .t-embed h1, .t-embed h2, .t-embed h3 { font-family: var(--display); letter-spacing: 0; text-transform: none; }
 .t-embed .page { max-width: none; margin: 0; gap: 1rem; padding: 0; }

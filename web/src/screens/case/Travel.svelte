@@ -2,7 +2,7 @@
   import { tick } from "svelte";
   import type { AppController } from "../../state/app.svelte";
   import { MAP_H, MAP_W, outlinePath, percentPoint, statePoint } from "../../domain/map.ts";
-  import { STATES, ZONES, groupQuotes, money, type TransportQuote } from "../../domain/model.ts";
+  import { STATES, ZONES, groupQuotes, jurisdictionMatchesSearch, money, type TransportQuote } from "../../domain/model.ts";
   import Icon from "../../ui/Icon.svelte";
   import MoveOptions from "./MoveOptions.svelte";
 
@@ -32,7 +32,7 @@
   );
   const filtered = $derived(
     Object.entries(ZONES)
-      .map(([zone, members]) => [zone, members.filter(s => s.toLowerCase().includes(query.trim().toLowerCase()))] as const)
+      .map(([zone, members]) => [zone, members.filter(s => jurisdictionMatchesSearch(s, query))] as const)
       .filter(([, members]) => members.length > 0)
   );
 
@@ -107,7 +107,7 @@
   </div>
       {:else}
         {@render viewToggle()}
-        <label class="field"><span>Search states</span><input class="input" type="search" bind:value={query} placeholder="Type a state…" /></label>
+        <label class="field"><span>Search states or FCT</span><input class="input" type="search" bind:value={query} placeholder="Type a state, Abuja or FCT…" /></label>
         <div class="zones">
           {#each filtered as [zone, members]}
             <section>

@@ -107,8 +107,11 @@ Rules of the layout: Babylon.js may only be imported by TypeScript modules under
   Mirrors, Harmattan Dawn, Express to Kano, Market Day, Neon Circuit, Midnight Heist and
   Victory Lap), synthesised with the Web Audio API (no audio files and no third-party
   music). An on/off button and a tune picker sit on the home and sign-in screens and, once
-  signed in, in the side rail (or a small floating control on the room screens and on
-  mobile). The music starts on the first tap or key press because browsers block autoplay,
+  signed in, in the side rail. On scene screens, one top-right hamburger button
+  opens three options: picture detail, music on/off, and tune selection. The menu
+  closes on an outside tap, Escape or a screen change; Escape returns focus to
+  its button. It respects phone safe areas and scrolls in short landscape views.
+  Other screens retain their existing music controls. The music starts on the first tap or key press because browsers block autoplay,
   and keeps playing through sign-in and the game; changing tune fades the old one out and
   the new one in. The on/off and tune choices are remembered on the device. The synthesiser
   and the scores are a lazy chunk; the scores are pure data in `web/src/music/music-score.ts`

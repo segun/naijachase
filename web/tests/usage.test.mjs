@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createUsageTracker } from "../src/usage.ts";
+import fs from "node:fs";
 
 function fixture(initial = null) {
   let choice = initial, visible = true;
@@ -57,4 +58,16 @@ test("a failed measurement does not prevent withdrawal or affect signup", async 
   const tracker = createUsageTracker({ choice: () => choice, saveChoice: value => choice = value, visible: () => true, send: async () => { attempts++; throw Error("offline"); } });
   await tracker.registrationEmail("ada@example.com"); await tracker.setChoice("no"); await tracker.visit();
   assert.equal(attempts, 2);
+});
+
+test("the first-choice prompt disappears permanently and Settings owns later changes", () => {
+  const prompt = fs.readFileSync(new URL("../src/ui/UsagePrivacy.svelte", import.meta.url), "utf8");
+  const settings = fs.readFileSync(new URL("../src/screens/account/Settings.svelte", import.meta.url), "utf8");
+  assert.doesNotMatch(prompt, /usage-settings|Usage privacy<\/button>/);
+  assert.match(prompt, /getUsageChoice\(\) === null/);
+  assert.match(settings, /Optional usage measurement/);
+  assert.match(settings, /chooseUsage\("yes"\)/);
+  assert.match(settings, /chooseUsage\("no"\)/);
+  assert.match(settings, /aria-pressed=\{usageChoice === "yes"\}/);
+  assert.match(settings, /aria-pressed=\{usageChoice === "no"\}/);
 });

@@ -8,6 +8,16 @@ export const STATES = [
   "Sokoto","Taraba","Yobe","Zamfara"
 ] as const;
 
+/** Search names only; the canonical destination sent to the API remains unchanged. */
+export function jurisdictionMatchesSearch(state: string, query: string): boolean {
+  const needle = query.trim().toLocaleLowerCase("en-NG");
+  if (!needle) return true;
+  const names = state === "Federal Capital Territory"
+    ? [state, "FCT", "Abuja"]
+    : [state];
+  return names.some(name => name.toLocaleLowerCase("en-NG").includes(needle));
+}
+
 export const HOME_BASES = STATES.filter(state => state !== "Federal Capital Territory");
 
 const CAPITALS:Record<string,[number,number]>={

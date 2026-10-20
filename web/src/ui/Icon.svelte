@@ -1,5 +1,6 @@
 <script lang="ts">
   const PATHS: Record<string, string> = {
+    menu: "M4 6h16 M4 12h16 M4 18h16",
     search: "M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14z M21 21l-4.3-4.3",
     notebook: "M6 3h11a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6z M6 3v18 M10 8h6 M10 12h6",
     id: "M3 5h18v14H3z M9 12a2 2 0 1 0 0-4 2 2 0 0 0 0 4z M6 16.5c.8-2 4.2-2 5 0 M14 9h4 M14 13h4",

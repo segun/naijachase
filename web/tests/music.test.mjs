@@ -84,7 +84,8 @@ test("music starts on the first screen and keeps playing after login", () => {
   assert.match(app, /music\.setActive\(!app\.booting\)/);
   assert.doesNotMatch(app, /setActive\([^)]*signedIn/);
   const shell = read("ui/Shell.svelte");
-  assert.match(shell, /\{#if app\.signedIn\}<div class="music-dock"[^>]*><MusicToggle music=\{app\.music\} \/><\/div>\{\/if\}/, "signed-in players keep the controls");
+  assert.match(shell, /\{#if app\.signedIn && !sceneOptions\}<div class="music-dock"[^>]*><MusicToggle music=\{app\.music\} \/><\/div>\{\/if\}/, "the separate dock stays available outside the combined scene menu");
+  assert.match(read("ui/SceneOptions.svelte"), /<MusicToggle \{music\} \/>/, "scene options retain the music switch and tune picker");
   assert.match(shell, /<div class="music-side"><MusicToggle/, "and so does the side rail");
 });
 

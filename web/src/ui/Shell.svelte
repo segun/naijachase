@@ -9,7 +9,7 @@
   import MusicToggle from "../music/MusicToggle.svelte";
   import Toasts from "./Toasts.svelte";
 
-  let { app, children }: { app: AppController; children: Snippet } = $props();
+  let { app, children, sceneOptions = false }: { app: AppController; children: Snippet; sceneOptions?: boolean } = $props();
 
   const inCase = $derived(app.game !== null && app.screen !== "results");
   // The rooms (the desk, the case on the office computer, the archive, the garage and the witness scene) are full-screen: their own menus replace the side rail.
@@ -81,7 +81,7 @@
     <button type="button" aria-current={app.screen === "settings" ? "page" : undefined} onclick={() => app.go("settings")}><Icon name="sliders" />Settings</button>
   </nav>
 {/if}
-{#if app.signedIn}<div class="music-dock" class:with-rail={rail} class:in-room={inRoom}><MusicToggle music={app.music} /></div>{/if}
+{#if app.signedIn && !sceneOptions}<div class="music-dock" class:with-rail={rail} class:in-room={inRoom}><MusicToggle music={app.music} /></div>{/if}
 <!-- Optional mobile browser chrome belongs in its own chunk, outside the critical game shell. -->
 {#await import("./MobileAppControls.svelte") then { default: MobileAppControls }}<MobileAppControls />{/await}
 <Toasts {app} />

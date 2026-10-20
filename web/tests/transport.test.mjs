@@ -16,6 +16,18 @@ test("quotes are grouped by scope and destination, with options ordered fly, dri
   assert.deepEqual(m.groupQuotes(quotes, "apprehension"), []);
 });
 
+test("Abuja, FCT and Federal Capital Territory find the same canonical destination", () => {
+  const destination = "Federal Capital Territory";
+  for (const query of ["Abuja", "abu", "FCT", "fct", "Federal Capital Territory", "capital territory"]) {
+    assert.equal(m.jurisdictionMatchesSearch(destination, query), true, query);
+  }
+  assert.equal(m.jurisdictionMatchesSearch("Lagos", "Abuja"), false);
+  assert.equal(m.jurisdictionMatchesSearch("Federal Capital Territory", "Lagos"), false);
+  const travel = read("screens/case/Travel.svelte");
+  assert.match(travel, /members\.filter\(s => jurisdictionMatchesSearch\(s, query\)\)/);
+  assert.match(travel, /Type a state, Abuja or FCT/);
+});
+
 test("local and apprehension journeys never offer flying (the server decides; the UI just displays)", () => {
   const local = m.groupQuotes([q("local", "market", "drive", 120, 20), q("local", "market", "hitch_ride", 0, 56)], "local");
   assert.equal(local[0].options.some(o => o.mode === "fly"), false);

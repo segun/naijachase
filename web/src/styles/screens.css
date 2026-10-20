@@ -438,15 +438,9 @@ textarea.input { resize: vertical; min-height: 5rem; }
 .detail-help { margin: 0; padding-left: 1.1rem; color: var(--muted); font-size: .9rem; display: grid; gap: .2rem; }
 .detail-warning { margin: 0; max-width: 42rem; padding: .65rem .8rem; border: 1px solid color-mix(in srgb, var(--gold) 70%, transparent); border-radius: .55rem; background: color-mix(in srgb, var(--gold) 12%, var(--panel)); color: var(--text); font-size: .88rem; }
 .detail-control.compact .detail-warning { max-width: 25rem; }
-.detail-quick { position: fixed; left: .75rem; bottom: .75rem; z-index: 40; display: grid; gap: .4rem; justify-items: start; }
-.detail-toggle { min-height: 36px; padding: .3rem .8rem; border-radius: 999px; border: 1px solid var(--line); background: color-mix(in srgb, var(--bg) 85%, transparent); color: var(--ink); font-size: .85rem; font-weight: 700; backdrop-filter: blur(6px); }
-.detail-pop { max-width: min(92vw, 24rem); padding: .75rem; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); box-shadow: 0 10px 30px #0008; }
-.detail-pop .segmented { flex-wrap: wrap; }
 
 @media (max-width: 639px) {
   /* Full-screen rooms reserve their top row for these scene controls. */
-  .detail-quick { top: max(.55rem, env(safe-area-inset-top)); bottom: auto; left: .55rem; }
-  .detail-toggle { min-height: 40px; padding-inline: .65rem; font-size: .78rem; }
   .music-dock.in-room { top: max(.55rem, env(safe-area-inset-top)); right: .55rem; bottom: auto; }
   .music-dock.in-room .music-toggle { min-width: 40px; min-height: 40px; padding: .45rem; justify-content: center; }
   .music-dock.in-room .music-menu { top: 3.25rem; bottom: auto; }
