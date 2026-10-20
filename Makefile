@@ -29,6 +29,15 @@ LANDING_NGINX_SITE ?= /etc/nginx/sites-available/003-naijachase.com
 LANDING_NGINX_SITE_LINK ?= /etc/nginx/sites-enabled/003-naijachase.com
 WEB_ROOT ?= /var/www/naijachase.app
 SOURCE_MAP_ROOT ?= /opt/naijachase/source-maps
+ADMIN_INSTALL_ROOT ?= /opt/naijachase-admin
+ADMIN_WEB_ROOT ?= /var/www/naijachase-admin
+ADMIN_NGINX_SITE ?= /etc/nginx/sites-available/005-admin.naijachase.app
+ADMIN_NGINX_SITE_LINK ?= /etc/nginx/sites-enabled/005-admin.naijachase.app
+ADMIN_SETUP_DIR ?= $(HOME)/.config/naijachase-admin
+ADMIN_SOURCE_ENV ?= $(CURDIR)/.env
+ADMIN_GAME_ENV_FILE ?= $(ADMIN_SOURCE_ENV)
+ADMIN_DB_ENV_FILE ?= $(ADMIN_GAME_ENV_FILE)
+ADMIN_NODE ?= node
 RELEASE ?= $(shell git rev-parse --short HEAD 2>/dev/null || echo local)
 
 # --- Rust tools and content paths --------------------------------------------
@@ -49,6 +58,9 @@ ARGS ?=
 	db-migrate db-import db-rebuild db-verify db-publish-initial db-export \
 	db-backup db-restore db-test \
 	web web-build web-install web-production-build web-mock web-mock-ui web-test \
+	admin-api admin-web admin-install admin-check admin-build \
+	admin-prepare-config admin-provision admin-install-config admin-setup admin-install-bundle admin-install-service admin-start admin-restart admin-status \
+	admin-nginx-http admin-nginx-https admin-nginx-move-from-default admin-install-renew-hook \
 	production-build copy-code install-api-service restart-api api-status \
 	install-web install-nginx publish-web publish-landing \
 	check audit p34 p35 p36 p39 p391
@@ -231,6 +243,82 @@ web-test: ## Run web accessibility, privacy, mobile, and weight guards
 	@cd web && $(PNPM) test
 
 # =============================================================================
+# Administration
+# Separate backend, frontend, credentials, and publication; no admin target is
+# a dependency of the player-facing deployment targets below.
+# =============================================================================
+
+admin-api: ## Start the separate admin API with exported ADMIN_* configuration
+	@$(CARGO) run --manifest-path $(MANIFEST) -p naijachase-admin
+
+admin-web: ## Start the admin frontend at http://127.0.0.1:4174
+	@cd admin/frontend && $(PNPM) dev
+
+admin-install: ## Install the exact locked admin frontend dependencies
+	@cd admin/frontend && $(PNPM) install --frozen-lockfile
+
+admin-check: ## Check admin formatting, backend tests, frontend types, and frontend tests
+	@$(CARGO) fmt --manifest-path $(MANIFEST) -p naijachase-admin -- --check
+	@$(CARGO) test --manifest-path $(MANIFEST) -p naijachase-admin
+	@$(ADMIN_NODE) --test deploy/admin/setup.test.mjs
+	@$(ADMIN_NODE) --test deploy/nginx/admin-site.test.mjs
+	@cd admin/frontend && $(PNPM) check && $(PNPM) test
+
+admin-build: ## Build the separate admin release binary and frontend bundle
+	@$(CARGO) build --release --manifest-path $(MANIFEST) -p naijachase-admin -p naijachase-tools
+	@cd admin/frontend && $(PNPM) build
+
+admin-prepare-config: ## Reuse game connection settings; generate service secrets and ask only for the web password
+	@ADMIN_NODE_BIN="$(ADMIN_NODE)" bash deploy/admin/prepare-config.sh "$(ADMIN_SETUP_DIR)" "rust/target/release/naijachase-admin" "$(ADMIN_GAME_ENV_FILE)"
+
+admin-provision: ## Explicitly apply DB setup; reuses prepared secrets and prompts once for DBA credentials if needed
+	@$(ADMIN_NODE) deploy/admin/provision.mjs "$(ADMIN_SETUP_DIR)" "$(ADMIN_GAME_ENV_FILE)" "$(ADMIN_DB_ENV_FILE)" "rust/target/release/naijachase-tools"
+
+admin-install-config: ## Install prepared private settings and the dedicated OS account; sudo only here
+	@ADMIN_NODE_BIN="$(ADMIN_NODE)" bash deploy/admin/install-config.sh "$(ADMIN_SETUP_DIR)"
+
+admin-setup: ## Prepare/resume admin settings, provision DB, then install final private service config
+	@$(MAKE) admin-prepare-config
+	@$(MAKE) admin-provision
+	@$(MAKE) admin-install-config
+
+admin-install-bundle: ## Install only the built admin binary and frontend on this server
+	@test -f rust/target/release/naijachase-admin && test -f admin/frontend/dist/index.html
+	@sudo install -d -m 0755 "$(ADMIN_INSTALL_ROOT)/bin" "$(ADMIN_WEB_ROOT)"
+	@sudo install -m 0755 rust/target/release/naijachase-admin "$(ADMIN_INSTALL_ROOT)/bin/naijachase-admin"
+	@sudo $(RSYNC) -rlt --delete --exclude='*.map' --exclude='.DS_Store' --delete-excluded --chmod=D755,F644 admin/frontend/dist/ "$(ADMIN_WEB_ROOT)/"
+
+admin-install-service: ## Install the independent systemd unit without starting it
+	@sudo install -m 0644 deploy/systemd/naijachase-admin.service "$(SYSTEMD_DIR)/naijachase-admin.service"
+	@sudo systemctl daemon-reload
+
+admin-start: ## Enable and start the configured admin service on this server
+	@sudo systemctl enable --now naijachase-admin.service
+
+admin-restart: ## Restart the independent admin service
+	@sudo systemctl restart naijachase-admin.service
+
+admin-status: ## Show admin service status and recent logs
+	@sudo systemctl --no-pager --full status naijachase-admin.service
+	@sudo journalctl -u naijachase-admin.service --no-pager -n 30
+
+admin-nginx-http: ## Install first-run HTTP ACME site; refuses to replace an existing admin site
+	@sudo install -d -m 0755 /var/lib/letsencrypt/.well-known/acme-challenge
+	@sudo sh deploy/nginx/install-admin-site.sh deploy/nginx/admin.naijachase.app.http.conf "$(ADMIN_NGINX_SITE)" "$(ADMIN_NGINX_SITE_LINK)"
+
+admin-nginx-https: ## Install the admin HTTPS site after certificate issuance
+	@sudo test -f /etc/letsencrypt/live/admin.naijachase.app/fullchain.pem
+	@sudo test -f /etc/letsencrypt/live/admin.naijachase.app/privkey.pem
+	@sudo sh deploy/nginx/install-admin-site.sh deploy/nginx/admin.naijachase.app.conf "$(ADMIN_NGINX_SITE)" "$(ADMIN_NGINX_SITE_LINK)"
+
+admin-nginx-move-from-default: ## Move Certbot admin blocks from default into 005, validate and reload with rollback
+	@ADMIN_NODE_BIN="$(ADMIN_NODE)" bash deploy/nginx/move-admin-from-default.sh "$(ADMIN_NGINX_SITE)" "$(ADMIN_NGINX_SITE_LINK)"
+
+admin-install-renew-hook: ## Install Nginx validation/reload hook for successful certificate renewal
+	@sudo install -d -m 0755 /etc/letsencrypt/renewal-hooks/deploy
+	@sudo install -m 0755 deploy/nginx/reload-admin-certificate.sh /etc/letsencrypt/renewal-hooks/deploy/naijachase-admin-nginx.sh
+
+# =============================================================================
 # Deployment
 # Ship code to the production server and publish the API, web client, and
 # landing site. Most targets use sudo and are run on the server.
@@ -251,6 +339,10 @@ copy-code: ## Synchronize source code to the production application server
 		--exclude='web/node_modules/' \
 		--exclude='web/dist/' \
 		--exclude='web/asset-originals/' \
+		--exclude='admin/frontend/node_modules/' \
+		--exclude='admin/frontend/dist/' \
+		--exclude='.env.local' \
+		--exclude='.env.*.local' \
 		--exclude='.DS_Store' \
 		./ "$(DEPLOY_HOST):$(DEPLOY_PATH)"
 
@@ -265,9 +357,27 @@ install-api-service: ## Install, enable, and start the production systemd API se
 # Run explicitly, once per release, before restart-api. Never an API ExecStartPre.
 .PHONY: deploy-migrate
 deploy-migrate: ## Apply release migrations with the isolated deployment credentials
+	@missing=0; \
+		if ! getent passwd naijachase-migrate >/dev/null; then \
+			echo "Missing OS account naijachase-migrate; provision the isolated migration service before using deploy-migrate." >&2; missing=1; \
+		fi; \
+		if ! sudo test -f /opt/naijachase/shared/migrations.env; then \
+			echo "Missing /opt/naijachase/shared/migrations.env; this target does not use the repository .env." >&2; missing=1; \
+		fi; \
+		if ! test -x /opt/naijachase/source/rust/target/release/naijachase-tools; then \
+			echo "Missing executable release migration tool; build and install the current release first." >&2; missing=1; \
+		fi; \
+		if test "$$missing" -ne 0; then \
+			echo "For an explicitly selected existing deployment credential, use: NAIJACHASE_ENV_FILE=/absolute/private/env make db-migrate" >&2; \
+			echo "That direct command needs schema migration privileges. No service credentials were copied automatically." >&2; exit 1; \
+		fi
 	@sudo install -m 0644 deploy/systemd/naijachase-migrate.service $(SYSTEMD_DIR)/naijachase-migrate.service
 	@sudo systemctl daemon-reload
-	@sudo systemctl start naijachase-migrate.service
+	@sudo systemctl start naijachase-migrate.service || { \
+		sudo systemctl --no-pager --full status naijachase-migrate.service || true; \
+		sudo journalctl -u naijachase-migrate.service --no-pager -n 60 || true; \
+		exit 1; \
+	}
 
 # Restart the service to pick up a new build.
 restart-api: ## Restart the production API after a successful build

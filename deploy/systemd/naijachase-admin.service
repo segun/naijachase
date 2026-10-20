@@ -1,0 +1,28 @@
+[Unit]
+Description=NaijaChase isolated administration API
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+# Provision this dedicated unprivileged account before installing the unit.
+User=naijachase-admin
+Group=naijachase-admin
+WorkingDirectory=/opt/naijachase-admin
+EnvironmentFile=/opt/naijachase-admin/shared/admin.env
+Environment=RUST_BACKTRACE=1
+ExecStart=/opt/naijachase-admin/bin/naijachase-admin
+Restart=on-failure
+RestartSec=5s
+KillSignal=SIGTERM
+TimeoutStopSec=30s
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+RestrictSUIDSGID=true
+
+[Install]
+WantedBy=multi-user.target

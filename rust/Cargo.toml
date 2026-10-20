@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["crates/naijachase-contracts", "crates/naijachase-core", "crates/naijachase-content", "crates/naijachase-storage", "crates/naijachase-api", "crates/naijachase-cli", "crates/naijachase-terminal", "crates/naijachase-tools"]
+members = ["crates/naijachase-contracts", "crates/naijachase-core", "crates/naijachase-content", "crates/naijachase-storage", "crates/naijachase-api", "crates/naijachase-cli", "crates/naijachase-terminal", "crates/naijachase-tools", "../admin/backend"]
 
 [workspace.dependencies]
 serde = { version = "1", features = ["derive"] }

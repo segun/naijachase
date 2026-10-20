@@ -12,9 +12,12 @@ can be reclaimed after their existing lease expires.
 
 ## Controlled release sequence
 
-Normal API startup only reads `schema_migrations` and requires schema version 21.
+Normal API startup only reads `schema_migrations` and requires schema version 23.
 It never applies DDL or imports content. An old/new schema mismatch fails startup
-with a migration instruction. Migration 21 seeds the weekly-expiry lock row.
+with a migration instruction. Migration 21 seeds the weekly-expiry lock row;
+migration 22 adds the consented usage tables and versioned admin reporting views.
+Migration 23 extends those reports and adds a definer procedure for narrowly
+scoped player session revocation by the separate admin application.
 
 1. Build the release (`make production-build`) and take a database backup using
    the deployment account. Review pending migrations and coordinate a single
@@ -23,6 +26,11 @@ with a migration instruction. Migration 21 seeds the weekly-expiry lock row.
    and `deploy/mysql/runtime-grants.sql` as DBA templates. Replace both password
    placeholders, database name if needed, and `localhost` with the correct API
    and deployment host identities. Do not reuse the old privileged principal.
+   Migrations 22–23 require `CREATE VIEW`, `CREATE ROUTINE`, `ALTER ROUTINE` and
+   `EXECUTE`: update an existing deployment principal's grants before applying
+   them. Their reporting views/procedure use SQL SECURITY
+   DEFINER; retain that definer account and its underlying read permissions so
+   the separate admin principal can read views without base-table grants.
 3. Provision the `naijachase-migrate` system user with read/execute access to the
    release tree. Keep the tree owned by the deployment operator. Install
    `/opt/naijachase/shared/migrations.env` owned by `naijachase-migrate`, mode 0600.
@@ -53,6 +61,13 @@ loaded into the API service. Have the DBA inspect `SHOW GRANTS` for both new
 principals, including inherited roles, and retire the old privileged runtime
 credential once the switch has been verified. Provisioning templates are not
 executed automatically by application startup.
+
+The separate admin console uses one reporting principal with versioned view
+reads and EXECUTE on the session-revoke procedure, plus a different control
+principal for its own identity/audit/operational schema. Provision its rendered
+grant files only after game migration 23 and both control migrations. It is
+not started or published by the player deployment targets. See
+[admin-deployment.md](admin-deployment.md) for the full sequence.
 
 ## Weekly expiry with multiple instances
 

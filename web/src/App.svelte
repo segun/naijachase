@@ -25,6 +25,7 @@
     weekly: () => import("./screens/social/Weekly.svelte"),
     content: () => import("./screens/admin/ContentGate.svelte"),
     results: () => import("./screens/case/Results.svelte"),
+    achievementShare: () => import("./ui/AchievementShareDialog.svelte"),
     detail: () => import("./ui/DetailQuick.svelte")
   } as const;
 
@@ -92,6 +93,7 @@
       {/snippet}
     </svelte:boundary>
     {#if app.signedIn && app.panel}{#await lazy.panel() then { default: Screen }}<Screen {app} />{/await}{/if}
+    {#if app.signedIn && app.achievementShare && !app.panel}{#await lazy.achievementShare() then { default: Dialog }}<Dialog {app} />{/await}{/if}
   </Shell>
   <!-- Animated scenes can be made lighter or richer at any moment, without leaving the game. -->
   {#if app.signedIn && !app.needsAvatar && (app.panel || isCaseScreen(app.screen) || ["garage", "witness", "journey", "raid", "cases", "archive"].includes(app.screen))}{#await lazy.detail() then { default: Control }}<Control />{/await}{/if}

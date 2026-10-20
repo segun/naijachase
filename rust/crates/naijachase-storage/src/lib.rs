@@ -28,6 +28,7 @@ mod pressure;
 pub use pressure::*;
 mod birth_date;
 pub use birth_date::BirthDate;
+mod product_analytics;
 
 const MIGRATION_1: &str = include_str!("../migrations/0001_initial.sql");
 const MIGRATION_2: &str = include_str!("../migrations/0002_content_and_terminal.sql");
@@ -48,7 +49,9 @@ const MIGRATION_16: &str = include_str!("../migrations/0016_player_date_of_birth
 const MIGRATION_17: &str = include_str!("../migrations/0017_weekly_transit_events.sql");
 const MIGRATION_18: &str = include_str!("../migrations/0018_email_outbox.sql");
 const MIGRATION_19: &str = include_str!("../migrations/0019_general_rate_limits.sql");
-pub const SCHEMA_VERSION: u32 = 21;
+pub const SCHEMA_VERSION: u32 = 23;
+const MIGRATION_23: &str = include_str!("../migrations/0023_admin_operations.sql");
+const MIGRATION_22: &str = include_str!("../migrations/0022_admin_reporting.sql");
 const MIGRATION_21: &str = include_str!("../migrations/0021_scheduled_jobs.sql");
 const MIGRATION_20: &str = include_str!("../migrations/0020_hot_path_indexes.sql");
 
@@ -98,6 +101,41 @@ pub enum CaseCommandResult {
 struct PersistedCommandResult {
     state: GameState,
     events: Vec<Event>,
+}
+
+// Read the original recorded words, never regenerate clues from today's content.
+// The command's saved state also supplies context for accounts written before
+// stop/stage/account_id metadata existed.
+fn recorded_witness_accounts(
+    events: Vec<Event>,
+    version: u64,
+    stop: &str,
+    stage: &str,
+) -> Vec<Event> {
+    events
+        .into_iter()
+        .enumerate()
+        .filter_map(|(index, mut event)| {
+            if event.event_type != "witness_account" {
+                return None;
+            }
+            event
+                .data
+                .insert("account_id".into(), format!("{version}:{index}"));
+            event
+                .data
+                .insert("state_version".into(), version.to_string());
+            event
+                .data
+                .entry("stop".into())
+                .or_insert_with(|| stop.into());
+            event
+                .data
+                .entry("stage".into())
+                .or_insert_with(|| stage.into());
+            Some(event)
+        })
+        .collect()
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -993,6 +1031,18 @@ impl MysqlStore {
             .unwrap_or(0);
         if version < 21 {
             apply_migration(&mut connection, MIGRATION_21)?;
+        }
+        let version: u32 = connection
+            .query_first("SELECT COALESCE(MAX(version),0) FROM schema_migrations")?
+            .unwrap_or(0);
+        if version < 22 {
+            apply_migration(&mut connection, MIGRATION_22)?;
+        }
+        let version: u32 = connection
+            .query_first("SELECT COALESCE(MAX(version),0) FROM schema_migrations")?
+            .unwrap_or(0);
+        if version < 23 {
+            apply_migration(&mut connection, MIGRATION_23)?;
         }
         Ok(())
     }
@@ -2585,6 +2635,46 @@ impl MysqlStore {
         Ok((version, serde_json::from_slice(&data)?))
     }
 
+    /// Durable notebook for ordinary and replay cases, including closed cases.
+    pub fn case_witness_accounts(
+        &self,
+        case_id: &str,
+        player_id: &str,
+    ) -> Result<Vec<Event>, StorageError> {
+        let mut connection = self.connection()?;
+        let owner: Option<Option<String>> = connection.exec_first(
+            "SELECT player_id FROM active_cases WHERE case_id=:case_id",
+            params! { "case_id" => case_id },
+        )?;
+        match owner {
+            None => return Err(StorageError::CaseNotFound),
+            Some(owner) if owner.as_deref() != Some(player_id) => {
+                return Err(StorageError::Forbidden);
+            }
+            _ => {}
+        }
+        // Project only the events and their context, not full private game states.
+        let rows: Vec<(u64, String, String, String)> = connection.exec(
+            "SELECT state_version, JSON_EXTRACT(event_json,'$.events'),
+                    JSON_UNQUOTE(JSON_EXTRACT(event_json,'$.state.state')),
+                    JSON_UNQUOTE(JSON_EXTRACT(event_json,'$.state.stage'))
+             FROM case_events WHERE case_id=:case_id
+             AND JSON_SEARCH(event_json,'one','witness_account',NULL,'$.events[*].event_type') IS NOT NULL
+             ORDER BY state_version,command_id",
+            params! { "case_id" => case_id },
+        )?;
+        let mut accounts = Vec::new();
+        for (version, json, stop, stage) in rows {
+            accounts.extend(recorded_witness_accounts(
+                serde_json::from_str(&json)?,
+                version,
+                &stop,
+                &stage,
+            ));
+        }
+        Ok(accounts)
+    }
+
     pub fn current_ordinary_case(
         &self,
         player_id: &str,
@@ -3658,7 +3748,33 @@ pub fn sha256(bytes: &[u8]) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    static MYSQL_TEST_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
+    pub(crate) static MYSQL_TEST_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
+
+    #[test]
+    fn witness_history_restores_legacy_context_and_filters_private_events() {
+        let events = vec![
+            Event {
+                event_type: "internal_detail".into(),
+                data: Default::default(),
+            },
+            Event {
+                event_type: "witness_account".into(),
+                data: [
+                    ("message".into(), "Original words".into()),
+                    ("venue_id".into(), "market".into()),
+                ]
+                .into(),
+            },
+        ];
+        let accounts = recorded_witness_accounts(events.clone(), 7, "Lagos", "2");
+        assert_eq!(accounts.len(), 1);
+        assert_eq!(accounts[0].data["account_id"], "7:1");
+        assert_eq!(accounts[0].data["state_version"], "7");
+        assert_eq!(accounts[0].data["stop"], "Lagos");
+        assert_eq!(accounts[0].data["stage"], "2");
+        assert_eq!(accounts[0].data["message"], "Original words");
+        assert_eq!(accounts, recorded_witness_accounts(events, 7, "Lagos", "2"));
+    }
 
     #[test]
     fn abandonment_discards_only_uncommitted_case_gains() {
@@ -4319,6 +4435,62 @@ mod tests {
             restarted.load_owned_case(case_id, "p35-owner").unwrap().0,
             3
         );
+        // Simulate a committed interview whose HTTP response was never received.
+        assert!(
+            store
+                .case_witness_accounts(case_id, "p35-owner")
+                .unwrap()
+                .is_empty()
+        );
+        store
+            .execute_case_command(case_id, "p35-owner", "lost-interview", 3, |mut state| {
+                state.visited_venues.push("0|Abia|market".into());
+                Ok((
+                    state,
+                    vec![Event {
+                        event_type: "witness_account".into(),
+                        data: [
+                            (
+                                "message".into(),
+                                "The original saved witness statement.".into(),
+                            ),
+                            ("venue_id".into(), "market".into()),
+                        ]
+                        .into(),
+                    }],
+                ))
+            })
+            .unwrap();
+        let accounts = restarted
+            .case_witness_accounts(case_id, "p35-owner")
+            .unwrap();
+        assert_eq!(accounts.len(), 1);
+        assert_eq!(accounts[0].data["stop"], "Abia");
+        assert_eq!(accounts[0].data["stage"], "0");
+        assert_eq!(
+            accounts[0].data["message"],
+            "The original saved witness statement."
+        );
+        assert_eq!(accounts[0].data["account_id"], "4:0");
+        store
+            .execute_case_command(case_id, "p35-owner", "lost-interview", 3, |_| {
+                panic!("duplicate reran interview")
+            })
+            .unwrap();
+        assert_eq!(
+            restarted
+                .case_witness_accounts(case_id, "p35-owner")
+                .unwrap(),
+            accounts
+        );
+        assert!(matches!(
+            store.case_witness_accounts(case_id, "intruder"),
+            Err(StorageError::Forbidden)
+        ));
+        assert!(matches!(
+            store.case_witness_accounts("missing-witness-case", "p35-owner"),
+            Err(StorageError::CaseNotFound)
+        ));
     }
 
     #[test]

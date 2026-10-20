@@ -19,9 +19,9 @@
 
 <main id="main" class="doc"><div class="wrap">
 <h1>Privacy Policy</h1>
-<p class="meta">Effective date: 9 October 2026 · Last updated: 9 October 2026</p>
+<p class="meta">Effective date: 9 October 2026 · Last updated: 20 October 2026</p>
 
-<div class="callout"><p><strong>In short:</strong> we collect only what we need to run your account and your cases. We do not show advertising, we do not use advertising or analytics trackers, and we do not sell your personal data. You can ask us to access, correct or delete your data at any time by emailing <a href="mailto:support@naijachase.com">support@naijachase.com</a>.</p></div>
+<div class="callout"><p>We collect data to run your account and your cases. Optional first-party visit and signup measurement starts only when you choose “Allow measurement” in the Game. We do not show advertising or sell your personal data. You can ask us to access, correct or delete your data at any time by emailing <a href="mailto:support@naijachase.com">support@naijachase.com</a>.</p></div>
 
 <div class="toc"><strong>Contents</strong>
 <ol>
@@ -81,7 +81,9 @@
   <li>Request counts used for rate limiting and abuse prevention.</li>
 </ul>
 
-<h3>3.5 Data we do not collect</h3>
+<h3>3.5 Optional usage measurement</h3>
+<p><strong>Optional usage measurement.</strong> If you choose “Allow measurement”, we record visits using a random browser identifier, recent activity times and, when signed in, your account identifier. When you open signup we record that it started. When you leave the signup email field with a valid address, we save that unfinished signup email so authorised administrators can understand where signup fails. We do not collect draft passwords, dates of birth, page contents or device fingerprints for this measurement, and we do not send marketing or unfinished-signup reminder emails. You can turn it off with “Usage privacy”; this also requests deletion of the measurement records associated with that browser identifier. Counts represent measured browsers and may include automated traffic.</p>
+<h3>3.6 Data we do not collect</h3>
 <p>We do not collect your precise location, contacts, photos, payment card details, government identification numbers or biometric data. We do not currently run advertising, and checkout is not enabled.</p>
 
 <h2 id="use">4. How and why we use it</h2>
@@ -99,16 +101,18 @@
 <p>We do not sell your personal data and we do not use it for third-party advertising.</p>
 
 <h2 id="cookies">5. Cookies and browser storage</h2>
-<p>We use only what is strictly necessary to provide the Game you ask for, so we do not show a consent banner for it.</p>
+<p>Sign-in and preference storage support the Game. Optional usage measurement has a separate choice; selecting “No thanks” leaves it off and you can still play.</p>
 <table>
   <thead><tr><th>Name</th><th>Type</th><th>Purpose</th><th>Lifetime</th></tr></thead>
   <tbody>
     <tr><td><code>nc_session</code></td><td>Cookie (HttpOnly, SameSite=Lax, Secure)</td><td>Keeps you signed in. It holds an opaque, random token rather than your details.</td><td>Until it expires, is rotated, or you sign out</td></tr>
+    <tr><td><code>nc_usage</code></td><td>Optional cookie (HttpOnly, SameSite=Lax, Secure in production)</td><td>First-party visit and signup measurement after opt-in. The server stores a hash of the random identifier.</td><td>Up to 90 days after last measured activity, or until you turn measurement off</td></tr>
+    <tr><td><code>nc-usage-consent</code></td><td>Local storage</td><td>Remembers your optional measurement choice.</td><td>Until you change it or clear browser storage</td></tr>
     <tr><td><code>nc-music</code>, <code>nc-music-track</code>, <code>nc-scene</code>, <code>nc-settings</code></td><td>Local storage</td><td>Remember your music, track, 2D/3D scene and display preferences on your device.</td><td>Until you clear your browser data</td></tr>
     <tr><td><code>nc-case</code>, <code>nc-rank</code> and scene “seen” markers</td><td>Session storage</td><td>Remember which case you are viewing and which animated intros have played during this visit.</td><td>Until you close the tab or browser</td></tr>
   </tbody>
 </table>
-<p>You can clear or block these in your browser settings, but the Game will not work properly without the sign-in cookie. We do not use advertising cookies, analytics cookies or social-media tracking pixels, and the Website sets no cookies at all.</p>
+<p>You can clear or block these in your browser settings, but the Game will not work properly without the sign-in cookie. Optional measurement is limited to our own Game and admin systems. We do not use advertising cookies, third-party analytics or social-media tracking pixels, and the Website sets no cookies at all.</p>
 
 <h2 id="share">6. Who we share it with</h2>
 <p>We share personal data only where needed to run the Service:</p>
@@ -126,6 +130,7 @@
 
 <h2 id="retention">8. How long we keep it</h2>
 <ul>
+  <li><strong>Optional measurement:</strong> unfinished signup records expire from reporting 30 days after their last update; daily visitor records cover up to 90 calendar days. An hourly cleanup removes expired records in small batches. Turning measurement off requests earlier deletion for that browser. A hash-only withdrawal marker is retained for up to 90 days to reject delayed requests from its old identifier. Account emails submitted through completed signup remain part of your account.</li>
   <li><strong>Account and gameplay data:</strong> for as long as your account exists. Inactive accounts that have not been used for 24 months may be deleted after we notify you by email.</li>
   <li><strong>Server logs and security data:</strong> up to 90 days, unless we need them longer to investigate abuse or a security incident.</li>
   <li><strong>Sessions:</strong> until they expire or you sign out. Revoked sessions are removed in the ordinary course.</li>

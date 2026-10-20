@@ -1,0 +1,3 @@
+# The only dependency install script needed by this standalone frontend.
+allowBuilds:
+  esbuild: true

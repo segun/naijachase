@@ -48,6 +48,13 @@ test("mock API discovers, resumes, abandons, and creates a fresh ordinary attemp
   assert.equal((await request("/cases/current")).data.case.case_id, id);
   const interview = { command_id: "interview-one", expected_version: 1, command: { type: "visit_venue", venue_id: "market", mode: "drive" } };
   assert.equal((await request(`/cases/${id}/commands`, interview)).status, 200);
+  const accounts = await request(`/cases/${id}/accounts`);
+  assert.equal(accounts.status, 200);
+  assert.equal(accounts.data.length, 1);
+  assert.equal(accounts.data[0].data.stop, created.data.state.current_state);
+  assert.equal(accounts.data[0].data.venue_id, "market");
+  await request(`/cases/${id}/commands`, interview);
+  assert.deepEqual((await request(`/cases/${id}/accounts`)).data, accounts.data);
   assert.equal((await request(`/cases/${id}/abandon`, { expected_version: 1 })).data.error, "stale_version");
   assert.equal((await request(`/cases/${id}/abandon`, { expected_version: 2 })).status, 200);
   assert.equal((await request("/activity/current")).data.ordinary_case, null);

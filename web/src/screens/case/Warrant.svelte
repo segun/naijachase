@@ -1,5 +1,6 @@
 <script lang="ts">
   import "../../styles/warrant.css";
+  import "../../styles/profile-list.css";
   import type { AppController } from "../../state/app.svelte";
   import { FIELDS, FIELD_META, dossierCount, duration, groupQuotes, quoteMinutes, raidQuote, venueInfo } from "../../domain/model.ts";
   import Icon from "../../ui/Icon.svelte";

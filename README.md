@@ -14,6 +14,7 @@ source control and in each bundle's metadata.
 - `data/thieves/` — thieves, trait definitions, and trait assignments
 - `data/bundles/` — JSON content packs and dataset metadata
 - `rust/` — Rust engine, terminal, API boundary, content tools, and tests
+- `admin/backend/` and `admin/frontend/` — separate administration service and console
 - `schemas/` — reserved for machine-readable dataset schemas
 - `archive/` — superseded datasets retained for reference
 
@@ -36,8 +37,10 @@ MySQL persistence reads `MYSQL_HOST`, `MYSQL_PORT`, `MYSQL_USER`,
 `MYSQL_PASSWORD`, and `MYSQL_DATABASE` from the environment. Apply pending
 schema migrations with `make db-migrate`. Never commit database credentials.
 The runtime automatically loads these values from `.env` at the repository
-root when present. Values already exported by the operating environment take
-precedence.
+root when present, or from the file selected by `NAIJACHASE_ENV_FILE`. That
+file overrides inherited environment values. Use an explicit private file for
+isolated tests or deployments; the separate admin service reads only its own
+exported `ADMIN_*` settings.
 
 Run `make db-rebuild` to import and validate all canonical content, or
 `make p34` for the complete persistence gate. `make db-backup` and
@@ -62,6 +65,27 @@ codes, authentication, deployment requirements, health checks, metrics, and
 recovery behaviour are documented in `docs/api-v1.md`.
 Email queueing, confirmation, resend, password recovery, and production
 monitoring are documented in `docs/email-delivery-and-verification.md`.
+
+## Administration
+
+The independent admin backend and frontend provide account/registration
+statistics, system health, named staff roles and audit, account support,
+product activity/retention, moderation and operational alerts. They connect
+through versioned game reporting views and one narrow session-revoke
+procedure. Staff, sessions, audit and support records live in a separate
+control schema with different credentials; the process, bundle and hostname
+are also independent.
+
+Run `make admin-install`, `make admin-check`, and `make admin-build`. For local
+development, export a private copy of `config/environments/admin.env.example`,
+then run `make admin-api` and `make admin-web` in separate terminals. The admin
+console opens at `http://127.0.0.1:4174`. For production follow
+[docs/admin-deployment.md](docs/admin-deployment.md): `make admin-setup` reuses
+the existing database connection, manages generated service credentials, and
+resumes earlier setup files. The guide covers the hostname certificate and
+separate installation. First login uses bootstrap `admin`;
+creating a named owner permanently disables that bootstrap account. Definitions
+and operational limits are in [docs/admin.md](docs/admin.md).
 
 ## Web client
 

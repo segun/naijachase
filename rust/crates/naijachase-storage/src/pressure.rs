@@ -95,6 +95,17 @@ fn lower_rank_points(points: u64) -> u64 {
     points.min(threshold.saturating_sub(1))
 }
 
+fn disciplinary_achievement_ids(jailed: bool, old_rank: &str, new_rank: &str) -> Vec<&'static str> {
+    let mut achievements = Vec::with_capacity(2);
+    if old_rank != new_rank {
+        achievements.push("demoted");
+    }
+    if jailed {
+        achievements.push("suspended");
+    }
+    achievements
+}
+
 fn panel_votes(seed: &str, repeat: bool) -> Vec<String> {
     let mut votes = (0..5)
         .map(|i| {
@@ -319,6 +330,12 @@ impl MysqlStore {
             if old_rank != new_rank {
                 tx.exec_drop("INSERT INTO rank_history(player_id,old_rank,new_rank,points,reason) VALUES (:player,:old,:new,:points,:reason)",params!{"player"=>player_id,"old"=>&old_rank,"new"=>&new_rank,"points"=>points_after,"reason"=>offence.unwrap()})?;
             }
+            for achievement_id in disciplinary_achievement_ids(jail, &old_rank, &new_rank) {
+                tx.exec_drop(
+                    "INSERT IGNORE INTO player_achievements(player_id,achievement_id) VALUES (:player,:achievement)",
+                    params! {"player"=>player_id,"achievement"=>achievement_id},
+                )?;
+            }
             Some(DisciplinaryCase {
                 disciplinary_case_id: panel_id,
                 offence: offence.unwrap().into(),
@@ -473,5 +490,18 @@ mod tests {
             assert!(points.saturating_sub(1000) <= points);
         }
         assert_eq!(0u64.saturating_sub(1000), 0);
+    }
+
+    #[test]
+    fn disciplinary_outcomes_map_to_their_achievements() {
+        assert_eq!(
+            disciplinary_achievement_ids(false, "Inspector", "Senior Investigator"),
+            vec!["demoted"]
+        );
+        assert_eq!(
+            disciplinary_achievement_ids(true, "Rookie", "Rookie"),
+            vec!["suspended"]
+        );
+        assert!(disciplinary_achievement_ids(false, "Inspector", "Inspector").is_empty());
     }
 }

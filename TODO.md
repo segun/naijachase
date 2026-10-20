@@ -1,10 +1,29 @@
 # Naija Chase — Project Tracker
 
-Last updated: 9 October 2026
+Last updated: 20 October 2026
 
 This file is the source of truth for completed work, current limitations, and
 next development priorities. Update it whenever a feature or content pass is
 completed.
+
+## Mobile UI corrections — 20 October 2026
+
+- [x] Keep the first-login avatar Continue action floating above the mobile home indicator.
+- [x] Reserve iPhone safe areas for full-screen terminal and Archive headers, including the Back action.
+- [x] Let Settings, warrant profiles, hideout rows and shared cards shrink and wrap instead of clipping on the right.
+- [x] Label and validate `username` as Investigator Name with a precise 3–32-character format explanation in both web and API validation.
+- [x] Remove the premature “witness statement added” notification; the witness scene now appears before any notebook confirmation.
+- [x] Keep the mobile corrections within release budgets by lazy-loading the privacy control, account styles and dossier-list styles; startup is 59.8 KiB JS and 9.9 KiB CSS gzip.
+- [ ] Verify these corrections on an installed iPhone PWA in portrait and landscape after the next deployment.
+
+## Witness notebook recovery — 19 October 2026
+
+- [x] Recover ordinary/replay witness statements from persisted command receipts, not just browser storage.
+- [x] Add authenticated `GET /v1/cases/{case_id}/accounts`; restore old records without regenerating dialogue or changing the database schema.
+- [x] Restore notes on sign-in/resume, notebook opening and failed-command reconciliation; deduplicate retried responses.
+- [x] Keep cached notes on fetch failures and show an explicit retry action; reject stale responses after switching cases.
+- [x] Cover interrupted responses, legacy notes, retries, cold-location accounts and database reconnection with regression tests; document the frontend contract.
+- [ ] Deploy the updated API and web together, then verify an affected ongoing case recovers its notes on refresh. Do not reset or abandon that case for this verification.
 
 ## Current baseline
 
@@ -506,6 +525,16 @@ local replay, or client-side prediction becomes a concrete product requirement.
 - [x] Add server-awarded achievements for first case, case count, rank, and
   efficient completion; add state, deduction, and helper achievements when the
   corresponding tracked gameplay exists.
+- [x] Award `demoted` and `suspended` achievements transactionally from the
+  authoritative disciplinary result, including rank loss caused by a bribery
+  points deduction and the 24-hour Rookie suspension.
+- [x] Detect newly committed achievements in the web client, present a share
+  dialog after higher-priority disciplinary panels, generate a shareable PNG,
+  include achievement text and the production app link, and offer the device
+  share sheet plus direct Facebook, X, WhatsApp, LinkedIn, Telegram, Reddit and
+  Bluesky actions.
+- [x] Make every earned card on the Achievements page keyboard-accessible and
+  reusable for sharing again; locked cards remain non-interactive.
 - [x] Track jurisdiction coverage, travel accuracy, deduction accuracy, and
   rank history from authoritative committed case replay.
 - [x] Expose progression summary, achievement catalogue, device-session list,
@@ -1516,3 +1545,35 @@ section of `README.md`.
 - [x] Bound browser API requests and preserve uncertain command IDs; enforce game CSP, version-aware HTTP caching, asset-original deployment exclusion and Finder-file cleanup (see `docs/browser-resilience.md`). Service-worker caching remains deferred.
 
 - [x] Reconcile the two NaijaChase Nginx sites together, disable the legacy duplicate landing entry, reject duplicate-name warnings and restore files/symlinks on deployment failure.
+
+## Independent administration console
+
+- [x] Add physically separate admin backend/frontend, independent operator
+  authentication and credentials, versioned read-only reporting views, account
+  and consented registration/visitor measurements, email queue visibility, and
+  host health readings. See `docs/admin.md` for definitions and limits.
+- [x] Add dedicated admin build/check targets and deployment templates without
+  adding admin publication to the player or landing-site deployment flow.
+- [x] Add named username/password staff accounts with owner/operator/viewer
+  roles, durable sessions/revocation, append-only runtime audit and permanent
+  bootstrap retirement when the first named owner is created.
+- [x] Add account support/notes/session revocation, activation/retention metrics,
+  moderation decisions and operational alerts using a separate control schema
+  and narrow versioned game reporting/procedure contracts.
+- [x] Document concrete DNS/certificate/database/password setup and add a helper
+  that generates consistent private env/SQL secrets; admin installation remains
+  independent of the player deployment. See `docs/admin-deployment.md`.
+- [x] Match the existing game's required database encryption, make strict
+  certificate identity checking explicit, and preserve staff/bootstrap state
+  when control migrations are resumed.
+- [x] Reuse existing game connection settings during admin setup, manage service
+  passwords automatically, resume earlier setup files, and explain missing
+  migration-service prerequisites before invoking systemd.
+- [x] Support normal HTTPS staff login and move existing Certbot admin blocks
+  from the default Nginx site into 005 with validation and rollback.
+- [x] Publish the admin frontend under `/var/www/naijachase-admin` to match
+  the other NaijaChase web deployments.
+- [ ] Run the documented production rollout with actual DNS/server/database
+  values, restricted grants, certificate and named-owner handover.
+- [ ] Integrate provider-confirmed delivery/bounces, external alert delivery,
+  tested-restore evidence, certificate expiry and release/dependency inventory.

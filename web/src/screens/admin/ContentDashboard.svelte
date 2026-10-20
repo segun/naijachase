@@ -1,4 +1,5 @@
 <script lang="ts">
+  import "../../styles/profile-list.css";
   import type { AppController } from "../../state/app.svelte";
   import { ApiError, type ContentApi } from "../../api/api";
   import {

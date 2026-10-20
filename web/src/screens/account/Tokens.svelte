@@ -1,4 +1,5 @@
 <script lang="ts">
+  import "../../styles/account.css";
   import { untrack } from "svelte";
   import type { AppController } from "../../state/app.svelte";
   import { formatWhen, jailRemaining, MAX_TOKENS_HELD, offenceLabel, punishmentLabel, reasonLabel, tally } from "../../domain/pressure.ts";

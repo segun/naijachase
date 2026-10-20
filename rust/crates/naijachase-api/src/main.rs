@@ -1,4 +1,6 @@
-use naijachase_api::{email_delivery_loop, load_state, router, weekly_expiration_loop};
+use naijachase_api::{
+    analytics_retention_loop, email_delivery_loop, load_state, router, weekly_expiration_loop,
+};
 use std::time::Duration;
 use tokio::{sync::watch, task::JoinSet};
 use tracing_subscriber::EnvFilter;
@@ -90,6 +92,7 @@ async fn run() -> Result<(), String> {
         .map_err(|e| e.to_string())?;
     let mut workers = JoinSet::new();
     workers.spawn(weekly_expiration_loop(state.clone(), stopping.clone()));
+    workers.spawn(analytics_retention_loop(state.clone(), stopping.clone()));
     for _ in 0..state.config.email_worker_count {
         workers.spawn(email_delivery_loop(state.clone(), stopping.clone()));
     }

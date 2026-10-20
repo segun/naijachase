@@ -71,7 +71,7 @@
   });
 </script>
 
-<section class="avatar-picker" aria-labelledby="avatar-title" aria-busy={loading}>
+<section class="avatar-picker" class:first aria-labelledby="avatar-title" aria-busy={loading}>
   <header class="page-head">
     {#if first}<p class="eyebrow">Welcome, {app.investigator}</p>{/if}
     {#if first}<h1 id="avatar-title">Choose your investigator</h1>{:else}<h2 id="avatar-title">Avatar</h2>{/if}
@@ -104,7 +104,7 @@
     </fieldset>
 
     {#if saveError}<p class="avatar-error" role="alert">{saveError}</p>{/if}
-    <div class="row-actions avatar-actions">
+    <div class="row-actions avatar-actions" aria-label={first ? "Finish avatar selection" : "Save avatar selection"}>
       <button class="btn btn-primary btn-lg" type="button" disabled={app.busy || selected === null || (!first && !dirty)} onclick={save}>
         {first ? "Continue to case desk" : "Save avatar"}
       </button>
@@ -115,3 +115,30 @@
     </div>
   {/if}
 </section>
+
+<style>
+  @media (max-width: 760px) {
+    .avatar-picker.first {
+      min-height: 100dvh;
+      padding: max(4.5rem, calc(env(safe-area-inset-top) + 3.5rem)) max(1rem, env(safe-area-inset-right)) calc(7rem + env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
+    }
+    .avatar-picker.first .avatar-actions {
+      position: fixed;
+      z-index: 55;
+      right: max(.75rem, env(safe-area-inset-right));
+      bottom: max(.75rem, env(safe-area-inset-bottom));
+      left: max(.75rem, env(safe-area-inset-left));
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: .6rem;
+      padding: .65rem;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: color-mix(in srgb, var(--bg-raised) 94%, transparent);
+      box-shadow: 0 12px 40px rgb(0 0 0 / .45);
+      backdrop-filter: blur(14px);
+    }
+    .avatar-picker.first .avatar-actions :global(.btn-primary) { min-width: 0; width: 100%; }
+    .avatar-picker.first .avatar-actions :global(.hint) { display: none; }
+  }
+</style>

@@ -970,6 +970,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "naijachase-admin"
+version = "0.1.0"
+dependencies = [
+ "argon2",
+ "axum",
+ "chrono",
+ "libc",
+ "mysql",
+ "rand 0.9.5",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "sha2",
+ "subtle",
+ "tokio",
+ "tower",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
 name = "naijachase-api"
 version = "0.1.0"
 dependencies = [

@@ -1,5 +1,24 @@
 # Naija Chase service API v1
 
+## Saved witness accounts (ordinary and replay cases)
+
+`GET /v1/cases/{case_id}/accounts` returns the authenticated owner's original
+interview receipts, oldest first, including hot and cold-trail accounts. It works
+for ongoing and closed cases and does not charge money or advance time. An
+empty array means no witness-account events have been recorded. Other players'
+cases return `403`, unknown cases `404`, and unauthenticated requests `401`.
+
+The response is a `WitnessAccountsResponse` array (TypeScript contract), with
+`event_type: "witness_account"` and string-valued `data`: stable case-scoped
+`account_id`, `state_version`, `stop`, `stage`, plus the original `message`,
+venue and witness metadata. Nothing is regenerated from current content; the
+endpoint never returns private game states, hidden routes or unearned clues.
+Existing receipts get their missing context from their saved command state.
+
+See [frontend recovery examples](ui-api-handoff.md#durable-witness-notebook)
+for the request, response and interrupted-command behaviour. Weekly attempts
+continue using `GET /v1/weekly/attempts/{attempt_id}/accounts`.
+
 ## Request IDs and browser errors
 
 Every response includes `X-Request-ID`. JSON API errors repeat it as
@@ -85,6 +104,8 @@ inherited from an IDE or parent shell.
 
 - `POST /v1/auth/register`: `email`, `username`, `home_base`, `password`,
   `confirm_password`, and required integer `dob_day`, `dob_month`, `dob_year`;
+  the UI labels `username` as **Investigator Name**. It must contain 3–32 ASCII
+  letters, numbers, hyphens, or underscores, with no spaces or `@` characters;
   both clients and the server reject invalid/future dates and applicants under
   18 (using today's UTC date). The server uses its own clock independently of
   client time or dropdown restrictions. The 18th birthday is eligible; February 29
@@ -123,6 +144,13 @@ inherited from an IDE or parent shell.
 - `GET /v1/progression/summary` returns points, rank, solved cases, visited
   jurisdictions, travel/deduction accuracy, achievements, and rank history.
 - `GET /v1/progression/achievement-catalog` returns stable display metadata.
+
+The catalogue includes `demoted` and `suspended`. The witness-pressure
+transaction awards `demoted` whenever a disciplinary punishment lowers the
+player's rank, and `suspended` when a Rookie receives the 24-hour mission
+suspension. These awards are written in the same database transaction as the
+disciplinary result. The client must discover awards from progression; it must
+never infer or submit them.
 
 New cases inherit persisted career points. A home-base witness interview costs
 20 percent less time, subject to a minimum one-minute cost; it is never free.

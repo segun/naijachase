@@ -2,20 +2,28 @@
   import "../../styles/auth.css";
   import type { AppController } from "../../state/app.svelte";
   import { HOME_BASES } from "../../domain/model.ts";
+  import { investigatorNameProblem } from "../../domain/investigator-name.ts";
   import Brand from "../../ui/Brand.svelte";
   import ChaseStage from "../../scenes/chase/ChaseStage.svelte";
   import MusicToggle from "../../music/MusicToggle.svelte";
   import Icon from "../../ui/Icon.svelte";
   import { birthDateError, birthDays, birthYears } from "../../domain/birth-date.mjs";
+  import { usage } from "../../usage";
 
   let { app }: { app: AppController } = $props();
   type Mode="login"|"register"|"confirmation"|"forgot"|"forgot-sent"|"reset";
   const resetToken=new URLSearchParams(location.search).get("reset")??"";
   let mode = $state<Mode>(resetToken?"reset":"login");
+  $effect(() => {
+    if (mode === "register") void usage.registrationStarted();
+    else usage.registrationClosed();
+    return () => usage.registrationClosed();
+  });
   let email = $state(""), password = $state(""), confirm = $state(""), username = $state("");
   let homeBase = $state("Lagos"), showPassword = $state(false), locating = $state(false), locationNote = $state("");
   let dobDay = $state<number>(), dobMonth = $state<number>(), dobYear = $state<number>();
-  let dobSubmitted = $state(false), accepted = $state(false);
+  let dobSubmitted = $state(false), nameSubmitted = $state(false), nameTouched = $state(false), accepted = $state(false);
+  let nameInput = $state<HTMLInputElement>();
   const LEGAL = "https://naijachase.com";
   const years = birthYears();
   const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -30,6 +38,7 @@
     dobSubmitted || (dobDay !== undefined && dobMonth !== undefined && dobYear !== undefined)
       ? birthDateError(dobDay, dobMonth, dobYear) : ""
   );
+  const nameError = $derived(nameSubmitted || nameTouched ? investigatorNameProblem(username) : null);
 
   const passwordOk = $derived(password.length >= 12);
   const matches = $derived(confirm.length > 0 && confirm === password);
@@ -41,7 +50,9 @@
       if (await app.login(email, password)) { password = ""; app.go("cases"); }
       else if (app.confirmationRequiredFor) { email = app.confirmationRequiredFor; password = ""; mode = "confirmation"; }
     } else if(mode==="register") {
-      dobSubmitted = true;
+      void usage.registrationEmail(email);
+      dobSubmitted = true; nameSubmitted = true;
+      if (investigatorNameProblem(username)) { nameInput?.focus(); return; }
       if (!accepted) return;
       if (dobDay === undefined || dobMonth === undefined || dobYear === undefined || birthDateError(dobDay, dobMonth, dobYear)) return;
       if (await app.register({ email, password, confirm, username, homeBase, dobDay, dobMonth, dobYear })) {
@@ -97,9 +108,13 @@
         <div class="recovery-sent" role="status"><Icon name="mail"/><h2>Check your email</h2><p class="muted">If an account exists for <strong>{email}</strong>, we sent a password-reset link. The link expires in 30 minutes.</p><button class="btn btn-primary btn-block" type="button" onclick={() => mode = "login"}>Return to login</button></div>
       {:else}
       <form class="form" class:form-grid={mode === "register"} onsubmit={submit}>
-        {#if mode !== "reset"}<label class="field"><span>Email</span><input class="input" bind:value={email} required type="email" autocomplete="email" /></label>{/if}
+        {#if mode !== "reset"}<label class="field"><span>Email</span><input class="input" bind:value={email} required type="email" autocomplete="email" onblur={() => { if (mode === "register") void usage.registrationEmail(email); }} />{#if mode === "register"}<small class="muted">If you allow usage measurement, we save your unfinished signup email for up to 30 days. Change this with “Usage privacy”.</small>{/if}</label>{/if}
         {#if mode === "register"}
-          <label class="field"><span>Investigator name</span><input class="input" bind:value={username} required minlength="3" maxlength="32" autocomplete="username" /></label>
+          <label class="field">
+            <span>Investigator Name</span>
+            <input class="input" bind:this={nameInput} bind:value={username} required minlength="3" maxlength="32" pattern="[A-Za-z0-9_-]+" autocomplete="username" autocapitalize="none" spellcheck="false" aria-invalid={Boolean(nameError)} aria-describedby="investigator-name-help" onblur={() => (nameTouched = true)} />
+            <small id="investigator-name-help" class="hint" class:warn={Boolean(nameError)} role="status">{nameError ?? "Use 3–32 letters, numbers, hyphens (-), or underscores (_). No spaces or @."}</small>
+          </label>
           <fieldset class="dob-row" aria-describedby="dob-help">
             <legend>Date of birth</legend>
             <div class="dob-inputs">

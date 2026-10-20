@@ -22,7 +22,8 @@
 .profile small.hint { color: var(--muted); font-size: .75rem; }
 
 .content { min-width: 0; padding: 1.5rem clamp(1rem, 3vw, 2.5rem) 3rem; }
-.page { max-width: 1120px; margin: 0 auto; display: grid; gap: 1.5rem; }
+.page { min-width: 0; max-width: 1120px; margin: 0 auto; display: grid; gap: 1.5rem; }
+.page > *, .card { min-width: 0; max-width: 100%; }
 .page-head { display: grid; gap: .5rem; }
 .page-head p { color: var(--muted); max-width: 60ch; }
 
@@ -63,7 +64,12 @@
   .hud-clock { order: 2; }
   .hud-funds { order: 3; }
   .hud-score { order: 4; }
-  .content { padding-bottom: 6.5rem; }
+  .app:not(.no-rail) > .content {
+    padding-top: max(1.5rem, calc(env(safe-area-inset-top) + .75rem));
+    padding-right: max(1rem, env(safe-area-inset-right));
+    padding-bottom: calc(6.5rem + env(safe-area-inset-bottom));
+    padding-left: max(1rem, env(safe-area-inset-left));
+  }
   .bottom-nav { position: fixed; z-index: 40; inset: auto 0 0 0; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; padding: .35rem .35rem calc(.35rem + env(safe-area-inset-bottom)); background: color-mix(in srgb, var(--bg-raised) 94%, transparent); backdrop-filter: blur(12px); border-top: 1px solid var(--line); }
   .bottom-nav button { display: grid; justify-items: center; gap: .15rem; min-height: 52px; padding: .35rem .15rem; background: none; border: 0; border-radius: 10px; color: var(--muted); font-size: .68rem; font-weight: 700; }
   .bottom-nav button[aria-current="page"] { color: var(--gold); background: var(--surface-2); }

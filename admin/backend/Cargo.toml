@@ -1,0 +1,24 @@
+[package]
+name = "naijachase-admin"
+version = "0.1.0"
+edition = "2024"
+workspace = "../../rust"
+
+[dependencies]
+argon2.workspace = true
+axum.workspace = true
+chrono.workspace = true
+libc.workspace = true
+mysql.workspace = true
+rand.workspace = true
+reqwest.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+sha2.workspace = true
+subtle.workspace = true
+tokio = { workspace = true, features = ["sync", "time"] }
+tracing.workspace = true
+tracing-subscriber.workspace = true
+
+[dev-dependencies]
+tower.workspace = true

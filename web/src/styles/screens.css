@@ -61,7 +61,7 @@
 .stepper li.done { background: var(--green); }
 .stepper li.current { background: var(--gold); box-shadow: 0 0 12px rgb(242 193 78 / .6); }
 .venues { display: grid; gap: .8rem; }
-.venue { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 1rem; padding: 1.1rem 1.2rem; text-align: left; border-radius: var(--radius); background: var(--surface); border: 1px solid var(--line-soft); transition: transform .2s, border-color .2s, background .2s; }
+.venue { width: 100%; min-width: 0; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 1rem; padding: 1.1rem 1.2rem; text-align: left; border-radius: var(--radius); background: var(--surface); border: 1px solid var(--line-soft); transition: transform .2s, border-color .2s, background .2s; }
 .venue:hover:not(:disabled) { transform: translateX(4px); border-color: var(--gold); background: var(--surface-2); }
 .venue:disabled { cursor: default; }
 .venue.seen { opacity: .7; border-style: dashed; }
@@ -69,7 +69,7 @@
 .venue-body { display: grid; gap: .1rem; min-width: 0; }
 .venue-body strong { font-size: 1.1rem; font-family: var(--display); }
 .venue-blurb { font-size: .85rem; color: var(--muted); opacity: .85; }
-.venue-status { display: inline-flex; align-items: center; gap: .4rem; font-size: .8rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--green); white-space: nowrap; }
+.venue-status { min-width: 0; max-width: 100%; display: inline-flex; align-items: center; gap: .4rem; font-size: .8rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--green); overflow-wrap: anywhere; }
 .venue.seen .venue-status { color: var(--muted); }
 .log { display: grid; gap: .8rem; margin-top: .8rem; }
 .bubble { display: flex; gap: .8rem; align-items: flex-start; }
@@ -95,13 +95,6 @@
 .trail .dot { position: absolute; left: -.85rem; width: .7rem; height: .7rem; border-radius: 50%; background: var(--line); border: 2px solid var(--bg); }
 .trail li.current { color: var(--ink); font-weight: 700; }
 .trail li.current .dot { background: var(--gold); box-shadow: 0 0 0 4px rgb(242 193 78 / .25); }
-.profile-list { margin: .8rem 0; display: grid; gap: .4rem; }
-.profile-list > div { display: flex; justify-content: space-between; gap: 1rem; padding: .45rem 0; border-bottom: 1px dashed var(--line-soft); }
-.profile-list dt { color: var(--muted); font-size: .85rem; }
-.profile-list dd { margin: 0; font-weight: 700; text-align: right; }
-.profile-list .blank dd { color: var(--muted); font-weight: 500; font-style: italic; }
-.profile-list.wide { grid-template-columns: repeat(2, 1fr); gap: .4rem 2rem; }
-
 /* Dossier */
 .dossier-top { display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; }
 .dossier-top > div:not(.ring) { flex: 1; min-width: 12rem; }
@@ -154,13 +147,6 @@
 .results .facts { width: 100%; grid-template-columns: repeat(2, 1fr); text-align: left; }
 .results .meter { width: 100%; }
 
-.settings { display: grid; gap: 1.4rem; }
-.settings fieldset { border: 0; padding: 0; margin: 0; display: grid; gap: .6rem; }
-.settings legend { font-weight: 800; padding: 0; margin-bottom: .5rem; }
-.profile-fact { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: .65rem; margin: 0; padding: .8rem 1rem; border: 1px solid var(--line); border-radius: 12px; background: var(--surface-2); }
-.profile-fact svg { width: 1.1rem; height: 1.1rem; color: var(--gold); }
-.profile-fact span { color: var(--muted); }
-
 @media (max-width: 960px) {
   .split, .hero, .auth, .steps, .missions, .suspects, .phases { grid-template-columns: 1fr; }
   .side-rail { position: static; }
@@ -173,7 +159,7 @@
   .hud-score { text-align: right; }
   .hud-score .hud-label { display: none; }
   .hud-score .hud-value { font-size: 1.15rem; }
-  .dossier-grid, .zones, .profile-list.wide { grid-template-columns: 1fr; }
+  .dossier-grid, .zones { grid-template-columns: 1fr; }
   .venue { grid-template-columns: auto minmax(0, 1fr); }
   .venue-status { grid-column: 1 / -1; justify-content: flex-end; }
   .scene-banner { padding: 1.2rem; }

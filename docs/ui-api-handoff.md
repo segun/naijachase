@@ -218,7 +218,7 @@ storage.
 Registration example:
 
 ```json
-{"email":"ada@example.com","username":"agent_ada","home_base":"Abia","password":"a-long-passphrase","confirm_password":"a-long-passphrase"}
+{"email":"ada@example.com","username":"agent_ada","home_base":"Abia","password":"a-long-passphrase","confirm_password":"a-long-passphrase","dob_day":15,"dob_month":6,"dob_year":1995}
 ```
 
 ## Recovery
@@ -245,6 +245,31 @@ cases. `/achievement-catalog` supplies display names and descriptions.
 Progression is server-derived from committed command replay. The browser must
 never calculate or submit points, achievements, travel accuracy, deductions,
 rank changes or home-base discounts.
+
+### Achievement sharing
+
+There is deliberately no "award achievement" or "share achievement" API.
+After any action that can change progression, refresh
+`GET /v1/progression/summary` and compare its achievement IDs with the previous
+in-session summary. A newly returned ID is authoritative; join it to
+`GET /v1/progression/achievement-catalog` and show the share dialog. Do not show
+all historical awards immediately after login. If a disciplinary panel is also
+open, present the panel first and the achievement dialog after it closes.
+
+The dialog generates a 1200×630 PNG in the browser and prepares:
+
+- title: achievement title plus `Naija Chase`;
+- text: player display name, title and catalogue description;
+- link: `https://naijachase.app/?achievement={achievement_id}`.
+
+Use the device Web Share sheet first when available; it can pass the PNG, text
+and link to installed destinations, including apps such as Instagram that do
+not provide a general web compose URL. Also expose direct actions for Facebook,
+X, WhatsApp, LinkedIn, Telegram, Reddit and Bluesky, plus copy and image-download
+fallbacks. Direct link shares use the Open Graph/Twitter metadata in
+`web/index.html` for an image preview. Sharing is always user-initiated and may
+be repeated: clicking any earned card on the Achievements page reopens the same
+dialog. Locked cards must not be interactive.
 
 ## P3.7.1 frontend handoff — assignment and replay
 
@@ -297,7 +322,67 @@ catalogue is dynamic, so never hard-code 1,000 as its permanent size.
 Use `GET /v1/cases/catalogue-status` for the case-desk totals and exhaustion
 state; refresh it after a first completion and when returning to the case desk.
 
-## Errors
+## Durable witness notebook
+
+The server commits an interview's state and original statement together in one
+MySQL transaction. Losing the HTTP response can therefore leave a witness
+questioned without the browser having seen the words. The notebook must not
+depend on session storage or the most recent command response alone.
+
+For ordinary and replay cases, request:
+
+```http
+GET /v1/cases/case-example/accounts
+Cookie: <existing authenticated session cookie>
+```
+
+No request body. Example `200` response (all `data` values are strings):
+
+```json
+[
+  {
+    "event_type": "witness_account",
+    "data": {
+      "account_id": "2:1",
+      "state_version": "2",
+      "stage": "0",
+      "stop": "Lagos",
+      "venue_id": "market",
+      "venue_name": "Market",
+      "local_venue_name": "Local market",
+      "witness_role": "Market trader",
+      "trail_status": "hot",
+      "message": "The traveller asked where two great rivers meet."
+    }
+  }
+]
+```
+
+`stop` is where the interview took place, **not** its destination. Each account's
+ID is `<saved state version>:<event index>` and is unique within that case.
+Multiple visits with identical text remain separate receipts. Responses are
+chronological and contain only interviews already completed, including negative
+answers at wrong destinations. `[]` is valid before the first interview. Errors
+are `401` (sign in), `403` (not your case) or `404` (case not found); network/server
+failures must not be interpreted as an empty notebook.
+
+The web controller now fetches this history after discovering/resuming a case,
+on notebook opening, and when reconciling a failed command. It merges by receipt
+ID, migrates matching old browser-only notes and preserves cached extra clues.
+Even `duplicate: true` command responses can restore missing notes. A failed
+history request preserves existing notes and offers **Retry loading accounts**.
+Late responses from another case/session are ignored.
+
+For a lost interview response: reload `GET /v1/cases/{case_id}` and then this
+endpoint. Do not re-charge the player, reset the case or fabricate the dialogue.
+Existing affected cases recover automatically provided their `case_events`
+records have not been deleted. API restarts do not delete these records. No
+database migration or content re-import is needed. Deploy both API and web;
+the old API does not have this endpoint. Weekly cases retain their separate
+`GET /v1/weekly/attempts/{attempt_id}/accounts` endpoint. Pressure extras retain
+their separate `GET /v1/cases/{case_id}/pressure-attempts` history.
+
+## Error handling
 
 Non-success responses use `{ "error": "stable_code", "message": "safe text" }`.
 Handle 401 by returning to login, 403 as denied/unconfirmed/CSRF failure, 409 as

@@ -2,6 +2,14 @@
 
 Prometheus scrapes `127.0.0.1:8080/metrics` directly. Nginx deliberately returns 404 for `/api/metrics`. Grafana imports `deploy/grafana/naijachase-overview.json`; Prometheus loads `deploy/prometheus/naijachase-alerts.yml`.
 
+The separate admin console's rollout, reporting definitions, access controls,
+and incident checks are in [admin.md](admin.md). Its system readings describe
+the admin host; they do not replace the game API's Prometheus alerts. Its
+reporting database principal must retain only versioned view reads and the
+single session-revoke procedure grant; identity/audit use a separate control
+schema and principal. Follow [admin-deployment.md](admin-deployment.md) for the
+exact installation and named-owner handover.
+
 Every browser response contains `X-Request-ID`. API errors also contain `request_id`, and JSON logs record that same value. Ask support reporters for it, then search the systemd journal:
 
 ```sh

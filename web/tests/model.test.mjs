@@ -22,7 +22,7 @@ test("accessible shell and responsive safeguards are present", () => {
   assert.match(auth, /@media \(max-width: 960px\)[\s\S]*?\.auth \{ grid-template-columns: minmax\(0, 1fr\)/, "portrait sign-in is one column in its lazy stylesheet");
   assert.match(auth, /@media \(max-width: 960px\)[\s\S]*?\.auth-side \{ display: none; \}/, "portrait sign-in hides the desktop artwork");
   assert.match(read("styles/base.css"), /html \{[^}]*overflow-x: hidden/, "the document cannot retain desktop-width horizontal scroll on iPhone");
-  assert.match(read("styles/terminal.css"), /@media \(max-width: 639px\)[\s\S]*?\.t-content \{[^}]*padding-top: 4\.7rem/, "the portrait terminal reserves space for floating controls");
+  assert.match(read("styles/terminal.css"), /@media \(max-width: 639px\)[\s\S]*?\.t-content \{[^}]*padding-top: calc\(4\.7rem \+ env\(safe-area-inset-top\)\)/, "the portrait terminal reserves the floating controls and iPhone safe area");
   assert.match(read("styles/terminal.css"), /@container \(max-width: 720px\)[\s\S]*?\.t-body \{[\s\S]*?overflow-y: auto;[\s\S]*?touch-action: pan-y;/, "compact case panels share one touch-scrollable region");
   assert.match(read("styles/screens.css"), /\.detail-quick \{ top: max\(\.55rem, env\(safe-area-inset-top\)\); bottom: auto/, "detail control moves away from the terminal footer");
   assert.match(read("ui/Shell.svelte"), /class:in-room=\{inRoom\}/, "room music controls receive the portrait-safe placement");

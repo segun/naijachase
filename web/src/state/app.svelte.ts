@@ -7,7 +7,7 @@ import { GroupsController } from "./groups.svelte.ts";
 import type { CurrentActivityResponse } from "../../../contracts/typescript/api-v1.ts";
 import { alreadyPressured, parseUtc, tokenAwards, type DisciplinaryCase, type JailStatus, type PressureAttemptRecord, type PressureMethod, type PressureResult, type TokenAward, type TokenLedgerEntry } from "../domain/pressure.ts";
 import {
-  dossierChanges, RATE_LIMIT_MESSAGE, errorKind, groupNotes, nearestHomeBase, parseNotes,
+  dossierChanges, RATE_LIMIT_MESSAGE, errorKind, groupNotes, nearestHomeBase, parseNotes, mergeWitnessAccounts,
   catalogueView, isTransitReply, resumableCase, STATES, unreadReleases, type WeeklyAttempt, type ReportCategory, type AchievementDef, type CaseArchiveEntry, type CaseResponse, type CatalogueProgress, type ClientCommand, type GameEvent, type Note,
   type AvatarCatalogue, type AvatarPreset, type DossierOptions, type CooperationPreferences, type CooperationRequest, type Player, type PlayerSession, type ReleaseNotification, type TransportLedgerEntry, type TransportQuote, type ProfileUpdate, type ProgressionSummary, type Screen,
   raidQuote, type QuoteGroup
@@ -16,6 +16,7 @@ import {
 const sentence = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
 
 export type Toast = { id: number; kind: "info" | "error" | "success"; text: string };
+export type AchievementShareNotice = { achievement: AchievementDef; earnedAt: string; newlyEarned: boolean };
 /** The witness just questioned, for the arrival scene that follows the journey to the venue. */
 export type WitnessVisit = { venueId: string; venueName: string; role: string; message: string; arrival: "drive" | "hitch" };
 /** A journey between states about to be played: where from and to, how, and the seed that fixes which landscapes it passes through. */
@@ -66,6 +67,9 @@ export class AppController {
   caseId = $state(sessionStorage.getItem("nc-case") ?? "");
   rankAtStart = $state<string | null>(sessionStorage.getItem("nc-rank"));
   notes = $state<Note[]>(parseNotes(sessionStorage.getItem("nc-notes")));
+  notesLoading = $state(false);
+  notesError = $state("");
+  private notesRequest = 0;
   trail = $state<string[]>(JSON.parse(sessionStorage.getItem("nc-trail") ?? "[]"));
   toasts = $state<Toast[]>([]);
   announcement = $state("");
@@ -76,6 +80,9 @@ export class AppController {
   summary = $state<ProgressionSummary | null>(null);
   archive = $state<CaseArchiveEntry[]>([]);
   catalog = $state<AchievementDef[]>([]);
+  /** Newly earned achievements wait here until any higher-priority panel presentation has closed. */
+  achievementShares = $state<AchievementShareNotice[]>([]);
+  achievementShare = $derived(this.achievementShares[0] ?? null);
   sessions = $state<PlayerSession[]>([]);
   /** The player's chosen preset, as the server describes it; null until loaded or chosen. */
   avatar = $state<AvatarPreset | null>(null);
@@ -214,6 +221,7 @@ export class AppController {
   }
 
   private endSession(message?: string) {
+    this.notesRequest++; this.notesLoading = false; this.notesError = "";
     clearInterval(this.refreshTimer);
     this.sessionGeneration++;
     this.caseGeneration++;
@@ -222,7 +230,7 @@ export class AppController {
     this.dossierOptions = null; this.dossierOptionsLoading = false; this.dossierOptionsError = "";
     this.weeklyId = null; this.weeklyTransit = null; clearTimeout(this.weeklyTimer); this.weeklyAccounts = [];
     this.player = null; this.game = null; this.caseId = ""; this.briefing = false; this.pendingLead = ""; this.lastWitness = null; this.witnessVisit = null; this.journey = null; this.raidVisit = null; this.pendingRaid = null; this.returning = false;
-    this.summary = null; this.archive = []; this.sessions = []; this.avatar = null; this.catalogueStatus = null; this.exhausted = false; this.quotes = []; this.ledger = []; this.notes = []; this.trail = []; this.rankAtStart = null;
+    this.summary = null; this.archive = []; this.catalog = []; this.achievementShares = []; this.sessions = []; this.avatar = null; this.catalogueStatus = null; this.exhausted = false; this.quotes = []; this.ledger = []; this.notes = []; this.trail = []; this.rankAtStart = null;
     this.tokenBalance = null; this.tokenLedger = []; this.tokenLedgerLoaded = false; this.awards = []; this.jail = null; this.discipline = []; this.disciplineLoaded = false; this.panel = null; this.pressured = []; this.pressureNotice = null; this.pendingPressure.clear();
     sessionStorage.clear();
     this.screen = "cases";
@@ -285,6 +293,7 @@ export class AppController {
         if (this.caseId && this.caseId === restored) {
           this.game = await this.api.load(this.caseId);
           this.ensureTrail();
+          await this.refreshWitnessAccounts();
           void this.refreshQuotes();
           this.screen = "investigate";
         }
@@ -339,6 +348,7 @@ export class AppController {
     }
     if (generation !== this.sessionGeneration || caseGeneration !== this.caseGeneration) return false;
     this.applyActivity(activity);
+    await this.refreshWitnessAccounts();
     return true;
   }
 
@@ -497,16 +507,42 @@ export class AppController {
     return (this.progressionLoad ??= this.fetchProgression().finally(() => { this.progressionLoad = undefined; }));
   }
 
+  /** Opens an earned achievement from the career page; locked achievements cannot be shared. */
+  openAchievementShare(achievementId: string, earnedAt = "", newlyEarned = false) {
+    const achievement = this.catalog.find(item => item.id === achievementId);
+    const earned = this.summary?.achievements.find(item => item.achievement_id === achievementId);
+    if (!achievement || !earned) return;
+    const notice = { achievement, earnedAt: earnedAt || earned.earned_at, newlyEarned };
+    this.achievementShares = [notice, ...this.achievementShares.filter(item => item.achievement.id !== achievementId)];
+  }
+
+  dismissAchievementShare() {
+    this.achievementShares = this.achievementShares.slice(1);
+  }
+
   private async fetchProgression(reportErrors = false) {
     try {
       // Read untracked: this runs inside the desk's effect and must not re-trigger itself when the catalogue is stored.
       const known = untrack(() => this.catalog);
+      const previous = untrack(() => this.summary);
       const [summary, archive, catalog, status] = await Promise.all([
         this.api.progression(), this.api.archive(),
         known.length ? Promise.resolve(known) : this.api.achievementCatalog(),
         this.api.catalogueStatus()
       ]);
       this.summary = summary; this.archive = archive; this.catalog = catalog; this.catalogueStatus = status;
+      // Do not announce historical achievements at sign-in. Thereafter, diff server-owned progression so every
+      // newly committed award gets one dialog, including awards created outside the ordinary case flow.
+      if (previous) {
+        const had = new Set(previous.achievements.map(item => item.achievement_id));
+        const queued = new Set(this.achievementShares.map(item => item.achievement.id));
+        const added = summary.achievements.flatMap(earned => {
+          if (had.has(earned.achievement_id) || queued.has(earned.achievement_id)) return [];
+          const achievement = catalog.find(item => item.id === earned.achievement_id);
+          return achievement ? [{ achievement, earnedAt: earned.earned_at, newlyEarned: true }] : [];
+        });
+        if (added.length) this.achievementShares = [...this.achievementShares, ...added];
+      }
       this.exhausted = status.exhausted;
       void this.loadReleases();
       void this.loadTokens();
@@ -824,6 +860,7 @@ export class AppController {
       this.briefing = false; this.pendingLead = "";
       void this.refreshQuotes();
       this.toast("Resuming your existing case. No new case was created.", "info");
+      void this.refreshWitnessAccounts();
       this.go(created.state.outcome ? "results" : "investigate");
     } else this.begin(created);
   }
@@ -912,6 +949,8 @@ export class AppController {
     }
     this.game = loaded;
     this.ensureTrail();
+    await this.refreshWitnessAccounts();
+    if (id !== this.caseId || generation !== this.caseGeneration) return;
     this.briefing = false; this.pendingLead = "";
     this.quotes = []; this.quotesLoaded = false; this.ledger = [];
     void this.refreshQuotes();
@@ -929,7 +968,7 @@ export class AppController {
       if (loaded.state.outcome === "abandoned") {
         this.clearCase(); this.go("cases");
         await this.syncCurrentCase();
-      } else { this.game = loaded; void this.refreshQuotes(); }
+      } else { this.game = loaded; await this.refreshWitnessAccounts(); void this.refreshQuotes(); }
     } catch (e) { if (id === this.caseId && generation === this.caseGeneration) this.fail(e); }
   }
 
@@ -977,16 +1016,15 @@ export class AppController {
       this.preloadSceneCritical(["masked_thief", "crowd_police", payload.mode === "hitch_ride" ? "bus_danfo" : "car_player_runabout"]);
     }
     const account = next.events.find(e => e.event_type === "witness_account")?.data;
-    if (account?.message && !next.duplicate) {
+    if (account?.message) {
       if (payload.type === "visit_venue") {
         this.lastWitness = { venueId: payload.venue_id, venueName: account.local_venue_name || account.venue_name || "", role: account.witness_role ?? "Witness", message: account.message };
       }
-      this.notes = [...this.notes, {
-        stop: current.state.current_state,
-        venue: account.venue_name ?? "Witness",
-        message: account.message,
-        ...(payload.type === "visit_venue" ? { venueId: payload.venue_id } : {})
-      }];
+      this.notes = mergeWitnessAccounts(this.notes, next.events.map((event, index) => ({
+        ...event, data: { ...event.data, account_id: `${next.state_version}:${index}`,
+          stop: current.state.current_state,
+          ...(payload.type === "visit_venue" ? { venue_id: payload.venue_id } : {}) }
+      })), false);
     }
     if (next.state.current_state !== current.state.current_state) {
       this.lastWitness = null;
@@ -1009,7 +1047,8 @@ export class AppController {
         : account?.message
           ? "Witness account added to your notebook."
           : message;
-    if (!quiet) this.toast(feedback, payload.type === "travel" && next.state.trail_status === "cold" ? "error" : "success");
+    // A venue visit starts a journey and witness scene. Announcing the saved statement here spoils that scene.
+    if (!quiet && payload.type !== "visit_venue") this.toast(feedback, payload.type === "travel" && next.state.trail_status === "cold" ? "error" : "success");
     if (next.state.outcome) {
       this.awards = tokenAwards(next.events);
       await this.loadProgression();
@@ -1034,6 +1073,7 @@ export class AppController {
 
   private clearCase() {
     this.caseGeneration++;
+    this.notesRequest++; this.notesLoading = false; this.notesError = "";
     this.game = null; this.caseId = ""; this.notes = []; this.trail = []; this.rankAtStart = null;
     this.briefing = false; this.pendingLead = ""; this.lastWitness = null; this.witnessVisit = null; this.journey = null; this.raidVisit = null; this.pendingRaid = null; this.returning = false;
     this.quotes = []; this.quotesLoaded = false; this.ledger = []; this.awards = []; this.panel = null; this.pressured = []; this.pressureNotice = null; this.pendingPressure.clear();
@@ -1132,8 +1172,32 @@ export class AppController {
 
   private async checkWeeklyArrival() { await this.refreshWeekly(); }
 
+  /** Browser storage is a cache: recover original receipts even after a lost command response. */
+  async refreshWitnessAccounts() {
+    if (this.weeklyId) { await this.loadWeeklyAccounts(); return; }
+    const id = this.caseId, generation = this.caseGeneration;
+    if (!id) return;
+    const request = ++this.notesRequest;
+    const isCurrent = () => id === this.caseId && generation === this.caseGeneration &&
+      !this.weeklyId && request === this.notesRequest;
+    this.notesLoading = true; this.notesError = "";
+    try {
+      const events = await this.api.caseAccounts(id);
+      if (!isCurrent()) return;
+      this.notes = mergeWitnessAccounts(this.notes, events);
+      this.persist();
+    } catch (e) {
+      if (!isCurrent()) return;
+      this.notesError = "Your saved witness accounts could not be loaded. Retry here—there is no need to abandon the case.";
+      this.fail(e);
+    } finally {
+      if (isCurrent()) this.notesLoading = false;
+    }
+  }
+
   private async loadWeeklyAccounts() {
     const id = this.weeklyId; if (!id) return;
+    this.notesLoading = true; this.notesError = "";
     try {
       const events = await this.api.weeklyAccounts(id);
       if (id !== this.weeklyId) return;
@@ -1145,7 +1209,11 @@ export class AppController {
           message: e.data.message!,
           ...(e.data.venue_id ? { venueId: e.data.venue_id } : {})
         }));
-    } catch (e) { if (e instanceof ApiError && e.status === 401) this.fail(e); }
+    } catch (e) {
+      if (id !== this.weeklyId) return;
+      this.notesError = "Your saved witness accounts could not be loaded. Please retry.";
+      this.fail(e);
+    } finally { if (id === this.weeklyId) this.notesLoading = false; }
   }
 
   /** The server has completed the journey: update the notebook, and carry on from wherever the player is watching. */

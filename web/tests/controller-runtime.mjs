@@ -48,6 +48,7 @@ export function controller() {
   const app = new AppController();
   app.toast = (text, kind = "info") => { app.toasts = [...app.toasts, { id: app.toasts.length, text, kind }]; };
   app.api.quotes = async () => [];
+  app.api.caseAccounts = async () => [];
   app.api.progression = async () => ({ points: 1200, rank: "Investigator", achievements: [], visited_states: [] });
   app.api.archive = async () => [];
   app.api.achievementCatalog = async () => [];

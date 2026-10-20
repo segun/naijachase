@@ -41,7 +41,9 @@ const CATALOG = [
   { id: "first_case", title: "First Case", description: "Solve your first case." },
   { id: "clean_route", title: "True Trail", description: "Solve a case without a false destination." },
   { id: "state_explorer", title: "State Explorer", description: "Investigate ten jurisdictions." },
-  { id: "rank_investigator", title: "Investigator", description: "Earn the Investigator rank." }
+  { id: "rank_investigator", title: "Investigator", description: "Earn the Investigator rank." },
+  { id: "demoted", title: "Demoted", description: "Receive a rank demotion from a disciplinary panel." },
+  { id: "suspended", title: "Suspended", description: "Receive a 24-hour mission suspension from a disciplinary panel." }
 ];
 
 const PUBLISHED = Number(process.env.MOCK_PUBLISHED ?? 1000);
@@ -183,7 +185,7 @@ function apply(c, cmd) {
       const status = trailStatus(c);
       const hint = first && status === "hot" ? ` I also noticed the suspect was ${TRAITS[c.stage % 8]}.` : "";
       const message = status === "hot" ? WITNESS[cmd.venue_id] + hint : COLD_WITNESS[cmd.venue_id];
-      events.push({ event_type: "witness_account", data: { message, trail_status: status, venue_name: cmd.venue_id.replace("_", " "), local_venue_name: `${c.state} ${LOCAL_NAME[cmd.venue_id]}`, location_name: c.state, witness_role: WITNESS_ROLE[cmd.venue_id] } });
+      events.push({ event_type: "witness_account", data: { message, venue_id: cmd.venue_id, stop: c.state, stage: String(c.stage), trail_status: status, venue_name: cmd.venue_id.replace("_", " "), local_venue_name: `${c.state} ${LOCAL_NAME[cmd.venue_id]}`, location_name: c.state, witness_role: WITNESS_ROLE[cmd.venue_id] } });
       break;
     }
     case "record_trait": c.dossier[cmd.trait_name] = cmd.value; break;
@@ -428,6 +430,7 @@ const server = http.createServer(async (req, res) => {
       const c = { id: `${kind === "replay" ? "replay" : "case"}-${crypto.randomUUID()}`, kind, mission, version: 1, stage: 0, state: route[0], route, trail: [route[0]], wrongTravels: 0, elapsed: 0, score: 800, dossier: {}, visited: [], warrant: null, outcome: null, seen: new Set(), opening: 6000, balance: 6000,
         ledger: [{ sequence: 1, kind: "opening_allocation", origin: "", destination: "", mode: "allocation", cost: 0, minutes: 0, balance_after: 6000 }] };
       cases.set(c.id, c);
+      c.accounts = [];
       return send(201, reply(c));
     };
     const solvedMissions = () => new Set(archive.filter(a => a.outcome === "solved" && a.attempt_kind === "ordinary").map(a => a.mission_id));
@@ -469,11 +472,11 @@ const server = http.createServer(async (req, res) => {
       if (!solvedMissions().has(body.mission_id)) throw new HttpError(409, "replay_not_available", "only successfully completed missions can be replayed");
       return open(body.mission_id, "replay");
     }
-    const sub = path.match(/^\/v1\/cases\/([^/]+)\/(transport-quotes|ledger)$/);
+    const sub = path.match(/^\/v1\/cases\/([^/]+)\/(transport-quotes|ledger|accounts)$/);
     if (sub) {
       const found = cases.get(sub[1]);
       if (!found) throw new HttpError(404, "not_found", "case not found");
-      return send(200, sub[2] === "ledger" ? found.ledger : quotesFor(found));
+      return send(200, sub[2] === "accounts" ? found.accounts : sub[2] === "ledger" ? found.ledger : quotesFor(found));
     }
     const match = path.match(/^\/v1\/cases\/([^/]+)(\/commands)?$/);
     const c = match && cases.get(match[1]);
@@ -486,6 +489,8 @@ const server = http.createServer(async (req, res) => {
     validateTrait(body.command);
     const events = apply(c, body.command);
     c.seen.add(body.command_id); c.version += 1;
+    c.accounts.push(...events.flatMap((event, index) => event.event_type === "witness_account"
+      ? [{ ...event, data: { ...event.data, account_id: `${c.version}:${index}`, state_version: String(c.version) } }] : []));
     return send(200, reply(c, events));
   } catch (e) {
     if (e instanceof HttpError) return send(e.status, { error: e.error, message: e.message });

@@ -1,3 +1,5 @@
+import type { GameEvent } from "../../../contracts/typescript/api-v1.ts";
+
 export const STATES = [
   "Abia","Adamawa","Akwa Ibom","Anambra","Bauchi","Bayelsa","Benue","Borno",
   "Cross River","Delta","Ebonyi","Edo","Ekiti","Enugu","Federal Capital Territory",
@@ -108,7 +110,24 @@ export function questionedHere(state:PublicState):string[] {
   return state.visited_venues.filter(v=>v.startsWith(prefix)).map(v=>v.slice(prefix.length));
 }
 
-export type Note = {stop:string;venue:string;message:string;venueId?:string};
+export type Note = {stop:string;venue:string;message:string;venueId?:string;accountId?:string};
+/** Merge server receipts idempotently; retain cached extra clues and migrate old browser-only notes. */
+export function mergeWitnessAccounts(notes:Note[], events:GameEvent[], fullHistory = true):Note[] {
+  const remaining = [...notes];
+  const recorded:Note[] = [];
+  for (const {event_type, data} of events) {
+    if (event_type !== "witness_account" || !data.message) continue;
+    const note:Note = {stop:data.stop??"", venue:data.venue_name??"Witness", message:data.message,
+      ...(data.venue_id ? {venueId:data.venue_id} : {}), ...(data.account_id ? {accountId:data.account_id} : {})};
+    if (note.accountId && recorded.some(n => n.accountId === note.accountId)) continue;
+    const index = remaining.findIndex(n => note.accountId && n.accountId === note.accountId ||
+      !n.accountId && n.stop === note.stop && n.message === note.message &&
+      (n.venueId && note.venueId ? n.venueId === note.venueId : n.venue === note.venue));
+    if (index >= 0) remaining.splice(index, 1);
+    recorded.push(note);
+  }
+  return fullHistory ? [...recorded, ...remaining] : [...remaining, ...recorded];
+}
 export function parseNotes(raw:string|null):Note[] {
   try{
     const value:unknown=JSON.parse(raw??"[]");
@@ -119,7 +138,8 @@ export function parseNotes(raw:string|null):Note[] {
         stop:String(item.stop??"Earlier"),
         venue:String(item.venue??"Witness"),
         message:item.message,
-        ...(typeof item.venueId==="string" ? {venueId:item.venueId} : {})
+        ...(typeof item.venueId==="string" ? {venueId:item.venueId} : {}),
+        ...(typeof item.accountId==="string" ? {accountId:item.accountId} : {})
       }];
       return [];
     });

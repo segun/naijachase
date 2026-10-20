@@ -1,4 +1,5 @@
 <script lang="ts">
+  import "../../styles/profile-list.css";
   import type { AppController } from "../../state/app.svelte";
   import { onMount, tick } from "svelte";
   import { FIELDS, FIELD_META, dossierCount } from "../../domain/model.ts";
@@ -12,6 +13,7 @@
   const normalizeVenue = (venue: string) => venue.trim().replaceAll("_", " ").replace(/\s+/g, " ").toLocaleLowerCase();
 
   onMount(async () => {
+    await app.refreshWitnessAccounts();
     if (!focus) return;
     focusedNote = app.notes.find(note =>
       note.stop === focus.stop &&
@@ -33,6 +35,11 @@
   <div class="split">
     <section class="notebook rise" aria-label="Witness accounts">
       <h2>Witness accounts</h2>
+      {#if app.notesLoading}<p role="status">Restoring saved witness accounts…</p>{/if}
+      {#if app.notesError}
+        <p role="alert">{app.notesError}</p>
+        <button class="btn" type="button" disabled={app.notesLoading} onclick={() => app.refreshWitnessAccounts()}>Retry loading accounts</button>
+      {/if}
       {#each app.groupedNotes as group}
         <div class="notebook-stop">
           <h3><Icon name="pin" />{group.stop}</h3>
@@ -43,7 +50,7 @@
           </ol>
         </div>
       {:else}
-        <p class="paper-empty">No accounts recorded yet. Question a witness to start filling these pages.</p>
+        {#if !app.notesLoading && !app.notesError}<p class="paper-empty">No accounts recorded yet. Question a witness to start filling these pages.</p>{/if}
         <button class="btn" type="button" onclick={() => app.go("investigate")}>Go to the scene</button>
       {/each}
     </section>

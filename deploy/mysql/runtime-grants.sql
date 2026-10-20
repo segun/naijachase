@@ -33,6 +33,9 @@ GRANT INSERT, UPDATE, DELETE ON naijachase.player_mission_completions TO 'naijac
 GRANT INSERT, UPDATE, DELETE ON naijachase.player_sessions TO 'naijachase_api'@'localhost';
 GRANT INSERT, UPDATE, DELETE ON naijachase.player_state_visits TO 'naijachase_api'@'localhost';
 GRANT INSERT, UPDATE, DELETE ON naijachase.players TO 'naijachase_api'@'localhost';
+GRANT INSERT, UPDATE, DELETE ON naijachase.product_daily_visitors TO 'naijachase_api'@'localhost';
+GRANT INSERT, UPDATE, DELETE ON naijachase.product_measurement_identities TO 'naijachase_api'@'localhost';
+GRANT INSERT, UPDATE, DELETE ON naijachase.product_registration_starts TO 'naijachase_api'@'localhost';
 GRANT INSERT, UPDATE, DELETE ON naijachase.rank_history TO 'naijachase_api'@'localhost';
 GRANT UPDATE ON naijachase.scheduled_jobs TO 'naijachase_api'@'localhost';
 GRANT INSERT, UPDATE, DELETE ON naijachase.security_events TO 'naijachase_api'@'localhost';

@@ -52,6 +52,8 @@ export type TokenBalance={currency:"earned_bribe_token";balance:number;purchasab
 export type TokenLedgerEntry={amount:number;balance_after:number;reason:"case_completion"|"first_completion"|"achievement"|"witness_pressure";reference_id:string;created_at:string};
 export type JailStatus={jailed:boolean;jailed_until:string|null};
 export type GameEvent={event_type:string;data:Record<string,string>};
+/** GET /v1/cases/{case_id}/accounts. Original receipts, oldest first; metadata values are strings. */
+export type WitnessAccountsResponse=Array<{event_type:"witness_account";data:Record<string,string>&{account_id:string;state_version:string;stop:string;stage:string}}>;
 export type CaseResponse={api_version:"v1";case_id:string;state_version:number;duplicate:boolean;attempt_kind:"ordinary"|"replay"|"weekly";state:PublicGameState;events:GameEvent[]};
 export type CurrentCaseResponse={has_ongoing_case:boolean;case:CaseResponse|null};
 export type CurrentActivityResponse={has_ongoing_activity:boolean;ordinary_case:CaseResponse|null;replay_cases:CaseResponse[];weekly_attempts:WeeklyAttempt[]};

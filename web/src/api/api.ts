@@ -1,6 +1,6 @@
 import type {
   AbandonCaseRequest, AbandonCaseResponse, AssignCaseRequest, AuthResponse, AvatarCatalogue, AvatarProfile, AvatarSelectionRequest, CaseArchiveEntry, CaseResponse, CatalogueProgress, ClientCommand, CurrentActivityResponse, CurrentCaseResponse, ExecuteRequest, GameEvent,
-  LoginRequest, PlayerSession, ProfileUpdate, ProgressionSummary, RecoveryCompleteRequest,
+  LoginRequest, PlayerSession, ProfileUpdate, ProgressionSummary, RecoveryCompleteRequest, WitnessAccountsResponse,
   RecoveryRequest, ResendConfirmationRequest, RegisterRequest, ReplayCaseRequest, TransportLedgerEntry, TransportQuote,
   DisciplinaryCase, JailStatus, PressureAttemptRecord, PressureResult, PressureWitnessRequest, TokenBalance, TokenLedgerEntry,
   AssistantRoutesResponse, CatalogueHealth, CompleteCooperationRequest, ContentRoleResponse, CooperationPreferences, CooperationReportRequest, CooperationRequest, CreateCooperationRequest, DossierOptions, MissionAdminDetails, MissionTransitionRequest, MissionValidation, ReleaseNotification
@@ -160,6 +160,7 @@ export class Api {
   replay = (missionId: string) => call<CaseResponse>("/v1/cases/replay", "POST", { mission_id: missionId } satisfies ReplayCaseRequest);
   catalogueStatus = () => call<CatalogueProgress>("/v1/cases/catalogue-status");
   load = (caseId: string) => call<CaseResponse>(`/v1/cases/${encodeURIComponent(caseId)}`);
+  caseAccounts = (caseId: string) => call<WitnessAccountsResponse>(`/v1/cases/${encodeURIComponent(caseId)}/accounts`);
   createGroup = (name: string, capacity?: number) => call<{ group_id: string }>("/v1/groups", "POST", capacity ? { name, capacity } : { name });
   group = (id: string) => call<PlayerGroup>(`/v1/groups/${encodeURIComponent(id)}`);
   invite = (groupId: string, username: string) => call<{ invitation_id: string }>(`/v1/groups/${encodeURIComponent(groupId)}/invitations`, "POST", { username });

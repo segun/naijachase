@@ -298,8 +298,15 @@
           <ul class="t-grid">
             {#each app.catalog as a}
               <li class:earned={earned.has(a.id)}>
-                <span class="t-medal" aria-hidden="true"><Icon name={earned.has(a.id) ? "trophy" : "lock"} /></span>
-                <div><strong>{a.title}</strong><span>{a.description}</span>{#if earned.has(a.id)}<small>Earned {date(earned.get(a.id)!)}</small>{:else}<small>Locked</small>{/if}</div>
+                {#if earned.has(a.id)}
+                  <button class="t-achievement-share" type="button" aria-label={`Share ${a.title} achievement`} onclick={() => app.openAchievementShare(a.id, earned.get(a.id)!)}>
+                    <span class="t-medal" aria-hidden="true"><Icon name="trophy" /></span>
+                    <div><strong>{a.title}</strong><span>{a.description}</span><small>Earned {date(earned.get(a.id)!)} · Share</small></div>
+                  </button>
+                {:else}
+                  <span class="t-medal" aria-hidden="true"><Icon name="lock" /></span>
+                  <div><strong>{a.title}</strong><span>{a.description}</span><small>Locked</small></div>
+                {/if}
               </li>
             {/each}
           </ul>

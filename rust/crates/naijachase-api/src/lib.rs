@@ -1,4 +1,5 @@
 mod email_templates;
+mod product_analytics;
 use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier, password_hash::SaltString};
 use axum::{
     BoxError, Json, Router,
@@ -17,6 +18,7 @@ use naijachase_storage::{
     CatalogueProgress, EmailMessage, MissionValidation, MysqlStore, PlayerAccount, PlayerSession,
     ProgressionSummary, ReleaseNotification, StorageError,
 };
+pub use product_analytics::analytics_retention_loop;
 use rand::RngCore;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
@@ -717,7 +719,7 @@ impl From<StorageError> for ApiError {
             StorageError::DuplicateAccount => Self::new(
                 StatusCode::CONFLICT,
                 "account_exists",
-                "email or username is already registered",
+                "email address or Investigator Name is already registered",
             ),
             StorageError::MissionAlreadyCompleted => Self::new(
                 StatusCode::CONFLICT,
@@ -1388,6 +1390,10 @@ pub fn router(state: Arc<AppState>) -> Router {
         .concurrency_limit(state.config.max_concurrent_requests)
         .timeout(state.config.request_timeout);
     let application = Router::new()
+        .route(
+            "/v1/telemetry/usage",
+            post(product_analytics::record).delete(product_analytics::forget),
+        )
         .route("/v1/telemetry/browser-errors", post(browser_error))
         .route("/v1/telemetry/performance", post(browser_performance))
         .route("/v1/auth/register", post(register))
@@ -1528,6 +1534,7 @@ pub fn router(state: Arc<AppState>) -> Router {
             post(admin_transition_mission),
         )
         .route("/v1/cases/{case_id}", get(get_case))
+        .route("/v1/cases/{case_id}/accounts", get(case_accounts))
         .route("/v1/cases/{case_id}/abandon", post(abandon_case))
         .route(
             "/v1/cases/{case_id}/transport-quotes",
@@ -1876,15 +1883,8 @@ async fn register(
     if request.password.len() < 12 || request.password.len() > 128 {
         return Err(bad_request("password must be 12 to 128 characters"));
     }
-    if username.len() < 3
-        || username.len() > 32
-        || !username
-            .bytes()
-            .all(|b| b.is_ascii_alphanumeric() || b == b'_' || b == b'-')
-    {
-        return Err(bad_request(
-            "username must be 3 to 32 letters, numbers, hyphens, or underscores",
-        ));
+    if let Some(problem) = investigator_name_problem(&username) {
+        return Err(bad_request(problem));
     }
     if !NIGERIAN_JURISDICTIONS.contains(&request.home_base.as_str()) {
         return Err(bad_request("choose a valid home base"));
@@ -1924,6 +1924,21 @@ async fn register(
         StatusCode::CREATED,
         Json(serde_json::json!({"message":"Account created. Confirmation email has been queued."})),
     ))
+}
+
+fn investigator_name_problem(name: &str) -> Option<&'static str> {
+    if !(3..=32).contains(&name.len()) {
+        return Some("Investigator Name must be between 3 and 32 characters.");
+    }
+    if !name
+        .bytes()
+        .all(|byte| byte.is_ascii_alphanumeric() || byte == b'_' || byte == b'-')
+    {
+        return Some(
+            "Investigator Name can contain only letters, numbers, hyphens (-), and underscores (_). Do not use spaces or @.",
+        );
+    }
+    None
 }
 
 async fn resend_confirmation(
@@ -3051,8 +3066,8 @@ async fn cancel_weekly_challenge(
     Ok(Json(serde_json::json!({"cancelled":true})))
 }
 
-async fn achievement_catalog() -> Json<serde_json::Value> {
-    Json(serde_json::json!({"achievements":[
+fn achievement_catalog_value() -> serde_json::Value {
+    serde_json::json!({"achievements":[
         {"id":"first_case","title":"First Case","description":"Solve your first case."},
         {"id":"five_cases","title":"Seasoned Investigator","description":"Solve five cases."},
         {"id":"swift_investigator","title":"Against the Clock","description":"Solve a case with two days remaining."},
@@ -3065,8 +3080,14 @@ async fn achievement_catalog() -> Json<serde_json::Value> {
         {"id":"rank_inspector","title":"Inspector","description":"Earn the Inspector rank."},
         {"id":"rank_senior_inspector","title":"Senior Inspector","description":"Earn the Senior Inspector rank."},
         {"id":"rank_chief_inspector","title":"Chief Inspector","description":"Earn the Chief Inspector rank."},
-        {"id":"master_detective","title":"Master Detective","description":"Reach Master Detective rank."}
-    ]}))
+        {"id":"master_detective","title":"Master Detective","description":"Reach Master Detective rank."},
+        {"id":"demoted","title":"Demoted","description":"Receive a rank demotion from a disciplinary panel."},
+        {"id":"suspended","title":"Suspended","description":"Receive a 24-hour mission suspension from a disciplinary panel."}
+    ]})
+}
+
+async fn achievement_catalog() -> Json<serde_json::Value> {
+    Json(achievement_catalog_value())
 }
 
 async fn send_email(
@@ -3578,6 +3599,21 @@ async fn get_case(
         state: public_game_state(&game, &state.catalogue)?,
         events: vec![],
     }))
+}
+
+async fn case_accounts(
+    State(state): State<Arc<AppState>>,
+    Path(case_id): Path<String>,
+    headers: HeaderMap,
+) -> Result<Json<Vec<Event>>, ApiError> {
+    let player = authorize(&headers, &state).await?.player_id;
+    validate_id(&case_id, "case_id").map_err(bad_request)?;
+    let store = state.store.clone();
+    Ok(Json(
+        tokio::task::spawn_blocking(move || store.case_witness_accounts(&case_id, &player))
+            .await
+            .map_err(task_error)??,
+    ))
 }
 
 async fn abandon_case(
@@ -4659,6 +4695,24 @@ mod tests {
     use tower::ServiceExt;
 
     #[test]
+    fn investigator_name_validation_uses_player_facing_language() {
+        assert_eq!(investigator_name_problem("Agent_07"), None);
+        let spaced = investigator_name_problem("Agent Seven").unwrap();
+        assert!(spaced.contains("Investigator Name"));
+        assert!(spaced.contains("spaces"));
+        assert!(
+            investigator_name_problem("agent@example")
+                .unwrap()
+                .contains('@')
+        );
+        assert!(
+            investigator_name_problem("ab")
+                .unwrap()
+                .contains("3 and 32")
+        );
+    }
+
+    #[test]
     fn request_ids_accept_safe_proxy_values_and_replace_untrusted_values() {
         let mut headers = HeaderMap::new();
         headers.insert("x-request-id", HeaderValue::from_static("0123456789abcdef"));
@@ -5711,6 +5765,7 @@ mod tests {
             "/v1/cases/{case_id}/assistant/routes",
             "/v1/cases/{case_id}/pressure",
             "/v1/cases/{case_id}/pressure-attempts",
+            "/v1/cases/{case_id}/accounts",
             "/v1/economy/bribe-tokens",
             "/v1/economy/bribe-tokens/ledger",
             "/v1/discipline",
@@ -5777,5 +5832,18 @@ mod tests {
         let mut unknown_kind = valid;
         unknown_kind.insert("kind".into(), serde_json::json!("arbitrary"));
         assert!(!valid_performance_event(&unknown_kind));
+    }
+
+    #[test]
+    fn achievement_catalog_includes_disciplinary_outcomes_once() {
+        let value = achievement_catalog_value();
+        let ids = value["achievements"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|item| item["id"].as_str().unwrap())
+            .collect::<Vec<_>>();
+        assert_eq!(ids.iter().filter(|id| **id == "demoted").count(), 1);
+        assert_eq!(ids.iter().filter(|id| **id == "suspended").count(), 1);
     }
 }
