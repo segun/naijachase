@@ -15,3 +15,12 @@
 .jp-fill { display: block; height: 100%; border-radius: inherit; background: var(--gold, #f2c14e); transition: width 1s linear; }
 .jp-marker { position: absolute; top: 50%; width: 1.1rem; height: 1.1rem; border-radius: 50%; background: #fff; border: 3px solid var(--gold, #f2c14e); transform: translate(-50%, -50%); transition: left 1s linear; }
 @media (max-width: 480px) { .jp-figures { flex-direction: column; gap: .25rem; } }
+
+@media (max-width: 960px) and (orientation: portrait) {
+  .room.journey { background: #081d17; }
+  .room.journey > .room-canvas { top: max(calc(4.5rem + env(safe-area-inset-top)), 15dvh); height: min(55%, 62.5vw); }
+  .room.journey > .witness-fade { top: max(calc(4.5rem + env(safe-area-inset-top)), 15dvh); height: min(55%, 62.5vw); bottom: auto; }
+  .room.journey .room-skip { top: max(.55rem, env(safe-area-inset-top)); left: max(1rem, env(safe-area-inset-left)); }
+  .room.journey .journey-progress { bottom: max(1.5rem, env(safe-area-inset-bottom)); font-size: 1rem; background: #123428; }
+  .room.journey .journey-flat { padding-bottom: 12rem; }
+}

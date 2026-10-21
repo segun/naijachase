@@ -326,3 +326,56 @@ html[data-mode="weekly"] .room.flat .glass { box-shadow: 0 0 0 1.8vmin #c9bfe0, 
 .t-transit { display: grid; gap: .6em; padding: 1em 1.2em; border: 1px dashed var(--amber); background: var(--p-faint); }
 .t-transit strong { color: var(--amber); font-size: 1.3em; letter-spacing: .08em; text-transform: uppercase; }
 .t-transit .t-opt { width: fit-content; }
+
+/* Phone/tablet play is a readable app surface, not a miniature CRT. */
+@media (max-width: 960px) {
+  .room .glass:not(.dock):not(.paper) { inset: 0; width: 100%; height: 100%; aspect-ratio: auto; transform: none; border-radius: 0; box-shadow: none; }
+  .room .crt-screen { --p: #f6f1e1; --p-dim: #b7cfc2; --p-faint: #123a2d; --amber: #ffe39a; font: 1rem/1.5 var(--body); letter-spacing: 0; text-shadow: none; background: #081d17; }
+  .room .crt-fx, .room .crt-screen.on::after, .room .crt-screen kbd { display: none; }
+  .room .crt-screen.on .t-content { animation: none; opacity: 1; }
+  .room .t-content { padding: calc(4rem + env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) max(.75rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left)); gap: .75rem; }
+  .room .t-body { display: block; min-width: 0; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; touch-action: pan-y; -webkit-overflow-scrolling: touch; }
+  .room .t-main { display: grid; min-height: auto; overflow: visible; padding: 0 0 1rem; gap: 1rem; }
+  .room .t-side { overflow: visible; margin-bottom: .75rem; }
+  .room .t-card, .room .t-map, .room .t-clock { display: none; }
+  .room .t-bar { min-height: 2rem; font-size: .875rem; border: 0; padding: 0; }
+  .room .t-title small { display: none; }
+  .room .crt-screen h1, .room .crt-screen h2 { letter-spacing: 0; text-transform: none; text-shadow: none; }
+  .room .t-greet, .room .t-file .t-greet { font-size: 1.5rem; line-height: 1.25; }
+  .room .t-opt { min-height: 48px; border-radius: 12px; padding: .75rem; text-transform: none; letter-spacing: 0; text-shadow: none; box-shadow: none; }
+  .room .t-opt .t-label { white-space: normal; overflow: visible; }
+  .room .t-opt small { font-size: .875rem; opacity: 1; }
+  .room .t-hot { background: #ffe39a; color: #18251d; animation: none; }
+  .room .t-alert { animation: none; flex-wrap: wrap; text-transform: none; }
+  .room .t-pair, .room .t-career, .room .t-list, .room .t-lead-grid { grid-template-columns: minmax(0, 1fr); }
+  .room .t-lead { grid-template-columns: 4rem minmax(0, 1fr); grid-template-rows: auto auto; gap: .2rem .8rem; align-items: center; }
+  .room .t-lead .t-art { grid-row: 1 / 3; width: 4rem; border-radius: 8px; }
+  .room .t-lead .t-label, .room .t-lead .t-fare { grid-column: 2; }
+  .room .t-fare { font-size: .875rem; text-transform: none; }
+  .room .t-lead.seen { opacity: 1; background: #0a251c; }
+  .room .t-dossier { font-size: 1rem; line-height: 1.55; padding: 1rem; border-radius: 12px; gap: .8rem; }
+  .room .t-dossier div { grid-template-columns: 1fr; gap: .15rem; }
+  .room .t-dossier dt { font-size: .8rem; letter-spacing: .06em; }
+  .room .t-dossier dd { font-weight: 500; color: var(--p); }
+  .room .t-rank { grid-template-columns: auto minmax(0, 1fr); border-radius: 12px; text-shadow: none; }
+  .room .t-rank-text strong { font-size: 1.3rem; text-transform: none; }
+  .room .t-stats { grid-column: 1 / -1; justify-content: space-between; gap: .5rem; }
+  .room .t-stats dd { font-size: 1.1rem; }
+  .room .t-status[aria-hidden] { display: none; }
+  .room .t-content:not(.t-case-content) { grid-template-rows: auto minmax(0, 1fr); }
+  .room .glass.dock { max-height: calc(100dvh - 4.5rem - env(safe-area-inset-top)); overflow-y: auto; overscroll-behavior: contain; }
+  .room .garage { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
+  .room .garage-options { grid-template-columns: 1fr; }
+  .room .ride { grid-template-columns: 3rem minmax(0, 1fr); gap: .3rem .75rem; }
+  .room .ride-art { grid-row: 1 / 4; width: 3rem; }
+  .room .ride-name, .room .ride-note, .room .ride-figures, .room .ride-warn, .room .ride-go { grid-column: 2; }
+  .room .ride-note { display: block; }
+  .room .room-skip { min-height: 44px; }
+}
+
+@media (max-width: 960px) and (orientation: portrait) {
+  .room[data-surface="crt"] > .room-canvas { top: max(calc(4.5rem + env(safe-area-inset-top)), 15dvh); height: min(55%, 62.5vw); }
+  .room[data-surface="crt"] .room-look { bottom: max(1.5rem, env(safe-area-inset-bottom)); background: #123428; }
+  .room[data-surface="dock"] > .room-canvas { top: calc(4rem + env(safe-area-inset-top)); height: min(35%, 62.5vw); }
+  .room[data-surface="dock"] .glass.dock { max-height: 55%; }
+}

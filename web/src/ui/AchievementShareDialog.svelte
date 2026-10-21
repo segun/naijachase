@@ -3,6 +3,7 @@
   import { achievementCardFile, achievementSharePayload, SHARE_NETWORKS, socialShareUrl, type ShareNetwork } from "../domain/achievement-share.ts";
   import MoveDialog from "../screens/case/MoveDialog.svelte";
   import Icon from "./Icon.svelte";
+  import { canPresentAchievement, resultsPresentation } from "./results-presentation.svelte.ts";
 
   let { app }: { app: AppController } = $props();
   const notice = $derived(app.achievementShare!);
@@ -57,6 +58,7 @@
   }
 </script>
 
+{#if canPresentAchievement(app.screen, Boolean(app.game?.state.outcome), app.caseId, resultsPresentation.caseId)}
 <MoveDialog title={notice.newlyEarned ? "Achievement unlocked" : "Share achievement"} subtitle={notice.newlyEarned ? "Your career file has been updated." : "Share this achievement again whenever you like."} onclose={() => app.dismissAchievementShare()}>
   <div class="achievement-share-card" aria-label="Achievement share card preview">
     <div><span>Naija Chase</span><small>Achievement unlocked</small></div>
@@ -85,6 +87,7 @@
   {#if status}<p class="muted" role="status">{status}</p>{/if}
   <button class="btn btn-ghost" type="button" onclick={() => app.dismissAchievementShare()}>Close</button>
 </MoveDialog>
+{/if}
 
 <style>
   .achievement-share-card { display: grid; grid-template-columns: 1fr auto; gap: .55rem 1rem; padding: 1.15rem; border: 2px solid var(--green); border-radius: 14px; background: linear-gradient(145deg, #061c17, #103d31); color: #fff8df; box-shadow: inset 0 0 2rem rgb(61 230 161 / .08); }

@@ -16,6 +16,8 @@
   import HireAssistant from "../../screens/case/HireAssistant.svelte";
   import Icon from "../../ui/Icon.svelte";
   import LeadGrid from "./LeadGrid.svelte";
+  import { caseGuide } from "../../domain/case-guide.ts";
+  import { caseHints } from "../../ui/case-hints.svelte.ts";
   import "../../styles/case-terminal.css";
 
   let { app, awake = true, leave = async () => {} }: { app: AppController; awake?: boolean; leave?: () => Promise<void> } = $props();
@@ -31,6 +33,7 @@
   const waiting = $derived(app.coop.requests.filter(r => coopActions(r, app.player?.username ?? "").length).length);
 
   let menuOpen = $state(false);
+  let menuDialog = $state<HTMLDialogElement>();
   let abandonOpen = $state(false);
   let abandonDialog = $state<HTMLDialogElement>();
   let leaving = $state("");
@@ -53,9 +56,9 @@
 
   type Item = { screen: Screen; label: string; icon: string; key: string; count?: string };
   const items = $derived<Item[]>([
-    { screen: "investigate", label: "Local leads", icon: "search", key: "L", count: `${done.length}/${venues.length || "…"}` },
-    { screen: "notebook", label: "Notebook", icon: "notebook", key: "B", count: String(app.notes.length) },
-    { screen: "dossier", label: "Dossier", icon: "id", key: "D", count: `${dossierCount(gs.dossier)}/8` },
+    { screen: "investigate", label: "Investigate", icon: "search", key: "L", count: `${done.length}/${venues.length || "…"}` },
+    { screen: "notebook", label: "Witness accounts", icon: "notebook", key: "B", count: String(app.notes.length) },
+    { screen: "dossier", label: "Suspect profile", icon: "id", key: "D", count: `${dossierCount(gs.dossier)}/8` },
     { screen: "travel", label: "Travel", icon: "plane", key: "T" },
     { screen: "warrant", label: "Warrant", icon: "warrant", key: "W" }
   ]);
@@ -74,6 +77,33 @@
   ];
   const menu = $derived(weekly ? weeklyMenu : ordinaryMenu);
   const title = $derived(items.find(i => i.screen === app.screen)?.label ?? "Case");
+  const guide = $derived(caseGuide(gs, app.screen, Boolean(transit)));
+  const arrestStage = $derived(gs.stage >= TOTAL_STOPS - 1 && gs.trail_status === "hot");
+  const cluesOpen = $derived(app.screen === "notebook" || app.screen === "dossier");
+  const raiding = $derived(app.screen === "warrant" && Boolean(gs.warrant_suspect));
+  const panelKey = $derived(`${app.screen}:${raiding ? gs.warrant_suspect : ""}`);
+  const mainItems = $derived<(Item & { hint: string; active: boolean; disabled?: boolean })[]>([
+    { screen: "investigate", label: "Investigate", icon: "search", key: "L", hint: `${done.length}/${venues.length || "…"} witnesses questioned`, active: app.screen === "investigate" },
+    { screen: "notebook", label: "Clues", icon: "notebook", key: "B", hint: "Accounts & suspect profile", active: cluesOpen },
+    { screen: arrestStage ? "warrant" : "travel", label: arrestStage ? "Catch suspect" : "Travel", icon: arrestStage ? "warrant" : "plane", key: arrestStage ? "W" : "T", hint: arrestStage ? "Warrant & hideouts" : "Choose your next destination", active: app.screen === "travel" || app.screen === "warrant", disabled: Boolean(transit) }
+  ]);
+
+  // The terminal scrolls inside the room, not the window. Start each tool at its heading.
+  $effect(() => {
+    const panel = panelKey;
+    if (!root || !awake) return;
+    root.querySelector(".t-body")?.scrollTo({ top: 0 });
+    root.querySelector(".t-main")?.scrollTo({ top: 0 });
+  });
+
+  // A modal lives in the browser's top layer, outside the terminal's scroll/clipping.
+  $effect(() => {
+    const dialog = menuDialog;
+    if (!menuOpen || !dialog) return;
+    const opener = document.activeElement as HTMLElement | null;
+    if (!dialog.open) dialog.showModal();
+    return () => { if (dialog.open) dialog.close(); opener?.focus?.({ preventScroll: true }); };
+  });
 
   $effect(() => {
     const dialog = abandonDialog;
@@ -92,14 +122,21 @@
   // Hand keyboard focus to the first action once the screen wakes, and again whenever the panel changes.
   let focused = "";
   $effect(() => {
-    const screen = app.screen;
-    if (!awake || !root || focused === screen) return;
-    focused = screen;
-    queueMicrotask(() => root?.querySelector<HTMLElement>("[data-primary], .t-embed input, .t-embed button")?.focus({ preventScroll: true }));
+    const panel = panelKey;
+    if (!awake || !root || focused === panel) return;
+    focused = panel;
+    queueMicrotask(() => root?.querySelector<HTMLElement>(raiding ? "[data-case-heading]" : caseHints.visible ? ".case-guide h2" : ".t-main")?.focus({ preventScroll: true }));
   });
+
+  function toggleHints() {
+    caseHints.setVisible(!caseHints.visible);
+    menuOpen = false;
+    queueMicrotask(() => root?.querySelector<HTMLElement>(raiding ? "[data-case-heading]" : caseHints.visible ? ".case-guide h2" : ".t-main")?.focus({ preventScroll: true }));
+  }
 
   function open(screen: Screen) {
     menuOpen = false;
+    notebookFocus = null;
     if (!leaving) app.go(screen);
   }
 
@@ -149,10 +186,11 @@
   {/if}
 {/snippet}
 
-<div class="crt-screen" class:on={awake} bind:this={root} aria-label="Agency terminal: case" role="region">
+<div class="crt-screen office-terminal" class:on={awake} bind:this={root} aria-label="Agency terminal: case" role="region">
   <div class="t-content t-case-content">
     <div class="t-top">
       <header class="t-bar">
+        <button class="mobile-case-menu" type="button" aria-expanded={menuOpen} aria-haspopup="dialog" aria-controls="case-menu-dialog" onclick={() => (menuOpen = !menuOpen)}>More</button>
         <span class="t-title"><Icon name="pin" /> NAIJA CHASE <small>// {weekly ? "WEEKLY CHALLENGE" : app.isReplay ? "REPLAY · NO POINTS" : "CASE FILE"}</small>{#if weekly}<span class="t-weekly-tag">First catch wins</span>{/if}</span>
         <span class="t-clock" aria-label="Local time">{day} · {clock}</span>
       </header>
@@ -165,50 +203,74 @@
 
     <div class="t-body">
       <nav class="t-side" aria-label="Case tools">
-        <ul class="t-list">
-          {#each items as item}
+        <ul class="t-list desktop-case-tools">
+          {#each mainItems as item}
             <li>
-              <button class="t-opt" class:active={app.screen === item.screen} type="button" data-nav aria-current={app.screen === item.screen ? "page" : undefined} disabled={Boolean(leaving)} onclick={() => open(item.screen)}>
-                <Icon name={item.icon} /><span class="t-label">{item.label}</span>{#if item.count}<span class="t-count">{item.count}</span>{/if}<kbd>{item.key}</kbd>
+              <button class="t-opt" class:active={item.active} type="button" data-nav aria-current={item.active ? "page" : undefined} disabled={Boolean(leaving) || item.disabled} onclick={() => open(item.screen)}>
+                <Icon name={item.icon} /><span class="t-label">{item.label}<small>{item.hint}</small></span><kbd>{item.key}</kbd>
               </button>
             </li>
           {/each}
         </ul>
-        <button class="t-opt t-menu" type="button" data-nav aria-expanded={menuOpen} aria-controls="t-menu-list" onclick={() => (menuOpen = !menuOpen)}>
-          <span class="t-glyph" aria-hidden="true">{menuOpen ? "▾" : "▸"}</span><span class="t-label">Menu</span><kbd>M</kbd>
+        <button class="t-opt t-menu desktop-case-tools" type="button" data-nav aria-expanded={menuOpen} aria-haspopup="dialog" aria-controls="case-menu-dialog" onclick={() => (menuOpen = !menuOpen)}>
+          <span class="t-glyph" aria-hidden="true">{menuOpen ? "▾" : "▸"}</span><span class="t-label">More</span><kbd>M</kbd>
         </button>
-        {#if menuOpen}
-          <ul id="t-menu-list" class="t-list">
-            {#each menu as item}
-              {@const n = item.count?.() ?? 0}
-              <li><button class="t-opt" type="button" data-nav onclick={() => open(item.screen)}><Icon name={item.icon} /><span class="t-label">{item.label}</span>{#if n}<span class="t-count">{n}</span>{/if}</button></li>
-            {/each}
-            {#if app.game?.attempt_kind === "ordinary" && app.game.state.outcome === null}
-              <li><button class="t-opt t-danger" type="button" data-nav disabled={app.busy || Boolean(leaving)} onclick={() => (abandonOpen = true)}><Icon name="logout" /><span class="t-label">Abandon case</span></button></li>
-            {/if}
-            <li><button class="t-opt t-danger" type="button" data-nav disabled={app.busy} onclick={() => app.logout()}><Icon name="logout" /><span class="t-label">Log out</span></button></li>
-          </ul>
-        {/if}
+
       </nav>
 
-      <main class="t-main" id="terminal-main" aria-label={title}>
+      <main class="t-main" id="terminal-main" aria-label={title} tabindex="-1">
+        {#if app.screen === "investigate" && !weekly}
+          <HireAssistant {app} disabled={Boolean(leaving)} />
+        {/if}
+        {#if caseHints.visible && !raiding}
+        <section class="case-guide" aria-label="What to do next">
+          <div class="guide-heading">
+            <span class="guide-label">{weekly ? "Weekly case" : app.isReplay ? "Replay" : "Your next step"} · Stop {Math.min(gs.stage + 1, TOTAL_STOPS)}/{TOTAL_STOPS}</span>
+            <button class="guide-hide" type="button" aria-label="Hide next-step hints. Show them again from More." onclick={toggleHints}>Hide hints</button>
+          </div>
+          <h2 tabindex="-1">{guide.title}</h2>
+          <p>{guide.instruction}</p>
+          {#if guide.action && guide.action.screen !== app.screen}
+            <button class="btn btn-primary" type="button" disabled={app.busy || Boolean(leaving)} onclick={() => guide.action && open(guide.action.screen)}>{guide.action.label}<Icon name="arrow" /></button>
+          {/if}
+        </section>
+        {/if}
+        {#if cluesOpen}
+          <nav class="case-clue-tabs" aria-label="Clue tools">
+            <button type="button" aria-current={app.screen === "notebook" ? "page" : undefined} onclick={() => open("notebook")}>Witness accounts</button>
+            <button type="button" aria-current={app.screen === "dossier" ? "page" : undefined} onclick={() => open("dossier")}>Suspect profile · {dossierCount(gs.dossier)}/8</button>
+          </nav>
+        {/if}
         {#if app.screen === "investigate"}
           <section class="t-leads" aria-labelledby="leads-title">
-            <h1 class="t-greet" id="leads-title">Local leads {#if !weekly}<HireAssistant {app} />{/if}</h1>
+            <h1 class="t-greet" id="leads-title">Question witnesses</h1>
             {#if transit}{@render travelling()}{:else}
             <LeadGrid leads={venues} closedUntil={app.isWeekly ? q => opensAt(app.game?.state.elapsed ?? 0, q) : undefined} loaded={app.quotesLoaded} {leaving} questioned={done} onpick={pick} />
             {/if}
 
-            {#if gs.assistant_hired}
-              <p class="t-line t-hint">Your assistant is working on this case.</p>
+            {#if !weekly}
+              <details class="case-extra-tools">
+                <summary>Need help? More investigation tools</summary>
+                <div class="case-help-guide">
+                  <h2>How to solve this case</h2>
+                  <ol>
+                    <li>Question witnesses at the places listed above.</li>
+                    <li>Read their saved accounts in Clues. Use place clues to choose your next state in Travel.</li>
+                    <li>Record descriptions of the thief in the suspect profile. You need all eight details.</li>
+                    <li>At the final stop, question the witnesses, match your profile to a suspect, then request a warrant and search the hideouts.</li>
+                  </ol>
+                  <p><strong>Right now: {guide.title}.</strong> {guide.instruction}</p>
+                  {#if guide.action && guide.action.screen !== app.screen}
+                    <button class="t-opt" type="button" disabled={app.busy || Boolean(leaving)} onclick={() => guide.action && open(guide.action.screen)}>{guide.action.label}<Icon name="arrow" /></button>
+                  {/if}
+                </div>
+                <Pressure {app} {venues} questioned={done} />
+                {#if cooperationAvailable(app.coop.prefs) && app.coop.prefs?.enabled && app.game?.attempt_kind === "ordinary"}
+                  <div class="t-embed t-inline"><AskForHelp {app} /></div>
+                {/if}
+              </details>
             {/if}
-
-            {#if !weekly}<Pressure {app} {venues} questioned={done} />{/if}
-
-            {#if cooperationAvailable(app.coop.prefs) && app.coop.prefs?.enabled && app.game?.attempt_kind === "ordinary"}
-              <div class="t-embed t-inline"><AskForHelp {app} /></div>
-            {/if}
-            <p class="t-line t-hint">{done.length === 0 ? "Start by questioning someone. Their account is saved to your notebook." : "Compare what you've heard. When a destination stands out, open Travel."}</p>
+            {#if caseHints.visible}<p class="t-line t-hint">{done.length === 0 ? "Start by questioning someone. Their account is saved to your notebook." : "Compare what you've heard. When a destination stands out, open Travel."}</p>{/if}
           </section>
         {:else}
           <div class="t-embed">
@@ -230,7 +292,38 @@
       {#if !weekly}<span class="t-fig"><span class="t-tag">Bribe tokens</span> <strong aria-label="{app.tokenBalance ?? 'unknown'} earned bribe tokens">{app.tokenBalance ?? "…"}</strong></span>{/if}
       <span class="t-blink" aria-hidden="true">● online</span>
     </footer>
+    <nav class="mobile-case-nav" aria-label="Main case navigation">
+      <button type="button" aria-current={app.screen === "investigate" ? "page" : undefined} disabled={Boolean(leaving)} onclick={() => open("investigate")}><Icon name="search" /><span>Investigate</span></button>
+      <button type="button" aria-current={cluesOpen ? "page" : undefined} disabled={Boolean(leaving)} onclick={() => open("notebook")}><Icon name="notebook" /><span>Clues</span></button>
+      <button type="button" aria-current={app.screen === "travel" || app.screen === "warrant" ? "page" : undefined} disabled={Boolean(leaving) || Boolean(transit)} onclick={() => open(arrestStage ? "warrant" : "travel")}><Icon name={arrestStage ? "warrant" : "plane"} /><span>{arrestStage ? "Catch suspect" : "Travel"}</span></button>
+    </nav>
   </div>
+  {#if menuOpen}
+    <dialog id="case-menu-dialog" class="case-menu-dialog" bind:this={menuDialog} aria-labelledby="case-menu-title"
+      oncancel={e => { e.preventDefault(); menuOpen = false; }}
+      onclick={e => { if (e.target === menuDialog) menuOpen = false; }}>
+      <div class="case-menu-panel">
+        <header class="case-menu-heading">
+          <h2 id="case-menu-title">More options</h2>
+          <button class="t-opt case-menu-close" type="button" onclick={() => (menuOpen = false)}>Close<Icon name="x" /></button>
+        </header>
+        <nav class="case-menu-items" aria-label="More case options">
+          <ul class="t-list">
+            <li><button class="t-opt" type="button" onclick={toggleHints}><Icon name="info" /><span class="t-label">{caseHints.visible ? "Hide next-step hints" : "Show next-step hints"}</span></button></li>
+            <li><button class="t-opt" type="button" onclick={() => open("warrant")}><Icon name="warrant" /><span class="t-label">Warrant &amp; hideouts</span></button></li>
+            {#each menu as item}
+              {@const n = item.count?.() ?? 0}
+              <li><button class="t-opt" type="button" data-nav onclick={() => open(item.screen)}><Icon name={item.icon} /><span class="t-label">{item.label}</span>{#if n}<span class="t-count">{n}</span>{/if}</button></li>
+            {/each}
+            {#if app.game?.attempt_kind === "ordinary" && app.game.state.outcome === null}
+              <li><button class="t-opt t-danger" type="button" data-nav disabled={app.busy || Boolean(leaving)} onclick={() => { menuOpen = false; abandonOpen = true; }}><Icon name="logout" /><span class="t-label">Abandon case</span></button></li>
+            {/if}
+            <li><button class="t-opt t-danger" type="button" data-nav disabled={app.busy} onclick={() => { menuOpen = false; app.logout(); }}><Icon name="logout" /><span class="t-label">Log out</span></button></li>
+          </ul>
+        </nav>
+      </div>
+    </dialog>
+  {/if}
   <div class="crt-fx" aria-hidden="true"></div>
 </div>
 

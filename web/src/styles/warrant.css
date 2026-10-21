@@ -18,6 +18,12 @@
 .compare { display: grid; gap: 1rem; }
 .confirm { display: grid; gap: .6rem; padding: 1rem; border-radius: 12px; border: 1px solid var(--gold); background: var(--bg); }
 .issued { display: grid; gap: .6rem; justify-items: start; }
+.hideout-heading { gap: .35rem; }
+.hideout-heading p { margin: 0; }
+.hideout-heading .warrant-confirmed { color: var(--gold-soft); font-size: .9rem; }
+.hideout-page .venue { padding: .75rem; }
+.hideout-page .venue-body strong { font-family: var(--body); }
+.hideout-page .venue.seen { opacity: .75; }
 .stamp-mark { display: inline-block; padding: .45rem 1rem; border: 4px double var(--gold); border-radius: 6px; color: var(--gold); font-family: var(--display); font-weight: 900; letter-spacing: .12em; text-transform: uppercase; animation: stamp .55s .15s cubic-bezier(.3, 1.4, .5, 1) both; transform: rotate(-6deg); }
 
 /* The warrant screen lives inside the terminal's size container. Its route CSS

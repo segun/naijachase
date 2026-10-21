@@ -83,5 +83,5 @@
 {/if}
 {#if app.signedIn && !sceneOptions}<div class="music-dock" class:with-rail={rail} class:in-room={inRoom}><MusicToggle music={app.music} /></div>{/if}
 <!-- Optional mobile browser chrome belongs in its own chunk, outside the critical game shell. -->
-{#await import("./MobileAppControls.svelte") then { default: MobileAppControls }}<MobileAppControls />{/await}
+{#if !sceneOptions}{#await import("./MobileAppControls.svelte") then { default: MobileAppControls }}<MobileAppControls />{/await}{/if}
 <Toasts {app} />

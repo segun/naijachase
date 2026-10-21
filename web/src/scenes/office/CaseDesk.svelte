@@ -31,6 +31,8 @@
   let chars = $state(0);
   let leaving = $state("");
   const lines = $derived(app.game ? dossierLines(app.game) : []);
+  // Hiring updates the case receipt but must not restart this same briefing.
+  const briefingId = $derived(app.briefing && awake ? app.game?.case_id : undefined);
   const dossier = $derived(typedRows(lines, chars));
   const leads = $derived(groupQuotes(app.quotes, "local"));
 
@@ -82,7 +84,7 @@
   // Types the dossier out when a case is opened and then waits: the player reads at their own pace and chooses to continue.
   // Reduced motion shows it all at once.
   $effect(() => {
-    const id = app.briefing && awake ? app.game?.case_id : undefined;
+    const id = briefingId;
     if (!id) return;
     const total = untrack(() => totalChars(lines));
     untrack(() => { step = "typing"; chars = 0; leaving = ""; });
@@ -150,7 +152,7 @@
 
 <svelte:window onkeydown={keys} />
 
-<div class="crt-screen" class:on={awake} bind:this={root} aria-label="Agency terminal" role="region">
+<div class="crt-screen office-terminal" class:on={awake} bind:this={root} aria-label="Agency terminal" role="region">
   <div class="t-content">
     <header class="t-bar">
       <span class="t-title"><Icon name="pin" /> NAIJA CHASE <small>// AGENCY TERMINAL</small></span>
@@ -202,10 +204,11 @@
             </section>
           {:else}
             <section class="t-leads" aria-labelledby="leads-title">
-              <h1 class="t-greet" id="leads-title">Local leads{#if app.game && !app.isWeekly}<HireAssistant {app} />{/if}</h1>
+              <h1 class="t-greet" id="leads-title">Question a witness</h1>
               <p class="t-line">{app.game?.state.current_state}. Pick where to start asking: one witness here knows where the thief went next.</p>
+              {#if !app.isWeekly}<HireAssistant {app} disabled={Boolean(leaving)} />{/if}
               <LeadGrid {leads} closedUntil={app.isWeekly ? q => opensAt(app.game?.state.elapsed ?? 0, q) : undefined} loaded={app.quotesLoaded} {leaving} onpick={pick} />
-              <button class="t-opt t-small t-quiet" type="button" data-nav disabled={Boolean(leaving)} onclick={() => app.finishBriefing()}>Skip to the case <Icon name="arrow" /></button>
+              <button class="t-opt t-small t-quiet" type="button" data-nav disabled={Boolean(leaving)} onclick={() => app.finishBriefing()}>Open case tools <Icon name="arrow" /></button>
             </section>
           {/if}
         {:else if view === "home"}
@@ -244,7 +247,7 @@
 
           <div class="t-actions">
             {#if app.caseId}
-              <button class="t-opt t-big" type="button" data-nav data-primary disabled={app.busy} onclick={() => app.resume()}>
+              <button class="t-opt t-big t-hot" type="button" data-nav data-primary disabled={app.busy} onclick={() => app.resume()}>
                 <Icon name="notebook" /><span class="t-label">{app.game?.attempt_kind === "replay" ? "Resume replay" : "Resume case"}<small>{app.game?.state.case_dossier.title ?? "Saved case file"} · pick up where you left off</small></span>
                 {#if app.busy}<span class="spinner"></span>{:else}<Icon name="arrow" />{/if}
               </button>
@@ -261,7 +264,7 @@
                 <Icon name="bell" /><span class="t-label">Notification settings<small>Choose how you hear about new cases and events</small></span><Icon name="arrow" />
               </button>
             {:else}
-              <button class="t-opt t-big t-hot" type="button" data-nav data-primary={app.caseId ? undefined : ""} disabled={app.busy || !app.canStartCase} onclick={() => app.openCase()}>
+              <button class="t-opt t-big" class:t-hot={!app.caseId} type="button" data-nav data-primary={app.caseId ? undefined : ""} disabled={app.busy || !app.canStartCase} onclick={() => app.openCase()}>
                 <Icon name="search" />
                 <span class="t-label">{app.busy ? `${app.busyLabel}…` : "Start new case"}<small>{!app.activityKnown ? "Refresh case status before starting a new case." : app.ordinaryCaseId ? "Resume or abandon your ongoing ordinary case first" : app.catalogue ? `${app.catalogue.completed.toLocaleString()} of ${app.catalogue.published.toLocaleString()} solved` : "The agency picks one you haven't solved"}</small></span>
                 {#if app.busy}<span class="spinner"></span>{:else}<kbd>N</kbd><Icon name="arrow" />{/if}

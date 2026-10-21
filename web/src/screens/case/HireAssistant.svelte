@@ -3,24 +3,30 @@
   import { money } from "../../domain/model.ts";
   import Icon from "../../ui/Icon.svelte";
 
-  let { app }: { app: AppController } = $props();
+  let { app, disabled = false }: { app: AppController; disabled?: boolean } = $props();
   const gs = $derived(app.game!.state);
   let dialog = $state<HTMLDialogElement>();
 
   async function hire() {
-    if (!gs.assistant_available || app.busy) return;
+    if (!gs.assistant_available || gs.assistant_hired || app.busy || disabled) return;
     if (await app.command({ type: "hire_assistant" }, "Assistant hired.", "Hiring assistant")) dialog?.close();
   }
 </script>
 
-{#if gs.assistant_available}
-  <sup class="assistant-info">
-    <button type="button" aria-label="Information about hiring an assistant" title="Hire an assistant" onclick={() => dialog?.showModal()}>
-      <Icon name="info" />
-    </button>
-  </sup>
+{#if gs.assistant_hired}
+  <p class="assistant-active"><Icon name="check" /> Assistant hired · route advice is available in Travel.</p>
+{:else if gs.assistant_available}
+  <button class="assistant-hire" type="button" aria-haspopup="dialog" disabled={app.busy || disabled} onclick={() => dialog?.showModal()}>
+    <Icon name="helper" />
+    <span class="assistant-hire-copy">
+      <strong>Hire an assistant</strong>
+      <span>Auto-file suspect details and narrow down travel choices.</span>
+      <small>{money(gs.assistant_cost)} · from this case’s budget</small>
+    </span>
+    <Icon name="arrow" />
+  </button>
 
-  <dialog class="move-dialog card assistant-dialog" bind:this={dialog} aria-labelledby="assistant-title" onclick={event => { if (event.target === dialog && !app.busy) dialog.close(); }}>
+  <dialog class="move-dialog card assistant-dialog" bind:this={dialog} aria-labelledby="assistant-title" oncancel={event => { if (app.busy) event.preventDefault(); }} onclick={event => { if (event.target === dialog && !app.busy) dialog.close(); }}>
     <div class="move-dialog-body assistant-body">
       <header class="assistant-head">
         <span class="assistant-badge" aria-hidden="true"><Icon name="info" /></span>
@@ -45,10 +51,15 @@
 {/if}
 
 <style>
-  .assistant-info { vertical-align: super; line-height: 0; margin-left: .25rem; }
-  .assistant-info button { display: inline-grid; place-items: center; width: 1.5rem; height: 1.5rem; padding: 0; border: 1px solid currentColor; border-radius: 50%; background: transparent; color: var(--amber, currentColor); cursor: pointer; }
-  .assistant-info button:hover, .assistant-info button:focus-visible { background: var(--amber, currentColor); color: #102018; outline-offset: 2px; }
-  .assistant-info :global(svg) { width: .9rem; height: .9rem; }
+  .assistant-hire { display: flex; align-items: center; gap: .75rem; width: 100%; min-height: 48px; padding: .85rem 1rem; border: 2px solid #ffe39a; border-radius: 12px; background: #ffe39a; color: #17271c; font: 1rem/1.4 var(--body); letter-spacing: normal; text-shadow: none; text-transform: none; text-align: left; cursor: pointer; }
+  .assistant-hire:hover:not(:disabled) { background: #fff1c5; }
+  .assistant-hire:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+  .assistant-hire:disabled { opacity: .6; cursor: default; }
+  .assistant-hire :global(svg) { width: 1.4rem; height: 1.4rem; flex-shrink: 0; }
+  .assistant-hire-copy { display: grid; gap: .2rem; flex: 1; min-width: 0; }
+  .assistant-hire-copy strong { font-size: 1.1rem; }
+  .assistant-hire-copy > span, .assistant-hire-copy small { font-size: .85rem; }
+  .assistant-active { display: flex; align-items: center; gap: .5rem; margin: 0; color: var(--p-dim, var(--muted)); font: .9rem/1.5 var(--body); text-shadow: none; letter-spacing: normal; }
   .assistant-dialog { font: 400 1rem/1.5 system-ui, sans-serif; letter-spacing: normal; text-transform: none; text-shadow: none; text-align: left; vertical-align: baseline; width: min(26rem, calc(100vw - 2rem)); border-radius: 12px; box-shadow: 0 20px 60px rgb(0 0 0 / .5); }
   .assistant-body { gap: 1rem; padding: 1.5rem; }
   .assistant-head { display: flex; align-items: center; gap: .75rem; }

@@ -48,6 +48,7 @@
       </button>
       {#if detailOpen}<div class="scene-options-detail" id={detailId}><DetailControl compact /></div>{/if}
       <MusicToggle {music} />
+      {#await import("./MobileAppControls.svelte") then { default: MobileAppControls }}<MobileAppControls inline />{/await}
     </nav>
   {/if}
 </div>

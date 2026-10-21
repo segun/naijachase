@@ -1,7 +1,7 @@
 <script lang="ts">
   import { untrack } from "svelte";
   import type { AppController } from "../../state/app.svelte";
-  import { FIELD_META, dossierCount } from "../../domain/model.ts";
+  import { FIELD_META, TOTAL_STOPS, dossierCount } from "../../domain/model.ts";
   import DossierOptionsStatus from "../../ui/DossierOptionsStatus.svelte";
   import Icon from "../../ui/Icon.svelte";
 
@@ -9,6 +9,7 @@
   const recorded = $derived(app.game!.state.dossier);
   let values = $state<Record<string, string>>(untrack(() => ({ ...app.game!.state.dossier })));
   const count = $derived(dossierCount(recorded));
+  const finalStop = $derived(app.game!.state.stage >= TOTAL_STOPS - 1 && app.game!.state.trail_status === "hot");
   const circumference = 2 * Math.PI * 34;
 
   async function save() {
@@ -31,9 +32,9 @@
     </svg>
     <div>
       <h2>{count === 8 ? "Profile complete" : `${8 - count} detail${8 - count === 1 ? "" : "s"} still unknown`}</h2>
-      <p class="muted">{count === 8 ? "Review your entries, then request a warrant." : "Check your notebook for descriptions you may have missed."}</p>
+      <p class="muted">{count === 8 ? finalStop ? "Question the witnesses here, then compare suspects for your warrant." : "Keep following the trail. You can request a warrant at the final stop." : "Check your notebook for descriptions you may have missed."}</p>
     </div>
-    {#if count === 8}<button class="btn btn-primary" type="button" onclick={() => app.go("warrant")}>Request warrant <Icon name="arrow" /></button>{/if}
+    {#if count === 8}<button class="btn btn-primary" type="button" onclick={() => app.go(finalStop ? "warrant" : "travel")}>{finalStop ? "Compare suspects" : "Follow the trail"} <Icon name="arrow" /></button>{/if}
   </div>
 
   <DossierOptionsStatus {app} />

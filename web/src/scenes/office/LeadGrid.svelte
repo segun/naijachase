@@ -36,7 +36,7 @@
       <span class="t-label">{lead.label}</span>
       <span class="t-fare">
         {#if leaving === lead.id}Heading out…
-        {:else if seen}<Icon name="check" /> Questioned
+        {:else if seen}<Icon name="check" /> Read saved clue
         {:else if shut}Closed · opens {reopens}
         {:else if best}{best.cost === 0 ? "Free" : money(best.cost)} · {duration(quoteMinutes(best))}
         {:else}Unavailable{/if}

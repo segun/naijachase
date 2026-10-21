@@ -121,7 +121,7 @@ test("continuing from an explored view zooms without snapping and still lands on
   }
 });
 
-test("every 3D office entry offers exploration and Continue, without changing archive behaviour", () => {
+test("ordinary 3D office entries offer exploration and Continue, without changing archive behaviour", () => {
   const view = read("scenes/office/Room.svelte"), stage = read("scenes/shared/Stage.svelte");
   assert.match(view, /exploreAt=\{T_ZOOM_START\}/);
   assert.match(stage, /!seen \|\| quick \|\| exploreAt !== undefined/);
@@ -149,7 +149,7 @@ test("Simple office opens the desk without animation or exploration and other ro
   assert.doesNotMatch(read("scenes/archive/ArchiveRoom.svelte"), /skipSimpleAnimation/);
   assert.doesNotMatch(read("scenes/garage/GarageRoom.svelte"), /skipSimpleAnimation/);
   assert.match(stage, /exploreAt !== undefined && !skipSimpleAnimation \? "look" : "desk"/);
-  assert.match(stage, /let continued = skipSimpleAnimation && !playIntro/);
+  assert.match(stage, /let continued = startAtDesk \|\| \(skipSimpleAnimation && !playIntro\)/);
   assert.match(stage, /skipSimpleAnimation && !wants3d\) \{ continued = true; lookX = 0; lookY = 0; finish\(\); return; \}/);
   assert.match(stage, /phase = "outro";\s*if \(skipSimpleAnimation && !wants3d\) return;/);
   assert.doesNotMatch(stage, /Look around is unavailable in Simple mode|Use Standard detail/);
@@ -307,7 +307,7 @@ test("opening a case shows the briefing on the desk; choosing a lead leaves thro
   assert.doesNotMatch(desk, /setTimeout\(\(\) => \{ step = "leads"/, "the briefing never moves on by itself: the player reads at their own pace");
   assert.match(desk, /step = "leads"; \}\}>/, "an explicit Continue button moves on");
   assert.match(desk, /Take your time/);
-  assert.match(desk, /Skip to the case/);
+  assert.match(desk, /Open case tools/);
   assert.match(desk, /<LeadGrid /, "the leads are the shared lead tiles");
   assert.match(read("scenes/office/LeadGrid.svelte"), /<VenueArt id=\{lead\.id\} \/>/);
   assert.match(desk, /groupQuotes\(app\.quotes, "local"\)/, "the leads are the server's local quotes");

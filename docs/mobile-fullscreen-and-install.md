@@ -12,7 +12,9 @@ space normally occupied by browser controls:
   iPad directs players to **Share → Add to Home Screen**; another iOS browser first
   directs them to Safari because iOS does not expose the install event there.
 
-The controls appear only on mobile-sized or coarse-pointer devices and disappear
+During case and scene play, these controls are inside **Game options** (the top-right
+menu), alongside sound and detail. Other screens retain the floating controls.
+They appear only on mobile-sized or coarse-pointer devices and disappear
 when the game is already running in installed `standalone` or `fullscreen` mode.
 They are offered in portrait and landscape. Browsers never receive an automatic
 fullscreen request: that is forbidden without a player gesture.

@@ -12,6 +12,23 @@ const active = () => {
   return app;
 };
 
+test("witness Continue opens the desk directly without changing the case, while completed cases open results", () => {
+  for (const outcome of [null, "escaped"]) {
+    const app = active();
+    app.game.state.outcome = outcome;
+    app.game.state.visited_venues = ["0|Lagos|market"];
+    app.notes = [{ stop: "Lagos", venue: "Market", message: "A saved clue." }];
+    app.witnessVisit = { venueId: "market", venueName: "Market", role: "Trader", message: "A saved clue.", arrival: "drive" };
+    const saved = JSON.stringify({ game: app.game, notes: app.notes });
+    app.leaveWitness();
+    assert.equal(app.screen, outcome ? "results" : "investigate");
+    assert.equal(app.directDeskEntry, outcome === null);
+    assert.equal(app.returning, false);
+    assert.equal(app.witnessVisit, null);
+    assert.equal(JSON.stringify({ game: app.game, notes: app.notes }), saved);
+  }
+});
+
 test("lost interview response recovers saved words with the questioned state", async () => {
   const app = active();
   const saved = caseFile("case-one", { state_version: 2 });

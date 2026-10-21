@@ -55,7 +55,7 @@ test("the case terminal shows where the player is, the case clock and funds, the
   assert.match(read("screens/case/Notebook.svelte"), /data-focused-note/);
 });
 
-test("the room picks the case terminal while a case is open, and plays the short return after a venue", () => {
+test("the room opens the case terminal directly after a witness and retains other office entries", () => {
   const view = read("scenes/office/Room.svelte"), stage = read("scenes/shared/Stage.svelte"), app = read("state/app.svelte.ts");
   assert.match(view, /\{#if inCase\}<CaseTerminal/);
   assert.match(view, /!app\.briefing && isCaseScreen\(app\.screen\)/, "the briefing is still the desk's");
@@ -64,7 +64,14 @@ test("the room picks the case terminal while a case is open, and plays the short
   assert.match(stage, /startSeconds: looking \? exploreAt : intro \?/, "exploration resumes at the seated pause");
   assert.match(stage, /quick \? introFrom : seen && exploreAt !== undefined \? exploreAt : 0/, "the first visit walks in; returns and repeat entries start seated");
   assert.match(stage, /detail\.resolved\.renderer === "3d" && \(!seen \|\| quick \|\| exploreAt !== undefined\)/, "the return plays even though the walk-in has already been seen");
-  assert.match(app, /leaveWitness\(\) \{[^}]*this\.returning = !this\.game\?\.state\.outcome/s, "only a case that goes on gets the return");
+  assert.match(view, /const startAtDesk = app\.directDeskEntry/);
+  assert.match(view, /<Stage[^>]*\{startAtDesk\}/);
+  assert.match(view, /onMount\(\(\) => \{[^}]*app\.directDeskEntry = false;/, "consume the entry flag without changing the captured Stage prop");
+  assert.match(stage, /const playIntro = !startAtDesk &&/, "direct entries cannot start the office intro");
+  assert.match(stage, /startAtDesk \? "desk" : playIntro/, "the desk is interactive immediately");
+  assert.match(stage, /let glass = \$state\(startAtDesk \? 1 :/, "the desk is visible immediately");
+  assert.match(stage, /let continued = startAtDesk \|\|/, "renderer failures and detail changes cannot reintroduce the exploration gate");
+  assert.match(app, /leaveWitness\(\) \{[^}]*this\.returning = false;/s);
 });
 
 test("the witness scene leaves by the same vehicle, and only when motion is allowed", () => {

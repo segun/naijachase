@@ -130,6 +130,8 @@ export class AppController {
   private pendingRaid: Omit<RaidVisit, "ending" | "finale"> | null = null;
   /** Set when the player has just come back from a venue: the office plays a short return (seated, then the zoom) instead of the long walk-in. */
   returning = $state(false);
+  /** Consume on the next office mount: witness Continue opens the desk immediately. */
+  directDeskEntry = false;
 
   /** Weekly challenge desk: while set, the case desk plays this attempt instead of the ordinary case. */
   weeklyId = $state<string | null>(null);
@@ -229,7 +231,7 @@ export class AppController {
     this.dossierLoad = undefined;
     this.dossierOptions = null; this.dossierOptionsLoading = false; this.dossierOptionsError = "";
     this.weeklyId = null; this.weeklyTransit = null; clearTimeout(this.weeklyTimer); this.weeklyAccounts = [];
-    this.player = null; this.game = null; this.caseId = ""; this.briefing = false; this.pendingLead = ""; this.lastWitness = null; this.witnessVisit = null; this.journey = null; this.raidVisit = null; this.pendingRaid = null; this.returning = false;
+    this.player = null; this.game = null; this.caseId = ""; this.briefing = false; this.pendingLead = ""; this.lastWitness = null; this.witnessVisit = null; this.journey = null; this.raidVisit = null; this.pendingRaid = null; this.returning = false; this.directDeskEntry = false;
     this.summary = null; this.archive = []; this.catalog = []; this.achievementShares = []; this.sessions = []; this.avatar = null; this.catalogueStatus = null; this.exhausted = false; this.quotes = []; this.ledger = []; this.notes = []; this.trail = []; this.rankAtStart = null;
     this.tokenBalance = null; this.tokenLedger = []; this.tokenLedgerLoaded = false; this.awards = []; this.jail = null; this.discipline = []; this.disciplineLoaded = false; this.panel = null; this.pressured = []; this.pressureNotice = null; this.pendingPressure.clear();
     sessionStorage.clear();
@@ -787,8 +789,8 @@ export class AppController {
   /** The witness scene is over (or was skipped): on to the investigation, where the account is in the notebook. */
   leaveWitness() {
     this.witnessVisit = null;
-    // The short office return is for a case that goes on; a finished case goes to its results instead.
-    this.returning = !this.game?.state.outcome;
+    this.returning = false;
+    this.directDeskEntry = Boolean(this.game && !this.game.state.outcome);
     this.go(this.game?.state.outcome ? "results" : "investigate");
   }
 
@@ -1075,7 +1077,7 @@ export class AppController {
     this.caseGeneration++;
     this.notesRequest++; this.notesLoading = false; this.notesError = "";
     this.game = null; this.caseId = ""; this.notes = []; this.trail = []; this.rankAtStart = null;
-    this.briefing = false; this.pendingLead = ""; this.lastWitness = null; this.witnessVisit = null; this.journey = null; this.raidVisit = null; this.pendingRaid = null; this.returning = false;
+    this.briefing = false; this.pendingLead = ""; this.lastWitness = null; this.witnessVisit = null; this.journey = null; this.raidVisit = null; this.pendingRaid = null; this.returning = false; this.directDeskEntry = false;
     this.quotes = []; this.quotesLoaded = false; this.ledger = []; this.awards = []; this.panel = null; this.pressured = []; this.pressureNotice = null; this.pendingPressure.clear();
     ["nc-case", "nc-notes", "nc-trail", "nc-rank"].forEach(k => sessionStorage.removeItem(k));
   }

@@ -35,7 +35,7 @@
 
 {#if witnesses.length}
   <section class="t-log t-pressure" aria-labelledby="pressure-title">
-    <h2 id="pressure-title">Press a witness <span class="t-tokens" aria-label="Bribe tokens">Tokens: <strong>{balance ?? "…"}</strong></span></h2>
+    <h2 id="pressure-title">Intimidate a witness <span class="t-tokens" aria-label="Bribe tokens">Bribe Tokens: <strong>{balance ?? "…"}</strong></span></h2>
     <ul class="pressure-list">
       {#each witnesses as venue (venue.id)}
         {@const used = app.wasPressured(venue.id)}
@@ -47,7 +47,7 @@
             {:else}
               {#each ["bribe", "intimidate"] as const as method}
                 <button class="t-opt t-small pressure-action" type="button" disabled={!enabled || (method === "bribe" && (balance === null || !canAfford(method, balance)))} onclick={() => (pending = { venue, method })}>
-                  <span>{method === "intimidate" ? "Press" : PRESSURE_RULES[method].label}</span>{#if method === "bribe"}<small>1 token</small>{/if}
+                  <span>{method === "intimidate" ? "Intimidate" : PRESSURE_RULES[method].label}</span>
                 </button>
               {/each}
             {/if}
@@ -60,14 +60,14 @@
 {/if}
 
 {#if pending}
-  <MoveDialog title={pending.method === "intimidate" ? "Press witness for more information" : "Bribe witness"} onclose={() => (pending = null)}>
+  <MoveDialog title={pending.method === "intimidate" ? "Intimidate witness for more information" : "Bribe witness"} onclose={() => (pending = null)}>
     <ul class="pressure-terms">
       {#each pressureWarnings(pending.method, balance ?? 0) as line}<li>{line}</li>{/each}
     </ul>
     <div class="row-actions">
       <button class="btn btn-ghost" type="button" onclick={() => (pending = null)}>Cancel</button>
       <button class="btn btn-danger" type="button" disabled={app.busy || (pending.method === "bribe" && (balance === null || !canAfford(pending.method, balance)))} onclick={confirm}>
-        <Icon name="alert" />{pending.method === "intimidate" ? "Press" : "Bribe"}
+        <Icon name="alert" />{pending.method === "intimidate" ? "Intimidate" : "Bribe"}
       </button>
     </div>
   </MoveDialog>

@@ -4,6 +4,17 @@ Read this before you add or change any animated scene in the web client (`web/sr
 
 The Automatic/Full/Standard/Simple control shows the selected button without a resolved-level or device-capability hint. Settings retains the option descriptions.
 
+## Mobile presentation
+
+At widths up to 960 px in portrait, office, garage, witness, journey and raid
+canvases use a bounded landscape-shaped viewing area. Witness/raid captions sit
+below the picture, with independent scrolling for long text. This is a layout
+change; timeline and renderer selection remain unchanged. See `mobile-case-ux.md`.
+Witness completion now opens the full saved account instead of automatically
+leaving the scene. Read full clue opens it early; Continue performs the guarded
+handoff once. Opening the account cancels renderer setup and disposes the scene.
+Keep this explicit reading step for both animated and flat presentations.
+
 ## The rule
 
 **Current policy (supersedes the legacy two-renderer guidance below):** login keeps its 2D chase. Non-login scenes should skip
@@ -136,6 +147,12 @@ These are browser viewport checks; physical iPhone/PWA confirmation is still nee
 An empty hideout plays the escape and returns to the warrant list, where that hideout is now disabled. The real hideout plays the catch
 when the case is solved; a wrong warrant or the deadline plays the escape with a closing caption, then the results screen.
 
+Achievement share prompts must stay queued throughout raid preparation and the
+scene, including when progression returns before `playRaid`. Only present them
+after the results component has mounted and painted. `results-presentation.svelte.ts`
+owns this gate and cancels pending readiness when Results unmounts. An empty
+hideout stays disabled at the bottom of the returned list, below unsearched choices.
+
 ## Looks: cheap upgrades, no artist
 
 The procedural 3D fallback is built in code. What keeps it from looking like building blocks:
@@ -180,7 +197,9 @@ hip translation to move a runner away from its timeline position. Its desktop-on
 The case office uses the selected avatar and nine separate furniture models at Full detail; Standard keeps the procedural room and
 downloads no GLBs. The generated room shell is not used because furniture is baked into it. Character clips and keyboard reach must
 be sampled from the scene's `Pose` and time, never `performance.now()`, so rebuilding at another detail level preserves the pose.
-The office pauses seated before its zoom on every entry, including witness returns: drag/swipe or arrow keys orbit the camera, and
+Witness Continue opens the case desk immediately at every detail level, without an office intro, zoom or second Continue button.
+The office consumes a one-entry flag; rebuilding its renderer or changing detail must not restore the exploration pause.
+Other office entries pause seated before the zoom: drag/swipe or arrow keys orbit the camera, and
 **Continue to case desk** resumes from that view. Keep the exploration hint/button in DOM, leave the terminal inert while paused, and
 do not mistake the intentional pause for a stalled renderer. At Simple the office bypasses the pause and opens the desk directly.
 

@@ -32,7 +32,7 @@
   const app = new AppController();
   const sceneOptions = $derived(app.signedIn && !app.needsAvatar && Boolean(app.panel || isCaseScreen(app.screen) || ["garage", "witness", "journey", "raid", "cases", "archive"].includes(app.screen)));
   function reportRenderError(error: unknown) {
-    console.error("[NaijaChase] Unhandled screen render error", error);
+    console.error("Screen render failed", error);
     reportBrowserError(error, "svelte.boundary");
   }
   // The music starts on the home screen and carries on through sign-in and the game.
@@ -45,7 +45,7 @@
 <svelte:window
   onhashchange={() => app.syncRoute()}
   ononline={() => app.toast("Connection restored.", "success")}
-  onoffline={() => app.toast("You are offline. Your case is safe; commands will work again once you reconnect.")}
+  onoffline={() => app.toast("You’re offline. Reconnect to continue.")}
 />
 
 {#snippet room()}
@@ -55,7 +55,7 @@
   {:catch}
     <div class="crash card" role="alert">
       <h1>The office did not load</h1>
-      <p class="muted">The page may have been updated while it was open. Reload to continue; your case is saved.</p>
+      <p class="muted">Reload to continue. Your case is saved.</p>
       <button class="btn btn-primary" type="button" onclick={() => location.reload()}>Reload</button>
     </div>
   {/await}
@@ -87,7 +87,7 @@
       {#snippet failed(error, reset)}
         <div class="crash card" role="alert">
           <h1>Something went wrong</h1>
-          <p class="muted">The screen failed to draw, but your case is saved on the server.</p>
+          <p class="muted">Your case is saved.</p>
           <p class="mono muted">{error instanceof Error ? error.message : String(error)}</p>
           <button class="btn btn-primary" type="button" onclick={() => { reset(); app.go(app.signedIn ? "cases" : "welcome"); }}>Back to safety</button>
         </div>

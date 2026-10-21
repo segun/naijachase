@@ -1,10 +1,41 @@
 # Naija Chase — Project Tracker
 
-Last updated: 20 October 2026
+Last updated: 21 October 2026
 
 This file is the source of truth for completed work, current limitations, and
 next development priorities. Update it whenever a feature or content pass is
 completed.
+
+## Desktop case desk usability — 21 October 2026
+
+- [x] Hold share prompts until the arrest scene finishes and Results has painted; cancel readiness on leaving the page without losing queued awards.
+- [x] Reset the warrant-to-hideout transition to the top, replace redundant headings with compact context, and sort searched hideouts below remaining choices on all layouts.
+- [x] Add four raid/presentation regression tests; 369 tests pass, with the four existing HTTP checks blocked by the sandbox.
+
+- [x] Preserve the monitor frame, terminal palette and scene animations while increasing text contrast, removing reading-surface flicker/glow and enlarging controls.
+- [x] Bring the three main destinations, Clues/profile tabs, hideable progress guidance and floating More menu to desktop.
+- [x] Make witness rows and saved-clue actions readable; give the content more space, wrap profile fields and emphasise Resume on the home desk.
+- [x] Pass Svelte checks, the 365 runnable web tests and release bundle budgets; four HTTP integration tests remain sandbox-blocked.
+- [ ] Complete desktop browser QA, larger-text and short-window checks, and a full case before release. See `docs/desktop-case-ux.md`.
+
+## Mobile case UX redesign — 21 October 2026
+
+- [x] Put a labelled Hire an assistant action, benefits and cost above investigation hints and witnesses on all layouts; retain confirmation and replace the offer with hired status after purchase.
+
+- [x] Replace the compact CRT on mobile with readable system text, clear contrast, large touch targets and three persistent case destinations.
+- [x] Add progress-aware next-step instructions, Clues/profile tabs, searchable travel by default and progressive disclosure for secondary tools.
+- [x] Let players hide next-step hints and restore them from More; remember their preference across visits with a session fallback if storage is blocked.
+- [x] Open More/Menu as a floating, viewport-bounded modal with its own scrolling list, persistent Close button, backdrop/Escape dismissal and keyboard focus containment.
+- [x] Offer Travel guidance after all three witnesses at a stop; put assistant route notes above Travel destinations with selectable fare previews.
+- [x] Fix the empty investigation-help disclosure: always show case-solving instructions and the current next step, including before the first witness when no optional tools are available.
+- [x] Label witness actions Intimidate and Bribe; show the balance as Bribe Tokens and keep the bribe cost in the confirmation terms.
+- [x] Correct premature warrant guidance; keep the final-stop, profile and key-witness rules server-authoritative.
+- [x] Retain animations in bounded portrait viewing areas, separate captions from the picture and keep each full witness account open until Continue.
+- [x] Send witness Continue straight to the interactive case desk at every detail level, without the office return or another Continue button; preserve results routing for finished cases.
+- [x] Pass Svelte diagnostics, 365 web tests, production build and compressed download budgets; cover progress guidance, hint preferences and direct witness returns.
+- [ ] Run four existing HTTP integration tests outside the sandbox (`listen EPERM` here).
+- [ ] Complete phone/browser visual QA and a full case before release; both local server launch and standalone file preview were blocked here. See `docs/mobile-case-ux.md` for the acceptance checklist.
+- [ ] Release the redesign and measure mobile first-case completion against the previous experience.
 
 ## Witness venue repair — 20 October 2026
 

@@ -10,7 +10,7 @@
   import { detailKey } from "./detail-level.ts";
   import "../../styles/terminal.css";
 
-  let { app, seenKey, load, loading = "Opening the office…", sheet = "crt", quick = false, introFrom = 0, exploreAt, skipSimpleAnimation = false, children }: {
+  let { app, seenKey, load, loading = "Opening the office…", sheet = "crt", quick = false, startAtDesk = false, introFrom = 0, exploreAt, skipSimpleAnimation = false, children }: {
     app: AppController;
     /** sessionStorage key marking that this room's intro has played in this sign-in. Without one the intro plays every time. */
     seenKey?: string;
@@ -19,6 +19,8 @@
     loading?: string;
     /** Play the intro even if this room's intro has already played this sign-in, starting `introFrom` seconds in (the office uses it for the short return from a venue). */
     quick?: boolean;
+    /** Open the functional desk immediately, with no intro or exploration gate at any detail level. */
+    startAtDesk?: boolean;
     introFrom?: number;
     exploreAt?: number;
     /** Office opt-in: Simple opens the functional screen directly, without exploration or an exit fade. */
@@ -44,11 +46,11 @@
   const seen = seenKey !== undefined && sessionStorage.getItem(seenKey) === "1";
 
   // svelte-ignore state_referenced_locally
-  const playIntro = detail.resolved.renderer === "3d" && (!seen || quick || exploreAt !== undefined);
+  const playIntro = !startAtDesk && detail.resolved.renderer === "3d" && (!seen || quick || exploreAt !== undefined);
   // svelte-ignore state_referenced_locally
-  let phase = $state<"intro" | "look" | "desk" | "outro">(playIntro ? "intro" : exploreAt !== undefined && !skipSimpleAnimation ? "look" : "desk");
+  let phase = $state<"intro" | "look" | "desk" | "outro">(startAtDesk ? "desk" : playIntro ? "intro" : exploreAt !== undefined && !skipSimpleAnimation ? "look" : "desk");
   // svelte-ignore state_referenced_locally
-  let glass = $state(playIntro || (exploreAt !== undefined && !skipSimpleAnimation) ? 0 : 1);
+  let glass = $state(startAtDesk ? 1 : playIntro || (exploreAt !== undefined && !skipSimpleAnimation) ? 0 : 1);
   let ready = $state(false);
   let has3d = $state(false);
   let failed = $state(false);
@@ -58,7 +60,7 @@
   /** Where the intro had got to when the scene was last rebuilt (a detail change mid-intro), so it carries on from there. */
   let resume = 0;
   // svelte-ignore state_referenced_locally
-  let continued = skipSimpleAnimation && !playIntro;
+  let continued = startAtDesk || (skipSimpleAnimation && !playIntro);
   let lookX = 0, lookY = 0;
   let dragging: number | undefined;
   let pointerX = 0, pointerY = 0;
@@ -189,7 +191,7 @@
 
 <svelte:window onkeydown={key} />
 
-<div class="room" class:flat={!has3d}>
+<div class="room" class:flat={!has3d} data-surface={sheet}>
   {#if wants3d}{#key detailKey(applied)}<canvas class="room-canvas" class:ready data-key={detailKey(applied)} bind:this={canvas} aria-hidden="true" onpointerdown={pointerDown} onpointermove={pointerMove} onpointerup={pointerUp} onpointercancel={pointerUp}></canvas>{/key}{/if}
   {#if phase === "intro" && !ready}<p class="room-loading" role="status">{loading}</p>{/if}
   <div class="glass" class:paper={sheet === "paper"} class:dock={sheet === "dock"} style:opacity={glass} style:visibility={glass > 0.01 ? "visible" : "hidden"} inert={phase !== "desk"}>

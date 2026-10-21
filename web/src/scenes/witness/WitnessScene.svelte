@@ -46,8 +46,8 @@
   let words = $state<string[]>([]);
   let pages = $state<Page[]>([]);
   let heard = $state(false);
+  let reading = $state(false);
   let failure = $state("");
-  let skip: () => void = () => {};
   let finished = false;
   /** Where 3D picks up after a detail change. */
   let resumeAt = 0;
@@ -76,6 +76,7 @@
     if (!visit || !recipe) { finish(); return; }
     const target = canvas, current = mode, key = canvasKey, { quality, models, reducedMotion } = level;
     if (current === "flat") return;
+    if (reading) return;
     // Wait for the replacement canvas when detail changes.
     if (!target || target.dataset.key !== key) return;
     let cancelled = false;
@@ -108,8 +109,7 @@
         if (cancelled) { h.dispose(); return; }
         handle = h;
         words = h.words; pages = h.pages;
-        skip = () => h.skip();
-        return h.start(resumeAt || undefined).then(() => { if (!cancelled) finish(); });
+        return h.start(resumeAt || undefined).then(() => { if (!cancelled) reading = true; });
       })
       .catch(e => {
         if (cancelled) return;
@@ -130,20 +130,21 @@
     if (!["Escape", "Enter", " "].includes(e.key) || e.metaKey || e.ctrlKey || e.altKey) return;
     if (e.key !== "Escape" && e.target instanceof Element && e.target.closest("button, input, select, textarea, a")) return;
     e.preventDefault();
-    if (mode === "flat" || failure || !ready) finish(); else skip();
+    if (mode === "flat" || reading) finish(); else reading = true;
   }
 </script>
 
 <svelte:window onkeydown={key} />
 
 <div class="room witness" role="region" aria-label="Meeting the witness">
-  {#if mode === "flat"}
+  {#if mode === "flat" || reading}
     <section class="witness-account" aria-label="Witness account">
       <p class="caption-who">{visit?.venueName}</p>
       <h1>{visit?.role || "Witness"}</h1>
       {#if failure}<p role="alert">The 3D scene is unavailable. You can still read the witness's full account and continue.</p>{/if}
       {#if failure}<details><summary>Scene details</summary><p>{failure}</p></details>{/if}
       <p class="witness-account-text">{visit?.message}</p>
+      <p class="muted">Saved to Clues. Look for a destination and a description of the suspect.</p>
       <button class="btn btn-primary" type="button" onclick={finish}>Continue to the investigation</button>
     </section>
   {:else}
@@ -166,6 +167,6 @@
   {/if}
   <!-- Screen readers get the whole account once, when the witness starts to speak, instead of one word at a time. -->
   <p class="sr-only" role="status">{#if heard && visit}{visit.role}: {visit.message}{/if}</p>
-  <button class="room-skip" type="button" onclick={() => { if (failure || !ready) finish(); else skip(); }}>Skip <kbd>Esc</kbd></button>
+  <button class="room-skip" type="button" onclick={() => (reading = true)}>Read full clue <kbd>Esc</kbd></button>
   {/if}
 </div>

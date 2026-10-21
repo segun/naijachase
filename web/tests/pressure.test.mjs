@@ -89,29 +89,32 @@ test("pressure is wired through the API, the leads screen, results, settings and
 test("the case terminal keeps leads uncluttered and presents pressure as compact witness actions", () => {
   const terminal = read("scenes/office/CaseTerminal.svelte");
   const pressure = read("screens/case/Pressure.svelte");
-  assert.doesNotMatch(terminal, /witnesses questioned|Listen for a destination clue|The trail is hot\. Listen/);
+  assert.doesNotMatch(terminal, /Listen for a destination clue|The trail is hot\. Listen/);
+  assert.doesNotMatch(read("scenes/office/LeadGrid.svelte"), /witnesses questioned/, "progress belongs in navigation, not repeated on witness tiles");
   assert.doesNotMatch(pressure, /Optional\. A witness may hold a little extra/);
   assert.match(pressure, /class="pressure-actions" role="group" aria-label="Actions for \{venue\.label\}"/);
-  assert.match(pressure, /<span>\{method === "intimidate" \? "Press" : PRESSURE_RULES\[method\]\.label\}<\/span>\{#if method === "bribe"\}<small>1 token<\/small>\{\/if\}/);
-  assert.match(pressure, /"Press witness for more information"/);
+  assert.match(pressure, /<span>\{method === "intimidate" \? "Intimidate" : PRESSURE_RULES\[method\]\.label\}<\/span>/);
+  assert.match(pressure, /"Intimidate witness for more information"/);
+  assert.match(pressure, /Bribe Tokens: <strong>/);
+  assert.doesNotMatch(pressure, /<small>1 token<\/small>/);
   assert.doesNotMatch(pressure, /anything more\?|Bribe witness — 1 token|pressurePrompt/);
   assert.doesNotMatch(read("state/app.svelte.ts"), /pressurePrompt|Continue \/ Bribe \/ Intimidate choice/);
   assert.match(read("styles/case-terminal.css"), /pressure-list li \{ display: grid;/);
 });
 
-test("intimidation is presented as pressing a witness without token or generic terms copy", () => {
+test("intimidation uses its explicit name without token or generic terms copy", () => {
   const pressure = read("screens/case/Pressure.svelte");
-  assert.match(pressure, /Press witness for more information/);
-  assert.match(pressure, /method === "intimidate" \? "Press"/);
-  assert.doesNotMatch(pressure, /Read the terms\. This cannot be undone\.|Intimidate witness|rule\.label\} \(\{tokenCost\(pending\.method\)\}\)/);
+  assert.match(pressure, /Intimidate witness for more information/);
+  assert.match(pressure, /method === "intimidate" \? "Intimidate"/);
+  assert.doesNotMatch(pressure, /Read the terms\. This cannot be undone\.|rule\.label\} \(\{tokenCost\(pending\.method\)\}\)/);
   const warning = pressureWarnings("intimidate", 3).join(" ");
   assert.doesNotMatch(warning, /Cost:|balance:|five-member panel|1-in-2|Free/);
 });
 
 test("bribery confirmation names the witness, omits generic terms and panel copy, and uses a concise action", () => {
   const pressure = read("screens/case/Pressure.svelte");
-  assert.match(pressure, /pending\.method === "intimidate" \? "Press witness for more information" : "Bribe witness"/);
-  assert.match(pressure, /pending\.method === "intimidate" \? "Press" : "Bribe"/);
+  assert.match(pressure, /pending\.method === "intimidate" \? "Intimidate witness for more information" : "Bribe witness"/);
+  assert.match(pressure, /pending\.method === "intimidate" \? "Intimidate" : "Bribe"/);
   assert.doesNotMatch(pressure, /Read the terms\. This cannot be undone\.|rule\.label\} \(\{tokenCost\(pending\.method\)\}\)/);
   const bribe = pressureWarnings("bribe", 3).join(" ");
   assert.doesNotMatch(bribe, /five-member panel|1-in-5|cannot be bought|balance:|Cost:/);

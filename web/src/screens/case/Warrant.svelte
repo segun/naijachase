@@ -2,18 +2,20 @@
   import "../../styles/warrant.css";
   import "../../styles/profile-list.css";
   import type { AppController } from "../../state/app.svelte";
-  import { FIELDS, FIELD_META, dossierCount, duration, groupQuotes, quoteMinutes, raidQuote, venueInfo } from "../../domain/model.ts";
+  import { FIELDS, FIELD_META, TOTAL_STOPS, dossierCount, duration, groupQuotes, quoteMinutes, raidQuote, venueInfo } from "../../domain/model.ts";
   import Icon from "../../ui/Icon.svelte";
+  import { unsearchedFirst } from "../../domain/hideouts.ts";
 
   let { app }: { app: AppController } = $props();
   const gs = $derived(app.game!.state);
-  const ready = $derived(dossierCount(gs.dossier) === 8);
+  const finalStop = $derived(gs.stage >= TOTAL_STOPS - 1 && gs.trail_status === "hot");
+  const ready = $derived(finalStop && dossierCount(gs.dossier) === 8);
   const suspects = $derived(gs.suspect_files);
   let picked = $state<string | null>(null);
   let confirming = $state(false);
   // The final journey to a hideout is quoted by the server under the "apprehension" scope.
-  const hideouts = $derived(groupQuotes(app.quotes, "apprehension"));
   const searched = $derived(new Set(gs.searched_hideouts ?? []));
+  const hideouts = $derived(unsearchedFirst(groupQuotes(app.quotes, "apprehension"), searched));
   const suspectName = $derived(suspects.find(s => s.suspect_id === gs.warrant_suspect)?.name ?? gs.warrant_suspect);
 
   async function apply() {
@@ -22,7 +24,14 @@
   }
 </script>
 
-<div class="page">
+<div class="page" class:hideout-page={!!gs.warrant_suspect}>
+  {#if gs.warrant_suspect}
+    <header class="page-head hideout-heading">
+      <h1 data-case-heading tabindex="-1">Find the hideout</h1>
+      <p class="warrant-confirmed"><Icon name="check" /> Warrant secured · {suspectName}</p>
+      <p>Choose an unsearched location. Each raid uses case time.</p>
+    </header>
+  {:else}
   <header class="page-head rise">
     <p class="eyebrow">Magistrate desk</p>
     <h1>Request a warrant</h1>
@@ -34,16 +43,23 @@
     <li class:done={!!gs.warrant_suspect} class:current={ready && !gs.warrant_suspect}><span>2</span>Choose a suspect</li>
     <li class:current={!!gs.warrant_suspect}><span>3</span>Find the hideout</li>
   </ol>
+  {/if}
 
   {#if !gs.warrant_suspect}
-    {#if !ready}
+    {#if !finalStop}
+      <section class="card notice rise">
+        <Icon name="pin" />
+        <div><h2>Follow the trail to the final stop</h2><p class="muted">A warrant is available once you reach the last stop, question its witnesses and complete the profile.</p></div>
+        <button class="btn btn-primary" type="button" onclick={() => app.go("investigate")}>Keep investigating <Icon name="arrow" /></button>
+      </section>
+    {:else if !ready}
       <section class="card notice rise">
         <Icon name="lock" />
         <div><h2>Dossier incomplete</h2><p class="muted">{dossierCount(gs.dossier)} of 8 details recorded. Finish the profile before applying.</p></div>
         <button class="btn btn-primary" type="button" onclick={() => app.go("dossier")}>Open dossier <Icon name="arrow" /></button>
       </section>
     {/if}
-    <section aria-label="Suspect files" class="suspects">
+    <section aria-label="Suspect files" class="suspects" class:unavailable={!ready}>
       {#each suspects as suspect, i (suspect.suspect_id)}
         <button type="button" class="suspect rise" class:picked={picked === suspect.suspect_id} disabled={!ready || app.busy} aria-pressed={picked === suspect.suspect_id} style:animation-delay="{i * 0.08}s" onclick={() => { picked = suspect.suspect_id; confirming = false; }}>
           <span class="suspect-photo" style:background={suspect.portrait.background_color} role="img" aria-label="Passport portrait of {suspect.name}">
@@ -76,11 +92,6 @@
       </section>
     {/if}
   {:else}
-    <section class="card issued rise">
-      <div class="stamp-mark" role="img" aria-label="Warrant issued">Warrant issued</div>
-      <h2>{suspectName}</h2>
-      <p class="muted">{suspectName} is hiding at one of these places. Raid them one at a time until you find them.</p>
-    </section>
     <section class="venues" aria-label="Search for the hideout">
       {#if !app.quotesLoaded}
         {#each [1, 2, 3] as n}<div class="venue skeleton-card" aria-hidden="true"></div>{/each}

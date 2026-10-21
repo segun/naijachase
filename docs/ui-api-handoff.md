@@ -70,6 +70,10 @@ case is unfinished, no assistant is already active, and no witness has yet been
 questioned. It becomes false permanently for that attempt after the first
 interview.
 
+The web UI presents a labelled gold action above the first witness choices in
+both the briefing and Investigate, outside the optional-tools disclosure. Benefits
+and the quoted price are visible immediately; tapping opens the confirmation.
+
 The confirmation must say that the assistant will automatically file suspect
 dossier evidence, suggest three possible onward routes, and make local witness
 journeys quicker. Do not display or describe the internal travel-time percentage.

@@ -11,6 +11,7 @@
   } from "./install-prompt.ts";
 
   let dialog = $state<HTMLDialogElement>();
+  let { inline = false }: { inline?: boolean } = $props();
   let mobile = $state(false);
   let installed = $state(false);
   let nativeInstall = $state(false);
@@ -90,7 +91,7 @@
 </script>
 
 {#if mobile && !installed}
-  <nav class="mobile-app-actions" aria-label="Screen and app options">
+  <nav class="mobile-app-actions" class:inline aria-label="Screen and app options">
     <button type="button" onclick={toggleFullscreen} aria-label={fullscreen ? "Exit full screen" : "Go full screen"}>
       <span aria-hidden="true">{fullscreen ? "↙" : "⛶"}</span><span>{fullscreen ? "Exit" : "Full screen"}</span>
     </button>
@@ -131,6 +132,8 @@
 </dialog>
 
 <style>
+  .mobile-app-actions.inline { position: static; transform: none; max-width: none; border-radius: 10px; box-shadow: none; flex-wrap: wrap; }
+  .mobile-app-actions.inline button { min-height: 44px; font-size: .9rem; }
   .mobile-app-actions {
     position: fixed;
     z-index: 49;

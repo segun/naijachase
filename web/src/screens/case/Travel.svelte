@@ -15,7 +15,7 @@
   const quoted = $derived(new Map(groups.map(g => [g.id, g])));
   const reachable = (s: string) => quoted.has(s);
   const group = $derived(selected ? quoted.get(selected) ?? null : null);
-  let view = $state<"map" | "list">("map");
+  let view = $state<"map" | "list">(matchMedia("(max-width: 960px)").matches ? "list" : "map");
   let query = $state("");
   let showInfo = $state(false);
   let advice = $state<string[]>([]);
@@ -58,18 +58,29 @@
   }
 </script>
 
-{#snippet viewToggle()}
-<div class="segmented view-toggle" role="group" aria-label="Destination view">
-      <button type="button" aria-pressed={view === "map"} onclick={() => (view = "map")}><Icon name="map" />Map</button>
-      <button type="button" aria-pressed={view === "list"} onclick={() => (view = "list")}><Icon name="list" />List</button>
-    </div>
-{/snippet}
-
 <div class="page">
   <header class="page-head rise">
     <p class="eyebrow">Air and road desk</p>
     <h1>Choose your destination</h1>
   </header>
+
+  {#if gs.assistant_hired}
+    <section class="card route-advice rise" aria-labelledby="route-advice-title">
+      <h2 id="route-advice-title">Assistant’s route notes</h2>
+      <p>Ask your assistant to narrow the trail to three possible destinations. Compare them with your witness clues.</p>
+      <button class="btn btn-primary" type="button" disabled={app.busy || adviceLoading} onclick={askAssistant}>{adviceLoading ? "Checking…" : advice.length ? "Check routes again" : "Ask assistant"}</button>
+      <div aria-live="polite" aria-busy={adviceLoading}>
+        {#if advice.length}
+          <p class="advice-label">Choose a suggestion to check the fare:</p>
+          <ul class="advice-destinations">
+            {#each advice as destination}
+              <li><button class="btn btn-ghost" type="button" aria-pressed={selected === destination} disabled={app.busy || destination === here || (app.quotesLoaded && !reachable(destination))} onclick={() => (selected = destination)}>{destination}</button></li>
+            {/each}
+          </ul>
+        {/if}
+      </div>
+    </section>
+  {/if}
 
   <div class="segmented" role="group" aria-label="Destination view">
     <button type="button" aria-pressed={view === "map"} onclick={() => (view = "map")}><Icon name="map" />Map</button>
@@ -103,10 +114,7 @@
             {/if}
           {/each}
         </div>
-        <div class="toggle-end">{@render viewToggle()}
-  </div>
       {:else}
-        {@render viewToggle()}
         <label class="field"><span>Search states or FCT</span><input class="input" type="search" bind:value={query} placeholder="Type a state, Abuja or FCT…" /></label>
         <div class="zones">
           {#each filtered as [zone, members]}
@@ -126,18 +134,6 @@
     </section>
 
     <aside class="stack side-rail">
-      {#if gs.assistant_hired}
-        <section class="card rise" aria-live="polite">
-          <h2>Assistant's route notes</h2>
-          {#if advice.length}
-            <p>Investigate these three possibilities:</p>
-            <ol>{#each advice as destination}<li>{destination}</li>{/each}</ol>
-          {:else}
-            <p class="muted">Ask your assistant to narrow the trail to three possible destinations.</p>
-          {/if}
-          <button class="btn btn-ghost" type="button" disabled={app.busy || adviceLoading} onclick={askAssistant}>{adviceLoading ? "Checking…" : advice.length ? "Check routes again" : "Ask assistant"}</button>
-        </section>
-      {/if}
       <section class="card boarding rise" aria-live="polite" bind:this={sideEl}>
         <p class="eyebrow">Boarding pass</p>
         <div class="route"><div><small>From</small><strong>{here}</strong></div><Icon name="plane" /><div><small>To</small><strong>{selected ?? "—"}</strong></div></div>
@@ -160,3 +156,16 @@
     </aside>
   </div>
 </div>
+
+<style>
+  .route-advice { border: 2px solid var(--gold); background: #16291f; }
+  .route-advice p { color: #e1ece5; line-height: 1.5; }
+  .route-advice > .btn { min-height: 44px; }
+  .advice-label { margin-bottom: .6rem; }
+  .advice-destinations { display: flex; flex-wrap: wrap; gap: .6rem; margin: 0; padding: 0; list-style: none; }
+  .advice-destinations .btn { min-height: 44px; }
+  .advice-destinations .btn[aria-pressed="true"] { border-color: var(--gold); color: var(--gold); }
+  @media (max-width: 960px) {
+    .route-advice > .btn { width: 100%; }
+  }
+</style>

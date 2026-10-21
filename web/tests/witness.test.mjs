@@ -219,7 +219,8 @@ test("the garage hands the visit to the witness scene, which loads lazily and ne
   assert.match(root, /import\("\.\/scenes\/witness\/WitnessScene\.svelte"\)/);
   assert.match(view, /import\("\.\/chase3d-witness\.ts"\)/, "Babylon.js is a dynamic import");
   assert.doesNotMatch(app + root, /from "[^"]*chase3d-witness/, "the 3D scene is not in the main bundle");
-  assert.match(view, /h\.start\(resumeAt \|\| undefined\)\.then\(\(\) => \{ if \(!cancelled\) finish\(\); \}\)/, "the investigation opens when the scene ends");
+  assert.match(view, /h\.start\(resumeAt \|\| undefined\)\.then\(\(\) => \{ if \(!cancelled\) reading = true; \}\)/, "the full account stays open after the animation until the player continues");
+  assert.match(view, /if \(reading\) return;/, "reading the account stops scene setup and disposes the previous renderer");
   assert.match(view, /fallBack\(handle\?\.now\(\) \?\? 0, e instanceof Error/, "a 3D failure opens the full witness account");
   assert.doesNotMatch(view, /import\("\.\/witness-2d\.ts"\)/, "Simple downloads no animated renderer");
   assert.match(view, /FIRST_FRAME_MS[\s\S]*STALL_MS/, "a stalled 3D scene opens the full witness account");

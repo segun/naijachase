@@ -5,6 +5,7 @@
   import { clockParts } from "../../domain/model.ts";
   import { formatWhen, tokensEarned, totalAwarded } from "../../domain/pressure.ts";
   import Icon from "../../ui/Icon.svelte";
+  import { markResultsAfterPaint } from "../../ui/results-presentation.svelte.ts";
 
   let { app }: { app: AppController } = $props();
   const gs = $derived(app.game!.state);
@@ -26,6 +27,7 @@
 
   onMount(() => {
     if (popup) queueMicrotask(() => primaryAction?.focus());
+    return markResultsAfterPaint(app.caseId);
   });
 </script>
 

@@ -1,0 +1,88 @@
+/* Keep the monitor, phosphor palette and terminal headings; make the working
+   surface readable. Loaded with the office, never on the sign-in path. */
+@media (min-width: 961px) {
+  .room .office-terminal {
+    --p: #d5f5df;
+    --p-dim: #afcebc;
+    --p-faint: #123525;
+    --amber: #ffe39a;
+    font: clamp(1rem, 1.55cqw, 1.125rem) / 1.5 var(--body);
+    letter-spacing: normal;
+    text-shadow: none;
+  }
+  .room .office-terminal .t-content { padding: 1.1rem 1.35rem; gap: .85rem; }
+  .room .office-terminal.on .t-content { animation: crt-on .6s ease-out both; }
+  .room .office-terminal.on::after { display: none; }
+  .room .office-terminal .crt-fx { opacity: .12; }
+  .room .office-terminal .t-bar, .room .office-terminal h1, .room .office-terminal h2,
+  .room .office-terminal .t-tag, .room .office-terminal kbd { font-family: var(--mono); }
+  .room .office-terminal .t-bar { font-size: .85rem; letter-spacing: .03em; }
+  .room .office-terminal .t-title { flex-wrap: wrap; }
+  .room .office-terminal .t-title small { font-size: .8rem; }
+  .room .office-terminal .t-body { display: grid; grid-template-columns: minmax(11rem, 13rem) minmax(0, 1fr); gap: 1.1rem; overflow: hidden; }
+  .room .office-terminal .t-side { min-width: 0; overflow-y: auto; margin: 0; padding: .15rem; }
+  .room .office-terminal .t-main { min-height: 0; overflow-y: auto; padding: .15rem .65rem .75rem .15rem; scrollbar-gutter: stable; overscroll-behavior: contain; }
+  .room .office-terminal .t-side .t-list { grid-template-columns: minmax(0, 1fr); }
+  .room .office-terminal .t-opt { min-height: 48px; padding: .7rem; border-radius: 7px; text-transform: none; letter-spacing: normal; box-shadow: none; }
+  .room .office-terminal .t-opt .icon { flex-shrink: 0; }
+  .room .office-terminal .t-opt .t-label { white-space: normal; overflow: visible; }
+  .room .office-terminal .t-opt .t-label small { font-size: .85rem; line-height: 1.4; opacity: 1; }
+  .room .office-terminal .t-opt.active { background: #244b36; color: var(--amber); border-color: var(--amber); box-shadow: inset 3px 0 var(--amber); }
+  .room .office-terminal .t-opt:hover:not(:disabled) { background: #2b513b; color: #fff6d7; border-color: var(--amber); box-shadow: none; }
+  .room .office-terminal .t-opt:focus-visible { outline: 2px solid var(--amber); outline-offset: -3px; }
+  .room .office-terminal .t-hot { background: var(--amber); border-color: var(--amber); color: #17271c; animation: none; }
+  .room .office-terminal .t-hot:hover:not(:disabled) { background: #fff1c5; color: #17271c; }
+  .room .office-terminal .t-danger { color: var(--warn); }
+  .room .office-terminal .t-greet { font-size: 1.65rem; line-height: 1.3; text-shadow: none; letter-spacing: .02em; }
+  .room .office-terminal .t-case { gap: .8rem; grid-template-columns: none; }
+  .room .office-terminal .t-stat strong { font-size: 1.1rem; text-transform: none; white-space: normal; }
+  .room .office-terminal .t-stat small { font-size: .85rem; white-space: normal; }
+  .room .office-terminal .t-tag { font-size: .8rem; letter-spacing: .06em; }
+  .room .office-terminal .t-status { font-size: .85rem; gap: .4rem 1.25rem; text-transform: none; }
+  .room .office-terminal .t-status .t-blink { animation: none; }
+  .room .office-terminal .case-guide { border-radius: 8px; padding: .85rem 1rem; }
+  .room .office-terminal .case-guide h2 { text-transform: none; letter-spacing: normal; font-size: 1.15rem; }
+  .room .office-terminal .case-guide .btn { justify-self: start; min-height: 44px; }
+  .room .office-terminal .case-clue-tabs { gap: .6rem; }
+  .room .office-terminal .case-clue-tabs button { font-size: 1rem; }
+  .room .office-terminal .t-embed { font: 1rem/1.6 var(--body); }
+  .room .office-terminal .t-embed .input, .room .office-terminal .t-embed .select { font-size: 1rem; min-height: 44px; }
+  .room .office-terminal .t-embed .btn, .room .office-terminal .t-embed .state-row { min-height: 44px; white-space: normal; }
+  .room .office-terminal .t-embed .page-head h1 { font-size: 1.5rem; }
+  .room .office-terminal .t-embed .page-head .eyebrow { display: none; }
+  .room .office-terminal .t-embed .card { padding: 1rem; }
+  .room .office-terminal .t-embed .notebook { font-size: 1rem; }
+  .room .office-terminal .t-embed .dossier-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); }
+  .room .office-terminal .t-embed .suspects.unavailable { display: none; }
+  .room .office-terminal .t-lead-grid { grid-template-columns: minmax(0, 1fr); gap: .6rem; }
+  .room .office-terminal .t-lead { grid-template-columns: 4.5rem minmax(0, 1fr); grid-template-rows: auto auto; gap: .25rem .85rem; align-items: center; }
+  .room .office-terminal .t-lead .t-art { grid-row: 1 / 3; width: 4.5rem; border-radius: 4px; }
+  .room .office-terminal .t-lead .t-label, .room .office-terminal .t-lead .t-fare { grid-column: 2; }
+  .room .office-terminal .t-fare { font-size: .9rem; text-transform: none; }
+  .room .office-terminal .t-lead.seen { opacity: 1; background: #0a251c; }
+  .room .office-terminal .case-extra-tools summary { min-height: 44px; align-content: center; }
+  .room .office-terminal .t-rank { grid-template-columns: auto minmax(0, 1fr); padding: .85rem; gap: .75rem; text-shadow: none; }
+  .room .office-terminal .t-stats { grid-column: 1 / -1; flex-wrap: wrap; justify-content: space-between; gap: .6rem 1rem; }
+  .room .office-terminal .t-stats div { text-align: left; }
+  .room .office-terminal .t-rank-text strong { font-size: 1.4rem; }
+  .room .office-terminal .t-dossier { line-height: 1.65; }
+  .room .office-terminal .t-alert { text-transform: none; animation: none; flex-wrap: wrap; }
+  .room .office-terminal .t-grid li:not(.earned) { opacity: 1; }
+  @container (max-width: 640px) {
+    .room .office-terminal .t-body { display: block; overflow-y: auto; }
+    .room .office-terminal .t-main { overflow: visible; padding-right: 0; }
+    .room .office-terminal .t-side { margin-bottom: .75rem; }
+    .room .office-terminal .desktop-case-tools.t-list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .room .office-terminal .desktop-case-tools .t-label small, .room .office-terminal .desktop-case-tools kbd { display: none; }
+    .room .office-terminal .desktop-case-tools .t-opt { flex-wrap: wrap; gap: .4rem; }
+    .room .office-terminal .t-menu { width: auto; }
+  }
+}
+
+/* Short laptop windows still need room to read and scroll, even at large text. */
+@media (min-width: 961px) and (max-height: 700px) {
+  .room .office-terminal .t-content { padding: .65rem 1rem; gap: .5rem; }
+  .room .office-terminal .t-clock { display: none; }
+  .room .office-terminal .t-case .t-trail { margin-top: 0; }
+  .room .office-terminal .t-case .t-stat:first-child > small { display: none; }
+}
