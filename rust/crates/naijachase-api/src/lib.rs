@@ -4588,9 +4588,9 @@ fn dossier_witness_venue(catalogue: &Catalogue, state: &GameState) -> Option<Str
     })
 }
 
-/// Builds one deliberately decisive clue and two multi-state clues. The
-/// decisive clue is always the curated landmark atom and can never carry the
-/// dossier evidence that marks the key witness.
+/// Read the saved difficulty-specific plan. Legacy attempts retain one
+/// decisive landmark and two multi-state accounts; new levels 3–5 use three
+/// multi-state accounts whose complete intersection identifies the destination.
 fn witness_clue_plan(
     catalogue: &Catalogue,
     state: &GameState,
@@ -4604,16 +4604,7 @@ fn witness_clue_plan(
             .get(state.stage as usize)
             .into_iter()
             .flatten()
-            .map(|clue| naijachase_content::ClueAtom {
-                atom_id: clue.atom_id.clone(),
-                state: clue.state.clone(),
-                dimension: clue.dimension.clone(),
-                candidate_states: clue.candidate_states.clone(),
-                venue_id: clue.venue_id.clone(),
-                venue_name: clue.venue_name.clone(),
-                witness_roles: clue.witness_roles.clone(),
-                dialogue: clue.dialogue.clone(),
-            })
+            .map(naijachase_content::ClueAtom::from)
             .collect();
     }
     witness_clue_plan_for(

@@ -14,12 +14,16 @@ alternatives available without changing their facts or dialogue.
 ## Selection and consistency
 
 For each stop, enumerate combinations with three distinct, locally available
-venues: one curated landmark clue and two non-landmark clues. Both ambiguous
-clues must include the destination, and their intersection must reduce the
-options. The landmark witness never supplies the key suspect-profile trait.
+venues. Easy and Standard use one curated landmark and two non-landmark clues;
+their complete intersection must identify the destination. Easy adds explicit
+destination confirmation from a fictional travel record. Medium through Hard
+use three non-landmark clues whose full intersection is unique, selected from
+increasing ambiguity bands. See [case difficulty](case-difficulty.md). A landmark
+witness never supplies the key suspect-profile trait.
 
-Choose combinations by preferring fewer previously heard clues, avoiding repeats
-within the same attempt where possible, then preferring older exposure times.
+Within the difficulty band, choose combinations by preferring fewer previously
+heard clues, avoiding repeats within the same attempt where possible, then
+preferring older exposure times.
 A hash of the fresh attempt seed breaks ties. After choosing the underlying
 clue, prefer unheard English wording at the mission's difficulty, then older
 wording. A new formulation of a familiar clue does not count as a new clue.
@@ -97,11 +101,16 @@ candidate sets, difficulty, source metadata and all 8,946 dialogue wordings are
 unchanged by this repair. The four affected presidential-history seeds and four
 deep-fact seeds are updated as well, so regenerating them preserves the fix.
 
-The rule still requires three distinct venues and exactly one landmark witness.
+The venue repair originally required three distinct venues and exactly one
+landmark witness.
+New levels 3–5 instead use three non-landmark accounts; coverage now considers
+valid plans across all five levels. A non-landmark account sharing the museum
+can therefore be eligible in those harder levels.
 No museum landmark was moved. A regression check requires every authored clue
 to have a valid combination somewhere on the case routes; separate synthetic
-fixtures verify that missing venues and landmark-venue collisions remain
-excluded. Sampling is a separate diagnostic, not the definition of eligibility.
+fixtures verify that missing venues remain excluded and museum-sharing accounts
+can participate in harder puzzles. Sampling is a separate diagnostic, not the
+definition of eligibility.
 
 Deploy the updated content and restart the API for new attempts to use these
 placements. Persisted witness plans keep their saved venues and wording.

@@ -1539,7 +1539,8 @@ Before considering a content pass complete, confirm:
 - [x] Every jurisdiction has at least one valid three-clue combination.
 - [x] Every selected venue is available in its state profile.
 - [x] Each three-clue intersection resolves to only the intended state.
-- [x] Individual clues retain meaningful ambiguity.
+- [x] Individual clues retain meaningful ambiguity on levels 3–5; easier cases
+  deliberately provide landmark support or explicit destination confirmation.
 - [x] Witness roles match their venues.
 - [ ] Informal speech sounds natural and preserves the factual clue.
 - [x] Profile evidence remains embedded in dialogue.
@@ -1548,6 +1549,12 @@ Before considering a content pass complete, confirm:
 - [x] Existing save files either load safely or migrate gracefully.
 
 ## Maintenance rule
+
+- [x] Make all five case difficulties affect deduction and budget: Easy destination
+  confirmation, Standard landmark support, ordered ambiguous-clue bands for levels
+  3–5, and 80/60/40/30/20% reserves. Preserve random unsolved-case assignment and
+  saved attempts; validate the catalogue and solved-case exclusion. See
+  `docs/case-difficulty.md`.
 
 When work is completed, move or mark its checkbox in this file during the same
 change. If counts change, update both **Current baseline** here and the relevant

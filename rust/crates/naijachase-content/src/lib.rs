@@ -7,6 +7,21 @@ use std::{
 };
 use thiserror::Error;
 pub use witness::WitnessCoverage;
+
+impl From<&naijachase_contracts::WitnessClue> for ClueAtom {
+    fn from(clue: &naijachase_contracts::WitnessClue) -> Self {
+        Self {
+            atom_id: clue.atom_id.clone(),
+            state: clue.state.clone(),
+            dimension: clue.dimension.clone(),
+            candidate_states: clue.candidate_states.clone(),
+            venue_id: clue.venue_id.clone(),
+            venue_name: clue.venue_name.clone(),
+            witness_roles: clue.witness_roles.clone(),
+            dialogue: clue.dialogue.clone(),
+        }
+    }
+}
 #[derive(Debug, PartialEq)]
 pub struct CatalogueSummary {
     pub missions: usize,

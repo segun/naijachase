@@ -354,7 +354,9 @@ fn main() {
         dossier: BTreeMap::new(),
         observations: BTreeMap::new(),
         visited_venues: vec![],
-        witness_plan: vec![],
+        witness_plan: data
+            .plan_witnesses(&route, mission.difficulty, seed, &Default::default())
+            .unwrap(),
         warrant_suspect: None,
         hideout_venue: String::new(),
         searched_hideouts: vec![],
@@ -392,14 +394,23 @@ fn main() {
         } else {
             &route[final_stage]
         };
-        let clues = venues(
-            &data,
-            target,
-            &state.state,
-            &mission.mission_id,
-            state.stage,
-            seed,
-        );
+        let planned = state
+            .witness_plan
+            .get(state.stage as usize)
+            .filter(|_| state.route.get(state.stage as usize) == Some(&state.state))
+            .map(|plan| plan.iter().map(ClueAtom::from).collect::<Vec<_>>());
+        let clues = if let Some(ref plan) = planned {
+            plan.iter().collect()
+        } else {
+            venues(
+                &data,
+                target,
+                &state.state,
+                &mission.mission_id,
+                state.stage,
+                seed,
+            )
+        };
         let mut menu = clues
             .iter()
             .map(|a| {
@@ -519,7 +530,11 @@ fn main() {
                 println!(
                     "The {} says: “{}{}”",
                     atom.witness_roles.split('|').next().unwrap_or("witness"),
-                    dialogue(&data, atom, mission.difficulty, seed + i as u64),
+                    if planned.is_some() {
+                        &atom.dialogue
+                    } else {
+                        dialogue(&data, atom, mission.difficulty, seed + i as u64)
+                    },
                     if gives_profile {
                         format!(
                             " {}",

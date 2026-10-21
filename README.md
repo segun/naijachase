@@ -252,23 +252,23 @@ The mission-quality layer adds 1,000 narrative profiles and replaces the old
 ten-premise cycle in play. Every case now has a unique title, a concrete stolen
 item, crime-specific briefing, three route transitions, a thematic venue
 preference, a thief-specific calling card, behavioural evidence, a capture
-scene, and separate success and failure conclusions. Travel choices use the
-active witness evidence to prioritise false destinations that share one or two
-clues with the correct state. The case remains solvable only by combining all
-three clues.
+scene, and separate success and failure conclusions. Witness evidence guides
+travel across the full jurisdiction map. The three accounts together identify
+the destination, with more direct support on the easier levels.
 
-The P2 balance model defines five difficulty levels. Easy and standard cases
-use direct formulations and three travel choices; medium uses four choices;
-challenging and hard use indirect formulations and five choices. Higher levels
-select clue combinations with more candidate states and more overlap, while
-all statements remain truthful and carry an explicit reliability label. Venue
-ordering minimises unnecessary opening-hour waits without removing the time
-pressure. Difficulty-scaled case points, false-travel penalties, time bonuses,
-and promotion thresholds replace the original flat rewards.
+The five difficulty levels now change the puzzle itself. Easy includes a
+destination confirmation; Standard retains a landmark clue. Medium,
+Challenging and Hard use three ambiguous accounts drawn from increasing bands
+of candidate-state overlap, with no standalone landmark giveaway. All three
+accounts together identify one destination. Spare transport allocations fall
+from 80% on Easy to 20% on Hard. All levels keep the seven-day deadline and
+full web travel map. Ordinary assignment remains random among unsolved cases;
+player rank does not select the difficulty. See [case difficulty](docs/case-difficulty.md)
+for the selection rules, compatibility and validation.
 
 `data/gameplay/mission-balance-report.csv` records the full 1,000-case
-simulation. Every route resolves after three clues and every simulated case
-finishes with at least a two-day deadline buffer.
+scripted simulation. The API catalogue tests separately verify complete
+three-witness itineraries using actual venue hours, travel and case budgets.
 
 Validate all content and engine behaviour with the Rust commands documented in
 the verification checklist in `TODO.md`.

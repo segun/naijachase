@@ -41,17 +41,18 @@ is in `web/tests/trail-parity.test.mjs` and
 
 ## Three-clue difficulty structure
 
-Every on-trail stop now returns a deliberately structured set of three witness
-accounts:
+New attempts return three accounts according to [case difficulty](case-difficulty.md):
 
-- two ambiguous clues whose catalogue candidate sets each contain multiple
-  jurisdictions;
-- one decisive landmark clue intended to identify the destination on its own.
+- Easy and Standard: two ambiguous accounts and one landmark account. Easy
+  appends an explicit destination confirmation from a fictional travel record.
+- Medium through Hard: three ambiguous accounts from increasingly difficult
+  overlap bands. Each account has multiple candidates, and the full
+  intersection identifies exactly the intended destination.
 
-The decisive clue is shuffled among the three venues, so the UI must not assume
+Any landmark clue is shuffled among the three venues, so the UI must not assume
 it is the third displayed witness. It is never the key witness and never carries
 the new suspect-profile trait. The key witness is selected deterministically
-from the two ambiguous-clue witnesses and remains the only interview required
+from the non-landmark witnesses and remains the only interview required
 by the engine before onward travel. Consequently, a player who investigates the
 decisive clue first still has to locate the key witness, while a player who finds
 the key witness first may travel immediately.

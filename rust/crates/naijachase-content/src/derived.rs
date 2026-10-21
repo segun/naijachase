@@ -71,8 +71,11 @@ impl Catalogue {
             let maximum = self.derived.budgets.entry(mission.difficulty).or_default();
             *maximum = (*maximum).max(baseline);
         }
-        for maximum in self.derived.budgets.values_mut() {
-            let reserved = maximum.saturating_add((*maximum).div_ceil(5));
+        for (difficulty, maximum) in &mut self.derived.budgets {
+            let reserve = maximum
+                .saturating_mul(naijachase_core::case_budget_reserve_percent(*difficulty))
+                .div_ceil(100);
+            let reserved = maximum.saturating_add(reserve);
             *maximum = reserved.saturating_add(4_999) / 5_000 * 5_000;
         }
         Ok(())
@@ -443,10 +446,31 @@ mod tests {
         }
         for mission in catalogue.missions.values() {
             let maximum = maxima[&mission.difficulty];
-            let reserved = maximum.saturating_add(maximum.div_ceil(5));
+            let reserved = maximum.saturating_add(
+                maximum
+                    .saturating_mul(naijachase_core::case_budget_reserve_percent(
+                        mission.difficulty,
+                    ))
+                    .div_ceil(100),
+            );
             let expected = reserved.saturating_add(4_999) / 5_000 * 5_000;
             assert_eq!(catalogue.opening_budget(mission), Some(expected));
             assert_eq!(reloaded.opening_budget(mission), Some(expected));
         }
+        let budgets = (1..=5)
+            .map(|difficulty| {
+                let mission = catalogue
+                    .missions
+                    .values()
+                    .find(|m| m.difficulty == difficulty)
+                    .unwrap();
+                catalogue.opening_budget(mission).unwrap()
+            })
+            .collect::<Vec<_>>();
+        assert!(
+            budgets.windows(2).all(|pair| pair[0] > pair[1]),
+            "easier catalogue tiers must receive more spare cash: {budgets:?}"
+        );
+        eprintln!("opening budgets, Easy through Hard: {budgets:?}");
     }
 }

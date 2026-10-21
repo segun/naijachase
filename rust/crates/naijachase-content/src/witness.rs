@@ -26,6 +26,23 @@ fn candidates(atom: &ClueAtom) -> BTreeSet<&str> {
     atom.candidate_states.split('|').collect()
 }
 
+// Prefer puzzles that leave more alternatives after one or two accounts.
+// The complete triple must still identify exactly one destination.
+#[cfg(test)]
+fn ambiguity(triple: &[&ClueAtom; 3]) -> (usize, usize, usize) {
+    let sets = triple.map(candidates);
+    let pairs = [
+        sets[0].intersection(&sets[1]).count(),
+        sets[0].intersection(&sets[2]).count(),
+        sets[1].intersection(&sets[2]).count(),
+    ];
+    (
+        *pairs.iter().min().unwrap(),
+        pairs.iter().sum(),
+        sets.iter().map(BTreeSet::len).sum(),
+    )
+}
+
 impl Catalogue {
     /// All structurally valid combinations; the decisive landmark cannot be
     /// used again as an ambiguous witness. Each pair must reduce the options.
@@ -59,14 +76,113 @@ impl Catalogue {
                     }
                     let l = candidates(left);
                     let r = candidates(right);
-                    let intersection = l.intersection(&r).count();
-                    if intersection < l.len() || intersection < r.len() {
+                    let intersection = l.intersection(&r).copied().collect::<BTreeSet<_>>();
+                    let complete = intersection
+                        .intersection(&candidates(landmark))
+                        .copied()
+                        .collect::<BTreeSet<_>>();
+                    if complete == BTreeSet::from([target])
+                        && (intersection.len() < l.len() || intersection.len() < r.len())
+                    {
                         combinations.push([*left, *right, landmark]);
                     }
                 }
             }
         }
         combinations
+    }
+
+    fn difficulty_combinations<'a>(
+        &'a self,
+        origin: &str,
+        target: &str,
+        difficulty: u8,
+    ) -> Vec<[&'a ClueAtom; 3]> {
+        if difficulty <= 2 {
+            return self.witness_combinations(origin, target);
+        }
+        let Some(atoms) = self.atoms.get(target) else {
+            return vec![];
+        };
+        // Bit sets make the exhaustive three-account intersection inexpensive.
+        let states = self
+            .hubs
+            .keys()
+            .map(String::as_str)
+            .collect::<BTreeSet<_>>();
+        let bits = states
+            .into_iter()
+            .enumerate()
+            .map(|(i, state)| (state, 1u64 << i))
+            .collect::<BTreeMap<_, _>>();
+        let Some(target_bit) = bits.get(target) else {
+            return vec![];
+        };
+        let available = atoms
+            .iter()
+            .filter(|atom| atom.dimension != "landmark")
+            .filter(|atom| {
+                self.location_venues
+                    .contains_key(&(origin.to_owned(), atom.venue_id.clone()))
+            })
+            .filter_map(|atom| {
+                let mask = atom
+                    .candidate_states
+                    .split('|')
+                    .try_fold(0, |mask, state| bits.get(state).map(|bit| mask | bit))?;
+                (mask.count_ones() > 1 && mask & target_bit != 0).then_some((atom, mask))
+            })
+            .collect::<Vec<_>>();
+        let mut combinations = vec![];
+        for (i, (left, l)) in available.iter().enumerate() {
+            for (j, (middle, m)) in available.iter().enumerate().skip(i + 1) {
+                if left.venue_id == middle.venue_id {
+                    continue;
+                }
+                for (right, r) in available.iter().skip(j + 1) {
+                    if right.venue_id == left.venue_id
+                        || right.venue_id == middle.venue_id
+                        || l & m & r != *target_bit
+                    {
+                        continue;
+                    }
+                    let pairs = [
+                        (l & m).count_ones(),
+                        (l & r).count_ones(),
+                        (m & r).count_ones(),
+                    ];
+                    let score = (
+                        *pairs.iter().min().unwrap() as usize,
+                        pairs.iter().sum::<u32>() as usize,
+                        (l.count_ones() + m.count_ones() + r.count_ones()) as usize,
+                    );
+                    combinations.push((score, [*left, *middle, *right]));
+                }
+            }
+        }
+        let scores = combinations
+            .iter()
+            .map(|(score, _)| *score)
+            .collect::<BTreeSet<_>>()
+            .into_iter()
+            .collect::<Vec<_>>();
+        // Split distinct ambiguity scores into ordered thirds. History and the
+        // seed choose within a band, so freshness cannot erase the difficulty.
+        let band = usize::from(difficulty.saturating_sub(3).min(2));
+        combinations
+            .into_iter()
+            .filter(|(score, _)| {
+                let index = scores.binary_search(score).unwrap();
+                // With fewer than three distinct scores, use the nearest available
+                // band; budget reserves still distinguish all five levels.
+                if scores.len() < 3 {
+                    index == band * scores.len().saturating_sub(1) / 2
+                } else {
+                    index * 3 / scores.len() == band
+                }
+            })
+            .map(|(_, triple)| triple)
+            .collect()
     }
 
     pub fn plan_witnesses(
@@ -76,7 +192,10 @@ impl Catalogue {
         seed: u64,
         history: &WitnessHistory,
     ) -> Result<Vec<Vec<WitnessClue>>, String> {
-        let difficulty = match difficulty {
+        if !(1..=5).contains(&difficulty) {
+            return Err("difficulty must be between 1 and 5".into());
+        }
+        let wording = match difficulty {
             1 | 2 => "easy",
             3 => "medium",
             _ => "hard",
@@ -86,7 +205,7 @@ impl Catalogue {
         let mut result = vec![];
         for (stage, origin) in route.iter().enumerate() {
             let target = route.get(stage + 1).unwrap_or(origin);
-            let combinations = self.witness_combinations(origin, target);
+            let combinations = self.difficulty_combinations(origin, target, difficulty);
             // Compute each atom's preference once rather than hashing it for
             // every possible pair. Unheard clues outrank different wordings.
             let scores = self
@@ -123,7 +242,7 @@ impl Catalogue {
                     .get(&atom.atom_id)
                     .into_iter()
                     .flatten()
-                    .filter(|v| v.difficulty == difficulty && v.speech_register == "English")
+                    .filter(|v| v.difficulty == wording && v.speech_register == "English")
                     .min_by_key(|v| {
                         (
                             usize::from(history.dialogues.contains_key(&v.variant_id)),
@@ -137,6 +256,14 @@ impl Catalogue {
                     .filter(|a| a.atom_id != atom.atom_id && a.venue_id == atom.venue_id)
                     .min_by_key(|a| rank(seed, stage, "supplemental", &a.atom_id))
                     .map(|a| a.dialogue.clone());
+                let mut dialogue = variant
+                    .map(|v| v.dialogue.clone())
+                    .unwrap_or_else(|| atom.dialogue.clone());
+                if difficulty == 1 && atom.dimension == "landmark" {
+                    dialogue.push_str(&format!(
+                        " The destination on the travel record was {target}."
+                    ));
+                }
                 plan.push(WitnessClue {
                     atom_id: atom.atom_id.clone(),
                     state: atom.state.clone(),
@@ -145,9 +272,7 @@ impl Catalogue {
                     venue_id: atom.venue_id.clone(),
                     venue_name: atom.venue_name.clone(),
                     witness_roles: atom.witness_roles.clone(),
-                    dialogue: variant
-                        .map(|v| v.dialogue.clone())
-                        .unwrap_or_else(|| atom.dialogue.clone()),
+                    dialogue,
                     dialogue_variant_id: variant.map(|v| v.variant_id.clone()),
                     supplemental_dialogue: supplemental,
                 });
@@ -190,9 +315,9 @@ impl Catalogue {
             for (stage, origin) in route.iter().enumerate() {
                 let target = route.get(stage + 1).unwrap_or(origin);
                 let ids = eligible
-                    .entry((origin.clone(), target.clone()))
+                    .entry((origin.clone(), target.clone(), mission.difficulty))
                     .or_insert_with(|| {
-                        self.witness_combinations(origin, target)
+                        self.difficulty_combinations(origin, target, mission.difficulty)
                             .into_iter()
                             .flatten()
                             .map(|a| a.atom_id.clone())
@@ -220,15 +345,18 @@ impl Catalogue {
             if row.eligible_stops == 0 {
                 let origins = eligible
                     .keys()
-                    .filter(|(_, target)| target == &row.state)
-                    .map(|(origin, _)| origin)
-                    .filter(|origin| {
+                    .filter(|(_, target, _)| target == &row.state)
+                    .map(|(origin, _, difficulty)| (origin, difficulty))
+                    .filter(|(origin, _)| {
                         self.location_venues
                             .contains_key(&((*origin).clone(), row.venue_id.clone()))
                     })
                     .collect::<Vec<_>>();
                 let shares_decisive_venue = !origins.is_empty()
-                    && origins.iter().all(|origin| {
+                    && origins.iter().all(|(origin, difficulty)| {
+                        if **difficulty >= 3 {
+                            return false;
+                        }
                         self.atoms[&row.state]
                             .iter()
                             .filter(|a| a.dimension == "landmark")
@@ -243,7 +371,7 @@ impl Catalogue {
                 } else if shares_decisive_venue {
                     "Shares the decisive landmark witness's venue; three distinct venues are required"
                 } else {
-                    "No compatible ambiguous pair narrows the destination on an authored route"
+                    "No compatible puzzle in the difficulty band on an authored route"
                 }.into();
             }
         }
@@ -292,7 +420,7 @@ mod tests {
                     );
                     assert_eq!(
                         clues.iter().filter(|c| c.dimension == "landmark").count(),
-                        1
+                        usize::from(mission.difficulty <= 2)
                     );
                     let target = route.get(stage + 1).unwrap_or(&route[stage]);
                     let ambiguous = clues
@@ -308,7 +436,14 @@ mod tests {
                     assert!(
                         intersection.len() < ambiguous[0].len()
                             || intersection.len() < ambiguous[1].len()
+                            || mission.difficulty >= 3
                     );
+                    let complete = clues
+                        .iter()
+                        .map(|c| c.candidate_states.split('|').collect::<BTreeSet<_>>())
+                        .reduce(|left, right| left.intersection(&right).copied().collect())
+                        .unwrap();
+                    assert_eq!(complete, BTreeSet::from([target.as_str()]));
                     for clue in clues {
                         assert!(
                             c.location_venues
@@ -327,12 +462,81 @@ mod tests {
                                 _ => "hard",
                             }
                         );
-                        assert_eq!(variant.dialogue, clue.dialogue);
+                        if mission.difficulty == 1 && clue.dimension == "landmark" {
+                            assert_eq!(
+                                clue.dialogue,
+                                format!(
+                                    "{} The destination on the travel record was {target}.",
+                                    variant.dialogue
+                                )
+                            );
+                        } else {
+                            assert_eq!(variant.dialogue, clue.dialogue);
+                        }
                     }
                 }
             }
         }
         assert_eq!(changed, c.missions.len());
+    }
+
+    #[test]
+    fn difficulty_changes_deduction_and_orders_ambiguity_for_every_destination() {
+        let c = catalogue();
+        let mut strictly_harder = 0;
+        for state in c.hubs.keys() {
+            let mut previous = None;
+            for difficulty in 3..=5 {
+                let combinations = c.difficulty_combinations(state, state, difficulty);
+                assert!(!combinations.is_empty(), "{state}: level {difficulty}");
+                let scores = combinations.iter().map(ambiguity).collect::<Vec<_>>();
+                let low = *scores.iter().min().unwrap();
+                let high = *scores.iter().max().unwrap();
+                if let Some(previous) = previous {
+                    assert!(
+                        previous <= low,
+                        "{state}: ambiguity fell at level {difficulty}"
+                    );
+                    strictly_harder += usize::from(previous < low);
+                }
+                previous = Some(high);
+                for triple in combinations {
+                    assert!(
+                        triple
+                            .iter()
+                            .all(|a| a.dimension != "landmark" && candidates(a).len() > 1)
+                    );
+                    let sets = triple.map(candidates);
+                    assert_eq!(
+                        sets[0]
+                            .intersection(&sets[1])
+                            .copied()
+                            .collect::<BTreeSet<_>>()
+                            .intersection(&sets[2])
+                            .copied()
+                            .collect::<BTreeSet<_>>(),
+                        BTreeSet::from([state.as_str()])
+                    );
+                }
+            }
+        }
+        assert_eq!(strictly_harder, c.hubs.len() * 2);
+        let easy = c
+            .plan_witnesses(&["Kano".into()], 1, 7, &WitnessHistory::default())
+            .unwrap();
+        assert!(easy[0].iter().any(|clue| {
+            clue.dialogue
+                .contains("The destination on the travel record was Kano.")
+        }));
+        let standard = c
+            .plan_witnesses(&["Kano".into()], 2, 7, &WitnessHistory::default())
+            .unwrap();
+        assert!(standard[0].iter().any(|clue| clue.dimension == "landmark"));
+        assert!(standard[0].iter().all(|clue| {
+            !clue
+                .dialogue
+                .contains("The destination on the travel record was")
+        }));
     }
 
     #[test]
@@ -508,12 +712,10 @@ mod tests {
             .iter()
             .find(|r| r.atom_id == "landmark-venue-collision")
             .unwrap();
-        assert_eq!(collision.eligible_stops, 0);
-        assert!(
-            collision
-                .exclusion_reason
-                .contains("landmark witness's venue")
-        );
+        // Higher difficulties have no mandatory landmark venue, so this clue
+        // can now be used in a three-account deduction puzzle.
+        assert!(collision.eligible_stops > 0);
+        assert!(collision.exclusion_reason.is_empty());
         let authored_exclusions = rows
             .iter()
             .filter(|r| {

@@ -4714,6 +4714,51 @@ mod tests {
             1
         );
         assert_eq!(store.progression_summary(player).unwrap().solved_cases, 1);
+
+        // Exercise the real random assignment transaction, including both
+        // newest-content and full-catalogue branches, after solving this case.
+        store
+            .connection()
+            .unwrap()
+            .exec_drop(
+                "DELETE FROM active_cases WHERE player_id=:player",
+                params! {"player"=>player},
+            )
+            .unwrap();
+        let mut selected = std::collections::BTreeSet::new();
+        for (index, roll) in [0, 1, 7, 9, 256, 265, 521, u64::MAX]
+            .into_iter()
+            .enumerate()
+        {
+            let case_id = format!("p371-random-unsolved-{index}");
+            let assigned = store
+                .assign_ordinary_case(&case_id, player, roll, 42, |runtime, _, points, _| {
+                    assert_ne!(runtime.mission_id, mission);
+                    let mut game = solved.clone();
+                    game.mission_id = runtime.mission_id;
+                    game.thief_id = runtime.thief_id;
+                    game.difficulty = runtime.difficulty;
+                    game.career_points = points as u32;
+                    game.outcome = None;
+                    Ok(game)
+                })
+                .unwrap();
+            assert!(!assigned.duplicate);
+            assert_ne!(assigned.state.mission_id, mission);
+            selected.insert(assigned.state.mission_id);
+            store
+                .connection()
+                .unwrap()
+                .exec_drop(
+                    "DELETE FROM active_cases WHERE case_id=:case AND player_id=:player",
+                    params! {"case"=>case_id,"player"=>player},
+                )
+                .unwrap();
+        }
+        assert!(
+            selected.len() > 1,
+            "random rolls must still vary the selected case"
+        );
     }
 
     #[test]

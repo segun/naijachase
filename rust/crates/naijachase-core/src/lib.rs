@@ -36,6 +36,16 @@ pub fn investigation_minutes(base_minutes: u32, is_home_base: bool) -> u32 {
 }
 pub const TRANSPORT_RULES_VERSION: u16 = 1;
 pub const CASE_DEADLINE_MINUTES: u32 = 10_080;
+/// Spare cash above a fully funded correct itinerary, before allocation rounding.
+pub fn case_budget_reserve_percent(difficulty: u8) -> u32 {
+    match difficulty {
+        1 => 80,
+        2 => 60,
+        3 => 40,
+        4 => 30,
+        _ => 20,
+    }
+}
 pub fn interstate_quote(base_minutes: u32, mode: &str) -> Result<(u32, u32), Error> {
     match mode {
         "fly" => Ok((

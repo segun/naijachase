@@ -88,7 +88,8 @@ without deciding whether a move, warrant, or arrest is valid.
 `Catalogue::load` builds routes, per-mission/per-stage clue atom indices, local
 travel cost lists, venue availability and opening budgets before publishing the
 catalogue. Budgets aggregate each mission baseline once into a maximum for its
-difficulty, retaining the existing reserve and rounding. Off-trail venue lists
+difficulty, adding the level's 80/60/40/30/20% reserve and rounding to ₦5,000.
+See [case difficulty](case-difficulty.md). Off-trail venue lists
 are shared by state and clue rotation rather than duplicated per mission.
 These caches belong to one catalogue snapshot; treat its source tables as
 immutable and reload the catalogue to replace content. Player visits, funds,
