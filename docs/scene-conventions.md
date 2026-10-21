@@ -10,25 +10,19 @@ At widths up to 960 px in portrait, office, garage, witness, journey and raid
 canvases use a bounded landscape-shaped viewing area. Witness/raid captions sit
 below the picture, with independent scrolling for long text. This is a layout
 change; timeline and renderer selection remain unchanged. See `mobile-case-ux.md`.
-Witness completion now opens the full saved account instead of automatically
-leaving the scene. Read full clue opens it early; Continue performs the guarded
-handoff once. Opening the account cancels renderer setup and disposes the scene.
-Keep this explicit reading step for both animated and flat presentations.
+Witnesses pause at `plan.speechEnd` and stay available for exploration. Read clue
+opens a DOM drawer without disposing the scene. **Return to office** plays the
+remaining departure and performs the guarded handoff once. No timer closes the
+interview. Drag/swipe and arrow keys aim the camera from its fixed position.
 
 ## The rule
 
-**Current policy (supersedes the legacy two-renderer guidance below):** login keeps its 2D chase. Non-login scenes should skip
-animation at Simple detail and show their functional content instead. Apply this one scene at a time during its next integration pass;
-do not remove all existing 2D renderers in one sweep. Preserve essential dialogue, clues, choices, server timing and outcomes.
-The office has adopted this policy: Simple opens its desk immediately, without entry/return/exploration/exit animation or an alert.
-Switching to Simple during its intro or exploration opens the desk; increasing detail afterwards must not replay or re-gate that entry.
-Witness has also adopted this policy: Simple shows the full server account and an explicit Continue action, without a canvas or animation.
-3D failure opens that same account with an alert and error details; `nc-witness-flat` remembers the failure independently of journey.
-Full/Standard use the shared pure timeline and preserve elapsed time on rebuilds; cancelled setup must not publish late callbacks.
-Journey has adopted this policy: ordinary Simple journeys hand off to the desk once; weekly Simple journeys retain server progress and Back.
-3D failure shows journey status with an alert and Continue/Back (`nc-journey-flat`). Neither skipping nor returning changes server travel timing.
-Panel, archive and garage behaviour is unchanged. The following two-renderer instructions document legacy implementations
-until each is updated; they do not require adding witness, office or journey 2D animation back.
+Office, garage and witness scenes use the two-renderer rule below, including at
+Simple detail. Their shared timelines preserve progress when 3D falls back to
+Canvas 2D. This replaces the former flat-only office/witness policy for these
+scenes. Journey retains its existing functional Simple handoff pending a separate
+scene integration; generic stages without an explicit `load2d` still use their
+functional DOM fallback. Do not copy those exceptions into a new scene.
 
 A scene is never skipped because the device is weak, and it never leaves a black screen. Every animated scene
 has **two renderers that show the same thing**:
@@ -40,8 +34,7 @@ has **two renderers that show the same thing**:
 
 If 3D fails to start, throws while drawing, loses its WebGL context, stops producing frames or runs too
 slowly, the scene **carries on in 2D from the moment it had reached**, and remembers that for the rest of the
-session (`sessionStorage` key `nc-witness-2d`) so the next scene does not fail the same way. Only if 2D also fails is
-anything shown, and then it is the reason, with a button to continue, never a silent jump. A player can force
+session (`sessionStorage` key `nc-witness-2d`) so the next scene does not fail the same way. If 2D also fails, show readable functional content and an explicit exit, never a black screen. A player can force
 2D with `localStorage["nc-scene"] = "2d"`, which is also how you test it.
 
 The renderers are renderers, not separate games: they consume the same events, reveal the same clues, charge the
@@ -50,7 +43,7 @@ same time and produce the same outcome. `docs/web-vertical-slice.md` and `TODO.m
 ## How to build a scene so both renderers stay in step
 
 The witness scene in `web/src/scenes/witness/` remains the reference for pure choreography and renderer separation.
-Its Canvas 2D files are now legacy utilities retained for the old journey 2D source, not an active Simple renderer:
+Its Canvas 2D files are the active Simple/failure renderer:
 
 | File | Holds | Imports a graphics library? |
 | --- | --- | --- |
@@ -59,7 +52,7 @@ Its Canvas 2D files are now legacy utilities retained for the old journey 2D sou
 | `witness-driver.ts` | The options and handle both renderers share, sound, subtitles, per-frame bookkeeping. | No |
 | `chase3d-witness.ts` | The 3D picture for time `t`. | Babylon.js |
 | `witness-2d.ts` | The 2D picture for the same `t`, using the same camera path (billboards under a real perspective projection). | No (Canvas 2D) |
-| `WitnessScene.svelte` | Chooses 3D or readable account, owns subtitles, Skip and guarded Continue. | No |
+| `WitnessScene.svelte` | Chooses 3D or Canvas 2D, owns subtitles, clue drawer, exploration and guarded Return to office. | No |
 
 Rules:
 
@@ -80,7 +73,7 @@ Rules:
 
 ## Adding a venue to the witness scenes
 
-A venue is a recipe plus a 3D scenery set; the choreography is shared and does not change. Simple needs no scenery set.
+A venue is a recipe plus a 3D scenery set; the choreography is shared and does not change. Register the matching Canvas scenery set too.
 
 - Recipe: `recipes-open-air.ts` or `recipes-buildings.ts` (the market's is in `venue-recipes.ts`), built with `recipe-kit.ts`.
 - 3D set: register in `chase3d-open-air.ts` / `chase3d-buildings.ts` (via `chase3d-sets.ts`) under the recipe's `set` id.
@@ -197,12 +190,20 @@ hip translation to move a runner away from its timeline position. Its desktop-on
 The case office uses the selected avatar and nine separate furniture models at Full detail; Standard keeps the procedural room and
 downloads no GLBs. The generated room shell is not used because furniture is baked into it. Character clips and keyboard reach must
 be sampled from the scene's `Pose` and time, never `performance.now()`, so rebuilding at another detail level preserves the pose.
-Witness Continue opens the case desk immediately at every detail level, without an office intro, zoom or second Continue button.
+Witness Return to office opens the case desk immediately at every detail level, without an office intro, zoom or second Continue button.
 The office consumes a one-entry flag; rebuilding its renderer or changing detail must not restore the exploration pause.
 Other office entries pause seated before the zoom: drag/swipe or arrow keys orbit the camera, and
 **Continue to case desk** resumes from that view. Keep the exploration hint/button in DOM, leave the terminal inert while paused, and
-do not mistake the intentional pause for a stalled renderer. At Simple the office bypasses the pause and opens the desk directly.
+do not mistake the intentional pause for a stalled renderer. At Simple, Canvas 2D preserves the same pause and desk transition.
 
-**Existing exception to the two-renderer rule:** generic room stages (including the office) currently show their flat DOM content at
-Simple detail or on 3D failure, rather than an animated Canvas 2D room. The office intentionally has no 2D animation under the new
-policy; its former 2D implementation task has been removed.
+Office and garage share `shared/room-2d.ts`. It consumes their existing pure poses,
+shots and intro/outro timings. Advertisements use the same placement catalogue in
+both renderers; see [advertising.md](advertising.md). Keep posters out of avatar
+walking corridors, preserve nearest-object picking in 3D, and keep an accessible
+DOM route to every slot through **Sponsors & ad spaces**.
+
+Room stall detection is phase-aware (`shared/room-watchdog.ts`). Settled garage/desk
+views and office exploration deliberately stop the render loop and redraw on input;
+the absence of continuous frames there must never trigger a switch to Canvas 2D.
+Only an unfinished intro or a missing initial exploration frame is timed out, and
+hidden tabs are excluded. Departure has its separate bounded completion guard.

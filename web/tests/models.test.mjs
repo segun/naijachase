@@ -171,7 +171,7 @@ test("scenes follow the picture-detail setting and can switch while playing", ()
   for (const f of ["scenes/witness/WitnessScene.svelte", "scenes/journey/JourneyScene.svelte", "scenes/panel/PanelScene.svelte"]) {
     const view = read(f);
     assert.match(view, /detail\.resolved/, f);
-    assert.match(view, /const mode = \$derived/, `${f}: the renderer follows the setting`);
+    assert.match(view, /const mode\s*=\s*\$derived/, `${f}: the renderer follows the setting`);
     assert.match(view, /data-key=\{canvasKey\}/, `${f}: a new canvas for a new renderer or detail`);
   }
   assert.match(read("scenes/shared/Stage.svelte"), /detailKey\(applied\)/);

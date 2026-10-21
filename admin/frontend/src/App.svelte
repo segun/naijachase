@@ -5,6 +5,7 @@
   import type { Overview, Period, Registrations, RegistrationStatus, Session, SystemInfo } from "./types.ts";
   import Icon from "./Icon.svelte";
   import Staff from "./Staff.svelte";
+  import Ads from "./Ads.svelte";
   import Operations from "./Operations.svelte";
   import { can, navigationFor, type Tab } from "./access.ts";
 
@@ -34,6 +35,7 @@
   let systemRequest = 0;
 
   const titles: Record<Tab, { eyebrow: string; title: string; description: string }> = {
+    ads: { eyebrow: "SCENERY ADVERTISING", title: "Advertisements", description: "Upload artwork, reserve placements and schedule campaigns." },
     overview: { eyebrow: "YOUR APP, AT A GLANCE", title: "Operations overview", description: "Understand your audience, registration journey, and service health." },
     registrations: { eyebrow: "THE REGISTRATION JOURNEY", title: "Registration activity", description: "Review recorded registration attempts and where people left off." },
     staff: { eyebrow: "STAFF ACCESS", title: "Staff accounts", description: "Manage named administrators and their permissions." },
@@ -216,7 +218,9 @@
         {#if tab === "overview" || tab === "registrations" || tab === "system"}<div class="refresh-line"><span><Icon name="clock" size={13} /> {tab === "system" ? `Collected ${utc(system.data?.collected_at)}` : tab === "registrations" ? `Updated ${utc(registrations.data?.generated_at)}` : `Updated ${utc(overview.data?.generated_at)}`}</span><label class="refresh-toggle"><input type="checkbox" bind:checked={autoRefresh} /> Auto-refresh every minute</label></div>{/if}
 
         {#if session.is_bootstrap && tab !== "staff"}<div class="notice informational"><p>You are using the default admin. <button class="text-button" onclick={() => tab = "staff"}>Create your named owner</button> to finish setup and retire this account.</p></div>{/if}
-        {#if tab === "staff" || tab === "audit"}
+        {#if tab === "ads"}
+          <Ads {expired} />
+        {:else if tab === "staff" || tab === "audit"}
           <Staff section={tab} {session} {refreshKey} onunauthorized={sessionExpired} onretired={bootstrapRetired} onsessionchange={reloadSession} />
         {:else if tab === "accounts" || tab === "analytics" || tab === "alerts" || tab === "moderation"}
           <Operations section={tab} permissions={session.permissions} onunauthorized={sessionExpired} {refreshKey} />

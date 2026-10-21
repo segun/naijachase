@@ -1,3 +1,5 @@
+import { lookAround } from "../shared/look-around.ts";
+import { canvasAds } from "../../ads/canvas-ads.ts";
 // The 2D renderer for the witness scene: the same venue, the same people and the same timeline as chase3d-witness.ts, drawn with the
 // plain Canvas 2D API. It needs no WebGL and no download beyond this file, so it runs where the 3D scene cannot (no WebGL, Save-Data, a
 // slow network, low memory, a low frame rate). It reads the same pure rules (witness-scene.ts) and layout (market-layout.ts), so the
@@ -38,10 +40,13 @@ export async function createWitnessScene2D(canvas: HTMLCanvasElement, options: W
   };
   resize();
 
+  let yaw=0,pitch=0,departing=false;
+  let end=plan.speechEnd;
+  const ads=canvasAds(canvas,options.recipe.id,()=>{if(!running)draw(lastT);});
   const paint = (t: number) => {
     lastT = t;
     g.setTransform(dpr, 0, 0, dpr, 0, 0);
-    const c = makeCam(fitShot(cameraAt(plan, t), W / H), W, H);
+    const c = makeCam(fitShot(!departing && t>=plan.speechEnd ? lookAround(cameraAt(plan,plan.speechEnd),yaw,pitch) : cameraAt(plan, t), W / H), W, H);
     const flat = norm([c.f[0], 0, c.f[2]]);
     const horizon = Math.min(H, Math.max(0, project(c, c.pos[0] + flat[0] * 400, 0, c.pos[2] + flat[2] * 400).y));
 
@@ -67,7 +72,7 @@ export async function createWitnessScene2D(canvas: HTMLCanvasElement, options: W
     strip(ROAD_Z - 1.7, ROAD_Z + 1.7, lane.road); strip(ROAD_Z + 1.7, ROAD_Z + 1.85, lane.kerb);
     for (let dx = -56; dx < 56; dx += 8) polygon(g, c, [[dx, 0.01, ROAD_Z - 0.07], [dx + 4, 0.01, ROAD_Z - 0.07], [dx + 4, 0.01, ROAD_Z + 0.07], [dx, 0.01, ROAD_Z + 0.07]], lane.dash);
 
-    const items: Item[] = [...(dressing.items?.(c, t) ?? [])];
+    const items: Item[] = [...(dressing.items?.(c, t) ?? []), ...ads.items(g,c)];
 
     // The vehicle, the player and the witness.
     const vx = vehicleXAt(plan, t);
@@ -107,14 +112,14 @@ export async function createWitnessScene2D(canvas: HTMLCanvasElement, options: W
   let frames = 0, sampleAt = 0;
   const frame = (now: number) => {
     if (started < 0) { started = now - from * 1000; sampleAt = now; }
-    const t = skipped ? plan.end : Math.min(plan.end, (now - started) / 1000);
+    const t = skipped ? end : Math.min(end, (now - started) / 1000);
     draw(t);
     frames++;
     if (now - sampleAt > 1200) {
       samples.push((frames * 1000) / (now - sampleAt)); frames = 0; sampleAt = now;
       if (samples.length >= 3 && samples.slice(-3).reduce((a, b) => a + b, 0) / 3 < 20) { samples.length = 0; options.onSlow?.(); }
     }
-    if (t >= plan.end) { running = false; done?.(); done = undefined; return; }
+    if (t >= end) { running = false; done?.(); done = undefined; return; }
     raf = requestAnimationFrame(frame);
   };
   const observer = new ResizeObserver(() => { resize(); if (!running) draw(lastT); });
@@ -124,11 +129,13 @@ export async function createWitnessScene2D(canvas: HTMLCanvasElement, options: W
     words, pages, duration: plan.end,
     now: () => lastT,
     start(begin = options.reducedMotion ? plan.walkEnd : 0) {
-      return new Promise<void>(resolve => { done = resolve; from = begin; started = -1; skipped = false; running = true; raf = requestAnimationFrame(frame); });
+      return new Promise<void>(resolve => { done = resolve; from = Math.min(begin,end); started = -1; skipped = false; running = true; raf = requestAnimationFrame(frame); });
     },
     skip() { skipped = true; },
+    look(dx,dy){yaw=Math.max(-1.35,Math.min(1.35,yaw+dx));pitch=Math.max(-.4,Math.min(.4,pitch+dy));if(!departing)draw(plan.speechEnd);},
+    leave(begin=plan.speechEnd){departing=true;end=plan.end;return new Promise<void>(resolve=>{done=resolve;from=Math.max(plan.speechEnd,Math.min(plan.end,begin));started=-1;skipped=false;running=true;raf=requestAnimationFrame(frame);});},
     seek(seconds) { cancelAnimationFrame(raf); running = false; draw(seconds); },
-    dispose() { cancelAnimationFrame(raf); observer.disconnect(); driver.dispose(); done?.(); }
+    dispose() { cancelAnimationFrame(raf); observer.disconnect(); ads.dispose(); driver.dispose(); done?.(); }
   };
 }
 

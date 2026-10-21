@@ -25,7 +25,7 @@ export default defineConfig(({ mode }) => {
     server: {
       host: "127.0.0.1",
       port: 4173,
-      proxy: { "/api": { target, rewrite: path => path.replace(/^\/api/, "") } }
+      proxy: { "/ads-api": { target: environment.ADS_API_TARGET ?? "http://127.0.0.1:8081" }, "/api": { target, rewrite: path => path.replace(/^\/api/, "") } }
     },
     preview: { host: "127.0.0.1", port: 4173 }
   };

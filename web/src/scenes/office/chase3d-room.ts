@@ -1,3 +1,4 @@
+import { addSceneAds } from "../shared/chase3d-ads.ts";
 // Lazily loaded Babylon.js scene for the post-login "room": the player's avatar walks in, sits at a computer and the camera
 // pushes in until the monitor fills the screen, where the DOM terminal takes over. Full detail replaces individual procedural
 // objects with generated models; a failed model leaves its built-in counterpart. Timing and framing live in room-scene.ts.
@@ -20,7 +21,7 @@ export type RoomOptions = SceneOptions;
 
 export async function createRoomScene(canvas: HTMLCanvasElement, options: RoomOptions): Promise<RoomHandle> {
   options.signal?.throwIfAborted();
-  const stage = createStage(canvas, { hour: options.hour, quality: options.quality, models: options.models, signal: options.signal });
+  const stage = createStage(canvas, { onFault: options.onFault, hour: options.hour, quality: options.quality, models: options.models, signal: options.signal });
   const { scene, palette, mat, box, cyl, plane, textured, place, caster: casters, trim, wood, darkWood, centreX, light } = stage;
   const abort = () => { scene.dispose(); stage.engine.dispose(); };
   options.signal?.addEventListener("abort", abort, { once: true });
@@ -291,6 +292,7 @@ export async function createRoomScene(canvas: HTMLCanvasElement, options: RoomOp
   };
 
   await wait(scene.whenReadyAsync());
+  addSceneAds(stage, canvas, "office");
   const handle = stage.run({ end: exploring ? T_ZOOM_START : T_END, update, onSlow: options.onSlow, startSeconds: options.startSeconds });
   return {
     ...handle,

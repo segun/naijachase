@@ -8,10 +8,14 @@
   import type { AppController } from "../../state/app.svelte";
   import { detail } from "./detail.svelte.ts";
   import { detailKey } from "./detail-level.ts";
+  import { roomRendererStalled } from "./room-watchdog.ts";
   import "../../styles/terminal.css";
+  import SceneAds from "../../ads/SceneAds.svelte";
 
-  let { app, seenKey, load, loading = "Opening the office…", sheet = "crt", quick = false, startAtDesk = false, introFrom = 0, exploreAt, skipSimpleAnimation = false, children }: {
+  let { app, seenKey, load, load2d, adScene, loading = "Opening the office…", sheet = "crt", quick = false, startAtDesk = false, introFrom = 0, exploreAt, skipSimpleAnimation = false, children }: {
     app: AppController;
+    load2d?: (canvas: HTMLCanvasElement, options: SceneOptions) => Promise<Omit<SceneHandle,"scene">>;
+    adScene?: string;
     /** sessionStorage key marking that this room's intro has played in this sign-in. Without one the intro plays every time. */
     seenKey?: string;
     /** Imports and starts the scene; it must be a dynamic import so Babylon.js stays out of the main bundle. */
@@ -32,9 +36,6 @@
   } = $props();
 
   const AVATAR_WAIT_MS = 8000;
-  // If the scene never draws its first frame (a hidden tab, a stalled GPU) or stops advancing, hand over to the terminal.
-  const FIRST_FRAME_MS = 7000;
-  const STALL_MS = 3000;
   /** Leaving must never hang the screen: if the exit animation has not ended by now, carry on. */
   const LEAVE_MAX_MS = 6000;
   // The picture detail the player chose (or the device allows). It can change at any moment; the scene is then rebuilt where it had got to.
@@ -46,7 +47,7 @@
   const seen = seenKey !== undefined && sessionStorage.getItem(seenKey) === "1";
 
   // svelte-ignore state_referenced_locally
-  const playIntro = !startAtDesk && detail.resolved.renderer === "3d" && (!seen || quick || exploreAt !== undefined);
+  const playIntro = !startAtDesk && (detail.resolved.renderer === "3d" || Boolean(load2d)) && (!seen || quick || exploreAt !== undefined);
   // svelte-ignore state_referenced_locally
   let phase = $state<"intro" | "look" | "desk" | "outro">(startAtDesk ? "desk" : playIntro ? "intro" : exploreAt !== undefined && !skipSimpleAnimation ? "look" : "desk");
   // svelte-ignore state_referenced_locally
@@ -55,7 +56,9 @@
   let has3d = $state(false);
   let failed = $state(false);
   let canvas = $state<HTMLCanvasElement>();
-  let handle: SceneHandle | undefined;
+  let handle: Omit<SceneHandle,"scene"> | undefined;
+  const use3d = $derived(wants3d && !failed);
+  const rendererKey = $derived(`${use3d ? "3d" : "2d"}-${detailKey(applied)}`);
   let lastFrame = 0;
   /** Where the intro had got to when the scene was last rebuilt (a detail change mid-intro), so it carries on from there. */
   let resume = 0;
@@ -67,7 +70,7 @@
 
   $effect(() => { const next = detail.resolved; if (untrack(() => phase) !== "outro") applied = next; });
   // Dropping to the simple level mid-intro opens the screen straight away instead of waiting for a scene that is no longer drawn.
-  $effect(() => { if (!wants3d && (phase === "intro" || phase === "look")) fallback(); });
+  $effect(() => { if (!wants3d && !load2d && (phase === "intro" || phase === "look")) fallback(); });
 
   const awake = $derived(phase === "desk" || phase === "outro" || glass > 0.92);
 
@@ -82,7 +85,7 @@
   }
 
   function fallback() {
-    if (skipSimpleAnimation && !wants3d) { continued = true; lookX = 0; lookY = 0; finish(); return; }
+    if (skipSimpleAnimation && !wants3d && !load2d) { continued = true; lookX = 0; lookY = 0; finish(); return; }
     if (exploreAt !== undefined && !continued) { phase = "look"; glass = 0; }
     else finish();
   }
@@ -90,20 +93,21 @@
   function continueToDesk() {
     if (phase !== "look") return;
     continued = true; lookX = 0; lookY = 0;
-    if (handle?.continue && wants3d && ready) { lastFrame = performance.now(); phase = "intro"; handle.continue(); }
+    if (handle?.continue && ready) { lastFrame = performance.now(); phase = "intro"; handle.continue(); }
     else finish();
   }
 
   function look(dx: number, dy: number) {
-    if (phase !== "look" || !ready) return;
-    const x = Math.max(-0.7, Math.min(0.7, lookX + dx));
+    if ((phase !== "look" && !(adScene === "garage" && phase === "desk")) || !ready) return;
+    const limit = adScene === "office" ? .7 : 1.35;
+    const x = Math.max(-limit, Math.min(limit, lookX + dx));
     const y = Math.max(-0.3, Math.min(0.4, lookY + dy));
     handle?.look?.(x - lookX, y - lookY);
     lookX = x; lookY = y;
   }
 
   function pointerDown(e: PointerEvent) {
-    if (phase !== "look" || !ready || e.button !== 0) return;
+    if ((phase !== "look" && !(adScene === "garage" && phase === "desk")) || !ready || e.button !== 0) return;
     dragging = e.pointerId; pointerX = e.clientX; pointerY = e.clientY;
     canvas?.setPointerCapture(e.pointerId);
   }
@@ -124,7 +128,7 @@
   async function leave(how?: string) {
     if (phase !== "desk") return;
     phase = "outro";
-    if (skipSimpleAnimation && !wants3d) return;
+    if (skipSimpleAnimation && !wants3d && !load2d) return;
     const exit = handle?.leave;
     if (exit) await Promise.race([exit(how), new Promise(resolve => setTimeout(resolve, LEAVE_MAX_MS))]);
     else { glass = 0; await new Promise(resolve => setTimeout(resolve, 250)); }
@@ -135,7 +139,9 @@
     const target = canvas;
     const preset = app.avatar;
     const level = applied;
-    if (!target || level.renderer !== "3d" || target.dataset.key !== detailKey(level)) return;
+    const three = use3d;
+    const renderer = three ? load : load2d;
+    if (!target || !renderer || target.dataset.key !== rendererKey) return;
     const currentPhase = untrack(() => phase);
     const intro = currentPhase === "intro";
     const looking = currentPhase === "look";
@@ -145,10 +151,13 @@
     const began = performance.now();
     lastFrame = 0;
     const watchdog = intro || looking ? setInterval(() => {
-      if (untrack(() => phase) === "look" && lastFrame) return;
-      if (performance.now() - (lastFrame || began) > (lastFrame ? STALL_MS : FIRST_FRAME_MS)) { failed = true; fallback(); }
+      if (roomRendererStalled(untrack(() => phase), lastFrame, began, performance.now(), document.hidden)) {
+        resume = handle?.now() ?? resume;
+        if (three && load2d) failed = true; else fallback();
+      }
     }, 500) : undefined;
-    load(target, {
+    renderer(target, {
+      onFault: () => { if (!cancelled) { resume=handle?.now() ?? resume; if(three && load2d) failed=true; else fallback(); } },
       signal: controller.signal,
       exploreAt: continued ? undefined : exploreAt,
       onExplore: () => { if (!cancelled && !continued) { phase = "look"; glass = 0; } },
@@ -160,23 +169,23 @@
         lastFrame = performance.now(); ready = true;
         if (phase === "intro") { glass = v; if (v >= 1) finish(); } else if (phase === "outro") glass = v;
       },
-      onSlow: () => handle?.skip()
+      onSlow: () => { if(three && load2d) { resume=handle?.now() ?? resume; failed=true; } else handle?.skip(); }
     })
-      .then(h => { if (cancelled) h.dispose(); else { handle = h; has3d = true; if (looking) h.look?.(lookX, lookY); } })
-      .catch(e => { if (cancelled) return; console.error("The 3D scene failed; opening the screen instead.", e); has3d = false; failed = true; fallback(); });
+      .then(h => { if (cancelled) h.dispose(); else { handle = h; has3d = three; if (looking || (adScene === "garage" && !intro)) h.look?.(lookX, lookY); } })
+      .catch(e => { if (cancelled) return; console.error("The 3D scene failed; opening the screen instead.", e); has3d = false; if(three && load2d) failed=true; else fallback(); });
     return () => {
       cancelled = true; clearInterval(watchdog);
       if ((intro || looking) && handle) resume = handle.now();
       dragging = undefined;
       controller.abort();
-      handle?.dispose(); handle = undefined; has3d = false; ready = false; failed = false;
+      handle?.dispose(); handle = undefined; has3d = false; ready = false;
     };
   });
 
   function key(e: KeyboardEvent) {
     if (e.defaultPrevented || (e.target instanceof Element && e.target.closest("input, textarea, select, [role=dialog]"))) return;
     if (e.target instanceof Element && e.target.closest("button") && ["Enter", " "].includes(e.key)) return;
-    if (phase === "look") {
+    if (phase === "look" || (adScene === "garage" && phase === "desk")) {
       if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(e.key)) {
         e.preventDefault();
         look(e.key === "ArrowLeft" ? -0.08 : e.key === "ArrowRight" ? 0.08 : 0, e.key === "ArrowUp" ? 0.05 : e.key === "ArrowDown" ? -0.05 : 0);
@@ -191,17 +200,21 @@
 
 <svelte:window onkeydown={key} />
 
-<div class="room" class:flat={!has3d} data-surface={sheet}>
-  {#if wants3d}{#key detailKey(applied)}<canvas class="room-canvas" class:ready data-key={detailKey(applied)} bind:this={canvas} aria-hidden="true" onpointerdown={pointerDown} onpointermove={pointerMove} onpointerup={pointerUp} onpointercancel={pointerUp}></canvas>{/key}{/if}
+<div class="room" class:flat={!has3d && !load2d} data-surface={sheet}>
+  {#if use3d || load2d}{#key rendererKey}<canvas class="room-canvas" class:ready data-key={rendererKey} bind:this={canvas} aria-hidden="true" onpointerdown={pointerDown} onpointermove={pointerMove} onpointerup={pointerUp} onpointercancel={pointerUp}></canvas>{/key}{/if}
   {#if phase === "intro" && !ready}<p class="room-loading" role="status">{loading}</p>{/if}
   <div class="glass" class:paper={sheet === "paper"} class:dock={sheet === "dock"} style:opacity={glass} style:visibility={glass > 0.01 ? "visible" : "hidden"} inert={phase !== "desk"}>
     {@render children(awake, leave)}
   </div>
+  {#if adScene && (phase === "look" || adScene === "garage")}<SceneAds scene={adScene} />{/if}
+  {#if adScene === "garage" && phase === "desk"}<p class="garage-look-hint">Drag or swipe to look around · Tap a poster to view</p>{/if}
   {#if phase === "look"}
     <section class="room-look" aria-label="Look around the office">
       <p role="status">Look around the office</p>
-      <span>{failed ? "The office camera is unavailable. You can still continue to the case desk." : wants3d && ready ? "Drag or swipe the scene, or use the arrow keys." : wants3d ? "Preparing the office view..." : "Camera movement is unavailable at Simple detail."}</span>
+      <span>{failed && !load2d ? "The office camera is unavailable. You can still continue to the case desk." : ready ? "Drag or swipe the scene, or use the arrow keys." : wants3d ? "Preparing the office view..." : "Camera movement is unavailable at Simple detail."}</span>
       <button type="button" onclick={continueToDesk}>Continue to case desk</button>
     </section>
   {:else if phase !== "desk"}<button class="room-skip" type="button" onclick={skip}>{phase === "intro" ? "Skip intro" : "Skip"} <kbd>Esc</kbd></button>{/if}
 </div>
+
+<style> .garage-look-hint{position:absolute;top:calc(7.5rem + env(safe-area-inset-top));left:1rem;pointer-events:none;font-size:12px;color:#fff1cf;background:#0c2e24c9;padding:6px 10px;border-radius:8px;max-width:calc(100% - 2rem)} </style>

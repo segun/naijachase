@@ -6,9 +6,9 @@ const read = path => fs.readFileSync(new URL(path, import.meta.url), "utf8");
 
 test("production bundle budgets fail the build when exceeded", () => {
   const budget = read("../dev/check-budget.mjs");
-  assert.match(budget, /initialJs:\s*60 \* 1024/);
+  assert.match(budget, /initialJs:\s*62 \* 1024/);
   assert.match(budget, /initialCss:\s*10 \* 1024/);
-  assert.match(budget, /lazyJsTotal:\s*950 \* 1024/);
+  assert.match(budget, /lazyJsTotal:\s*975 \* 1024/);
   assert.match(budget, /lazyJsChunk:\s*365 \* 1024/);
   assert.match(budget, /process\.exitCode = 1/);
   assert.doesNotMatch(budget, /advisory size target/);

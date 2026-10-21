@@ -129,7 +129,7 @@ test("ordinary 3D office entries offer exploration and Continue, without changin
   assert.match(stage, /Continue to case desk/);
   assert.match(stage, /onpointermove=\{pointerMove\}/);
   assert.match(stage, /ArrowLeft/);
-  assert.match(stage, /untrack\(\(\) => phase\) === "look" && lastFrame/, "an intentional pause is not treated as a stalled intro");
+  assert.match(stage, /roomRendererStalled\(untrack\(\(\) => phase\), lastFrame/, "room watchdog uses the tested phase-aware stall policy");
   assert.doesNotMatch(read("scenes/archive/ArchiveRoom.svelte"), /exploreAt=/);
   assert.match(read("App.svelte"), /app\.panel \|\| isCaseScreen\(app\.screen\)/, "detail controls remain available in the office after a witness return");
 });
@@ -143,15 +143,16 @@ test("mobile office exploration reserves space above the detail button and handl
   assert.match(stage, /canvas\.releasePointerCapture\(e\.pointerId\)/);
 });
 
-test("Simple office opens the desk without animation or exploration and other rooms are unchanged", () => {
+test("Office and garage opt into Canvas fallbacks while archive behaviour stays unchanged", () => {
   const stage = read("scenes/shared/Stage.svelte");
-  assert.match(read("scenes/office/Room.svelte"), /skipSimpleAnimation/);
+  assert.match(read("scenes/office/Room.svelte"), /load2d=/);
+  assert.match(read("scenes/garage/GarageRoom.svelte"), /load2d=/);
   assert.doesNotMatch(read("scenes/archive/ArchiveRoom.svelte"), /skipSimpleAnimation/);
   assert.doesNotMatch(read("scenes/garage/GarageRoom.svelte"), /skipSimpleAnimation/);
   assert.match(stage, /exploreAt !== undefined && !skipSimpleAnimation \? "look" : "desk"/);
   assert.match(stage, /let continued = startAtDesk \|\| \(skipSimpleAnimation && !playIntro\)/);
-  assert.match(stage, /skipSimpleAnimation && !wants3d\) \{ continued = true; lookX = 0; lookY = 0; finish\(\); return; \}/);
-  assert.match(stage, /phase = "outro";\s*if \(skipSimpleAnimation && !wants3d\) return;/);
+  assert.match(stage, /skipSimpleAnimation && !wants3d && !load2d\) \{ continued = true; lookX = 0; lookY = 0; finish\(\); return; \}/);
+  assert.match(stage, /phase = "outro";\s*if \(skipSimpleAnimation && !wants3d && !load2d\) return;/);
   assert.doesNotMatch(stage, /Look around is unavailable in Simple mode|Use Standard detail/);
 });
 

@@ -54,7 +54,7 @@ function systemResponse(value: unknown): SystemInfo {
   return validated(value, timestamp(value.collected_at) && value.scope === "admin_host" && validHost && health(value.database.status) && health(value.application_api.status) && validQueue);
 }
 
-async function request<T>(path: string, options: RequestInit = {}, allowUnavailable = false): Promise<T> {
+export async function request<T>(path: string, options: RequestInit = {}, allowUnavailable = false): Promise<T> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 15_000);
   try {

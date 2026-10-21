@@ -45,6 +45,7 @@ pub(crate) fn permissions(role: &str) -> Vec<&'static str> {
             "accounts:support",
             "moderation:read",
             "moderation:resolve",
+            "ads:manage",
         ]);
     }
     if role == "owner" {

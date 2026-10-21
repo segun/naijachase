@@ -106,7 +106,7 @@ try {
   }
   const control = admin.ADMIN_CONTROL_MYSQL_DATABASE;
   if (query(`SELECT COUNT(*) FROM information_schema.schemata WHERE schema_name=${sqlString(control)}`) === "0") query(`CREATE DATABASE \`${control}\` CHARACTER SET utf8mb4`, undefined, "Create admin control schema");
-  for (const migration of ["0001_staff.sql", "0002_operations.sql"]) query(fs.readFileSync(path.join(repository, "admin/backend/migrations", migration), "utf8"), control, `Admin migration ${migration}`);
+  for (const migration of ["0001_staff.sql", "0002_operations.sql", "0003_advertising.sql", "0004_ad_analytics.sql"]) query(fs.readFileSync(path.join(repository, "admin/backend/migrations", migration), "utf8"), control, `Admin migration ${migration}`);
   for (const [template, user, password, checkDatabase, checkTable] of [
     ["admin-grants.sql", admin.ADMIN_MYSQL_USER, admin.ADMIN_MYSQL_PASSWORD, game.MYSQL_DATABASE, "admin_reporting_accounts_v1"],
     ["admin-control-grants.sql", admin.ADMIN_CONTROL_MYSQL_USER, admin.ADMIN_CONTROL_MYSQL_PASSWORD, control, "admin_staff"],

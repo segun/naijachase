@@ -42,6 +42,8 @@ export type WitnessHandle = {
   /** Jumps to the end, which resolves `start`. */
   skip(): void;
   dispose(): void;
+  look?: (dx: number, dy: number) => void;
+  leave?: (from?: number) => Promise<void>;
   words: string[];
   pages: Page[];
   duration: number;

@@ -219,20 +219,19 @@ test("the garage hands the visit to the witness scene, which loads lazily and ne
   assert.match(root, /import\("\.\/scenes\/witness\/WitnessScene\.svelte"\)/);
   assert.match(view, /import\("\.\/chase3d-witness\.ts"\)/, "Babylon.js is a dynamic import");
   assert.doesNotMatch(app + root, /from "[^"]*chase3d-witness/, "the 3D scene is not in the main bundle");
-  assert.match(view, /h\.start\(resumeAt \|\| undefined\)\.then\(\(\) => \{ if \(!cancelled\) reading = true; \}\)/, "the full account stays open after the animation until the player continues");
-  assert.match(view, /if \(reading\) return;/, "reading the account stops scene setup and disposes the previous renderer");
-  assert.match(view, /fallBack\(handle\?\.now\(\) \?\? 0, e instanceof Error/, "a 3D failure opens the full witness account");
-  assert.doesNotMatch(view, /import\("\.\/witness-2d\.ts"\)/, "Simple downloads no animated renderer");
-  assert.match(view, /FIRST_FRAME_MS[\s\S]*STALL_MS/, "a stalled 3D scene opens the full witness account");
-  assert.match(view, /onSlow: \(\) => \{ if \(!cancelled\) fallBack/, "a slow active 3D scene opens the full witness account");
-  assert.match(view, /onFault:/, "an error while drawing hands over instead of leaving a black screen");
-  assert.match(view, /level\.renderer === "3d" && !broken/, "Simple and weak devices skip animation");
-  assert.match(view, /failure = why/, "a failed scene reports its reason");
-  assert.match(view, /class="witness-account-text">\{visit\?\.message\}/, "the full account remains readable");
-  assert.match(view, /onclick=\{finish\}>Continue to the investigation/, "Continue preserves the normal handoff");
-  assert.match(view, /controller\.abort\(\)/, "changing detail cancels pending model setup");
-  assert.match(view, /aria-hidden="true">\s*\{#if visit\?\.role\}/, "the word-by-word caption is hidden from screen readers");
-  assert.match(view, /role="status">\{#if heard/, "who spoke and what they said is announced once");
+  assert.match(view, /await done;[\s\S]*holding=true/, "completion pauses for exploration");
+  assert.doesNotMatch(view, /if\s*\(reading\)\s*return/, "reading preserves the renderer");
+  assert.match(view, /import\("\.\/witness-2d\.ts"\)/, "weak devices keep the location");
+  assert.match(view, /resumeAt=at/, "fallback retains elapsed time");
+  assert.match(view, /onFault:/);
+  assert.match(view, /level\.renderer==="3d"&&!broken/);
+  assert.match(view, /class="witness-account-text">\{visit\?\.message\}/);
+  assert.match(view, /onclick=\{leave\}/, "only leaving hands off to the office");
+  assert.match(view, /Return to office/);
+  assert.match(view, /controller\.abort\(\)/);
+  assert.match(view, /class="witness-caption" aria-hidden="true"/);
+  assert.match(view, /role="status">\{#if heard/);
+
 });
 
 test("the voice and the layout random generators accept any seed: a negative one once crashed the scene for some accounts", () => {
@@ -262,11 +261,10 @@ test("the 3D and 2D renderers share one driver and the conventions are written d
   assert.match(d3, /onFault/); assert.match(d2, /onFault/);
   assert.match(driver, /try \{[\s\S]*audio\.engine[\s\S]*\} catch/, "a sound error never stops the picture");
   const conv = fs.readFileSync(new URL("../../docs/scene-conventions.md", import.meta.url), "utf8"), agents = fs.readFileSync(new URL("../../AGENTS.md", import.meta.url), "utf8");
-  assert.match(conv, /login keeps its 2D chase/);
-  assert.match(conv, /Non-login scenes should skip\s+animation at Simple detail/);
-  assert.match(conv, /Witness has also adopted this policy: Simple shows the full server account/);
-  assert.match(conv, /Journey has adopted this policy: ordinary Simple journeys hand off to the desk once/);
-  assert.match(conv, /Panel, archive and garage behaviour is unchanged/);
+  assert.match(conv, /Office, garage and witness scenes use the two-renderer rule/);
+  assert.match(conv, /Witnesses pause at `plan.speechEnd`/);
+  assert.match(conv, /Return to office/);
+  assert.match(conv, /Journey retains its existing functional Simple handoff/);
   assert.match(agents, /scene-conventions\.md/);
 });
 

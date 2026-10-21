@@ -6,9 +6,9 @@ and exits unsuccessfully when any budget is exceeded.
 
 | Payload | Release limit |
 |---|---:|
-| JavaScript referenced by `index.html` | 60 KiB gzip |
-| CSS referenced by `index.html` | 10.5 KiB gzip |
-| All lazy JavaScript combined | 950 KiB gzip |
+| JavaScript referenced by `index.html` | 62 KiB gzip |
+| CSS referenced by `index.html` | 10 KiB gzip |
+| All lazy JavaScript combined | 975 KiB gzip |
 | Any one lazy JavaScript chunk | 365 KiB gzip |
 
 The gate prints the ten largest lazy chunks so increases are visible during every
@@ -45,3 +45,12 @@ hiding a meaningful stylesheet increase.
 
 Changing a limit is a reviewed release decision: update the table, the constants
 in `web/dev/check-budget.mjs`, and the budget regression test together.
+
+## Contextual advertisements and explorable scenes
+
+Office/garage Canvas fallbacks are now active, and both renderers load the shared
+placement catalogue and advertisement interactions. The initial JavaScript limit
+is 62 KiB and total lazy JavaScript is 975 KiB for this feature (previously 60 and
+950 KiB). The largest-chunk limit stays 365 KiB; Babylon remains lazy. The current
+CSS gate is 10 KiB, matching `check-budget.mjs`. The development-only review pages
+are not production entries. Run the release build to print exact current sizes.

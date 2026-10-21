@@ -11,6 +11,8 @@ pub struct Config {
     pub production: bool,
     pub disk_path: PathBuf,
     pub game_health_enabled: bool,
+    pub ads_enabled: bool,
+    pub ads_player_origin: String,
     pub mysql_options: OptsBuilder,
     pub control_mysql_options: OptsBuilder,
     pub backup_status_path: Option<PathBuf>,
@@ -59,6 +61,24 @@ impl Config {
         }
         if production && parsed.scheme() != "https" {
             return Err("production ADMIN_PUBLIC_ORIGIN must use HTTPS".into());
+        }
+        let ads_player_origin = get("ADMIN_ADS_PLAYER_ORIGIN").unwrap_or_else(|| {
+            if production {
+                "https://naijachase.app".into()
+            } else {
+                "http://localhost:4173".into()
+            }
+        });
+        let player = reqwest::Url::parse(&ads_player_origin)
+            .map_err(|_| "Invalid ADMIN_ADS_PLAYER_ORIGIN")?;
+        if !matches!(player.scheme(), "http" | "https")
+            || (production && player.scheme() != "https")
+            || player.origin().ascii_serialization() != ads_player_origin
+        {
+            return Err(
+                "ADMIN_ADS_PLAYER_ORIGIN must be an exact HTTP(S) origin (HTTPS in production)"
+                    .into(),
+            );
         }
         let username = get("ADMIN_BOOTSTRAP_USERNAME").unwrap_or_else(|| "admin".into());
         if !crate::control::valid_username(&username) {
@@ -157,6 +177,10 @@ impl Config {
         if !matches!(health.as_str(), "true" | "false") {
             return Err("ADMIN_GAME_HEALTH_ENABLED must be true or false".into());
         }
+        let ads = get("ADMIN_ADS_ENABLED").unwrap_or_else(|| "false".into());
+        if !matches!(ads.as_str(), "true" | "false") {
+            return Err("ADMIN_ADS_ENABLED must be true or false".into());
+        }
         Ok(Self {
             bind,
             origin,
@@ -167,6 +191,8 @@ impl Config {
                 .map(PathBuf::from)
                 .unwrap_or_else(|| PathBuf::from("/")),
             game_health_enabled: health == "true",
+            ads_enabled: ads == "true",
+            ads_player_origin,
             mysql_options,
             control_mysql_options,
             backup_status_path,

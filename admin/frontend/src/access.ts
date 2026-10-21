@@ -1,6 +1,7 @@
 import type { Session } from "./types.ts";
 
 export const NAVIGATION = [
+  { id: "ads", label: "Advertisements", icon: "overview", permission: "ads:manage" },
   { id: "overview", label: "Overview", icon: "overview", permission: "overview:read" },
   { id: "registrations", label: "Registrations", icon: "users", permission: "registrations:read" },
   { id: "accounts", label: "Account support", icon: "users", permission: "accounts:read" },

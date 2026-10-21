@@ -41,6 +41,7 @@ export type Ctx = ICanvasRenderingContext;
 export const WALL_HEIGHT = 3.1;
 
 export type StageOptions = {
+  onFault?: (why: string) => void;
   /** Local hour of day, 0-23, which sets the lighting. */
   hour: number;
   quality?: "high" | "light";
@@ -68,6 +69,7 @@ export type SceneHandle = {
   leave?: (how?: string) => Promise<void>;
 };
 export type SceneOptions = {
+  onFault?: (why: string) => void;
   /** Optional stop before the terminal zoom, with camera exploration until Continue. */
   exploreAt?: number;
   onExplore?: () => void;
@@ -88,7 +90,7 @@ export type SceneOptions = {
 
 export function createStage(canvas: HTMLCanvasElement, options: StageOptions) {
   if (!Engine.isSupported()) throw new Error("WebGL is not available");
-  const contextLost = () => reportPerformanceEvent({ kind: "webgl_context_lost", scene: "shared_stage" });
+  const contextLost = () => { reportPerformanceEvent({ kind: "webgl_context_lost", scene: "shared_stage" }); options.onFault?.("WebGL context lost"); };
   canvas.addEventListener("webglcontextlost", contextLost);
   const engine = new Engine(canvas, true, { stencil: false, powerPreference: "high-performance", antialias: true }, false);
   const light = options.quality === "light";
@@ -217,7 +219,7 @@ export function createStage(canvas: HTMLCanvasElement, options: StageOptions) {
     let offset = o.startSeconds ?? 0;
     let started = -1, skipped = false, finished = false;
     let done: (() => void) | undefined;
-    const draw = (t: number) => { current.update(t); scene.render(); };
+    const draw = (t: number) => { try { current.update(t); scene.render(); } catch (error) { if (options.onFault) options.onFault(String(error)); else throw error; } };
     const resize = new ResizeObserver(() => { engine.resize(); if (finished) draw(current.end); });
     resize.observe(canvas);
     const samples: number[] = [];

@@ -1,3 +1,5 @@
+import { lookAround } from "../shared/look-around.ts";
+import { addSceneAds } from "../shared/chase3d-ads.ts";
 // Lazily loaded Babylon.js scene for the garage that follows the case briefing: the camera pans across a garage of parked cars, the
 // player's avatar comes through the office door and waits beside the open-top car while the transport options are shown, then either
 // climbs in and drives off or heads for the roadside with a thumb out. Built from primitives and painted textures. Timing and framing live in garage-scene.ts.
@@ -19,7 +21,7 @@ export type GarageHandle = SceneHandle;
 export type GarageOptions = SceneOptions;
 
 export async function createGarageScene(canvas: HTMLCanvasElement, options: GarageOptions): Promise<GarageHandle> {
-  const stage = createStage(canvas, { hour: options.hour, quality: options.quality, models: options.models, signal: options.signal, minLamp: 0.6 });
+  const stage = createStage(canvas, { onFault: options.onFault, hour: options.hour, quality: options.quality, models: options.models, signal: options.signal, minLamp: 0.6 });
   const { scene, mat, box, cyl, plane, textured, place, caster, trim, centreX } = stage;
   const shell = mat("#5d6770", { specular: 0 });
   void shell;
@@ -116,12 +118,13 @@ export async function createGarageScene(canvas: HTMLCanvasElement, options: Gara
     stage.aim(portraitGarageShot(shot, aspect, playerX));
   };
 
+  let yaw=0,pitch=0,departing=false;
   // Intro: pan across the garage while the player comes through the door.
   const intro = (t: number) => {
     pose(introPoseAt(t), t);
     door.rotation.y = doorAt(t) * 1.75;
     park();
-    aim(introShotAt(t), introPoseAt(t).x);
+    aim(t>=T_END ? lookAround(wideShot(),yaw,pitch) : introShotAt(t), introPoseAt(t).x);
     options.onGlass(glassAt(t));
   };
   void introAlphaAt;
@@ -148,11 +151,13 @@ export async function createGarageScene(canvas: HTMLCanvasElement, options: Gara
 
   // Shaders and textures load lazily; waiting here means the first frame is already complete instead of failing while they arrive.
   await scene.whenReadyAsync();
+  addSceneAds(stage, canvas, "garage");
   const handle = stage.run({ end: T_END, update: intro, onSlow: options.onSlow, startSeconds: options.startSeconds });
   void parked;
   return {
     ...handle,
-    leave: how => handle.play(how === "hitch" ? { end: T_HITCH_END, update: hitch } : { end: T_DRIVE_END, update: drive })
+    look(dx,dy) { if(departing)return; yaw=Math.max(-1.35,Math.min(1.35,yaw+dx));pitch=Math.max(-.4,Math.min(.4,pitch+dy));intro(T_END);scene.render(); },
+    leave: how => { departing=true; return handle.play(how === "hitch" ? { end: T_HITCH_END, update: hitch } : { end: T_DRIVE_END, update: drive }); }
   };
 }
 

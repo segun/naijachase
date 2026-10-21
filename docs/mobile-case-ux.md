@@ -88,17 +88,19 @@ below the picture. The garage's fare panel is height-bounded and scrollable, so
 transport actions remain reachable on short screens. Landscape retains the existing
 scene arrangement. Renderer selection and pure scene timelines are unchanged.
 
-A witness animation now ends on its complete, readable account. **Read full clue**
-also opens that account immediately. It remains until the player taps **Continue to
-the investigation**. The account is already saved by the server; neither reading
-nor continuing repeats the interview. The existing flat/error account follows the
-same explicit continuation. Opening the account cancels pending scene work,
-disposes the renderer and releases audio ducking.
+Witness animation pauses after the account is spoken and stays open for exploration.
+**Read clue** opens the full saved account in a scrollable drawer; **Back to looking
+around** closes the drawer without rebuilding the scene. **Return to office** plays
+the departure and opens the case desk exactly once. Reading, looking around and
+returning never repeat the interview or charge more game time. On phones the clue
+drawer and return controls sit beneath the landscape-shaped picture. Keyboard users
+can use arrow keys to look around and **Sponsors & ad spaces** to inspect posters.
 
-Continue opens the case desk directly on both mobile and desktop, at every detail
-level. There is no intervening office return animation or second Continue button.
-Other office entries retain their existing presentation; a finished case still
-opens its results.
+Office, garage and witness scenes now also render at Simple detail in Canvas 2D,
+using their shared pure timeline; 3D failure resumes there. If both renderers fail,
+the readable clue and explicit return remain available. There is no intervening
+office return animation or second Continue button after leaving a witness, and a
+finished case still opens its results. See [advertising.md](advertising.md).
 
 Achievement share prompts stay queued during raid preparation and gameplay
 animations. When the raid finishes (or the player skips it), Results mounts and

@@ -30,8 +30,8 @@ completed.
 - [x] Fix the empty investigation-help disclosure: always show case-solving instructions and the current next step, including before the first witness when no optional tools are available.
 - [x] Label witness actions Intimidate and Bribe; show the balance as Bribe Tokens and keep the bribe cost in the confirmation terms.
 - [x] Correct premature warrant guidance; keep the final-stop, profile and key-witness rules server-authoritative.
-- [x] Retain animations in bounded portrait viewing areas, separate captions from the picture and keep each full witness account open until Continue.
-- [x] Send witness Continue straight to the interactive case desk at every detail level, without the office return or another Continue button; preserve results routing for finished cases.
+- [x] Retain animations in bounded portrait viewing areas, separate captions from the picture and keep witness scenes open for exploration with a readable clue drawer and explicit Return to office.
+- [x] Send witness Return to office straight to the interactive case desk at every detail level, without the office return or another Continue button; preserve results routing for finished cases.
 - [x] Pass Svelte diagnostics, 365 web tests, production build and compressed download budgets; cover progress guidance, hint preferences and direct witness returns.
 - [ ] Run four existing HTTP integration tests outside the sandbox (`listen EPERM` here).
 - [ ] Complete phone/browser visual QA and a full case before release; both local server launch and standalone file preview were blocked here. See `docs/mobile-case-ux.md` for the acceptance checklist.
@@ -1355,12 +1355,12 @@ scores, rank, detection odds, panel votes, punishment, or jail time.
       procedural fallback. All ten avatars checked at the keyboard; Standard downloads no GLBs. Shell/door and interactive terminal stay procedural.
       `office_room.glb` is not used because its furniture is baked in. Preview: `web/dev-office.html`; fitting notes in `docs/3d-models.md`.
       - [x] Correct the generated chair's sideways facing: quarter-turn in the manifest, keeping its backrest behind the avatar.
-      - [x] Pause seated on every office entry, including witness returns, with "Look around the office", drag/swipe and arrow-key camera controls,
-        and "Continue to case desk" to resume the zoom. Full/Standard switching retains exploration; Simple opens the desk directly.
+      - [x] Pause seated on ordinary office entries (witness returns go directly to the desk), with "Look around the office", drag/swipe and arrow-key camera controls,
+        and "Continue to case desk" to resume the zoom. Full/Standard/Simple switching retains exploration with the shared Canvas fallback.
       - [x] Check phone-sized portrait/landscape layouts and emulated touch swipe/taps; keep the exploration card clear of the Detail button at narrow widths.
-      - [x] Simple office skips entry/return/exploration/exit animations and opens the functional desk directly, including mid-intro or mid-exploration changes.
-    - Future scene passes: remove non-login 2D animations one scene at a time, preserving dialogue, choices, server timing and outcomes.
-      Login retains its Canvas 2D chase. Other scenes are unchanged until their own pass.
+      - [x] Simple office now retains the shared timeline in Canvas 2D, including exploration and exit; direct desk returns still bypass entry.
+    - Future scene passes: follow the repository two-renderer rule, preserving dialogue, choices, server timing and outcomes.
+      Login retains its Canvas 2D chase; office, garage and witness now have active Canvas fallbacks.
     - [x] 2. Witness scenes (`witness/chase3d-witness.ts`, buildings and open-air kits): all 35 venue types use the selected avatar,
       role-matched witness, venue-specific crowds, arrival runabout/danfo, main frontage and tagged shared props at Full.
       Manifest sizes and uniform footprint fitting preserve the walking/conversation corridor. Standard downloads no GLBs.
@@ -1651,3 +1651,30 @@ section of `README.md`.
   values, restricted grants, certificate and named-owner handover.
 - [ ] Integrate provider-confirmed delivery/bounces, external alert delivery,
   tested-restore evidence, certificate expiry and release/dependency inventory.
+
+## Contextual scene advertising
+
+- [x] Add shared office, garage and 35 witness placement catalogue, database migration,
+  immutable uploaded creatives, real-time schedules, whole/split slot conflict handling,
+  public manifest/image routes and restricted admin management.
+- [x] Add admin company/artwork/link editor, hours/days duration, draft/published/paused
+  status, campaign editing and desktop/mobile artwork previews.
+- [x] Add clickable scenery posters and accessible ad dialogs, NaijaChase house artwork,
+  garage look-around, and witness exploration with explicit Return to office.
+- [x] Restore Canvas 2D office/garage/witness rendering using shared timelines and
+  retain scene progress during 3D failure. Document placements and release steps in
+  `docs/advertising.md`.
+- [ ] Production release: apply admin migrations 0003/0004 and grants, publish both frontends
+  and public proxy, complete P3.9 advertising launch review, then enable
+  `ADMIN_ADS_ENABLED=true`. Validate a scheduled campaign against the deployed MySQL
+  store and on physical mobile devices. No production deployment was performed here.
+
+- [x] Fix garage switching to 2D after settling/interacting: exclude intentional
+  desk/exploration pauses from the room stall detector; retain genuine startup
+  failure detection and cover idle/drag timing with regression tests.
+
+- [x] Ad measurements: anonymous opt-in shown/click/outbound-visit records, server
+  timestamps, idempotent IDs, campaign/placement totals, paginated admin details
+  and filtered Excel-compatible CSV exports. See `docs/advertising.md`.
+- [ ] Apply ad analytics migration 0004/grants in staging and verify live events,
+  redirects and exported totals against MySQL before production rollout.

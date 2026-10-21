@@ -63,9 +63,9 @@ test("the room opens the case terminal directly after a witness and retains othe
   assert.match(view, /introFrom=\{T_RETURN_FROM\}/);
   assert.match(stage, /startSeconds: looking \? exploreAt : intro \?/, "exploration resumes at the seated pause");
   assert.match(stage, /quick \? introFrom : seen && exploreAt !== undefined \? exploreAt : 0/, "the first visit walks in; returns and repeat entries start seated");
-  assert.match(stage, /detail\.resolved\.renderer === "3d" && \(!seen \|\| quick \|\| exploreAt !== undefined\)/, "the return plays even though the walk-in has already been seen");
+  assert.match(stage, /\(detail\.resolved\.renderer === "3d" \|\| Boolean\(load2d\)\) && \(!seen \|\| quick \|\| exploreAt !== undefined\)/, "the return plays even though the walk-in has already been seen");
   assert.match(view, /const startAtDesk = app\.directDeskEntry/);
-  assert.match(view, /<Stage[^>]*\{startAtDesk\}/);
+  assert.match(view, /<Stage[\s\S]*?\{startAtDesk\}/);
   assert.match(view, /onMount\(\(\) => \{[^}]*app\.directDeskEntry = false;/, "consume the entry flag without changing the captured Stage prop");
   assert.match(stage, /const playIntro = !startAtDesk &&/, "direct entries cannot start the office intro");
   assert.match(stage, /startAtDesk \? "desk" : playIntro/, "the desk is interactive immediately");

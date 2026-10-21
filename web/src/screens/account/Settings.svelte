@@ -87,7 +87,7 @@
     <h2 id="privacy-title">Privacy</h2>
     <fieldset>
       <legend>Optional usage measurement</legend>
-      <p class="muted">Allow anonymous visits and signup progress to help improve Naija Chase. This never enables marketing email.</p>
+      <p class="muted">Allow visit and signup measurement, plus anonymous ad views, clicks and link opens, to help improve Naija Chase. This never enables marketing email.</p>
       <div class="segmented" role="group" aria-label="Optional usage measurement">
         <button type="button" aria-pressed={usageChoice === "yes"} onclick={() => chooseUsage("yes")}>Allow measurement</button>
         <button type="button" aria-pressed={usageChoice === "no"} onclick={() => chooseUsage("no")}>Do not allow</button>

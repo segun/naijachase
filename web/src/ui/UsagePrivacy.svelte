@@ -10,7 +10,7 @@
 {#if open}
   <aside class="usage-choice" aria-label="Optional usage measurement">
     <strong>Help improve Naija Chase?</strong>
-    <p>Allow us to measure visits and signup progress. If you enter an email during signup, we save the unfinished signup for up to 30 days. We don’t send marketing emails.</p>
+    <p>Allow us to measure visits, signup progress, and anonymous ad views, clicks and link opens. If you enter an email during signup, we save the unfinished signup for up to 30 days. We don’t send marketing emails.</p>
     <a href="https://naijachase.com/privacy.html" target="_blank" rel="noopener">Privacy details</a>
     <div class="usage-actions">
       <button type="button" onclick={() => choose("no")}>No thanks</button>

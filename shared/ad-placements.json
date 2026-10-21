@@ -1,0 +1,962 @@
+[
+  {
+    "id": "office-right",
+    "scene": "office",
+    "label": "Right wall · large",
+    "position": [
+      4.34,
+      1.85,
+      2.0
+    ],
+    "size": [
+      2.6,
+      1.3
+    ],
+    "yaw": 1.5707963267948966,
+    "surface": "office-right",
+    "segment": "whole",
+    "width": 1200,
+    "height": 600,
+    "fallback": "All eyes on the chase. Your brand could be here."
+  },
+  {
+    "id": "office-right-left",
+    "scene": "office",
+    "label": "Right wall · left",
+    "position": [
+      4.34,
+      1.85,
+      2.65
+    ],
+    "size": [
+      1.24,
+      1.3
+    ],
+    "yaw": 1.5707963267948966,
+    "surface": "office-right",
+    "segment": "left",
+    "width": 1200,
+    "height": 1258,
+    "fallback": "All eyes on the chase. Your brand could be here."
+  },
+  {
+    "id": "office-right-right",
+    "scene": "office",
+    "label": "Right wall · right",
+    "position": [
+      4.34,
+      1.85,
+      1.35
+    ],
+    "size": [
+      1.24,
+      1.3
+    ],
+    "yaw": 1.5707963267948966,
+    "surface": "office-right",
+    "segment": "right",
+    "width": 1200,
+    "height": 1258,
+    "fallback": "All eyes on the chase. Your brand could be here."
+  },
+  {
+    "id": "office-clock",
+    "scene": "office",
+    "label": "Below the clock",
+    "position": [
+      0.9,
+      1.85,
+      3.94
+    ],
+    "size": [
+      1.35,
+      0.65
+    ],
+    "yaw": 0,
+    "surface": "office-clock",
+    "segment": "whole",
+    "width": 1200,
+    "height": 578,
+    "fallback": "All eyes on the chase. Your brand could be here."
+  },
+  {
+    "id": "garage-back",
+    "scene": "garage",
+    "label": "Behind the cars · large",
+    "position": [
+      1.2,
+      2.0,
+      3.92
+    ],
+    "size": [
+      4.1,
+      0.95
+    ],
+    "yaw": 0,
+    "surface": "garage-back",
+    "segment": "whole",
+    "width": 1200,
+    "height": 278,
+    "fallback": "All eyes on the chase. Your brand could be here."
+  },
+  {
+    "id": "garage-back-left",
+    "scene": "garage",
+    "label": "Behind the cars · left",
+    "position": [
+      0.17500000000000004,
+      2.0,
+      3.92
+    ],
+    "size": [
+      1.9899999999999998,
+      0.95
+    ],
+    "yaw": 0,
+    "surface": "garage-back",
+    "segment": "left",
+    "width": 1200,
+    "height": 573,
+    "fallback": "All eyes on the chase. Your brand could be here."
+  },
+  {
+    "id": "garage-back-right",
+    "scene": "garage",
+    "label": "Behind the cars · right",
+    "position": [
+      4.34,
+      2.0,
+      3.92
+    ],
+    "size": [
+      1.9899999999999998,
+      0.95
+    ],
+    "yaw": 0,
+    "surface": "garage-back",
+    "segment": "right",
+    "width": 1200,
+    "height": 573,
+    "fallback": "All eyes on the chase. Your brand could be here."
+  },
+  {
+    "id": "garage-left",
+    "scene": "garage",
+    "label": "Left wall · large",
+    "position": [
+      -4.34,
+      1.9,
+      1.5
+    ],
+    "size": [
+      2.5,
+      1.3
+    ],
+    "yaw": -1.5707963267948966,
+    "surface": "garage-left",
+    "segment": "whole",
+    "width": 1200,
+    "height": 624,
+    "fallback": "All eyes on the chase. Your brand could be here."
+  },
+  {
+    "id": "garage-left-left",
+    "scene": "garage",
+    "label": "Left wall · left",
+    "position": [
+      -4.34,
+      1.9,
+      0.875
+    ],
+    "size": [
+      1.19,
+      1.3
+    ],
+    "yaw": -1.5707963267948966,
+    "surface": "garage-left",
+    "segment": "left",
+    "width": 1200,
+    "height": 1311,
+    "fallback": "All eyes on the chase. Your brand could be here."
+  },
+  {
+    "id": "garage-left-right",
+    "scene": "garage",
+    "label": "Left wall · right",
+    "position": [
+      -4.34,
+      1.9,
+      2.125
+    ],
+    "size": [
+      1.19,
+      1.3
+    ],
+    "yaw": -1.5707963267948966,
+    "surface": "garage-left",
+    "segment": "right",
+    "width": 1200,
+    "height": 1311,
+    "fallback": "All eyes on the chase. Your brand could be here."
+  },
+  {
+    "id": "garage-right",
+    "scene": "garage",
+    "label": "Right wall · large",
+    "position": [
+      4.34,
+      2.0,
+      1.7
+    ],
+    "size": [
+      2.5,
+      1.3
+    ],
+    "yaw": 1.5707963267948966,
+    "surface": "garage-right",
+    "segment": "whole",
+    "width": 1200,
+    "height": 624,
+    "fallback": "All eyes on the chase. Your brand could be here."
+  },
+  {
+    "id": "garage-right-left",
+    "scene": "garage",
+    "label": "Right wall · left",
+    "position": [
+      4.34,
+      2.0,
+      2.325
+    ],
+    "size": [
+      1.19,
+      1.3
+    ],
+    "yaw": 1.5707963267948966,
+    "surface": "garage-right",
+    "segment": "left",
+    "width": 1200,
+    "height": 1311,
+    "fallback": "All eyes on the chase. Your brand could be here."
+  },
+  {
+    "id": "garage-right-right",
+    "scene": "garage",
+    "label": "Right wall · right",
+    "position": [
+      4.34,
+      2.0,
+      1.075
+    ],
+    "size": [
+      1.19,
+      1.3
+    ],
+    "yaw": 1.5707963267948966,
+    "surface": "garage-right",
+    "segment": "right",
+    "width": 1200,
+    "height": 1311,
+    "fallback": "All eyes on the chase. Your brand could be here."
+  },
+  {
+    "id": "witness-market",
+    "scene": "market",
+    "label": "Neighbouring stall",
+    "position": [
+      4.4,
+      2.1,
+      2.18
+    ],
+    "size": [
+      2.3,
+      1.15
+    ],
+    "yaw": 0,
+    "surface": "witness-market",
+    "segment": "whole",
+    "width": 1200,
+    "height": 600,
+    "fallback": "All eyes on the chase. Your brand could be here."
+  },
+  {
+    "id": "witness-craft_market",
+    "scene": "craft_market",
+    "label": "Outer stall poster",
+    "position": [
+      -5.8,
+      2.1,
+      4.0
+    ],
+    "size": [
+      2.4,
+      1.2
+    ],
+    "yaw": 0,
+    "surface": "witness-craft_market",
+    "segment": "whole",
+    "width": 1200,
+    "height": 600,
+    "fallback": "All eyes on the chase. Your brand could be here."
+  },
+  {
+    "id": "witness-cattle_market",
+    "scene": "cattle_market",
+    "label": "Pen fence board",
+    "position": [
+      7.6,
+      2.1,
+      4.65
+    ],
+    "size": [
+      3,
+      1.5
+    ],
+    "yaw": 0,
+    "surface": "witness-cattle_market",
+    "segment": "whole",
+    "width": 1200,
+    "height": 600,
+    "fallback": "All eyes on the chase. Your brand could be here."
+  },
+  {
+    "id": "witness-festival_ground",
+    "scene": "festival_ground",
+    "label": "Stage sponsor board",
+    "position": [
+      6,
+      2.5,
+      7.0
+    ],
+    "size": [
+      3.2,
+      1.6
+    ],
+    "yaw": 0,
+    "surface": "witness-festival_ground",
+    "segment": "whole",
+    "width": 1200,
+    "height": 600,
+    "fallback": "All eyes on the chase. Your brand could be here."
+  },
+  {
+    "id": "witness-motor_park",
+    "scene": "motor_park",
+    "label": "Waiting shelter board",
+    "position": [
+      -9.5,
+      2.1,
+      3.7
+    ],
+    "size": [
+      3,
+      1.5
+    ],
+    "yaw": 0,
+    "surface": "witness-motor_park",
+    "segment": "whole",
+    "width": 1200,
+    "height": 600,
+    "fallback": "All eyes on the chase. Your brand could be here."
+  },
+  {
+    "id": "witness-railway_station",
+    "scene": "railway_station",
+    "label": "Station entrance poster",
+    "position": [
+      -9.1,
+      2,
+      4.86
+    ],
+    "size": [
+      1.5,
+      1.8
+    ],
+    "yaw": 0,
+    "surface": "witness-railway_station",
+    "segment": "whole",
+    "width": 1200,
+    "height": 1440,
+    "fallback": "All eyes on the chase. Your brand could be here."
+  },
+  {
+    "id": "witness-airport",
+    "scene": "airport",
+    "label": "Terminal forecourt board",
+    "position": [
+      -6.5,
+      2.2,
+      3.6
+    ],
+    "size": [
+      3.2,
+      1.6
+    ],
+    "yaw": 0,
+    "surface": "witness-airport",
+    "segment": "whole",
+    "width": 1200,
+    "height": 600,
+    "fallback": "All eyes on the chase. Your brand could be here."
+  },
+  {
+    "id": "witness-beach",
+    "scene": "beach",
+    "label": "Vendor area board",
+    "position": [
+      -12,
+      2.1,
+      3.7
+    ],
+    "size": [
+      2.8,
+      1.4
+    ],
+    "yaw": 0,
+    "surface": "witness-beach",
+    "segment": "whole",
+    "width": 1200,
+    "height": 600,
+    "fallback": "All eyes on the chase. Your brand could be here."
+  },
+  {
+    "id": "witness-fishing_jetty",
+    "scene": "fishing_jetty",
+    "label": "Ticket area board",
+    "position": [
+      7.5,
+      2,
+      4.2
+    ],
+    "size": [
+      2.4,
+      1.2
+    ],
+    "yaw": 0,
+    "surface": "witness-fishing_jetty",
+    "segment": "whole",
+    "width": 1200,
+    "height": 600,
+    "fallback": "All eyes on the chase. Your brand could be here."
+  },
+  {
+    "id": "witness-jetty",
+    "scene": "jetty",
+    "label": "Ticket area sponsor",
+    "position": [
+      -8,
+      2.1,
+      3.7
+    ],
+    "size": [
+      2.4,
+      1.2
+    ],
+    "yaw": 0,
+    "surface": "witness-jetty",
+    "segment": "whole",
+    "width": 1200,
+    "height": 600,
+    "fallback": "All eyes on the chase. Your brand could be here."
+  },
+  {
+    "id": "witness-waterfront",
+    "scene": "waterfront",
+    "label": "Warehouse side board",
+    "position": [
+      9.5,
+      2,
+      9.35
+    ],
+    "size": [
+      2.5,
+      1.25
+    ],
+    "yaw": 0,
+    "surface": "witness-waterfront",
+    "segment": "whole",
+    "width": 1200,
+    "height": 600,
+    "fallback": "All eyes on the chase. Your brand could be here."
+  },
+  {
+    "id": "witness-seaport",
+    "scene": "seaport",
+    "label": "Customs shed poster",
+    "position": [
+      -9.5,
+      1.8,
+      4.4
+    ],
+    "size": [
+      2.4,
+      1.2
+    ],
+    "yaw": 0,
+    "surface": "witness-seaport",
+    "segment": "whole",
+    "width": 1200,
+    "height": 600,
+    "fallback": "All eyes on the chase. Your brand could be here."
+  },
+  {
+    "id": "witness-farm",
+    "scene": "farm",
+    "label": "Sorting shed board",
+    "position": [
+      -6.8,
+      2.1,
+      4
+    ],
+    "size": [
+      2.8,
+      1.4
+    ],
+    "yaw": 0,
+    "surface": "witness-farm",
+    "segment": "whole",
+    "width": 1200,
+    "height": 600,
+    "fallback": "All eyes on the chase. Your brand could be here."
+  },
+  {
+    "id": "witness-mining_site",
+    "scene": "mining_site",
+    "label": "Perimeter sponsor board",
+    "position": [
+      -7,
+      2.2,
+      4
+    ],
+    "size": [
+      3.2,
+      1.6
+    ],
+    "yaw": 0,
+    "surface": "witness-mining_site",
+    "segment": "whole",
+    "width": 1200,
+    "height": 600,
+    "fallback": "All eyes on the chase. Your brand could be here."
+  },
+  {
+    "id": "witness-refinery",
+    "scene": "refinery",
+    "label": "Perimeter sponsor board",
+    "position": [
+      -7,
+      2.2,
+      3.6
+    ],
+    "size": [
+      3.2,
+      1.6
+    ],
+    "yaw": 0,
+    "surface": "witness-refinery",
+    "segment": "whole",
+    "width": 1200,
+    "height": 600,
+    "fallback": "All eyes on the chase. Your brand could be here."
+  },
+  {
+    "id": "witness-factory_gate",
+    "scene": "factory_gate",
+    "label": "Loading area sponsor",
+    "position": [
+      5.8,
+      4.8,
+      11.35
+    ],
+    "size": [
+      4,
+      2
+    ],
+    "yaw": 0,
+    "surface": "witness-factory_gate",
+    "segment": "whole",
+    "width": 1200,
+    "height": 600,
+    "fallback": "All eyes on the chase. Your brand could be here."
+  },
+  {
+    "id": "witness-conservation_office",
+    "scene": "conservation_office",
+    "label": "Veranda sponsor board",
+    "position": [
+      -4,
+      1.7,
+      5.57
+    ],
+    "size": [
+      1.4,
+      1.05
+    ],
+    "yaw": 0,
+    "surface": "witness-conservation_office",
+    "segment": "whole",
+    "width": 1200,
+    "height": 900,
+    "fallback": "All eyes on the chase. Your brand could be here."
+  },
+  {
+    "id": "witness-community_hall",
+    "scene": "community_hall",
+    "label": "Community sponsor panel",
+    "position": [
+      -5.6,
+      1.8,
+      2.86
+    ],
+    "size": [
+      1.5,
+      1.0
+    ],
+    "yaw": 0,
+    "surface": "witness-community_hall",
+    "segment": "whole",
+    "width": 1200,
+    "height": 800,
+    "fallback": "All eyes on the chase. Your brand could be here."
+  },
+  {
+    "id": "witness-university",
+    "scene": "university",
+    "label": "Campus noticeboard",
+    "position": [
+      6.4,
+      2.2,
+      3.5
+    ],
+    "size": [
+      2.2,
+      1.3
+    ],
+    "yaw": 0,
+    "surface": "witness-university",
+    "segment": "whole",
+    "width": 1200,
+    "height": 709,
+    "fallback": "All eyes on the chase. Your brand could be here."
+  },
+  {
+    "id": "witness-library",
+    "scene": "library",
+    "label": "Entrance noticeboard",
+    "position": [
+      6.4,
+      2.2,
+      3.5
+    ],
+    "size": [
+      2.2,
+      1.3
+    ],
+    "yaw": 0,
+    "surface": "witness-library",
+    "segment": "whole",
+    "width": 1200,
+    "height": 709,
+    "fallback": "All eyes on the chase. Your brand could be here."
+  },
+  {
+    "id": "witness-museum",
+    "scene": "museum",
+    "label": "Entrance banner",
+    "position": [
+      -5.4,
+      2.35,
+      2.86
+    ],
+    "size": [
+      0.7,
+      2.7
+    ],
+    "yaw": 0,
+    "surface": "witness-museum",
+    "segment": "whole",
+    "width": 415,
+    "height": 1600,
+    "fallback": "All eyes on the chase. Your brand could be here."
+  },
+  {
+    "id": "witness-radio_station",
+    "scene": "radio_station",
+    "label": "Exterior sponsor board",
+    "position": [
+      5.8,
+      2.2,
+      3.5
+    ],
+    "size": [
+      2.4,
+      1.2
+    ],
+    "yaw": 0,
+    "surface": "witness-radio_station",
+    "segment": "whole",
+    "width": 1200,
+    "height": 600,
+    "fallback": "All eyes on the chase. Your brand could be here."
+  },
+  {
+    "id": "witness-carnival_workshop",
+    "scene": "carnival_workshop",
+    "label": "Workshop poster",
+    "position": [
+      2.75,
+      1.95,
+      2.86
+    ],
+    "size": [
+      1.1,
+      1.6
+    ],
+    "yaw": 0,
+    "surface": "witness-carnival_workshop",
+    "segment": "whole",
+    "width": 1100,
+    "height": 1600,
+    "fallback": "All eyes on the chase. Your brand could be here."
+  },
+  {
+    "id": "witness-hotel",
+    "scene": "hotel",
+    "label": "Entrance sponsor board",
+    "position": [
+      6.5,
+      2.2,
+      3.5
+    ],
+    "size": [
+      2,
+      1.5
+    ],
+    "yaw": 0,
+    "surface": "witness-hotel",
+    "segment": "whole",
+    "width": 1200,
+    "height": 900,
+    "fallback": "All eyes on the chase. Your brand could be here."
+  },
+  {
+    "id": "witness-restaurant",
+    "scene": "restaurant",
+    "label": "Awning sponsor poster",
+    "position": [
+      -6,
+      2.2,
+      2.86
+    ],
+    "size": [
+      2.2,
+      1.1
+    ],
+    "yaw": 0,
+    "surface": "witness-restaurant",
+    "segment": "whole",
+    "width": 1200,
+    "height": 600,
+    "fallback": "All eyes on the chase. Your brand could be here."
+  },
+  {
+    "id": "witness-nightclub",
+    "scene": "nightclub",
+    "label": "Entrance poster",
+    "position": [
+      1.4,
+      2,
+      2.86
+    ],
+    "size": [
+      1.2,
+      1.8
+    ],
+    "yaw": 0,
+    "surface": "witness-nightclub",
+    "segment": "whole",
+    "width": 1067,
+    "height": 1600,
+    "fallback": "All eyes on the chase. Your brand could be here."
+  },
+  {
+    "id": "witness-police_station",
+    "scene": "police_station",
+    "label": "Forecourt sponsor board",
+    "position": [
+      7,
+      2.2,
+      3.5
+    ],
+    "size": [
+      2,
+      1.2
+    ],
+    "yaw": 0,
+    "surface": "witness-police_station",
+    "segment": "whole",
+    "width": 1200,
+    "height": 720,
+    "fallback": "All eyes on the chase. Your brand could be here."
+  },
+  {
+    "id": "witness-hospital",
+    "scene": "hospital",
+    "label": "Forecourt sponsor board",
+    "position": [
+      7,
+      2.2,
+      3.5
+    ],
+    "size": [
+      2,
+      1.2
+    ],
+    "yaw": 0,
+    "surface": "witness-hospital",
+    "segment": "whole",
+    "width": 1200,
+    "height": 720,
+    "fallback": "All eyes on the chase. Your brand could be here."
+  },
+  {
+    "id": "witness-church",
+    "scene": "church",
+    "label": "Visitor sponsor board",
+    "position": [
+      6,
+      2.2,
+      3.5
+    ],
+    "size": [
+      1.8,
+      1.2
+    ],
+    "yaw": 0,
+    "surface": "witness-church",
+    "segment": "whole",
+    "width": 1200,
+    "height": 800,
+    "fallback": "All eyes on the chase. Your brand could be here."
+  },
+  {
+    "id": "witness-mosque",
+    "scene": "mosque",
+    "label": "Visitor sponsor board",
+    "position": [
+      6,
+      2.2,
+      3.5
+    ],
+    "size": [
+      1.8,
+      1.2
+    ],
+    "yaw": 0,
+    "surface": "witness-mosque",
+    "segment": "whole",
+    "width": 1200,
+    "height": 800,
+    "fallback": "All eyes on the chase. Your brand could be here."
+  },
+  {
+    "id": "witness-sacred_grove",
+    "scene": "sacred_grove",
+    "label": "Visitor sponsor board",
+    "position": [
+      6,
+      2.2,
+      3.5
+    ],
+    "size": [
+      1.8,
+      1.2
+    ],
+    "yaw": 0,
+    "surface": "witness-sacred_grove",
+    "segment": "whole",
+    "width": 1200,
+    "height": 800,
+    "fallback": "All eyes on the chase. Your brand could be here."
+  },
+  {
+    "id": "witness-palace",
+    "scene": "palace",
+    "label": "Courtyard sponsor board",
+    "position": [
+      6.3,
+      2.2,
+      3.5
+    ],
+    "size": [
+      2,
+      1.2
+    ],
+    "yaw": 0,
+    "surface": "witness-palace",
+    "segment": "whole",
+    "width": 1200,
+    "height": 720,
+    "fallback": "All eyes on the chase. Your brand could be here."
+  },
+  {
+    "id": "witness-emir_palace",
+    "scene": "emir_palace",
+    "label": "Courtyard sponsor board",
+    "position": [
+      6.3,
+      2.2,
+      3.5
+    ],
+    "size": [
+      2,
+      1.2
+    ],
+    "yaw": 0,
+    "surface": "witness-emir_palace",
+    "segment": "whole",
+    "width": 1200,
+    "height": 720,
+    "fallback": "All eyes on the chase. Your brand could be here."
+  },
+  {
+    "id": "witness-traditional_council",
+    "scene": "traditional_council",
+    "label": "Courtyard sponsor board",
+    "position": [
+      6.3,
+      2.2,
+      3.5
+    ],
+    "size": [
+      2,
+      1.2
+    ],
+    "yaw": 0,
+    "surface": "witness-traditional_council",
+    "segment": "whole",
+    "width": 1200,
+    "height": 720,
+    "fallback": "All eyes on the chase. Your brand could be here."
+  },
+  {
+    "id": "witness-monument",
+    "scene": "monument",
+    "label": "Visitor sponsor board",
+    "position": [
+      6.3,
+      2.2,
+      3.5
+    ],
+    "size": [
+      2,
+      1.2
+    ],
+    "yaw": 0,
+    "surface": "witness-monument",
+    "segment": "whole",
+    "width": 1200,
+    "height": 720,
+    "fallback": "All eyes on the chase. Your brand could be here."
+  }
+]

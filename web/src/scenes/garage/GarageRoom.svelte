@@ -53,7 +53,7 @@
   };
 </script>
 
-<Stage {app} sheet="dock" loading="Opening the garage…" load={(canvas, options) => import("./chase3d-garage.ts").then(m => m.createGarageScene(canvas, options))}>
+<Stage {app} adScene="garage" load2d={(canvas,options)=>import("../shared/room-2d.ts").then(m=>m.createRoom2D(canvas,options,"garage"))} sheet="dock" loading="Opening the garage…" load={(canvas, options) => import("./chase3d-garage.ts").then(m => m.createGarageScene(canvas, options))}>
   {#snippet children(awake, leave)}
     <section class="garage" class:on={awake} aria-label="How will you get there?" {@attach () => { const onkey = (e: KeyboardEvent) => key(e, awake, leave); window.addEventListener("keydown", onkey); return () => window.removeEventListener("keydown", onkey); }}>
       <header class="garage-head">

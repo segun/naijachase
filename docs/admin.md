@@ -13,7 +13,7 @@ and recording the small reporting dataset.
 | --- | --- | --- |
 | `admin/backend/` | Staff login/session, reporting, support workflows, host health | Versioned views plus one narrow session-revoke procedure; fixed local health/metrics probes |
 | `admin/frontend/` | Separate admin UI, dependencies, build output | Calls only same-origin `/admin-api/v1`; no player frontend imports |
-| Admin control schema | Staff, sessions, append-only audit/notes, support actions, moderation decisions, metric samples | Separate database and runtime principal; no player-schema grants |
+| Admin control schema | Staff, sessions, append-only audit/notes, support actions, moderation decisions, metric samples, contextual ad inventory/campaigns/artwork | Separate database and runtime principal; no player-schema grants |
 | Player API | Player accounts, gameplay, consented measurement ingestion and retention | Publishes reporting/procedure contracts through migrations 22–23 |
 | Deployment | Separate process, OS account, hostname, credentials and web root | No dependency on player/landing publication targets |
 
@@ -352,3 +352,23 @@ rotate exposed database passwords in MySQL and the matching private env
 separately. A restart alone does not revoke durable staff sessions. Do not
 paste secrets or email lists into tickets. See
 [operations-runbook.md](operations-runbook.md) for player API incidents.
+
+## Scene advertising
+
+Owners and operators have `ads:manage`; viewers cannot list, preview or modify ads.
+The Advertisements screen manages advertiser details, image, HTTPS destination,
+placement and schedule. Draft and paused campaigns stay hidden. Published campaigns
+only serve within their start-inclusive/end-exclusive real-time window. Hours/days
+are elapsed durations, and the editor labels its local timezone. Empty slots use
+NaijaChase house artwork. See [advertising.md](advertising.md) for the catalogue,
+whole/split conflicts, upload limits and public route isolation.
+
+### Advertising measurements
+
+Ads → Advertisement performance shows opt-in impressions, poster clicks and
+outbound link requests, individual server timestamps and filtered CSV downloads
+for Excel. Apply `0004_ad_analytics.sql` and the updated control grants before
+starting the backend. Configure `ADMIN_ADS_PLAYER_ORIGIN` to the exact player
+origin and deploy the Nginx exact POST `/ads-api/v1/events` location. Event reports
+require `ads:manage`; public serving retains its existing launch gate. Definitions,
+coverage and staging checks are in [advertising.md](advertising.md).

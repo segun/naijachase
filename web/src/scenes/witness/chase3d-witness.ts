@@ -1,3 +1,5 @@
+import { lookAround } from "../shared/look-around.ts";
+import { addSceneAds } from "../shared/chase3d-ads.ts";
 // Lazily loaded Babylon.js scene for a witness interview: the player's vehicle pulls up at a venue (each kind of venue adds its own scenery through chase3d-sets.ts), the player
 // walks up to the witness, and the witness speaks while the words appear as subtitles. Built from primitives and painted textures;
 // timing, poses and subtitles are in witness-scene.ts and the venue's look and sound in venue-recipes.ts.
@@ -183,6 +185,9 @@ export async function createWitnessScene(canvas: HTMLCanvasElement, options: Wit
     stage.aim(fitShot(shot, aspect));
   };
 
+  let yaw = 0, pitch = 0;
+  let departing = false;
+  const hold = plan.speechEnd;
   const frameStep = (t: number) => {
     const x = vehicleXAt(plan, t);
     vehicle.root.position.x = x;
@@ -227,7 +232,7 @@ export async function createWitnessScene(canvas: HTMLCanvasElement, options: Wit
 
     dressing.update?.(t);
 
-    aim(cameraAt(plan, t));
+    aim(!departing && t >= hold ? lookAround(cameraAt(plan, hold), yaw, pitch) : cameraAt(plan, t));
 
     driver.step(t, p);
   };
@@ -246,11 +251,14 @@ export async function createWitnessScene(canvas: HTMLCanvasElement, options: Wit
   const contextLost = (e: Event) => { e.preventDefault(); fault("the WebGL context was lost"); };
   canvas.addEventListener("webglcontextlost", contextLost);
 
-  const handle = stage.run({ end: plan.end, update, onSlow: options.onSlow });
+  addSceneAds(stage, canvas, options.recipe.id);
+  const handle = stage.run({ end: hold, update, onSlow: options.onSlow });
   return {
     scene, words, pages, duration: plan.end,
     now: driver.now,
-    start: (begin = 0) => handle.play({ end: plan.end, update }, begin),
+    start: (begin = 0) => handle.play({ end: hold, update }, Math.min(begin, hold)),
+    look(dx,dy) { yaw=Math.max(-1.35,Math.min(1.35,yaw+dx)); pitch=Math.max(-.4,Math.min(.4,pitch+dy)); if(!departing){update(hold);scene.render();} },
+    leave(from=hold) { departing=true; return handle.play({end:plan.end,update},Math.max(hold,Math.min(plan.end,from))); },
     skip: handle.skip,
     seek(seconds) { stage.engine.stopRenderLoop(); update(seconds); scene.render(); },
     dispose() {

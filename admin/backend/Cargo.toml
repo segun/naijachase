@@ -9,6 +9,8 @@ argon2.workspace = true
 axum.workspace = true
 chrono.workspace = true
 libc.workspace = true
+base64.workspace = true
+image = { version = "0.25", default-features = false, features = ["png", "jpeg", "webp"] }
 mysql.workspace = true
 rand.workspace = true
 reqwest.workspace = true

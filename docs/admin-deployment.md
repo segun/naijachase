@@ -248,3 +248,30 @@ backup job's absolute JSON status file with `last_success_at` and
 `ADMIN_BACKUP_STATUS_PATH`; `ADMIN_BACKUP_MAX_AGE_HOURS` defaults to 24. The
 console reports unconfigured integrations honestly and does not provide
 external paging or proof of a tested restore.
+
+## Advertising migration and public delivery
+
+The provisioner also applies `admin/backend/migrations/0003_advertising.sql` and
+`0004_ad_analytics.sql` to the
+admin control schema. Reapply `deploy/mysql/admin-control-grants.sql` for its narrow
+advertising grants. Readiness now checks the placement catalogue as well as identity.
+The admin Nginx API location permits 3 MiB request bodies (image upload is limited to
+2 MiB before base64 encoding); unrelated admin paths retain their smaller limit.
+
+Publish the player Nginx configuration too: `/ads-api/v1/` forwards only GET/HEAD to
+localhost:8081 and strips cookies and Authorization. It exposes only current images
+and the public manifest; `/admin-api/` remains on the separate admin host. Publish
+the new player and admin bundles together. No player database migration is needed.
+`ADMIN_ADS_ENABLED=false` is the default: prepare drafts while disabled, complete
+the launch review in P3.9, then enable it and restart the admin service. Full release
+and smoke-test instructions are in [advertising.md](advertising.md).
+
+### Advertising measurements
+
+Ads → Advertisement performance shows opt-in impressions, poster clicks and
+outbound link requests, individual server timestamps and filtered CSV downloads
+for Excel. Apply `0004_ad_analytics.sql` and the updated control grants before
+starting the backend. Configure `ADMIN_ADS_PLAYER_ORIGIN` to the exact player
+origin and deploy the Nginx exact POST `/ads-api/v1/events` location. Event reports
+require `ads:manage`; public serving retains its existing launch gate. Definitions,
+coverage and staging checks are in [advertising.md](advertising.md).

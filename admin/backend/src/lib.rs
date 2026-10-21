@@ -1,3 +1,5 @@
+mod ad_analytics;
+mod advertising;
 pub mod config;
 pub(crate) mod control;
 mod operations;
@@ -129,9 +131,9 @@ impl AppState {
 }
 
 pub fn initialize_control(pool: &Pool, config: &Config) -> Result<(), String> {
-    control::initialize(pool, &config.username, &config.password_hash).and_then(|()| operations::control_ready(pool)).map_err(|err| match err {
+    control::initialize(pool, &config.username, &config.password_hash).and_then(|()| operations::control_ready(pool)).and_then(|()| advertising::ready(pool)).map_err(|err| match err {
         control::Error::Invalid(message) => message.into(),
-        _ => "Unable to initialize admin identity store; apply both admin control migrations and grants first".into(),
+        _ => "Unable to initialize admin identity store; apply all admin control migrations and grants first".into(),
     })
 }
 
@@ -156,6 +158,7 @@ pub fn router(state: AppState) -> Router {
         )
         .route("/admin-api/v1/audit", get(list_audit))
         .merge(operations::routes())
+        .merge(advertising::routes())
         .fallback(|| async { error(StatusCode::NOT_FOUND, "Not found") })
         .layer(DefaultBodyLimit::max(4096))
         .layer(middleware::from_fn_with_state(state.clone(), protect))
@@ -170,8 +173,11 @@ async fn protect(State(state): State<AppState>, request: Request, next: Next) ->
         .headers()
         .get(header::ORIGIN)
         .and_then(|v| v.to_str().ok())
-        != Some(&state.config.origin)
-    {
+        != Some(if request.uri().path() == "/ads-api/v1/events" {
+            &state.config.ads_player_origin
+        } else {
+            &state.config.origin
+        }) {
         error(StatusCode::FORBIDDEN, "Admin origin does not match")
     } else {
         next.run(request).await
@@ -604,7 +610,8 @@ async fn ready(State(state): State<AppState>) -> Response {
         && state
             .control(|pool| {
                 control::ready(pool)?;
-                operations::control_ready(pool)
+                operations::control_ready(pool)?;
+                advertising::ready(pool)
             })
             .await
             .is_ok()
@@ -713,6 +720,8 @@ mod tests {
             "/admin-api/v1/system",
             "/admin-api/v1/staff",
             "/admin-api/v1/audit",
+            "/admin-api/v1/ads",
+            "/admin-api/v1/ads/creatives/1",
         ] {
             let response = request(app.clone(), "GET", path, "", None, None).await;
             assert_eq!(response.status(), StatusCode::UNAUTHORIZED);
@@ -759,6 +768,167 @@ mod tests {
             .await
             .status(),
             StatusCode::SERVICE_UNAVAILABLE
+        );
+    }
+    #[tokio::test]
+    async fn advertising_gate_and_upload_boundary_do_not_need_a_database() {
+        let app = router(AppState::new(config::tests::config(), None));
+        let response = request(app.clone(), "GET", "/ads-api/v1/manifest", "", None, None).await;
+        assert_eq!(response.status(), StatusCode::OK);
+        assert_eq!(response.headers()[header::CACHE_CONTROL], "no-store");
+        let body = axum::body::to_bytes(response.into_body(), 4096)
+            .await
+            .unwrap();
+        let manifest: serde_json::Value = serde_json::from_slice(&body).unwrap();
+        assert_eq!(manifest["ads"], serde_json::json!([]));
+        assert_eq!(
+            request(app.clone(), "GET", "/ads-api/v1/images/1", "", None, None)
+                .await
+                .status(),
+            StatusCode::NOT_FOUND
+        );
+        let input=serde_json::json!({"advertiser":"Example","contact":"","name":"Launch","placement_id":"office-right","status":"draft","starts_at":100,"ends_at":200,"alt_text":"Example offer","destination":"https://example.com","image":"a".repeat(10000)}).to_string();
+        // The ads route overrides the ordinary 4 KiB admin body limit, then requires identity.
+        assert_eq!(
+            request(
+                app.clone(),
+                "POST",
+                "/admin-api/v1/ads",
+                &input,
+                Some("http://127.0.0.1:4174"),
+                None
+            )
+            .await
+            .status(),
+            StatusCode::UNAUTHORIZED
+        );
+        assert_eq!(
+            request(
+                app.clone(),
+                "POST",
+                "/admin-api/v1/ads",
+                &input,
+                Some("https://evil.invalid"),
+                None
+            )
+            .await
+            .status(),
+            StatusCode::FORBIDDEN
+        );
+        assert_eq!(
+            request(
+                app,
+                "POST",
+                "/admin-api/v1/ads",
+                &"x".repeat(3 * 1024 * 1024 + 1),
+                Some("http://127.0.0.1:4174"),
+                None
+            )
+            .await
+            .status(),
+            StatusCode::PAYLOAD_TOO_LARGE
+        );
+    }
+    #[tokio::test]
+    async fn ad_measurement_routes_keep_admin_auth_and_separate_origins() {
+        let app = router(AppState::new(config::tests::config(), None));
+        let event = r#"{"event_id":"550e8400-e29b-41d4-a716-446655440000","creative_id":1,"kind":"click","source":"details"}"#;
+        for origin in [
+            None,
+            Some("https://evil.invalid"),
+            Some("http://127.0.0.1:4174"),
+        ] {
+            assert_eq!(
+                request(
+                    app.clone(),
+                    "POST",
+                    "/ads-api/v1/events",
+                    event,
+                    origin,
+                    None
+                )
+                .await
+                .status(),
+                StatusCode::FORBIDDEN
+            );
+        }
+        assert_eq!(
+            request(
+                app.clone(),
+                "POST",
+                "/ads-api/v1/events",
+                event,
+                Some("http://localhost:4173"),
+                None
+            )
+            .await
+            .status(),
+            StatusCode::NOT_FOUND
+        );
+        assert_eq!(
+            request(
+                app.clone(),
+                "POST",
+                "/ads-api/v1/events",
+                &"x".repeat(4097),
+                Some("http://localhost:4173"),
+                None
+            )
+            .await
+            .status(),
+            StatusCode::PAYLOAD_TOO_LARGE
+        );
+        assert_eq!(
+            request(
+                app.clone(),
+                "POST",
+                "/admin-api/v1/ads",
+                "{}",
+                Some("http://localhost:4173"),
+                None
+            )
+            .await
+            .status(),
+            StatusCode::FORBIDDEN
+        );
+        assert_eq!(
+            request(
+                app.clone(),
+                "GET",
+                "/admin-api/v1/ads/analytics?start=0&end=1000",
+                "",
+                None,
+                None
+            )
+            .await
+            .status(),
+            StatusCode::UNAUTHORIZED
+        );
+        assert_eq!(
+            request(
+                app.clone(),
+                "GET",
+                "/ads-api/v1/out/1/550e8400-e29b-41d4-a716-446655440000",
+                "",
+                None,
+                None
+            )
+            .await
+            .status(),
+            StatusCode::NOT_FOUND
+        );
+        assert_eq!(
+            request(
+                app,
+                "HEAD",
+                "/ads-api/v1/out/1/550e8400-e29b-41d4-a716-446655440000",
+                "",
+                None,
+                None
+            )
+            .await
+            .status(),
+            StatusCode::NO_CONTENT
         );
     }
     #[tokio::test]

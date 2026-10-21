@@ -4,9 +4,9 @@ import fs from "node:fs";
 import zlib from "node:zlib";
 
 const TARGET = {
-  initialJs: 60 * 1024,
+  initialJs: 62 * 1024,
   initialCss: 10 * 1024,
-  lazyJsTotal: 950 * 1024,
+  lazyJsTotal: 975 * 1024,
   lazyJsChunk: 365 * 1024
 };
 const dist = new URL("../dist/", import.meta.url);

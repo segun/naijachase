@@ -21,7 +21,7 @@
   const inCase = $derived(app.game !== null && !app.briefing && isCaseScreen(app.screen));
 </script>
 
-<Stage {app} seenKey="nc-desk" {quick} {startAtDesk} introFrom={T_RETURN_FROM} exploreAt={T_ZOOM_START} skipSimpleAnimation load={(canvas, options) => import("./chase3d-room.ts").then(m => m.createRoomScene(canvas, options))}>
+<Stage {app} adScene="office" load2d={(canvas,options)=>import("../shared/room-2d.ts").then(m=>m.createRoom2D(canvas,options,"office"))} seenKey="nc-desk" {quick} {startAtDesk} introFrom={T_RETURN_FROM} exploreAt={T_ZOOM_START} load={(canvas, options) => import("./chase3d-room.ts").then(m => m.createRoomScene(canvas, options))}>
   {#snippet children(awake, leave)}
     {#if inCase}<CaseTerminal {app} {awake} {leave} />{:else}<CaseDesk {app} {awake} {leave} />{/if}
   {/snippet}

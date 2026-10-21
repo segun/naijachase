@@ -77,10 +77,10 @@ test("scenery fitting is uniform, grounded and clears the player and conversatio
 test("Full uses the shared model loader; Standard and Simple never request witness models", () => {
   const scene = read("scenes/witness/chase3d-witness.ts"), view = read("scenes/witness/WitnessScene.svelte");
   assert.match(scene, /if \(options\.models\) \{\s*await Promise\.all/);
-  assert.match(view, /if \(current === "flat"\) return/);
-  assert.doesNotMatch(view, /import\("\.\/witness-2d\.ts"\)/);
+  assert.match(view, /current==="3d"\?import/);
+  assert.match(view, /import\("\.\/witness-2d\.ts"\)/);
   assert.match(view, /class="witness-account-text">\{visit\?\.message\}/);
-  assert.match(view, /if \(finished\) return;\s*finished = true;\s*app\.leaveWitness\(\)/);
+  assert.match(view, /if\(finished\)return;finished=true;app\.leaveWitness\(\)/);
   assert.match(view, /controller\.abort\(\)/);
   assert.match(scene, /signal\?\.addEventListener\("abort", abort/);
   assert.match(scene, /removeEventListener\("webglcontextlost", contextLost\)/);
